@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.math.MathUtils;
 import xbot.common.math.PIDManager;
 import xbot.common.math.XYPair;
@@ -35,7 +36,7 @@ import xbot.common.subsystems.drive.BaseDriveSubsystem;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 @Singleton
-public class DriveSubsystem extends BaseDriveSubsystem {
+public class DriveSubsystem extends BaseDriveSubsystem implements DataFrameRefreshable {
     private static Logger log = LogManager.getLogger(DriveSubsystem.class);
 
     private final SwerveModuleSubsystem frontLeftSwerveModuleSubsystem;
@@ -533,5 +534,23 @@ public class DriveSubsystem extends BaseDriveSubsystem {
                 () -> this.setQuickAlignActive(true),
                 () -> this.setQuickAlignActive(false)
         );
+    }
+
+    private SwerveModuleState[] getSwerveModuleStates() {
+        return new SwerveModuleState[]{
+                getFrontLeftSwerveModuleSubsystem().getCurrentState(),
+                getFrontRightSwerveModuleSubsystem().getCurrentState(),
+                getRearLeftSwerveModuleSubsystem().getCurrentState(),
+                getRearRightSwerveModuleSubsystem().getCurrentState()
+        };
+    }
+
+    public void refreshDataFrame() {
+        frontLeftSwerveModuleSubsystem.refreshDataFrame();
+        frontRightSwerveModuleSubsystem.refreshDataFrame();
+        rearLeftSwerveModuleSubsystem.refreshDataFrame();
+        rearRightSwerveModuleSubsystem.refreshDataFrame();
+
+        org.littletonrobotics.junction.Logger.getInstance().recordOutput(this.getPrefix() + "CurrentSwerveState", getSwerveModuleStates());
     }
 }

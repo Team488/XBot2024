@@ -117,4 +117,9 @@ public class SwerveModuleSubsystem extends BaseSubsystem {
         getDriveSubsystem().setPower(drivePower);
         getSteeringSubsystem().setPower(steeringPower);
     }
+
+    public void refreshDataFrame() {
+        getDriveSubsystem().refreshDataFrame();
+        getSteeringSubsystem().refreshDataFrame();
+    }
 }

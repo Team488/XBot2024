@@ -4,7 +4,9 @@ package competition;
 import competition.injection.components.BaseRobotComponent;
 import competition.injection.components.DaggerRobotComponent;
 import competition.injection.components.DaggerSimulationComponent;
+import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
@@ -17,10 +19,13 @@ public class Robot extends BaseRobot {
         super.initializeSystems();
         getInjectorComponent().subsystemDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
+
+        dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
+        dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
     }
 
     protected BaseRobotComponent createDaggerComponent() {
-        if (BaseRobot.isReal()) {
+        if (RobotBase.isReal()) {
             return DaggerRobotComponent.create();
         } else {
             return DaggerSimulationComponent.create();
@@ -38,7 +43,7 @@ public class Robot extends BaseRobot {
         // to start in a disabled state (as it would on the field). However, this does save you the 
         // hassle of navigating to the DS window and re-enabling the simulated robot.
         DriverStationSim.setEnabled(true);
-        webots.setFieldPoseOffset(getFieldOrigin());
+        //webots.setFieldPoseOffset(getFieldOrigin());
     }
 
     private FieldPose getFieldOrigin() {

@@ -2,17 +2,12 @@ package competition.subsystems.drive.swerve;
 
 import javax.inject.Inject;
 
-//import com.ctre.phoenix.sensors.CANCoderStatusFrame;
-import com.revrobotics.CANSparkMax;
-//import com.revrobotics.CANSparkMax.ControlType;
-//import com.revrobotics.CANSparkMax.FaultID;
-//import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.REVLibError;
-
-import edu.wpi.first.math.geometry.Rotation2d;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 import competition.electrical_contract.ElectricalContract;
 import competition.injection.swerve.SwerveInstance;
@@ -35,15 +30,12 @@ import xbot.common.resiliency.DeviceHealth;
 @SwerveSingleton
 public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
     private static Logger log = LogManager.getLogger(SwerveSteeringSubsystem.class);
-
     private final String label;
     private final PIDManager pid;
     private final ElectricalContract contract;
-    private final SwerveSteeringMotorPidSubsystem pidConfigSubsystem;
 
     private final DoubleProperty powerScale;
-    private final DoubleProperty targetRotation;
-    private final DoubleProperty currentModuleHeading;
+    private double targetRotation;
     private final DoubleProperty degreesPerMotorRotation;
     private final BooleanProperty useMotorControllerPid;
     private final DoubleProperty maxMotorEncoderDrift;
@@ -57,14 +49,11 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
 
     @Inject
     public SwerveSteeringSubsystem(SwerveInstance swerveInstance, XCANSparkMaxFactory sparkMaxFactory, XCANCoderFactory canCoderFactory,
-                                   PropertyFactory pf, PIDManagerFactory pidf, ElectricalContract electricalContract,
-                                   SwerveSteeringMotorPidSubsystem pidConfigSubsystem) {
+                                   PropertyFactory pf, PIDManagerFactory pidf, ElectricalContract electricalContract) {
         this.label = swerveInstance.getLabel();
         log.info("Creating SwerveRotationSubsystem " + this.label);
 
         this.contract = electricalContract;
-        this.pidConfigSubsystem = pidConfigSubsystem;
-
         // Create properties shared among all instances
         pf.setPrefix(super.getPrefix());
         this.pid = pidf.create(super.getPrefix() + "PID", 0.2, 0.0, 0.005, -1.0, 1.0);
@@ -73,57 +62,36 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
         this.useMotorControllerPid = pf.createPersistentProperty("UseMotorControllerPID", true);
         this.maxMotorEncoderDrift = pf.createPersistentProperty("MaxEncoderDriftDegrees", 1.0);
 
-        // Create properties that are unique to each instance
-        pf.setPrefix(this);
-        this.targetRotation = pf.createEphemeralProperty("TargetRotation", 0.0);
-        this.currentModuleHeading = pf.createEphemeralProperty("CurrentModuleHeading", 0.0);
-        this.currentModuleHeadingRotation2d = new Rotation2d(0);
-
         if (electricalContract.isDriveReady()) {
-            this.motorController = sparkMaxFactory.create(electricalContract.getSteeringNeo(swerveInstance), this.getPrefix(), "SteeringNeo");
-            setMotorControllerPositionPidParameters();
-            // Current limit configured based on the expected current values we see when driving. Typical steering current is ~35A.
-            this.motorController.setSmartCurrentLimit(40);
-            this.motorController.setIdleMode(CANSparkMax.IdleMode.kBrake);
+            this.motorController = sparkMaxFactory.createWithoutProperties(electricalContract.getSteeringNeo(swerveInstance), "", "SteeringNeo");
         }
         if (electricalContract.areCanCodersReady()) {
             this.encoder = canCoderFactory.create(electricalContract.getSteeringEncoder(swerveInstance), this.getPrefix());
             // Since the CANCoders start with absolute knowledge from the start, that means this system
             // is always calibrated.
             calibrated = true;
-
+            // As a special case, we have to perform the first refresh in order to have any useful data.
+            encoder.refreshDataFrame();
             if (this.encoder.getHealth() == DeviceHealth.Unhealthy) {
                 canCoderUnavailable = true;
             }
         }
-//        setupStatusFrames();
+        setupStatusFramesAsNeeded();
     }
 
     /**
      * Set up status frame intervals to reduce unnecessary CAN activity.
      */
-//    private void setupStatusFrames() {
-//        if (this.contract.isDriveReady()) {
-//            // We need to re-set frame intervals after a device reset.
-//            if (this.motorController.getStickyFault(FaultID.kHasReset) && this.motorController.getLastError() != REVLibError.kHALError) {
-//                log.info("Setting status frame periods.");
-//
-//                // See https://docs.revrobotics.com/sparkmax/operating-modes/control-interfaces#periodic-status-frames
-//                // for description of the different status frames. kStatus2 is the only frame with data needed for software PID.
-//
-//                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus0, 500 /* default 10 */);
-//                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus1, 500 /* default 20 */);
-//                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20 /* default 20 */);
-//                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus3, 500 /* default 50 */);
-//
-//                this.motorController.clearFaults();
-//            }
-//        }
-//
-//        if (this.contract.areCanCodersReady() && this.encoder.hasResetOccurred()) {
-//            this.encoder.setStatusFramePeriod(CANCoderStatusFrame.VbatAndFaults, 100);
-//        }
-//    }
+    private void setupStatusFramesAsNeeded() {
+        if (this.contract.isDriveReady()) {
+            this.motorController.setupStatusFramesIfReset(500, 500, 20, 500);
+        }
+
+        if (this.contract.areCanCodersReady() && this.encoder.hasResetOccurred()) {
+            this.encoder.setUpdateFrequencyForPosition(50);
+            this.encoder.stopAllUnsetSignals();
+        }
+    }
 
     public String getLabel() {
         return this.label;
@@ -154,7 +122,7 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
      */
     @Override
     public Double getTargetValue() {
-        return this.targetRotation.get();
+        return targetRotation;
     }
 
     /**
@@ -162,7 +130,7 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
      */
     @Override
     public void setTargetValue(Double value) {
-        this.targetRotation.set(value);
+        targetRotation = value;
     }
 
     /**
@@ -191,10 +159,6 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
         this.calibrated = true;
     }
 
-    public double getVelocity() {
-        return this.motorController.getVelocity();
-    }
-
     /**
      * Reset the SparkMax encoder position based on the CanCoder measurement.
      * This should only be called when the mechanism is stationary.
@@ -202,7 +166,7 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
     public void calibrateMotorControllerPositionFromCanCoder() {
         if (this.contract.isDriveReady() && this.contract.areCanCodersReady() && !canCoderUnavailable) {
             double currentCanCoderPosition = getAbsoluteEncoderPositionInDegrees();
-            double currentSparkMaxPosition = getMotorControllerEncoderPosiitonInDegrees();
+            double currentSparkMaxPosition = getMotorControllerEncoderPositionInDegrees();
 
             if (isMotorControllerDriftTooHigh(currentCanCoderPosition, currentSparkMaxPosition, this.maxMotorEncoderDrift.get())) {
                 if (Math.abs(this.motorController.getVelocity()) > 0) {
@@ -220,6 +184,10 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
                 }
             }
         }
+    }
+
+    public double getVelocity() {
+        return this.motorController.getVelocity();
     }
 
     public static boolean isMotorControllerDriftTooHigh(double currentCanCoderPosition, double currentSparkMaxPosition, double maxDelta) {
@@ -245,7 +213,7 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
         else if (this.contract.isDriveReady()) {
             // If the CANCoders aren't available, we can use the built-in encoders in the steering motors. Experience suggests
             // that this will work for about 30 seconds of driving before getting wildly out of alignment.
-            return getMotorControllerEncoderPosiitonInDegrees();
+            return getMotorControllerEncoderPositionInDegrees();
         }
 
         return 0;
@@ -267,7 +235,7 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
      * Gets the reported position of the encoder on the NEO motor.
      * @return The position of the encoder on the NEO motor.
      */
-    public double getMotorControllerEncoderPosiitonInDegrees() {
+    public double getMotorControllerEncoderPositionInDegrees() {
         if (this.contract.isDriveReady()) {
             return MathUtil.inputModulus(this.motorController.getPosition() * degreesPerMotorRotation.get(), -180, 180);
         } else {
@@ -332,38 +300,55 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
             double changeInDegrees = MathUtil.inputModulus(targetDegrees - currentPositionDegrees, -90, 90);
             double targetPosition = this.motorController.getPosition() + (changeInDegrees / degreesPerMotorRotation.get());
 
-//            REVLibError error = this.motorController.setReference(targetPosition, ControlType.kPosition, 0);
-//            if (error != REVLibError.kOk) {
-//                log.error("Error setting PID target: " + error.name());
-//            }
+            REVLibError error = this.motorController.setReference(targetPosition, CANSparkBase.ControlType.kPosition, 0);
+            if (error != REVLibError.kOk) {
+                log.error("Error setting PID target: " + error.name());
+            }
         }
     }
 
     public void setMotorControllerPositionPidParameters() {
         if (this.contract.isDriveReady()) {
-            this.motorController.setP(pidConfigSubsystem.getP());
-            this.motorController.setI(pidConfigSubsystem.getI());
-            this.motorController.setD(pidConfigSubsystem.getD());
-            this.motorController.setFF(pidConfigSubsystem.getFF());
-            this.motorController.setOutputRange(pidConfigSubsystem.getMinOutput(), pidConfigSubsystem.getMaxOutput());
-            this.motorController.setClosedLoopRampRate(pidConfigSubsystem.getClosedLoopRampRate());
-            this.motorController.setOpenLoopRampRate(pidConfigSubsystem.getOpenLoopRampRate());
+            this.motorController.setP(0.5);
+            this.motorController.setI(0);
+            this.motorController.setD(0);
+            this.motorController.setFF(0);
+            this.motorController.setOutputRange(-1, 1);
+            this.motorController.setClosedLoopRampRate(0.02);
+            this.motorController.setOpenLoopRampRate(0.05);
         }
     }
 
     @Override
     public void periodic() {
-        if (contract.areCanCodersReady()) {
-            //canCoderStatus.set(this.encoder.getHealth().toString());
-            //absoluteEncoderPosition.set(getAbsoluteEncoderPositionInDegrees());
-        }
         if (contract.isDriveReady()) {
-//            setupStatusFrames();
-            //motorEncoderPosition.set(getMotorControllerEncoderPosiitonInDegrees());
+            setupStatusFramesAsNeeded();
         }
 
+        org.littletonrobotics.junction.Logger.getInstance().recordOutput(
+                this.getPrefix()+"BestEncoderPositionDegrees",
+                getBestEncoderPositionInDegrees());
+    }
+
+    public void refreshDataFrame() {
+        if (contract.isDriveReady()) {
+            motorController.refreshDataFrame();
+
+        }
+        if (contract.areCanCodersReady()) {
+            encoder.refreshDataFrame();
+        }
+
+        // TODO: Once we've moved to an architecture where we control the order periodic() is called in
+        // (so we can guarantee that child components, like this SwerveSteeringElement, are called before
+        // the the parent component, like the DriveSubsystem), this will be moved to periodic.
+        // The long term goal is to have the robot perform these steps:
+        // 1) RefreshDataFrame across the entire machine
+        // 2) Periodic() is called to transform or merge that data into higher-order concepts (new poses,
+        //    new trajectories, arm positions, etc.) Notably, children will be called ahead of parents so that
+        //    the parents can fuse data from mulitple systems.
+        // 3) CommandScheduler invokes individual commands, which use all this information to make decisions.
         double positionInDegrees = getBestEncoderPositionInDegrees();
-        currentModuleHeading.set(positionInDegrees);
         currentModuleHeadingRotation2d = Rotation2d.fromDegrees(positionInDegrees);
     }
 }

@@ -1,38 +1,30 @@
 package competition.subsystems.drive.swerve;
 
-import javax.inject.Inject;
-
 import com.revrobotics.CANSparkMax;
-//import com.revrobotics.CANSparkMax.FaultID;
-//import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
-
-import com.revrobotics.REVLibError;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import competition.electrical_contract.ElectricalContract;
 import competition.injection.swerve.SwerveInstance;
 import competition.injection.swerve.SwerveSingleton;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XCANSparkMax.XCANSparkMaxFactory;
-import xbot.common.math.PIDManager;
 import xbot.common.math.PIDManager.PIDManagerFactory;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
+
+import javax.inject.Inject;
 
 @SwerveSingleton
 public class SwerveDriveSubsystem extends BaseSetpointSubsystem<Double> {
     private static Logger log = LogManager.getLogger(SwerveDriveSubsystem.class);
 
     private final String label;
-    private final PIDManager pid;
     private final ElectricalContract contract;
     private final SwerveDriveMotorPidSubsystem pidConfigSubsystem;
 
     private final DoubleProperty inchesPerMotorRotation;
-    private final DoubleProperty targetVelocity;
-    private final DoubleProperty currentVelocity;
+    private double targetVelocity;
 
     private XCANSparkMax motorController;
 
@@ -46,20 +38,16 @@ public class SwerveDriveSubsystem extends BaseSetpointSubsystem<Double> {
         // Create properties shared among all instances
         pf.setPrefix(super.getPrefix());
         this.contract = electricalContract;
-        this.pid = pidf.create(super.getPrefix() + "PID", 1.0, 0.0, 0.0, -1.0, 1.0);
         this.inchesPerMotorRotation = pf.createPersistentProperty("InchesPerMotorRotation", 2.02249);
 
         // Create properties unique to this instance.
         pf.setPrefix(this);
-        this.targetVelocity = pf.createEphemeralProperty("TargetVelocity", 0.0);
-        this.currentVelocity = pf.createEphemeralProperty("CurrentVelocity", 0.0);
 
         this.pidConfigSubsystem = pidConfigSubsystem;
 
         if (electricalContract.isDriveReady()) {
-            this.motorController = sparkMaxFactory.createWithoutProperties(electricalContract.getDriveNeo(swerveInstance), this.getPrefix(), "DriveNeo");
-            setMotorControllerPositionPidParameters();
-//            setupStatusFrames();
+            this.motorController = sparkMaxFactory.createWithoutProperties(electricalContract.getDriveNeo(swerveInstance), "", "DriveNeo");
+            setupStatusFramesAsNeeded();
             this.motorController.setSmartCurrentLimit(45);
             this.motorController.setIdleMode(CANSparkMax.IdleMode.kBrake);
         }
@@ -68,24 +56,11 @@ public class SwerveDriveSubsystem extends BaseSetpointSubsystem<Double> {
     /**
      * Set up status frame intervals to reduce unnecessary CAN activity.
      */
-//    private void setupStatusFrames() {
-//        if (this.contract.isDriveReady()) {
-//            // We need to re-set frame intervals after a device reset.
-////            if (this.motorController.getStickyFault(FaultID.kHasReset) && this.motorController.getLastError() != REVLibError.kHALError) {
-//                log.info("Setting status frame periods.");
-//
-//                // See https://docs.revrobotics.com/sparkmax/operating-modes/control-interfaces#periodic-status-frames
-//                // for description of the different status frames. kStatus2 is the only frame with data needed for software PID.
-//
-////                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus0, 500 /* default 10 */);
-////                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20 /* default 20 */);
-////                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20 /* default 20 */);
-////                this.motorController.getInternalSparkMax().setPeriodicFramePeriod(PeriodicFrame.kStatus3, 500 /* default 50 */);
-//
-//                this.motorController.clearFaults();
-//            }
-//        }
-//    }
+    private void setupStatusFramesAsNeeded() {
+        if (this.contract.isDriveReady()) {
+            this.motorController.setupStatusFramesIfReset(500, 20, 20, 500);
+        }
+    }
 
     public String getLabel() {
         return this.label;
@@ -114,7 +89,7 @@ public class SwerveDriveSubsystem extends BaseSetpointSubsystem<Double> {
      */
     @Override
     public Double getTargetValue() {
-        return this.targetVelocity.get();
+        return targetVelocity;
     }
 
     /**
@@ -122,7 +97,7 @@ public class SwerveDriveSubsystem extends BaseSetpointSubsystem<Double> {
      */
     @Override
     public void setTargetValue(Double value) {
-        this.targetVelocity.set(value);
+        targetVelocity = value;
     }
 
     public double getCurrentPositionValue() {
@@ -150,14 +125,6 @@ public class SwerveDriveSubsystem extends BaseSetpointSubsystem<Double> {
         return this.motorController;
     }
 
-    public void resetPid() {
-        this.pid.reset();
-    }
-
-    public double calculatePower() {
-        return this.pid.calculate(this.getTargetValue(), this.getCurrentValue());
-    }
-
     public void setMotorControllerPositionPidParameters() {
         if (this.contract.isDriveReady()) {
             this.motorController.setP(pidConfigSubsystem.getP());
@@ -173,9 +140,17 @@ public class SwerveDriveSubsystem extends BaseSetpointSubsystem<Double> {
     @Override
     public void periodic() {
         if (contract.isDriveReady()) {
-            currentVelocity.set(this.getCurrentValue());
-//            setupStatusFrames();
+            org.littletonrobotics.junction.Logger.getInstance().recordOutput(
+                    this.getPrefix()+"CurrentVelocity",
+                    this.getCurrentValue());
+            setupStatusFramesAsNeeded();
             this.motorController.periodic();
+        }
+    }
+
+    public void refreshDataFrame() {
+        if (contract.isDriveReady()) {
+            motorController.refreshDataFrame();
         }
     }
 }

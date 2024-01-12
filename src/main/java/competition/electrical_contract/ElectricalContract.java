@@ -15,30 +15,11 @@ public abstract class ElectricalContract {
 
     public abstract DeviceInfo getSteeringEncoder(SwerveInstance swerveInstance);
 
-    public abstract DeviceInfo getLowerArmLeftMotor();
-
-    public abstract DeviceInfo getLowerArmRightMotor();
-    public abstract DeviceInfo getUpperArmLeftMotor();
-    public abstract  DeviceInfo getUpperArmRightMotor();
-    public abstract  boolean isLowerArmReady();
-    public  abstract  boolean isUpperArmReady();
-    public abstract boolean isLowerArmEncoderReady();
-    public abstract boolean isUpperArmEncoderReady();
-    public abstract DeviceInfo getLowerArmEncoder();
-    public abstract DeviceInfo getUpperArmEncoder();
     public abstract XYPair getSwerveModuleOffsets(SwerveInstance swerveInstance);
-
-    public abstract DeviceInfo getClawSolenoid();
-
-    public abstract DeviceInfo getLeftClawMotor();
-    public abstract DeviceInfo getRightClawMotor();
-    public abstract boolean areClawMotorsReady();
 
     public abstract DeviceInfo getCollectorSolenoid();
     public abstract DeviceInfo getCollectorMotor();
     public abstract boolean isCollectorReady();
-
-    public abstract DeviceInfo getLowerArmBrakeSolenoid();
 
     public abstract DeviceInfo getLightsDio0();
     public abstract DeviceInfo getLightsDio1();
@@ -47,5 +28,4 @@ public abstract class ElectricalContract {
     public abstract DeviceInfo getLightsDio4();
     public abstract DeviceInfo getLightsCubeDio();
 
-    public abstract DeviceInfo getPressureSensor();
 }
