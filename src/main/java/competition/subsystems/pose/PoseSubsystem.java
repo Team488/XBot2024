@@ -7,6 +7,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 
 @Singleton
 public class PoseSubsystem extends BasePoseSubsystem {

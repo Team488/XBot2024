@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.drive.commands.SwerveDriveWithJoysticksCommand;
 import competition.subsystems.drive.commands.TankDriveWithJoysticksCommand;
 
 /**
@@ -16,7 +17,7 @@ public class SubsystemDefaultCommandMap {
     public SubsystemDefaultCommandMap() {}
 
     @Inject
-    public void setupDriveSubsystem(DriveSubsystem driveSubsystem, TankDriveWithJoysticksCommand command) {
+    public void setupDriveSubsystem(DriveSubsystem driveSubsystem, SwerveDriveWithJoysticksCommand command) {
         driveSubsystem.setDefaultCommand(command);
     }
 }
