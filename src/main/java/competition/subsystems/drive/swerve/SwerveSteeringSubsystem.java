@@ -4,7 +4,6 @@ import javax.inject.Inject;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.REVLibError;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import edu.wpi.first.math.geometry.Rotation2d;

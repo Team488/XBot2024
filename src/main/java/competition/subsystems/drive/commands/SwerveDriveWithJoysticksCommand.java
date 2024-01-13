@@ -33,6 +33,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
     final DoubleProperty input_exponent;
     final DoubleProperty drivePowerFactor;
     final DoubleProperty turnPowerFactor;
+    DoubleProperty suggestedRotatePowerProperty;
     final BooleanProperty absoluteOrientationMode;
     final HeadingModule headingModule;
     final Latch absoluteOrientationLatch;
@@ -53,6 +54,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         this.input_exponent = pf.createPersistentProperty("Input Exponent", 2);
         this.drivePowerFactor = pf.createPersistentProperty("Power Factor", 0.75);
         this.turnPowerFactor = pf.createPersistentProperty("Turn Power Factor", 0.75);
+        this.suggestedRotatePowerProperty = pf.createEphemeralProperty("Suggested Rotate Power", 0);
         this.absoluteOrientationMode = pf.createPersistentProperty("Absolute Orientation Mode", true);
         this.minimumMagnitudeForAbsoluteHeading = pf.createPersistentProperty("Min Magnitude For Absolute Heading", 0.75);
         this.decider = hvmFactory.create(this.getPrefix());
@@ -264,6 +266,8 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
 
         // Check if we need a different center of rotation
         XYPair centerOfRotationInches = new XYPair(0,0);
+
+        suggestedRotatePowerProperty.set(suggestedRotatePower);
 
         if (drive.isRobotOrientedDriveActive()) {
             drive.move(translationIntent, suggestedRotatePower);
