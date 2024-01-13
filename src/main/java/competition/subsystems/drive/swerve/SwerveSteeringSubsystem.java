@@ -3,6 +3,7 @@ package competition.subsystems.drive.swerve;
 import javax.inject.Inject;
 
 //import com.ctre.phoenix.sensors.CANCoderStatusFrame;
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkMax;
 //import com.revrobotics.CANSparkMax.ControlType;
 //import com.revrobotics.CANSparkMax.FaultID;
@@ -10,7 +11,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.REVLibError;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -332,10 +332,10 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
             double changeInDegrees = MathUtil.inputModulus(targetDegrees - currentPositionDegrees, -90, 90);
             double targetPosition = this.motorController.getPosition() + (changeInDegrees / degreesPerMotorRotation.get());
 
-//            REVLibError error = this.motorController.setReference(targetPosition, ControlType.kPosition, 0);
-//            if (error != REVLibError.kOk) {
-//                log.error("Error setting PID target: " + error.name());
-//            }
+            REVLibError error = this.motorController.setReference(targetPosition, CANSparkBase.ControlType.kPosition, 0);
+            if (error != REVLibError.kOk) {
+                log.error("Error setting PID target: " + error.name());
+            }
         }
     }
 
