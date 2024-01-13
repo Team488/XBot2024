@@ -25,11 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 
-import competition.subsystems.drive.DriveSubsystem;
-import xbot.common.controls.sensors.XGyro.XGyroFactory;
-import xbot.common.properties.PropertyFactory;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
-import edu.wpi.first.wpilibj.DriverStation;
+import java.util.Optional;
 
 
 @Singleton
@@ -39,7 +35,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     final SwerveDrivePoseEstimator swerveOdometry;
     private final VisionSubsystem vision;
     private final Field2d fieldForDisplay;
-    protected DriverStation.Alliance cachedAlliance = DriverStation.Alliance.Invalid;
+    protected Optional<DriverStation.Alliance> cachedAlliance;
 
     private TimeStableValidator healthyPoseValidator = new TimeStableValidator(1);
     private final DoubleProperty suprisingVisionUpdateDistanceInMetersProp;
@@ -81,7 +77,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // FrontLeft, FrontRight, RearLeft, RearRight.
         // When initializing SwerveDriveOdometry, we need to use the same order.
 
-        /*swerveOdometry = new SwerveDrivePoseEstimator(
+        swerveOdometry = new SwerveDrivePoseEstimator(
             drive.getSwerveDriveKinematics(), 
             getCurrentHeading(), 
             new SwerveModulePosition[] {
@@ -90,7 +86,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 drive.getRearLeftSwerveModuleSubsystem().getcurrentPosition(),
                 drive.getRearRightSwerveModuleSubsystem().getcurrentPosition()
             },
-            new Pose2d());*/
+            new Pose2d());
 
         useVisionToUpdateGyroLatch = new Latch(false, Latch.EdgeType.RisingEdge, edge -> {
            if (edge== Latch.EdgeType.RisingEdge) {
@@ -110,9 +106,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     /**
      * Gets the robot's alliance color
+     *
      * @return The robot alliance color
      */
-    public DriverStation.Alliance getAlliance() {
+    public Optional<DriverStation.Alliance> getAlliance() {
         return DriverStation.getAlliance();
     }
 
@@ -137,7 +134,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
      * @return The rotated input.
      */
     public XYPair rotateVectorBasedOnAlliance(XYPair vector) {
-        if (getAlliance() == DriverStation.Alliance.Red && isAllianceAwareField()) {
+        if (getAlliance().equals(DriverStation.Alliance.Red) && isAllianceAwareField()) {
             vector.scale(-1, -1);
         }
         return vector;
@@ -152,7 +149,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         var alliance = getAlliance();
         log.info("Detected Alliance:" + alliance + ", and AllianceAwareField is:" +allianceAwareFieldProp.get());
 
-        if (getAlliance() == DriverStation.Alliance.Red && isAllianceAwareField()) {
+        if (getAlliance().equals(DriverStation.Alliance.Red) && isAllianceAwareField()) {
             log.info("Detected red alliance and AllianceAwareField. Rotating angle 180 degrees.");
             return Rotation2d.fromDegrees(rotation.getDegrees() - (rotation.getDegrees() - 90.0) * 2);
         }
@@ -325,22 +322,21 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
 
-    /*private SwerveModulePosition[] getSwerveModulePositions() {
+    private SwerveModulePosition[] getSwerveModulePositions() {
         return new SwerveModulePosition[] {
             drive.getFrontLeftSwerveModuleSubsystem().getcurrentPosition(),
             drive.getFrontRightSwerveModuleSubsystem().getcurrentPosition(),
             drive.getRearLeftSwerveModuleSubsystem().getcurrentPosition(),
             drive.getRearRightSwerveModuleSubsystem().getcurrentPosition()
         };
-    }*/
+    }
 
     public XYPair rotateVelocityBasedOnAlliance() {
-        if (DriverStation.getAlliance()== DriverStation.Alliance.Red) {
+        if (DriverStation.getAlliance().equals(DriverStation.Alliance.Red)) {
             return getCurrentVelocity().clone().scale(-1);
         } else {
             return getCurrentVelocity();
         }
-
     }
 
     // We actually need something simpler to work with the velocity program - robot oriented X velocity.
