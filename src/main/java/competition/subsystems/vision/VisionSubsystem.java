@@ -13,7 +13,9 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.controls.sensors.XPhotonCamera;
 import xbot.common.logging.RobotAssertionManager;
 import xbot.common.logic.TimeStableValidator;
 import xbot.common.math.XYPair;
@@ -28,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class VisionSubsystem extends BaseSubsystem {
+public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
     public static final String VISION_TABLE = "photonvision";
 
@@ -37,6 +39,9 @@ public class VisionSubsystem extends BaseSubsystem {
 
     final PhotonCamera forwardAprilCamera;
     final PhotonCamera rearAprilCamera;
+
+    //final XPhotonCamera akitForwardAprilCamera;
+    //final XPhotonCamera akitRearAprilCamera;
 
     final RobotAssertionManager assertionManager;
     final BooleanProperty isInverted;
@@ -54,7 +59,12 @@ public class VisionSubsystem extends BaseSubsystem {
     long logCounter = 0;
 
     @Inject
-    public VisionSubsystem(PropertyFactory pf, RobotAssertionManager assertionManager) {
+    public VisionSubsystem(PropertyFactory pf, RobotAssertionManager assertionManager, XPhotonCamera.XPhotonCameraFactory cameraFactory) {
+
+        // Temporary while waiting for PhotonVision to update and make this plausible
+        // akitForwardAprilCamera = cameraFactory.create("forwardAprilCamera");
+        // akitRearAprilCamera = cameraFactory.create("rearAprilCamera");
+
         this.assertionManager = assertionManager;
         visionTable = NetworkTableInstance.getDefault().getTable(VISION_TABLE);
 
@@ -75,7 +85,7 @@ public class VisionSubsystem extends BaseSubsystem {
         rearAprilCamera = new PhotonCamera("rearAprilCamera");
 
         try {
-            aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+            aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
             visionWorking = true;
             log.info("Successfully loaded AprilTagFieldLayout");
         } catch (IOException e) {
@@ -210,5 +220,11 @@ public class VisionSubsystem extends BaseSubsystem {
 
     private String getStringFromList(List<Integer> list) {
         return String.join(", ", list.stream().mapToInt(id -> id).mapToObj(id -> Integer.toString(id)).toArray(String[]::new));
+    }
+
+    @Override
+    public void refreshDataFrame() {
+        //akitForwardAprilCamera.refreshDataFrame();
+        //akitRearAprilCamera.refreshDataFrame();
     }
 }
