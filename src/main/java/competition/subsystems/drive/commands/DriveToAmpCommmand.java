@@ -16,8 +16,8 @@ public class DriveToAmpCommmand extends BaseCommand {
     HeadingModule headingModule;
 
 
-    private XYPair targetPosition =  new XYPair();
-    private double targetHeading = 0;
+    private XYPair targetPosition;
+    private double targetHeading;
 
 
 
@@ -27,19 +27,38 @@ public class DriveToAmpCommmand extends BaseCommand {
         this.pose = pose;
         headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
 
-
         this.addRequirements(drive);
     }
 
     @Override
     public void initialize() {
+        targetPosition  = null; //get april tag XYPair
+        targetHeading = 0;  //get april tag heading
 
     }
 
     @Override
     public void execute() {
 
+        //goalVector is the x, y difference from current robot position on the field and target position
+        XYPair goalVector = targetPosition.clone()
+                .add(pose.getCurrentFieldPose().getPoint().scale(-1));
+
+        //turns vector into a distance (length)
+        double goalMagnitude = goalVector.getMagnitude();
+
+        //as goalMagnitude becomes less, drivePower also does
+        double drivePower = drive.getPositionalPid().calculate(goalMagnitude, 0);
+
+        //the polar coordinate of goalVector, (x = angle, y = distance),
+        //distance in this case is power
+        XYPair intent = XYPair.fromPolar(goalVector.getAngle(), drivePower);
+
+        double headingPower = headingModule.calculateHeadingPower(targetHeading);
+
+        drive.fieldOrientedDrive(intent, headingPower, pose.getCurrentHeading().getDegrees(), true);
     }
+
 
     @Override
     public boolean isFinished() {
@@ -50,13 +69,5 @@ public class DriveToAmpCommmand extends BaseCommand {
     public void end(boolean interrupted) {
         super.end(interrupted);
         drive.stop();
-    }
-
-    public void setTargetPosition(XYPair targetPosition) {
-        this.targetPosition = targetPosition;
-    }
-
-    public void setTargetHeading(double heading) {
-        this.targetHeading = heading;
     }
 }
