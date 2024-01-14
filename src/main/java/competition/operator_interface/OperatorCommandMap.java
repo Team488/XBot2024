@@ -3,6 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import xbot.common.controls.sensors.XXboxController;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 
 /**
@@ -20,7 +21,7 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading)
     {
-        resetHeading.setHeadingToApply(90);
-        operatorInterface.driverGamepad.getifAvailable(1).onTrue(resetHeading);
+        resetHeading.setHeadingToApply(0);
+        operatorInterface.driverGamepad.getXboxButton(XXboxController.XboxButton.A).onTrue(resetHeading);
     }
 }
