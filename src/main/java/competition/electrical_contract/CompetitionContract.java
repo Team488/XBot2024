@@ -25,15 +25,15 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     private String getDriveControllerName(SwerveInstance swerveInstance) {
-        return swerveInstance.getLabel() + "-Drive";
+        return "DriveSubsystem/" + swerveInstance.getLabel() + "/Drive";
     }
 
     private String getSteeringControllerName(SwerveInstance swerveInstance) {
-        return swerveInstance.getLabel() + "-Steering";
+        return "DriveSubsystem/" + swerveInstance.getLabel() + "/Steering";
     }
 
     private String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
-        return swerveInstance.getLabel() + "-SteeringEncoder";
+        return "DriveSubsystem/" + swerveInstance.getLabel() + "/SteeringEncoder";
     }
 
     @Override
