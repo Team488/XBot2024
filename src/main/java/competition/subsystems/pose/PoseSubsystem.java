@@ -9,7 +9,10 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.EstimatedRobotPose;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
 import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.Latch;
@@ -33,12 +36,13 @@ import java.util.Optional;
 public class PoseSubsystem extends BasePoseSubsystem {
 
     private final DriveSubsystem drive;
-    final SwerveDrivePoseEstimator swerveOdometry;
+    final SwerveDrivePoseEstimator fusedSwerveOdometry;
+    final SwerveDrivePoseEstimator onlyWheelsGyroSwerveOdometry;
     private final VisionSubsystem vision;
     private final Field2d fieldForDisplay;
     protected Optional<DriverStation.Alliance> cachedAlliance;
 
-    private TimeStableValidator healthyPoseValidator = new TimeStableValidator(1);
+    private TimeStableValidator noSurprisingDistanceRequests = new TimeStableValidator(1);
     private final DoubleProperty suprisingVisionUpdateDistanceInMetersProp;
     private final BooleanProperty isPoseHealthyProp;
     private final BooleanProperty useForwardCameraForPose;
@@ -78,16 +82,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // FrontLeft, FrontRight, RearLeft, RearRight.
         // When initializing SwerveDriveOdometry, we need to use the same order.
 
-        swerveOdometry = new SwerveDrivePoseEstimator(
-            drive.getSwerveDriveKinematics(), 
-            getCurrentHeading(), 
-            new SwerveModulePosition[] {
-                drive.getFrontLeftSwerveModuleSubsystem().getcurrentPosition(),
-                drive.getFrontRightSwerveModuleSubsystem().getcurrentPosition(),
-                drive.getRearLeftSwerveModuleSubsystem().getcurrentPosition(),
-                drive.getRearRightSwerveModuleSubsystem().getcurrentPosition()
-            },
-            new Pose2d());
+        fusedSwerveOdometry = initializeSwerveOdometry();
+        onlyWheelsGyroSwerveOdometry = initializeSwerveOdometry();
 
         useVisionToUpdateGyroLatch = new Latch(false, Latch.EdgeType.RisingEdge, edge -> {
            if (edge== Latch.EdgeType.RisingEdge) {
@@ -98,6 +94,19 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // creating matchtime doubleProperty
         matchTime = propManager.createEphemeralProperty("Time", DriverStation.getMatchTime());
 
+    }
+
+    private SwerveDrivePoseEstimator initializeSwerveOdometry() {
+        return new SwerveDrivePoseEstimator(
+            drive.getSwerveDriveKinematics(),
+            getCurrentHeading(),
+            new SwerveModulePosition[] {
+                drive.getFrontLeftSwerveModuleSubsystem().getcurrentPosition(),
+                drive.getFrontRightSwerveModuleSubsystem().getcurrentPosition(),
+                drive.getRearLeftSwerveModuleSubsystem().getcurrentPosition(),
+                drive.getRearRightSwerveModuleSubsystem().getcurrentPosition()
+            },
+            new Pose2d());
     }
 
     /**
@@ -182,27 +191,28 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // while still presenting inches externally to dashboards.
 
         // Update the basic odometry (gyro, encoders)
-        Pose2d updatedPosition = swerveOdometry.update(
+        Pose2d updatedPosition = fusedSwerveOdometry.update(
+                this.getCurrentHeading(),
+                getSwerveModulePositions()
+        );
+
+        Pose2d updatedPositionWheelsGyroOnly = onlyWheelsGyroSwerveOdometry.update(
                 this.getCurrentHeading(),
                 getSwerveModulePositions()
         );
 
         if (isUsingVisionAssistedPose()) {
-            // As a prototype, consider any AprilTag seen to be at field coordinates 0,0. Use that information
-            // to position the robot on the field.
-            //improveOdometryUsingSimpleAprilTag();
-
-            // As a better prototype, use PhotonLib to evaluate multiple AprilTags and get a field-accurate position.
-            improveOdometryUsingPhotonLib(updatedPosition);
-
-            // TODO: as an even better prototype, use a multi-target PNP solver (not yet available, but coming soon?)
+            improveFusedOdometryUsingPhotonLib(updatedPosition);
         }
+
+        Logger.recordOutput(getPrefix()+"VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
+        Logger.recordOutput(getPrefix()+"WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
         // Pull out the new estimated pose from odometry. Note that for now, we only pull out X and Y
         // and trust the gyro implicitly. Eventually, we should allow the gyro to be updated via vision
         // if we have a lot of confidence in the vision data.
         var estimatedPosition = new Pose2d(
-                swerveOdometry.getEstimatedPosition().getTranslation(),
+                fusedSwerveOdometry.getEstimatedPosition().getTranslation(),
                 getCurrentHeading());
 
         // Convert back to inches
@@ -212,33 +222,38 @@ public class PoseSubsystem extends BasePoseSubsystem {
         //totalDistanceY = (estimatedPosition.getY() * PoseSubsystem.INCHES_IN_A_METER);
         fieldForDisplay.setRobotPose(estimatedPosition);
         Logger.recordOutput(this.getPrefix()+"RobotPose", fieldForDisplay.getRobotPose());
-        // show with our gyro overriding vision?
-        Pose2d robotPoseWithNavxOverride = new Pose2d(
-            estimatedPosition.getTranslation(),
-            getCurrentHeading());
-        Logger.recordOutput(this.getPrefix()+"RobotPoseWithNavxOverride", robotPoseWithNavxOverride);
 
         this.velocityX = ((totalDistanceX - prevTotalDistanceX));
         this.velocityY = ((totalDistanceY - prevTotalDistanceY));
         this.totalVelocity = (Math.sqrt(Math.pow(velocityX, 2.0) + Math.pow(velocityY, 2.0)));
     }
 
-    private void improveOdometryUsingSimpleAprilTag() {
-        // Try to get some vision sauce in there
-        // and feed it straight into the odometry, then do the shifting at the very end when we convert back to inches.
-        XYPair aprilCoords = vision.getAprilCoordinates();
-        if (aprilCoords != null) {
-            Pose2d aprilPos = new Pose2d(aprilCoords.x, aprilCoords.y, getCurrentHeading());
-            swerveOdometry.addVisionMeasurement(aprilPos, XTimer.getFPGATimestamp() - 0.030);
+    public void copyFusedOdometryToWheelsOdometry() {
+        onlyWheelsGyroSwerveOdometry.resetPosition(
+            fusedSwerveOdometry.getEstimatedPosition().getRotation(),
+            getSwerveModulePositions(),
+            fusedSwerveOdometry.getEstimatedPosition());
+    }
+
+    public Command getCopyFusedOdometryToWheelsOdometryCommand() {
+        return Commands.runOnce(() -> copyFusedOdometryToWheelsOdometry());
+    }
+
+    private void improveFusedOdometryUsingPhotonLib(Pose2d recentPosition) {
+        var photonEstimatedPoses = vision.getPhotonVisionEstimatedPoses(recentPosition);
+
+        boolean appliedAnyVisionData = false;
+        for (var photonEstimatedPose : photonEstimatedPoses) {
+            appliedAnyVisionData |= applyVisionDataIfAppropriate(photonEstimatedPose, recentPosition);
+        }
+
+        if (!appliedAnyVisionData) {
+            // Since we didn't get any vision updates, by definition we didn't get any surprising distance updates.
+            isPoseHealthyProp.set(noSurprisingDistanceRequests.checkStable(true));
         }
     }
 
-    private void improveOdometryUsingPhotonLib(Pose2d recentPosition) {
-        var photonEstimatedPose = vision.getPhotonVisionEstimatedPose(recentPosition);
-        var rearPhotonEstimatedPose = vision.getRearPhotonVisionEstimatedPose(recentPosition);
-
-        var updatedPoseWithVision = false;
-        var poseConfident = true;
+    private boolean applyVisionDataIfAppropriate(Optional<EstimatedRobotPose> photonEstimatedPose, Pose2d recentPosition) {
         if (photonEstimatedPose.isPresent()) {
             // Get the result data, which has both coordinates and timestamps
             var camPose = photonEstimatedPose.get();
@@ -247,47 +262,13 @@ public class PoseSubsystem extends BasePoseSubsystem {
             // the healthy pose validator.
             double distance = recentPosition.getTranslation().getDistance(recentPosition.getTranslation());
             boolean isSurprisingDistance = (distance > suprisingVisionUpdateDistanceInMetersProp.get());
-            isPoseHealthyProp.set(healthyPoseValidator.checkStable(isSurprisingDistance));
-
-            // If the distance is really, really small, we're extremely confident in the vision data, and
-            // could consider using it to update the gyro.
-            poseConfident &= distance < extremelyConfidentVisionDistanceUpdateInMetersProp.get();
+            isPoseHealthyProp.set(noSurprisingDistanceRequests.checkStable(isSurprisingDistance));
 
             // In any case, update the odometry with the new pose from the camera.
-            swerveOdometry.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
-            updatedPoseWithVision = true;
+            fusedSwerveOdometry.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
+            return true;
         }
-
-        if (rearPhotonEstimatedPose.isPresent()) {
-
-            Logger.recordOutput(getPrefix()+"BestTrackedTarget", rearPhotonEstimatedPose.get().targetsUsed.get(0).getBestCameraToTarget());
-
-            // Get the result data, which has both coordinates and timestamps
-            var camPose = rearPhotonEstimatedPose.get();
-
-            // Check for the distance delta between the old and new poses. If it's too large, reset
-            // the healthy pose validator.
-            double distance = recentPosition.getTranslation().getDistance(recentPosition.getTranslation());
-            boolean isSurprisingDistance = (distance > suprisingVisionUpdateDistanceInMetersProp.get());
-            isPoseHealthyProp.set(healthyPoseValidator.checkStable(isSurprisingDistance));
-
-            // If the distance is really, really small, we're extremely confident in the vision data, and
-            // could consider using it to update the gyro.
-            poseConfident &= distance < extremelyConfidentVisionDistanceUpdateInMetersProp.get();
-
-            // In any case, update the odometry with the new pose from the camera.
-            swerveOdometry.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
-            updatedPoseWithVision = true;
-        }
-
-        if (updatedPoseWithVision) {
-            isVisionPoseExtremelyConfidentProp.set(extremelyConfidentVisionValidator.checkStable(poseConfident));
-        } else {
-            // Since we didn't get any vision updates, we assume the current pose is healthy.
-            isPoseHealthyProp.set(healthyPoseValidator.checkStable(true));
-            // But since we didn't get any vision updates, we can't be super-confident!
-            isVisionPoseExtremelyConfidentProp.set(extremelyConfidentVisionValidator.checkStable(false));
-        }
+        return false;
     }
 
     public boolean getIsPoseHealthy() {
@@ -299,13 +280,13 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public Pose2d getVisionAssistedPositionInMeters() {
-        return swerveOdometry.getEstimatedPosition();
+        return fusedSwerveOdometry.getEstimatedPosition();
     }
 
     public void setCurrentPosition(double newXPosition, double newYPosition, WrappedRotation2d heading) {
         super.setCurrentPosition(newXPosition, newYPosition);
         super.setCurrentHeading(heading.getDegrees());
-        swerveOdometry.resetPosition(
+        fusedSwerveOdometry.resetPosition(
             heading,
             getSwerveModulePositions(),
             new Pose2d(
