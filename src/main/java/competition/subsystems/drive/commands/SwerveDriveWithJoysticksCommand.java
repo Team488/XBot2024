@@ -116,20 +116,20 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         // --------------------------------------------------
 
         // Grab all human sources of rotation intent
-        double humanRotatePowerFromTriggers = getRotationIntentFromDriverTriggers();
-        double humanRotatePowerFromStick = getRotationIntentFromDriverJoystick();
+        double humanRotateIntentFromTriggers = getRotationIntentFromDriverTriggers();
+        double humanRotateIntentFromStick = getRotationIntentFromDriverJoystick();
 
         // Fuse them together while keeping them in the -1 to 1 range. This is to help avoid doing some kind of
         // conflicting move like trying to rotate in two directions at once.
-        double fusedHumanRotatePower = MathUtils.constrainDoubleToRobotScale(
-                humanRotatePowerFromStick + humanRotatePowerFromTriggers);
+        double fusedHumanRotateIntent = MathUtils.constrainDoubleToRobotScale(
+                humanRotateIntentFromStick + humanRotateIntentFromTriggers);
 
-        double suggestedRotatePower = 0;
+        double rotateIntent = 0;
         if (absoluteOrientationMode.get()) {
-            suggestedRotatePower = getSuggestedRotatePowerForAbsoluteStickControl(humanRotatePowerFromTriggers);
+            rotateIntent = getSuggestedRotateIntentForAbsoluteStickControl(humanRotateIntentFromTriggers);
         } else {
             // If we are in the typical "rotate using joystick to turn" mode, use the Heading Assist module to get the suggested power.
-            suggestedRotatePower = scaleHumanRotationInput(fusedHumanRotatePower);
+            rotateIntent = scaleHumanRotationInput(fusedHumanRotateIntent);
         }
 
         // --------------------------------------------------
@@ -139,22 +139,22 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         // Apply various form of scaling (e.g. precision modes) to hte intents.
         scaledTranslationIntent = scaleTranslationIntent(scaledTranslationIntent);
         if (!drive.isUnlockFullDrivePowerActive()) {
-            suggestedRotatePower *= turnPowerFactor.get();
+            rotateIntent *= turnPowerFactor.get();
         }
 
         // Log these just before sending them to the drive.
         Logger.recordOutput(getPrefix()+"TranslationIntent", scaledTranslationIntent);
-        Logger.recordOutput(getPrefix()+"SuggestedRotatePower", suggestedRotatePower);
+        Logger.recordOutput(getPrefix()+"SuggestedRotateIntent", rotateIntent);
 
         // Finally, send the intents as either robot-relative or field-relative.
         if (drive.isRobotOrientedDriveActive()) {
-            drive.move(scaledTranslationIntent, suggestedRotatePower);
+            drive.move(scaledTranslationIntent, rotateIntent);
         } else {
-            drive.fieldOrientedDrive(scaledTranslationIntent, suggestedRotatePower, pose.getCurrentHeading().getDegrees(), new XYPair(0,0));
+            drive.fieldOrientedDrive(scaledTranslationIntent, rotateIntent, pose.getCurrentHeading().getDegrees(), new XYPair(0,0));
         }
     }
 
-    private double getSuggestedRotatePowerForAbsoluteStickControl(double humanRotatePowerFromTriggers) {
+    private double getSuggestedRotateIntentForAbsoluteStickControl(double humanRotatePowerFromTriggers) {
         double suggestedRotatePower;
         // If we are using absolute orientation, we first need get the desired heading from the right joystick.
         // We need to only do this if the joystick has been moved past the minimumMagnitudeForAbsoluteHeading.
