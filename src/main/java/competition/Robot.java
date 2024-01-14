@@ -24,6 +24,7 @@ public class Robot extends BaseRobot {
         getInjectorComponent().operatorCommandMap();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
+        dataFrameRefreshables.add(getInjectorComponent().visionSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
     }
 
