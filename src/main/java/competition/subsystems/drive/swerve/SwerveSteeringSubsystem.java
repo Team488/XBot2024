@@ -224,7 +224,9 @@ public class SwerveSteeringSubsystem extends BaseSetpointSubsystem<Double> {
      */
     public double getAbsoluteEncoderPositionInDegrees() {
         if (this.contract.areCanCodersReady()) {
-            return this.encoder.getAbsolutePosition();
+            // With the change to Phoenix6, enocders report -0.5 to 0.5 rather than -180 to 180.
+            // For now, doing a simple multiply. Later this should be a scaling factor in the encoder itself.
+            return this.encoder.getAbsolutePosition() * 360;
         } else {
             return 0;
         }
