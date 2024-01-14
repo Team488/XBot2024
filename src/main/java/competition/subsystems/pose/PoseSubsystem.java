@@ -9,6 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.littletonrobotics.junction.Logger;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
 import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.Latch;
@@ -207,9 +208,16 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // Convert back to inches
         double prevTotalDistanceX = totalDistanceX;
         double prevTotalDistanceY = totalDistanceY;
-        totalDistanceX = (estimatedPosition.getX() * PoseSubsystem.INCHES_IN_A_METER);
-        totalDistanceY = (estimatedPosition.getY() * PoseSubsystem.INCHES_IN_A_METER);
+        //totalDistanceX = (estimatedPosition.getX() * PoseSubsystem.INCHES_IN_A_METER);
+        //totalDistanceY = (estimatedPosition.getY() * PoseSubsystem.INCHES_IN_A_METER);
         fieldForDisplay.setRobotPose(estimatedPosition);
+        Logger.recordOutput(this.getPrefix()+"RobotPose", fieldForDisplay.getRobotPose());
+        // show with our gyro overriding vision?
+        Pose2d robotPoseWithNavxOverride = new Pose2d(
+            estimatedPosition.getTranslation(),
+            getCurrentHeading());
+        Logger.recordOutput(this.getPrefix()+"RobotPoseWithNavxOverride", robotPoseWithNavxOverride);
+
         this.velocityX = ((totalDistanceX - prevTotalDistanceX));
         this.velocityY = ((totalDistanceY - prevTotalDistanceY));
         this.totalVelocity = (Math.sqrt(Math.pow(velocityX, 2.0) + Math.pow(velocityY, 2.0)));
@@ -251,6 +259,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
         }
 
         if (rearPhotonEstimatedPose.isPresent()) {
+
+            Logger.recordOutput(getPrefix()+"BestTrackedTarget", rearPhotonEstimatedPose.get().targetsUsed.get(0).getBestCameraToTarget());
+
             // Get the result data, which has both coordinates and timestamps
             var camPose = rearPhotonEstimatedPose.get();
 

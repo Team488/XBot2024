@@ -199,8 +199,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         }
 
         if (logCounter++ % 20 == 0) {
-            log.info(String.format("Estimated pose %s from tags %s. Previous pose was %s.",
-                    estimatedPose.estimatedPose.toPose2d(), getStringFromList(allTagIds), previousEstimatedPose));
+            //log.info(String.format("Estimated pose %s from tags %s. Previous pose was %s.",
+            //        estimatedPose.estimatedPose.toPose2d(), getStringFromList(allTagIds), previousEstimatedPose));
         }
 
         // Two or more targets tends to be very reliable
