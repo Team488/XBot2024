@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
+import xbot.common.trajectory.LowResField;
+import xbot.common.trajectory.Obstacle;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import java.util.ArrayList;
@@ -29,7 +31,8 @@ public class OperatorCommandMap {
             PoseSubsystem pose,
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
-            SwerveSimpleTrajectoryCommand swerveTest)
+            SwerveSimpleTrajectoryCommand swerveTest,
+            SwerveSimpleTrajectoryCommand avoidColumnTest)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -45,5 +48,24 @@ public class OperatorCommandMap {
         swerveTest.logic.setConstantVelocity(1);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(swerveTest);
+
+        ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
+        columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
+                new Translation2d(4.9, 5.4), Rotation2d.fromDegrees(0), 10));
+        avoidColumnTest.logic.setKeyPoints(columnPoints);
+        avoidColumnTest.logic.setEnableConstantVelocity(true);
+        avoidColumnTest.logic.setConstantVelocity(1);
+        avoidColumnTest.logic.setFieldWithObstacles(setupLowResField());
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
+    }
+
+    private LowResField setupLowResField() {
+        LowResField field = new LowResField();
+        // For now, just add the three columns in the middle.
+        field.addObstacle(new Obstacle(3.4, 4.1, 1,1, "BlueLeftStageColumn"));
+        field.addObstacle(new Obstacle(5.6, 5.3, 1,1, "BlueTopStageColumn"));
+        field.addObstacle(new Obstacle(5.6, 2.8, 1,1, "BlueBottomStageColumn"));
+        return field;
     }
 }
