@@ -8,11 +8,15 @@ import competition.injection.components.DaggerRoboxComponent;
 import competition.injection.components.DaggerSimulationComponent;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
+import xbot.common.subsystems.drive.BaseDriveSubsystem;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 public class Robot extends BaseRobot {
@@ -76,5 +80,20 @@ public class Robot extends BaseRobot {
             -4.58*PoseSubsystem.INCHES_IN_A_METER, 
             BasePoseSubsystem.FACING_TOWARDS_DRIVERS
             );
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        super.simulationPeriodic();
+
+        var pose = (PoseSubsystem)getInjectorComponent().poseSubsystem();
+        var currentPose = pose.getCurrentPose2d();
+        DriveSubsystem drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
+        var updatedPose = new Pose2d(
+                new Translation2d(
+                        currentPose.getTranslation().getX() + drive.lastRawCommandedDirection.x * 0.05,
+                        currentPose.getTranslation().getY() + drive.lastRawCommandedDirection.y * 0.05),
+                currentPose.getRotation().plus(Rotation2d.fromDegrees(drive.lastRawCommandedRotation * 5.0)));
+        pose.setCurrentPoseInMeters(updatedPose);
     }
 }
