@@ -27,11 +27,13 @@ import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Singleton
 public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
     public static final String VISION_TABLE = "photonvision";
@@ -136,8 +138,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             estimator.setReferencePose(previousEstimatedRobotPose);
             var estimatedPose = estimator.update();
             // Log the estimated pose, and log an insane value if we don't have one (so we don't clutter up the visualization)
-            Logger.recordOutput(getPrefix()+name+"Estimate", estimatedPose.isPresent() ?
-                    estimatedPose.get().estimatedPose.toPose2d() :
+            Logger.recordOutput(getPrefix()+name+"Estimate", estimatedPose.isPresent()
+                    ? estimatedPose.get().estimatedPose.toPose2d() :
                     new Pose2d(-1000, -1000, new Rotation2d(0)));
 
             var isReliable = !estimatedPose.isEmpty() && isEstimatedPoseReliable(estimatedPose.get(), previousEstimatedRobotPose);
@@ -157,9 +159,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
      * - Are we pretty close to our previous location?
      * - If we see 2+ targets, we're good
      * - If we see 1 target, we need to be close and have a low ambiguity
-     * @param estimatedPose
-     * @param previousEstimatedPose
-     * @return
+     * @param estimatedPose The pose to check
+     * @param previousEstimatedPose The previous location of the robot in the last loop
+     * @return True if the pose is reliable and should be consumed by the robot
      */
     public boolean isEstimatedPoseReliable(EstimatedRobotPose estimatedPose, Pose2d previousEstimatedPose) {
         if (estimatedPose.targetsUsed.size() == 0) {
