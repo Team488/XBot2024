@@ -177,6 +177,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 fusedSwerveOdometry.getEstimatedPosition().getTranslation(),
                 getCurrentHeading());
 
+        totalDistanceX = estimatedPosition.getX();
+        totalDistanceY = estimatedPosition.getY();
+
         // Convert back to inches
         double prevTotalDistanceX = totalDistanceX;
         double prevTotalDistanceY = totalDistanceY;
