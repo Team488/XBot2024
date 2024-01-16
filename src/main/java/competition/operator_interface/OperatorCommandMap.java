@@ -3,6 +3,8 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
+import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -32,7 +34,9 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
             SwerveSimpleTrajectoryCommand swerveTest,
-            SwerveSimpleTrajectoryCommand avoidColumnTest)
+            SwerveSimpleTrajectoryCommand avoidColumnTest,
+            SwerveAccordingToOracleCommand oracleSwerve,
+            ManualRobotKnowledgeSubsystem knowledgeSubsystem)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -58,6 +62,18 @@ public class OperatorCommandMap {
         avoidColumnTest.logic.setFieldWithObstacles(setupLowResField());
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
+
+
+        oracleSwerve.logic.setEnableConstantVelocity(true);
+        oracleSwerve.logic.setConstantVelocity(3);
+        oracleSwerve.logic.setFieldWithObstacles(setupLowResField());
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper)
+                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
+                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
     }
 
     private LowResField setupLowResField() {

@@ -12,6 +12,9 @@ import competition.injection.swerve.RearLeftDrive;
 import competition.injection.swerve.RearRightDrive;
 import competition.injection.swerve.SwerveComponent;
 import competition.injection.swerve.SwerveInstance;
+import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
+import competition.subsystems.oracle.NoteCollectionInfoSource;
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 

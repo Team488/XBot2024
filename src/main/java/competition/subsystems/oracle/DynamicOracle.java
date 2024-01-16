@@ -1,7 +1,11 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
@@ -29,19 +33,22 @@ public class DynamicOracle extends BaseSubsystem {
     NoteMap noteMap;
 
     HighLevelGoal currentHighLevelGoal;
-    boolean firstRunInNewGoal = true;
+    boolean firstRunInNewGoal;
 
     PoseSubsystem pose;
 
+    int instructionNumber = 0;
+
     @Inject
     public DynamicOracle(NoteCollectionInfoSource noteCollectionInfoSource, NoteFiringInfoSource noteFiringInfoSource,
-                         NoteMap noteMap, PoseSubsystem pose) {
+                         PoseSubsystem pose) {
         this.noteCollectionInfoSource = noteCollectionInfoSource;
         this.noteFiringInfoSource = noteFiringInfoSource;
-        this.noteMap = noteMap;
+        this.noteMap = new NoteMap();
         this.pose = pose;
 
-        this.currentHighLevelGoal = HighLevelGoal.ScoreInSpeaker;
+        this.currentHighLevelGoal = HighLevelGoal.CollectNote;
+        firstRunInNewGoal = true;
     }
 
     public void overrideGoal(HighLevelGoal goal) {
@@ -51,15 +58,30 @@ public class DynamicOracle extends BaseSubsystem {
         this.currentHighLevelGoal = goal;
     }
 
+    public HighLevelGoal getHighLevelGoal() {
+        return this.currentHighLevelGoal;
+    }
+
+    boolean reevaluationRequested = false;
+    public void requestReevaluation() {
+        reevaluationRequested = true;
+    }
+
     @Override
     public void periodic() {
 
         switch (currentHighLevelGoal) {
             case ScoreInAmp: // For now keeping things simple
             case ScoreInSpeaker:
-                if (firstRunInNewGoal) {
+                if (firstRunInNewGoal || reevaluationRequested) {
+                    setTargetNote(null);
+                    setTerminatingPoint(new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(0)));
+
+                    setSpecialAimTarget(new Pose2d(0, 5.5, Rotation2d.fromDegrees(0)));
                     // Choose a good speaker scoring location
                     // Publish a route from current position to that location
+                    firstRunInNewGoal = false;
+                    reevaluationRequested = false;
                 }
                 // If we've launched our note, time to get another one
                 if (noteFiringInfoSource.confidentlyHasFiredNote()) {
@@ -69,21 +91,31 @@ public class DynamicOracle extends BaseSubsystem {
                 }
                 break;
             case CollectNote:
-                if (firstRunInNewGoal) {
+                if (firstRunInNewGoal || reevaluationRequested) {
                     // Choose a good note collection location
-                    setTargetNote(noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(),
+                    Note suggestedNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(),
                             Note.NoteAvailability.Available,
                             Note.NoteAvailability.SuggestedByDriver,
-                            Note.NoteAvailability.SuggestedByVision));
+                            Note.NoteAvailability.SuggestedByVision);
+                    setTargetNote(suggestedNote);
+                    setSpecialAimTarget(null);
+                    if (suggestedNote == null) {
+                        // No notes on the field! Let's suggest going to the source and hope something turns up.
+                        setTerminatingPoint(new Pose2d(14, 1.2, Rotation2d.fromDegrees(0)));
+                    } else {
+                        setTerminatingPoint(getTargetNote().getLocation());
+                    }
                     // Publish a route from current position to that location
-                    setTerminatingPoint(new XbotSwervePoint(getTargetNote().getLocation(), 10));
+                    firstRunInNewGoal = false;
+                    reevaluationRequested = false;
                 }
 
                 if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
                     Note nearestNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(), 1.0);
-                    nearestNote.setAvailability(Note.NoteAvailability.Unavailable);
-
+                    if (nearestNote != null) {
+                        nearestNote.setAvailability(Note.NoteAvailability.Unavailable);
+                    }
 
                     // Since we have a note, let's go score it.
                     currentHighLevelGoal = HighLevelGoal.ScoreInSpeaker;
@@ -99,6 +131,12 @@ public class DynamicOracle extends BaseSubsystem {
         if (getEstimatedSecondsUntilScoringRequired() < 2) {
             // Warm up the shooter
         }
+
+        Logger.recordOutput(this.getPrefix()+"Current Goal", currentHighLevelGoal);
+        Logger.recordOutput(this.getPrefix()+"Current Note",
+                targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
+        Logger.recordOutput(this.getPrefix()+"Terminating Point", getTerminatingPoint().getTerminatingPose());
+        Logger.recordOutput(this.getPrefix()+"MessageCount", getTerminatingPoint().getPoseMessageNumber());
     }
 
     Note targetNote;
@@ -110,9 +148,23 @@ public class DynamicOracle extends BaseSubsystem {
         return this.targetNote;
     }
 
-    XbotSwervePoint terminatingPoint;
-    private void setTerminatingPoint(XbotSwervePoint point) {
-        this.terminatingPoint = point;
+    OracleTerminatingPoint terminatingPoint;
+    Pose2d specialAimTarget;
+
+    private void setTerminatingPoint(Pose2d point) {
+        this.terminatingPoint = new OracleTerminatingPoint(point, instructionNumber++);
+    }
+
+    private void setSpecialAimTarget(Pose2d point) {
+        this.specialAimTarget = point;
+    }
+
+    public OracleTerminatingPoint getTerminatingPoint() {
+        return this.terminatingPoint;
+    }
+
+    public Pose2d getSpecialAimTarget() {
+        return this.specialAimTarget;
     }
 
     private double getEstimatedSecondsUntilScoringRequired() {

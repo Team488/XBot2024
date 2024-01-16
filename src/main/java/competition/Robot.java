@@ -91,8 +91,8 @@ public class Robot extends BaseRobot {
         DriveSubsystem drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
         var updatedPose = new Pose2d(
                 new Translation2d(
-                        currentPose.getTranslation().getX() + drive.lastRawCommandedDirection.x * 0.05,
-                        currentPose.getTranslation().getY() + drive.lastRawCommandedDirection.y * 0.05),
+                        currentPose.getTranslation().getX() + drive.lastRawCommandedDirection.x * 0.1,
+                        currentPose.getTranslation().getY() + drive.lastRawCommandedDirection.y * 0.1),
                 currentPose.getRotation().plus(Rotation2d.fromDegrees(drive.lastRawCommandedRotation * 5.0)));
         pose.setCurrentPoseInMeters(updatedPose);
     }
