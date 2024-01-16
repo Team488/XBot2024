@@ -57,7 +57,7 @@ public class SwerveDriveMaintainerCommand extends BaseMaintainerCommand<Double> 
     public void initialize() {
         this.subsystem.setTargetValue(0.0);
         this.subsystem.setPower(0.0);
-        this.subsystem.resetPid();
+        //this.subsystem.resetPid();
     }
 
     @Override

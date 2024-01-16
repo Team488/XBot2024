@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.math.MathUtils;
 import xbot.common.math.PIDManager;
 import xbot.common.math.XYPair;
@@ -35,7 +36,7 @@ import xbot.common.subsystems.drive.BaseDriveSubsystem;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 @Singleton
-public class DriveSubsystem extends BaseDriveSubsystem {
+public class DriveSubsystem extends BaseDriveSubsystem implements DataFrameRefreshable {
     private static Logger log = LogManager.getLogger(DriveSubsystem.class);
 
     private final SwerveModuleSubsystem frontLeftSwerveModuleSubsystem;
@@ -356,7 +357,7 @@ public class DriveSubsystem extends BaseDriveSubsystem {
         SwerveModuleState[] moduleStates = swerveDriveKinematics.toSwerveModuleStates(targetMotion, centerOfRotationTranslationMeters);
 
         // Another potentially optional step - it's possible that in the calculations above, one or more swerve modules could be asked to
-        // move at higer than its maximum speed. At this point, we have a choice. Either:
+        // move at higher than its maximum speed. At this point, we have a choice. Either:
         // - "Prioritize speed/power" - don't change any module powers, and anything going above 100% will, due to reality, be capped at 100%.
         //   This means that the robot's motion might be a little odd, but this could be useful if we want to push as hard as possible.
         // - "Prioritize motion" - reduce all module powers proportionately so that the "fastest" module is moving at 100%. For example, if you had modules
@@ -374,6 +375,9 @@ public class DriveSubsystem extends BaseDriveSubsystem {
             double topSpeedMetersPerSecond = maxTargetSpeed.get() / BasePoseSubsystem.INCHES_IN_A_METER;
             SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, topSpeedMetersPerSecond);
         }
+
+        // Finally, we can tell each swerve module what it should be doing. Log these values for debugging.
+        org.littletonrobotics.junction.Logger.recordOutput(this.getPrefix() + "DesiredSwerveState", moduleStates);
 
         this.getFrontLeftSwerveModuleSubsystem().setTargetState(moduleStates[0]);
         this.getFrontRightSwerveModuleSubsystem().setTargetState(moduleStates[1]);
@@ -533,5 +537,23 @@ public class DriveSubsystem extends BaseDriveSubsystem {
                 () -> this.setQuickAlignActive(true),
                 () -> this.setQuickAlignActive(false)
         );
+    }
+
+    private SwerveModuleState[] getSwerveModuleStates() {
+        return new SwerveModuleState[]{
+                getFrontLeftSwerveModuleSubsystem().getCurrentState(),
+                getFrontRightSwerveModuleSubsystem().getCurrentState(),
+                getRearLeftSwerveModuleSubsystem().getCurrentState(),
+                getRearRightSwerveModuleSubsystem().getCurrentState()
+        };
+    }
+
+    public void refreshDataFrame() {
+        frontLeftSwerveModuleSubsystem.refreshDataFrame();
+        frontRightSwerveModuleSubsystem.refreshDataFrame();
+        rearLeftSwerveModuleSubsystem.refreshDataFrame();
+        rearRightSwerveModuleSubsystem.refreshDataFrame();
+
+        org.littletonrobotics.junction.Logger.recordOutput(this.getPrefix() + "CurrentSwerveState", getSwerveModuleStates());
     }
 }
