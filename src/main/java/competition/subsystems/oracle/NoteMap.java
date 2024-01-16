@@ -40,6 +40,10 @@ public class NoteMap {
         return this.internalNoteMap.get(key);
     }
 
+    public Note getNote(Note.KeyNoteNames key) {
+        return this.internalNoteMap.get(key.toString());
+    }
+
     public boolean removeNote(String key) {
         if (this.internalNoteMap.containsKey(key)) {
             this.internalNoteMap.remove(key);

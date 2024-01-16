@@ -3,9 +3,11 @@ package competition.subsystems.oracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.trajectory.LowResField;
+import xbot.common.trajectory.Obstacle;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
@@ -31,6 +33,7 @@ public class DynamicOracle extends BaseSubsystem {
     NoteCollectionInfoSource noteCollectionInfoSource;
     NoteFiringInfoSource noteFiringInfoSource;
     NoteMap noteMap;
+    LowResField field;
 
     HighLevelGoal currentHighLevelGoal;
     boolean firstRunInNewGoal;
@@ -49,6 +52,45 @@ public class DynamicOracle extends BaseSubsystem {
 
         this.currentHighLevelGoal = HighLevelGoal.CollectNote;
         firstRunInNewGoal = true;
+        setupLowResField();
+
+        reserveNote(Note.KeyNoteNames.SpikeMiddle);
+        reserveNote(Note.KeyNoteNames.SpikeBottom);
+
+        Pose2d scoringPositionTop = new Pose2d(1.3, 6.9, Rotation2d.fromDegrees(0));
+        Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(0));
+        Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(0));
+
+        activeScoringPosition = scoringPositionTop;
+        createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.5, "PartnerA");
+        createRobotObstacle(scoringPositionBottom.getTranslation(), 1.5, "PartnerB");
+    }
+
+    Pose2d activeScoringPosition;
+
+    private void reserveNote(Note.KeyNoteNames specificNote) {
+        Note reserved = noteMap.getNote(specificNote);
+        reserved.setAvailability(Note.NoteAvailability.ReservedByOthersInAuto);
+        // create an obstacle at the same location.
+        field.addObstacle(new Obstacle(reserved.getLocation().getTranslation().getX(),
+                reserved.getLocation().getTranslation().getY(), 1.25, 1.25, "ReservedNote"));
+    }
+
+    private void createRobotObstacle(Translation2d location, double sideLength, String name) {
+        field.addObstacle(new Obstacle(location.getX(), location.getY(), sideLength, sideLength, name));
+    }
+
+    private LowResField setupLowResField() {
+        field = new LowResField();
+        // For now, just add the three columns in the middle.
+        field.addObstacle(new Obstacle(3.4, 4.1, 1,1, "BlueLeftStageColumn"));
+        field.addObstacle(new Obstacle(5.6, 5.3, 1,1, "BlueTopStageColumn"));
+        field.addObstacle(new Obstacle(5.6, 2.8, 1,1, "BlueBottomStageColumn"));
+        return field;
+    }
+
+    public LowResField getFieldWithObstacles() {
+        return field;
     }
 
     public void overrideGoal(HighLevelGoal goal) {
@@ -75,7 +117,7 @@ public class DynamicOracle extends BaseSubsystem {
             case ScoreInSpeaker:
                 if (firstRunInNewGoal || reevaluationRequested) {
                     setTargetNote(null);
-                    setTerminatingPoint(new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(0)));
+                    setTerminatingPoint(activeScoringPosition);
 
                     setSpecialAimTarget(new Pose2d(0, 5.5, Rotation2d.fromDegrees(0)));
                     // Choose a good speaker scoring location

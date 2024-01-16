@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -36,7 +37,8 @@ public class OperatorCommandMap {
             SwerveSimpleTrajectoryCommand swerveTest,
             SwerveSimpleTrajectoryCommand avoidColumnTest,
             SwerveAccordingToOracleCommand oracleSwerve,
-            ManualRobotKnowledgeSubsystem knowledgeSubsystem)
+            ManualRobotKnowledgeSubsystem knowledgeSubsystem,
+            DynamicOracle oracle)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -59,14 +61,14 @@ public class OperatorCommandMap {
         avoidColumnTest.logic.setKeyPoints(columnPoints);
         avoidColumnTest.logic.setEnableConstantVelocity(true);
         avoidColumnTest.logic.setConstantVelocity(1);
-        avoidColumnTest.logic.setFieldWithObstacles(setupLowResField());
+        avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
 
 
         oracleSwerve.logic.setEnableConstantVelocity(true);
         oracleSwerve.logic.setConstantVelocity(3);
-        oracleSwerve.logic.setFieldWithObstacles(setupLowResField());
+        oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
 
@@ -74,14 +76,5 @@ public class OperatorCommandMap {
                 .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
-    }
-
-    private LowResField setupLowResField() {
-        LowResField field = new LowResField();
-        // For now, just add the three columns in the middle.
-        field.addObstacle(new Obstacle(3.4, 4.1, 1,1, "BlueLeftStageColumn"));
-        field.addObstacle(new Obstacle(5.6, 5.3, 1,1, "BlueTopStageColumn"));
-        field.addObstacle(new Obstacle(5.6, 2.8, 1,1, "BlueBottomStageColumn"));
-        return field;
     }
 }
