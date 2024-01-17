@@ -3,7 +3,7 @@ package competition.subsystems.drive.commands;
 import javax.inject.Inject;
 
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.drive.swerve.SwerveDriveSubsystem;
+import xbot.common.subsystems.drive.swerve.SwerveDriveSubsystem;
 import xbot.common.command.BaseMaintainerCommand;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineDeciderFactory;
 import xbot.common.properties.PropertyFactory;

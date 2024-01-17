@@ -2,7 +2,7 @@ package competition.electrical_contract;
 
 import javax.inject.Inject;
 
-import competition.injection.swerve.SwerveInstance;
+import xbot.common.injection.swerve.SwerveInstance;
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.math.XYPair;
@@ -25,20 +25,20 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     private String getDriveControllerName(SwerveInstance swerveInstance) {
-        return "DriveSubsystem/" + swerveInstance.getLabel() + "/Drive";
+        return "DriveSubsystem/" + swerveInstance.label() + "/Drive";
     }
 
     private String getSteeringControllerName(SwerveInstance swerveInstance) {
-        return "DriveSubsystem/" + swerveInstance.getLabel() + "/Steering";
+        return "DriveSubsystem/" + swerveInstance.label() + "/Steering";
     }
 
     private String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
-        return "DriveSubsystem/" + swerveInstance.getLabel() + "/SteeringEncoder";
+        return "DriveSubsystem/" + swerveInstance.label() + "/SteeringEncoder";
     }
 
     @Override
-    public DeviceInfo getDriveNeo(SwerveInstance swerveInstance) {
-        switch (swerveInstance.getLabel()) {
+    public DeviceInfo getDriveMotor(SwerveInstance swerveInstance) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
                 return new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
 
@@ -57,10 +57,10 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getSteeringNeo(SwerveInstance swerveInstance) {
+    public DeviceInfo getSteeringMotor(SwerveInstance swerveInstance) {
         double simulationScalingValue = 1.0;
 
-        switch (swerveInstance.getLabel()) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
                 return new DeviceInfo(getSteeringControllerName(swerveInstance),30, false, simulationScalingValue);
 
@@ -82,7 +82,7 @@ public class CompetitionContract extends ElectricalContract {
     public DeviceInfo getSteeringEncoder(SwerveInstance swerveInstance) {
         double simulationScalingValue = 1.0;
 
-        switch (swerveInstance.getLabel()) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
                 return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance),51, false, simulationScalingValue);
 
@@ -102,7 +102,7 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public XYPair getSwerveModuleOffsets(SwerveInstance swerveInstance) {
-        switch (swerveInstance.getLabel()) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
                 return new XYPair(15, 15);
             case "FrontRightDrive":

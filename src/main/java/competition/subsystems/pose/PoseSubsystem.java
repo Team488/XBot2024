@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
-import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.Latch;
 import xbot.common.logic.TimeStableValidator;
 import xbot.common.math.FieldPose;
@@ -101,10 +100,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
             drive.getSwerveDriveKinematics(),
             getCurrentHeading(),
             new SwerveModulePosition[] {
-                drive.getFrontLeftSwerveModuleSubsystem().getcurrentPosition(),
-                drive.getFrontRightSwerveModuleSubsystem().getcurrentPosition(),
-                drive.getRearLeftSwerveModuleSubsystem().getcurrentPosition(),
-                drive.getRearRightSwerveModuleSubsystem().getcurrentPosition()
+                drive.getFrontLeftSwerveModuleSubsystem().getCurrentPosition(),
+                drive.getFrontRightSwerveModuleSubsystem().getCurrentPosition(),
+                drive.getRearLeftSwerveModuleSubsystem().getCurrentPosition(),
+                drive.getRearRightSwerveModuleSubsystem().getCurrentPosition()
             },
             new Pose2d());
     }
@@ -316,10 +315,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     private SwerveModulePosition[] getSwerveModulePositions() {
         return new SwerveModulePosition[] {
-            drive.getFrontLeftSwerveModuleSubsystem().getcurrentPosition(),
-            drive.getFrontRightSwerveModuleSubsystem().getcurrentPosition(),
-            drive.getRearLeftSwerveModuleSubsystem().getcurrentPosition(),
-            drive.getRearRightSwerveModuleSubsystem().getcurrentPosition()
+            drive.getFrontLeftSwerveModuleSubsystem().getCurrentPosition(),
+            drive.getFrontRightSwerveModuleSubsystem().getCurrentPosition(),
+            drive.getRearLeftSwerveModuleSubsystem().getCurrentPosition(),
+            drive.getRearRightSwerveModuleSubsystem().getCurrentPosition()
         };
     }
 
