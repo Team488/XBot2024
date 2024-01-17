@@ -14,6 +14,11 @@ public class CompetitionContract extends ElectricalContract {
     @Inject
     public CompetitionContract() {}
 
+    public boolean isShooterReady() {
+        return false;
+    }
+
+
     @Override
     public CANTalonInfo getLeftLeader() {
         return new CANTalonInfo(1, true, FeedbackDevice.CTRE_MagEncoder_Absolute, true, simulationScalingValue);
