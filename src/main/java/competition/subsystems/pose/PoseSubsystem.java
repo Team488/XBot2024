@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
-import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.Latch;
 import xbot.common.logic.TimeStableValidator;
 import xbot.common.math.FieldPose;
@@ -115,15 +114,6 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public void updateAllianceFromDriverStation() { this.cachedAlliance = DriverStation.getAlliance();}
 
     /**
-     * Gets the robot's alliance color
-     *
-     * @return The robot alliance color
-     */
-    public Optional<DriverStation.Alliance> getAlliance() {
-        return DriverStation.getAlliance();
-    }
-
-    /**
      * Gets whether the robot should behave with an alliance-aware field.
      * i.e. Should the field origin always be on the blue alliance side of the field?
      * @return Whether the robot pose is alliance-aware.
@@ -137,34 +127,6 @@ public class PoseSubsystem extends BasePoseSubsystem {
      * @return Whether the robot pose will be calculated using vision.
      */
     public boolean isUsingVisionAssistedPose() { return this.useVisionForPoseProp.get(); }
-
-    /**
-     * Rotate the vector by 180 degrees if the driver is on the red alliance.
-     * @param vector The vector value.
-     * @return The rotated input.
-     */
-    public XYPair rotateVectorBasedOnAlliance(XYPair vector) {
-        if (getAlliance().equals(DriverStation.Alliance.Red) && isAllianceAwareField()) {
-            vector.scale(-1, -1);
-        }
-        return vector;
-    }
-
-    /**
-     * Rotate the angle by 180 degrees if the driver is on the red alliance.
-     * @param rotation The angle to rotate.
-     * @return The rotated input.
-     */
-    public Rotation2d rotateAngleBasedOnAlliance(Rotation2d rotation) {
-        var alliance = getAlliance();
-        log.info("Detected Alliance:" + alliance + ", and AllianceAwareField is:" +allianceAwareFieldProp.get());
-
-        if (getAlliance().equals(DriverStation.Alliance.Red) && isAllianceAwareField()) {
-            log.info("Detected red alliance and AllianceAwareField. Rotating angle 180 degrees.");
-            return Rotation2d.fromDegrees(rotation.getDegrees() - (rotation.getDegrees() - 90.0) * 2);
-        }
-        return rotation;
-    }
 
     /**
      * This is a legacy method for tank drive robots, and does not apply to swerve. We should look at
@@ -215,11 +177,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 fusedSwerveOdometry.getEstimatedPosition().getTranslation(),
                 getCurrentHeading());
 
+        totalDistanceX = estimatedPosition.getX();
+        totalDistanceY = estimatedPosition.getY();
+
         // Convert back to inches
         double prevTotalDistanceX = totalDistanceX;
         double prevTotalDistanceY = totalDistanceY;
-        //totalDistanceX = (estimatedPosition.getX() * PoseSubsystem.INCHES_IN_A_METER);
-        //totalDistanceY = (estimatedPosition.getY() * PoseSubsystem.INCHES_IN_A_METER);
         fieldForDisplay.setRobotPose(estimatedPosition);
         Logger.recordOutput(this.getPrefix()+"RobotPose", fieldForDisplay.getRobotPose());
 
@@ -235,8 +198,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
             fusedSwerveOdometry.getEstimatedPosition());
     }
 
-    public Command getCopyFusedOdometryToWheelsOdometryCommand() {
+    public Command createCopyFusedOdometryToWheelsOdometryCommand() {
         return Commands.runOnce(() -> copyFusedOdometryToWheelsOdometry());
+    }
+
+    public Command createSetPositionCommand(Pose2d pose) {
+        return Commands.runOnce(() -> setCurrentPosition(pose));
     }
 
     private void improveFusedOdometryUsingPhotonLib(Pose2d recentPosition) {
@@ -283,16 +250,22 @@ public class PoseSubsystem extends BasePoseSubsystem {
         return fusedSwerveOdometry.getEstimatedPosition();
     }
 
-    public void setCurrentPosition(double newXPosition, double newYPosition, WrappedRotation2d heading) {
-        super.setCurrentPosition(newXPosition, newYPosition);
+    public void setCurrentPosition(double newXPositionMeters, double newYPositionMeters, WrappedRotation2d heading) {
+        super.setCurrentPosition(newXPositionMeters, newYPositionMeters);
         super.setCurrentHeading(heading.getDegrees());
         fusedSwerveOdometry.resetPosition(
             heading,
             getSwerveModulePositions(),
             new Pose2d(
-                newXPosition / PoseSubsystem.INCHES_IN_A_METER, 
-                newYPosition / PoseSubsystem.INCHES_IN_A_METER, 
+                newXPositionMeters,
+                newYPositionMeters,
                 this.getCurrentHeading()));
+
+        copyFusedOdometryToWheelsOdometry();
+    }
+
+    public void setCurrentPosition(Pose2d pose) {
+        setCurrentPosition(pose.getTranslation().getX(), pose.getTranslation().getY(), WrappedRotation2d.fromRotation2d(pose.getRotation()));
     }
 
     @Override
@@ -307,8 +280,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public void setCurrentPoseInMeters(Pose2d newPoseInMeters) {
         setCurrentPosition(
-            newPoseInMeters.getTranslation().getX() * PoseSubsystem.INCHES_IN_A_METER,
-            newPoseInMeters.getTranslation().getY() * PoseSubsystem.INCHES_IN_A_METER,
+            newPoseInMeters.getTranslation().getX(),
+            newPoseInMeters.getTranslation().getY(),
             WrappedRotation2d.fromRotation2d(newPoseInMeters.getRotation())
         );
     }
