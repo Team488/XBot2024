@@ -87,14 +87,21 @@ public class Robot extends BaseRobot {
     public void simulationPeriodic() {
         super.simulationPeriodic();
 
+        double robotTopSpeedInMetersPerSecond = 3.0;
+        double robotLoopPeriod = 0.02;
+        double poseAdjustmentFactorForSimulation = robotTopSpeedInMetersPerSecond * robotLoopPeriod;
+
+        double robotTopAngularSpeedInDegreesPerSecond = 180.0;
+        double headingAdjustmentFactorForSimulation = robotTopAngularSpeedInDegreesPerSecond * robotLoopPeriod;
+
         var pose = (PoseSubsystem)getInjectorComponent().poseSubsystem();
         var currentPose = pose.getCurrentPose2d();
         DriveSubsystem drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
         var updatedPose = new Pose2d(
                 new Translation2d(
-                        currentPose.getTranslation().getX() + drive.lastRawCommandedDirection.x * 0.1,
-                        currentPose.getTranslation().getY() + drive.lastRawCommandedDirection.y * 0.1),
-                currentPose.getRotation().plus(Rotation2d.fromDegrees(drive.lastRawCommandedRotation * 5.0)));
+                        currentPose.getTranslation().getX() + drive.lastRawCommandedDirection.x * poseAdjustmentFactorForSimulation,
+                        currentPose.getTranslation().getY() + drive.lastRawCommandedDirection.y * poseAdjustmentFactorForSimulation),
+                currentPose.getRotation().plus(Rotation2d.fromDegrees(drive.lastRawCommandedRotation * headingAdjustmentFactorForSimulation)));
         pose.setCurrentPoseInMeters(updatedPose);
     }
 }

@@ -3,7 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
+import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
@@ -13,8 +13,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
-import xbot.common.trajectory.LowResField;
-import xbot.common.trajectory.Obstacle;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import java.util.ArrayList;
