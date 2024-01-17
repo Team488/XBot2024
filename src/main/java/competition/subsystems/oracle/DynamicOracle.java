@@ -89,12 +89,10 @@ public class DynamicOracle extends BaseSubsystem {
     private LowResField setupLowResField() {
         field = new LowResField();
         // For now, just add the three columns in the middle.
-        field.addObstacle(new Obstacle(3.4, 4.1, 0.254,0.254, "BlueLeftStageColumn"));
-        field.addObstacle(new Obstacle(5.6, 5.3, 0.254,0.254, "BlueTopStageColumn"));
-        field.addObstacle(new Obstacle(5.6, 2.8, 0.254,0.254, "BlueBottomStageColumn"));
         createObstacleWithRobotWidth(3.2004, 4.105656, 0.254,0.254, .914, "BlueLeftStageColumn", field);
-        createObstacleWithRobotWidth(5.8129, 5.553456, 0.254,0.254, .914, "BlueTopStageColumn", field);
-        createObstacleWithRobotWidth(5.8129,  2.657856,0.254, 0.254, .914, "BlueBottomStageColumn", field);
+        // widths and height are different to account for angle differences
+        createObstacleWithRobotWidth(5.8129, 5.553456, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
+        createObstacleWithRobotWidth(5.8129,  2.657856,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
         return field;
     }
 
