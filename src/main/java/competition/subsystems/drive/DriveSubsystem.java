@@ -127,14 +127,14 @@ public class DriveSubsystem extends BaseDriveSubsystem implements DataFrameRefre
 
         positionalPidManager = pidFactory.create(
                 this.getPrefix() + "PositionPID",
-                0.018, // P
+                0.72, // P
                 0, // I
-                0.1, // D
+                4.0, // D
                 0.0, // F
                 0.6, // Max output
                 -0.6, // Min output
-                2.0, // Error threshold
-                0.2, // Derivative threshold
+                0.05, // Error threshold
+                0.005, // Derivative threshold
                 0.2); // Time threshold
         positionalPidManager.setEnableErrorThreshold(true);
         positionalPidManager.setEnableTimeThreshold(true);
@@ -183,6 +183,10 @@ public class DriveSubsystem extends BaseDriveSubsystem implements DataFrameRefre
             double rotation,
             double currentHeading,
             XYPair centerOfRotationInches) {
+
+        lastRawCommandedDirection = translation;
+        lastRawCommandedRotation = rotation;
+
         // rotate the translation vector into the robot coordinate frame
         XYPair fieldRelativeVector = translation.clone();
 
@@ -319,6 +323,8 @@ public class DriveSubsystem extends BaseDriveSubsystem implements DataFrameRefre
      * @param centerOfRotationInches The center of rotation.
      */
     public void move(XYPair translate, double rotate, XYPair centerOfRotationInches) {
+
+        lastRawCommandedRotation = rotate;
 
         if (activateBrakeOverride) {
             this.setWheelsToXMode();
