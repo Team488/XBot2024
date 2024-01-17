@@ -6,6 +6,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.injection.electrical_contract.CANTalonInfo;
+import xbot.common.injection.electrical_contract.DeviceInfo;
 
 public class CompetitionContract extends ElectricalContract {
 
@@ -22,5 +23,34 @@ public class CompetitionContract extends ElectricalContract {
     @Override
     public CANTalonInfo getRightLeader() {
         return new CANTalonInfo(2, true, FeedbackDevice.CTRE_MagEncoder_Absolute, true, simulationScalingValue);
+    }
+    @Override
+    public DeviceInfo getLightsDio0() {
+        return new DeviceInfo(5);
+    }
+
+    @Override
+    public DeviceInfo getLightsDio1() {
+        return new DeviceInfo(6);
+    }
+
+    @Override
+    public DeviceInfo getLightsDio2() {
+        return new DeviceInfo(7);
+    }
+
+    @Override
+    public DeviceInfo getLightsDio3() {
+        return new DeviceInfo(8); // something on the navX, just out of the way
+    }
+
+    @Override
+    public DeviceInfo getLightsDio4() {
+        return new DeviceInfo(9); // something on the navX, just out of the way
+    }
+
+    @Override
+    public DeviceInfo getLightsCubeDio() {
+        return new DeviceInfo(4);
     }
 }

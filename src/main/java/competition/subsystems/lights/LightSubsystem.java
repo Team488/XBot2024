@@ -12,13 +12,12 @@ import xbot.common.controls.actuators.XDigitalOutput;
 import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
 import xbot.common.controls.actuators.XPWM.XPWMFactory;
 import xbot.common.properties.BooleanProperty;
-import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.properties.StringProperty;
-import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
+
 @Singleton
-public class lightsSub extends BaseSubsystem {
+public class LightSubsystem extends BaseSubsystem {
     final XDigitalOutput dio0;
     final XDigitalOutput dio1;
     final XDigitalOutput dio2;
@@ -27,6 +26,10 @@ public class lightsSub extends BaseSubsystem {
     final XDigitalOutput cubeDio;
 
     final XDigitalOutput[] dioOutputs;
+    private int loopCounter;
+    private final int loopMod = 5;
+    private final StringProperty chosenState;
+
     private final BooleanProperty dio0Property;
     private final BooleanProperty dio1Property;
     private final BooleanProperty dio2Property;
@@ -37,6 +40,7 @@ public class lightsSub extends BaseSubsystem {
     public enum LightsStateMessage{
         //at this time values are here as placeholders
         RobotNotBooted(1),
+        RobotCollectingNote(22),
         RobotHoldingNote(30),
         RobotAuto(3),
         RobotEnabled(2),
@@ -57,7 +61,8 @@ public class lightsSub extends BaseSubsystem {
 
     }
     @Inject
-    public lightsSub(XDigitalOutputFactory digitalOutputFactory, ElectricalContract contract, PropertyFactory pf) {
+    public LightSubsystem(XDigitalOutputFactory digitalOutputFactory, XPWMFactory pwmFactory,
+                          PropertyFactory pf, ElectricalContract contract) {
         dio0 = digitalOutputFactory.create(contract.getLightsDio0().channel);
         dio1 = digitalOutputFactory.create(contract.getLightsDio1().channel);
         dio2 = digitalOutputFactory.create(contract.getLightsDio2().channel);
@@ -66,20 +71,26 @@ public class lightsSub extends BaseSubsystem {
         cubeDio = digitalOutputFactory.create(contract.getLightsCubeDio().channel);
         dioOutputs = new XDigitalOutput[] { dio0, dio1, dio2, dio3, dio4 };
 
+        pf.setPrefix(this);
+        pf.setDefaultLevel(Property.PropertyLevel.Debug);
+        chosenState = pf.createEphemeralProperty("ArduinoState", "Nothing Yet Set");
         dio0Property = pf.createEphemeralProperty("DIO0", false);
         dio1Property = pf.createEphemeralProperty("DIO1", false);
         dio2Property = pf.createEphemeralProperty("DIO2", false);
         dio3Property = pf.createEphemeralProperty("DIO3", false);
         dio4Property = pf.createEphemeralProperty("DIO4", false);
         cubeDioProperty = pf.createEphemeralProperty("IsConeDIO", false);
-
     }
     public void periodic() {
+        LightsStateMessage currentState = LightsStateMessage.RobotNotBooted;
+
+        int stateValue = currentState.getValue();
+        for (int i = 0; i < dioOutputs.length; i++) {
+            dioOutputs[i].set(((stateValue & (1 << i)) != 0));
+        }
 
         boolean dsEnabled = DriverStation.isEnabled();
-        boolean isCube = arm.isCubeMode();
-
-        cubeDio.set(isCube);
+        chosenState.set(currentState.toString());
         dio0Property.set(dio0.get());
         dio1Property.set(dio1.get());
         dio2Property.set(dio2.get());
