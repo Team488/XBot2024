@@ -18,14 +18,14 @@ public class NoteMap {
     }
 
     private void initializeNotes() {
-        addNote(Note.KeyNoteNames.SpikeTop,    new Note(new Pose2d(2.94, 7.0, new Rotation2d())));
-        addNote(Note.KeyNoteNames.SpikeMiddle, new Note(new Pose2d(2.94, 5.483, new Rotation2d())));
-        addNote(Note.KeyNoteNames.SpikeBottom, new Note(new Pose2d(2.94, 4.125, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine1, new Note(new Pose2d(8.29, 7.436, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine2, new Note(new Pose2d(8.29, 5.772, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine3, new Note(new Pose2d(8.29, 4.108, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine4, new Note(new Pose2d(8.29, 2.493, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine5, new Note(new Pose2d(8.29, 0.804, new Rotation2d())));
+        addNote(Note.KeyNoteNames.SpikeTop,    new Note(new Pose2d(2.8956, 7.0012, new Rotation2d())));
+        addNote(Note.KeyNoteNames.SpikeMiddle, new Note(new Pose2d(2.8956, 5.5534, new Rotation2d())));
+        addNote(Note.KeyNoteNames.SpikeBottom, new Note(new Pose2d(2.8956, 4.1056, new Rotation2d())));
+        addNote(Note.KeyNoteNames.CenterLine1, new Note(new Pose2d(8.2956, 7.4584, new Rotation2d())));
+        addNote(Note.KeyNoteNames.CenterLine2, new Note(new Pose2d(8.2956, 5.7820, new Rotation2d())));
+        addNote(Note.KeyNoteNames.CenterLine3, new Note(new Pose2d(8.2956, 4.1056, new Rotation2d())));
+        addNote(Note.KeyNoteNames.CenterLine4, new Note(new Pose2d(8.2956, 2.4292, new Rotation2d())));
+        addNote(Note.KeyNoteNames.CenterLine5, new Note(new Pose2d(8.2956, 0.7528, new Rotation2d())));
     }
 
     public void addNote(String key, Note note) {
