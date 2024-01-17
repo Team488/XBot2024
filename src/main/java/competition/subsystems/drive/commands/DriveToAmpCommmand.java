@@ -2,9 +2,11 @@ package competition.subsystems.drive.commands;
 
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Twist2d;
 import xbot.common.command.BaseCommand;
 import xbot.common.math.XYPair;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
+import xbot.common.trajectory.SwerveSimpleTrajectoryLogic;
 
 
 import javax.inject.Inject;
@@ -15,6 +17,7 @@ public class DriveToAmpCommmand extends BaseCommand {
     PoseSubsystem pose;
     HeadingModule headingModule;
 
+    public SwerveSimpleTrajectoryLogic logic;
 
     private XYPair targetPosition;
     private double targetHeading;
@@ -28,12 +31,14 @@ public class DriveToAmpCommmand extends BaseCommand {
         headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
 
         this.addRequirements(drive);
+
+        logic = new SwerveSimpleTrajectoryLogic();
     }
 
     @Override
     public void initialize() {
-        targetPosition  = null; //get april tag XYPair
-        targetHeading = 0;  //get april tag heading
+        targetPosition  = new XYPair(1.855, 7.781); //blue amp (14.732, 7.781)
+        targetHeading = 90;  //blue amp
 
     }
 
@@ -56,7 +61,8 @@ public class DriveToAmpCommmand extends BaseCommand {
 
         double headingPower = headingModule.calculateHeadingPower(targetHeading);
 
-        drive.fieldOrientedDrive(intent, headingPower, pose.getCurrentHeading().getDegrees(), true);
+        drive.fieldOrientedDrive(intent, headingPower, pose.getCurrentHeading().getDegrees(), false);
+
     }
 
 

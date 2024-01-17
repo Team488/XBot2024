@@ -3,6 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.subsystems.drive.commands.DriveToAmpCommmand;
 import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -38,8 +39,8 @@ public class OperatorCommandMap {
             SwerveSimpleTrajectoryCommand avoidColumnTest,
             SwerveAccordingToOracleCommand oracleSwerve,
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
-            DynamicOracle oracle)
-    {
+            DynamicOracle oracle,
+            DriveToAmpCommmand driveToAmpCommmand) {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B).onTrue(pose.createCopyFusedOdometryToWheelsOdometryCommand());
@@ -63,7 +64,7 @@ public class OperatorCommandMap {
         avoidColumnTest.logic.setConstantVelocity(1);
         avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
 
 
         oracleSwerve.logic.setEnableConstantVelocity(true);
@@ -76,5 +77,6 @@ public class OperatorCommandMap {
                 .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(driveToAmpCommmand);
     }
 }
