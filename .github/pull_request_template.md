@@ -2,8 +2,8 @@
 
 # Whats changing?
 
-# Questions for reviewers?
+# Questions/notes for reviewers
 
-# How was this tested?
+# How this was tested
 - [ ] unit tests added
 - [ ] tested on robot
