@@ -18,12 +18,14 @@ import xbot.common.trajectory.Obstacle;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import java.util.ArrayList;
+import java.lang.Math;
 
 /**
  * Maps operator interface buttons to commands
  */
 @Singleton
 public class OperatorCommandMap {
+
 
     @Inject
     public OperatorCommandMap() {}
@@ -57,7 +59,7 @@ public class OperatorCommandMap {
 
         ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
         columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.9, 5.4), Rotation2d.fromDegrees(0), 10));
+                new Translation2d(-0.0381, 5.547868), Rotation2d.fromDegrees(180), 10));
         avoidColumnTest.logic.setKeyPoints(columnPoints);
         avoidColumnTest.logic.setEnableConstantVelocity(true);
         avoidColumnTest.logic.setConstantVelocity(1);
