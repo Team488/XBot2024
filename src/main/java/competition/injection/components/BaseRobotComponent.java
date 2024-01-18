@@ -1,6 +1,6 @@
 package competition.injection.components;
 
-import competition.injection.swerve.SwerveComponentHolder;
+import xbot.common.injection.swerve.SwerveComponentHolder;
 import competition.operator_interface.OperatorCommandMap;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.SubsystemDefaultCommandMap;
