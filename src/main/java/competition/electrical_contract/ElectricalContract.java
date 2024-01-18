@@ -1,17 +1,18 @@
 package competition.electrical_contract;
 
-import competition.injection.swerve.SwerveInstance;
+import xbot.common.injection.electrical_contract.XSwerveDriveElectricalContract;
+import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.math.XYPair;
 
-public abstract class ElectricalContract {
+public abstract class ElectricalContract implements XSwerveDriveElectricalContract {
     public abstract boolean isDriveReady();
 
     public abstract boolean areCanCodersReady();
 
-    public abstract DeviceInfo getDriveNeo(SwerveInstance swerveInstance);
+    public abstract DeviceInfo getDriveMotor(SwerveInstance swerveInstance);
 
-    public abstract DeviceInfo getSteeringNeo(SwerveInstance swerveInstance);
+    public abstract DeviceInfo getSteeringMotor(SwerveInstance swerveInstance);
 
     public abstract DeviceInfo getSteeringEncoder(SwerveInstance swerveInstance);
 

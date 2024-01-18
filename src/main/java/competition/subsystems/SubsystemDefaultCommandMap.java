@@ -3,14 +3,13 @@ package competition.subsystems;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import competition.injection.swerve.FrontLeftDrive;
-import competition.injection.swerve.FrontRightDrive;
-import competition.injection.swerve.RearLeftDrive;
-import competition.injection.swerve.RearRightDrive;
-import competition.injection.swerve.SwerveComponent;
+import xbot.common.injection.swerve.FrontLeftDrive;
+import xbot.common.injection.swerve.FrontRightDrive;
+import xbot.common.injection.swerve.RearLeftDrive;
+import xbot.common.injection.swerve.RearRightDrive;
+import xbot.common.injection.swerve.SwerveComponent;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.SwerveDriveWithJoysticksCommand;
-import competition.subsystems.drive.commands.TankDriveWithJoysticksCommand;
 
 /**
  * For setting the default commands on subsystems
