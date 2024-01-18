@@ -170,7 +170,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         // Pose isn't reliable if we see a tag id that shouldn't be on the field
         var allTagIds = getTagListFromPose(estimatedPose);
-        if (allTagIds.stream().anyMatch(id -> id < 1 || id > 8)) {
+        if (allTagIds.stream().anyMatch(id -> id < 1 || id > 16)) {
             log.warn("Ignoring vision pose with invalid tag id. Visible tags: "
                     + getStringFromList(allTagIds));
             return false;

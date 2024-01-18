@@ -8,6 +8,13 @@ import xbot.common.injection.swerve.RearLeftDrive;
 import xbot.common.injection.swerve.RearRightDrive;
 import xbot.common.injection.swerve.SwerveComponent;
 import xbot.common.injection.swerve.SwerveInstance;
+import competition.injection.components.BaseRobotComponent;
+import competition.injection.components.CompetitionTestComponent;
+import competition.injection.components.RobotComponent;
+import competition.injection.components.SimulationComponent;
+import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
+import competition.subsystems.oracle.NoteCollectionInfoSource;
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
