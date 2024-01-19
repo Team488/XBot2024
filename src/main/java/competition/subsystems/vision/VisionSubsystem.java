@@ -13,19 +13,17 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.sensors.XPhotonCamera;
 import xbot.common.logging.RobotAssertionManager;
 import xbot.common.logic.TimeStableValidator;
-import xbot.common.math.XYPair;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
-import xbot.common.vision.XbotPhotonPoseEstimatorFork;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -43,10 +41,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     public static final String LATENCY_MILLIS = "forwardAprilCamera/latencyMillis";
 
     //final PhotonCamera forwardAprilCamera;
-    //final PhotonCamera rearAprilCamera;
+    final PhotonCameraExtended rearAprilCamera;
 
     //final XPhotonCamera akitForwardAprilCamera;
-    final XPhotonCamera akitRearAprilCamera;
+    //final PhotonCameraExtended akitRearAprilCamera;
 
     final RobotAssertionManager assertionManager;
     final BooleanProperty isInverted;
@@ -59,7 +57,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     AprilTagFieldLayout aprilTagFieldLayout;
     XbotPhotonPoseEstimator customPhotonPoseEstimator;
     PhotonPoseEstimator frontPhotonPoseEstimator;
-    XbotPhotonPoseEstimatorFork rearPhotonPoseEstimator;
+    PhotonPoseEstimator rearPhotonPoseEstimator;
     boolean visionWorking = false;
     long logCounter = 0;
 
@@ -68,7 +66,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         // Temporary while waiting for PhotonVision to update and make this plausible
         // akitForwardAprilCamera = cameraFactory.create("forwardAprilCamera");
-        akitRearAprilCamera = cameraFactory.create("rearAprilCamera");
+        //akitRearAprilCamera = cameraFactory.create("rearAprilCamera");
 
         this.assertionManager = assertionManager;
         visionTable = NetworkTableInstance.getDefault().getTable(VISION_TABLE);
@@ -87,7 +85,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         // we need to handle cases like not having the AprilTag data loaded.
 
         //forwardAprilCamera = new PhotonCamera("forwardAprilCamera");
-        //rearAprilCamera = new PhotonCamera("rearAprilCamera");
+        rearAprilCamera = new PhotonCameraExtended("rearAprilCamera");
 
         try {
             aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
@@ -115,10 +113,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 forwardAprilCamera,
                 robotToCam
         );*/
-        rearPhotonPoseEstimator = new XbotPhotonPoseEstimatorFork(
+        rearPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-                akitRearAprilCamera,
+                rearAprilCamera,
                 robotToRearCam
         );
     }
@@ -134,7 +132,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     }
 
     public Optional<EstimatedRobotPose> getPhotonVisionEstimatedPose(
-            String name, XbotPhotonPoseEstimatorFork estimator, Pose2d previousEstimatedRobotPose, TimeStableValidator poseTimeValidator) {
+            String name, PhotonPoseEstimator estimator, Pose2d previousEstimatedRobotPose, TimeStableValidator poseTimeValidator) {
         if (visionWorking) {
             estimator.setReferencePose(previousEstimatedRobotPose);
             var estimatedPose = estimator.update();
@@ -214,7 +212,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     @Override
     public void refreshDataFrame() {
-        //akitForwardAprilCamera.refreshDataFrame();
-        akitRearAprilCamera.refreshDataFrame();
+        rearAprilCamera.refreshDataFrame();
     }
 }
