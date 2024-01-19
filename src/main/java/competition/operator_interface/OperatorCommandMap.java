@@ -1,6 +1,7 @@
 package competition.operator_interface;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.subsystems.drive.commands.ResetPositionCommand;
@@ -35,7 +36,7 @@ public class OperatorCommandMap {
             PoseSubsystem pose,
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
-            SwerveSimpleTrajectoryCommand swerveTest,
+            Provider<SwerveSimpleTrajectoryCommand> swerveSimpleTrajectoryCommandProvider,
             SwerveSimpleTrajectoryCommand avoidColumnTest,
             SwerveAccordingToOracleCommand oracleSwerve,
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
@@ -48,14 +49,24 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(pose.createSetPositionCommand(
                 new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0))));
 
+        var goForwardCommand = swerveSimpleTrajectoryCommandProvider.get();
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         points.add(XbotSwervePoint.createXbotSwervePoint(
                 new Translation2d(0.9144, 0), Rotation2d.fromDegrees(0), 10));
-        swerveTest.logic.setKeyPoints(points);
-        swerveTest.logic.setEnableConstantVelocity(true);
-        swerveTest.logic.setConstantVelocity(1);
+        goForwardCommand.logic.setKeyPoints(points);
+        goForwardCommand.logic.setEnableConstantVelocity(true);
+        goForwardCommand.logic.setConstantVelocity(1);
+        operatorInterface.driverGamepad.getPovIfAvailable(0).whileTrue(goForwardCommand);
 
-        operatorInterface.driverGamepad.getPovIfAvailable(0).whileTrue(swerveTest);
+        var goBackCommand = swerveSimpleTrajectoryCommandProvider.get();
+        ArrayList<XbotSwervePoint> goBackPoints = new ArrayList<>();
+        goBackPoints.add(XbotSwervePoint.createXbotSwervePoint(
+                new Translation2d(0,0), Rotation2d.fromDegrees(0), 10));
+        goBackCommand.logic.setKeyPoints(goBackPoints);
+        goBackCommand.logic.setEnableConstantVelocity(true);
+        goBackCommand.logic.setConstantVelocity(1);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).whileTrue(goBackCommand);
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(resetPositionCommand);
 
         ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
