@@ -17,7 +17,6 @@ import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
-import xbot.common.controls.sensors.XPhotonCamera;
 import xbot.common.logging.RobotAssertionManager;
 import xbot.common.logic.TimeStableValidator;
 import xbot.common.properties.BooleanProperty;
@@ -62,7 +61,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     long logCounter = 0;
 
     @Inject
-    public VisionSubsystem(PropertyFactory pf, RobotAssertionManager assertionManager, XPhotonCamera.XPhotonCameraFactory cameraFactory) {
+    public VisionSubsystem(PropertyFactory pf, RobotAssertionManager assertionManager) {
 
         // Temporary while waiting for PhotonVision to update and make this plausible
         // akitForwardAprilCamera = cameraFactory.create("forwardAprilCamera");
