@@ -1,9 +1,13 @@
 package competition.subsystems.drive.commands;
 
+import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseCommand;
 
 public class PointAtSpeakerCommand extends BaseCommand {
-    private int theta;
+
+    PoseSubsystem pose;
+    DriveSubsystem drive;
     @Override
     public void initialize() {
 
@@ -11,6 +15,6 @@ public class PointAtSpeakerCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        theta = 180 + pose.getCurrentHeading().getDegrees();
+
     }
 }

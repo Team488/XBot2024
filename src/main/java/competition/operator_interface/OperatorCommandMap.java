@@ -38,6 +38,7 @@ public class OperatorCommandMap {
             SetRobotHeadingCommand resetHeading,
             SwerveSimpleTrajectoryCommand swerveTest,
             SwerveSimpleTrajectoryCommand avoidColumnTest,
+            SwerveSimpleTrajectoryCommand pointAtSpeaker,
             SwerveAccordingToOracleCommand oracleSwerve,
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
             DynamicOracle oracle)
@@ -59,14 +60,25 @@ public class OperatorCommandMap {
 
         ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
         columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(-0.0381, 5.547868), Rotation2d.fromDegrees(180), 10));
+                new Translation2d(4.5, 5), Rotation2d.fromDegrees(170), 10));
         avoidColumnTest.logic.setKeyPoints(columnPoints);
         avoidColumnTest.logic.setEnableConstantVelocity(true);
-        avoidColumnTest.logic.setConstantVelocity(1);
+        avoidColumnTest.logic.setConstantVelocity(2);
         avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
 
+        ArrayList<XbotSwervePoint> speakerPoints = new ArrayList<>();
+        speakerPoints.add(XbotSwervePoint.createXbotSwervePoint(
+                new Translation2d(5.7,6.3), Rotation2d.fromDegrees(190), 10));
+        speakerPoints.add(XbotSwervePoint.createXbotSwervePoint(
+                new Translation2d(3.7,2.429256), Rotation2d.fromDegrees(132), 10));
+        pointAtSpeaker.logic.setKeyPoints(speakerPoints);
+        pointAtSpeaker.logic.setEnableConstantVelocity(true);
+        pointAtSpeaker.logic.setConstantVelocity(2);
+        pointAtSpeaker.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(pointAtSpeaker);
 
         oracleSwerve.logic.setEnableConstantVelocity(true);
         oracleSwerve.logic.setConstantVelocity(3);
