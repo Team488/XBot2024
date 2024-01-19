@@ -26,6 +26,10 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
                           @RearLeftDrive SwerveComponent rearLeftSwerve, @RearRightDrive SwerveComponent rearRightSwerve) {
         super(pidFactory, pf, frontLeftSwerve, frontRightSwerve, rearLeftSwerve, rearRightSwerve);
         log.info("Creating DriveSubsystem");
+        getPositionalPid().setMinOutput(-0.2);
+        getPositionalPid().setMaxOutput(0.2);
+        getRotateToHeadingPid().setMinOutput(-0.2);
+        getRotateToHeadingPid().setMaxOutput(0.2);
     }
 
     @Override
