@@ -1,10 +1,17 @@
 package competition.electrical_contract;
 
-import xbot.common.injection.electrical_contract.CANTalonInfo;
+
+import xbot.common.injection.electrical_contract.DeviceInfo;
 
 public abstract class ElectricalContract {
-    public abstract CANTalonInfo getLeftLeader();
-    public abstract CANTalonInfo getRightLeader();
+
 
     public abstract boolean isShooterReady();
+    public DeviceInfo getShooterMotorFollower() {
+        return new DeviceInfo(27, true);
+    }
+
+    public DeviceInfo getShooterMotorLeader() {
+        return new DeviceInfo(32, true);
+    }
 }
