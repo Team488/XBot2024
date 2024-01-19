@@ -1,8 +1,8 @@
 package competition.electrical_contract;
 
+import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.electrical_contract.XSwerveDriveElectricalContract;
 import xbot.common.injection.swerve.SwerveInstance;
-import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.math.XYPair;
 
 public abstract class ElectricalContract implements XSwerveDriveElectricalContract {
@@ -28,5 +28,4 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     public abstract DeviceInfo getLightsDio3();
     public abstract DeviceInfo getLightsDio4();
     public abstract DeviceInfo getLightsCubeDio();
-
 }
