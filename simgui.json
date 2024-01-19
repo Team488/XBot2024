@@ -4,5 +4,8 @@
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Scheduler": "Scheduler"
     }
+  },
+  "NetworkTables Info": {
+    "visible": true
   }
 }

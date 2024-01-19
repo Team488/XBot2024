@@ -2,7 +2,7 @@ package competition.electrical_contract;
 
 import javax.inject.Inject;
 
-import competition.injection.swerve.SwerveInstance;
+import xbot.common.injection.swerve.SwerveInstance;
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.math.XYPair;
@@ -24,20 +24,32 @@ public class CompetitionContract extends ElectricalContract {
         return true;
     }
 
+    private String getDriveControllerName(SwerveInstance swerveInstance) {
+        return "DriveSubsystem/" + swerveInstance.label() + "/Drive";
+    }
+
+    private String getSteeringControllerName(SwerveInstance swerveInstance) {
+        return "DriveSubsystem/" + swerveInstance.label() + "/Steering";
+    }
+
+    private String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
+        return "DriveSubsystem/" + swerveInstance.label() + "/SteeringEncoder";
+    }
+
     @Override
-    public DeviceInfo getDriveNeo(SwerveInstance swerveInstance) {
-        switch (swerveInstance.getLabel()) {
+    public DeviceInfo getDriveMotor(SwerveInstance swerveInstance) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
-                return new DeviceInfo(31, false, simulationScalingValue);
+                return new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
 
             case "FrontRightDrive":
-                return new DeviceInfo(29, false, simulationScalingValue);
+                return new DeviceInfo(getDriveControllerName(swerveInstance),29, false, simulationScalingValue);
 
             case "RearLeftDrive":
-                return new DeviceInfo(38, false, simulationScalingValue);
+                return new DeviceInfo(getDriveControllerName(swerveInstance),38, false, simulationScalingValue);
 
             case "RearRightDrive":
-                return new DeviceInfo(21, false, simulationScalingValue);
+                return new DeviceInfo(getDriveControllerName(swerveInstance),21, false, simulationScalingValue);
 
             default:
                 return null;
@@ -45,21 +57,21 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getSteeringNeo(SwerveInstance swerveInstance) {
+    public DeviceInfo getSteeringMotor(SwerveInstance swerveInstance) {
         double simulationScalingValue = 1.0;
 
-        switch (swerveInstance.getLabel()) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
-                return new DeviceInfo(30, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringControllerName(swerveInstance),30, false, simulationScalingValue);
 
             case "FrontRightDrive":
-                return new DeviceInfo(28, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringControllerName(swerveInstance),28, false, simulationScalingValue);
 
             case "RearLeftDrive":
-                return new DeviceInfo(39, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringControllerName(swerveInstance),39, false, simulationScalingValue);
 
             case "RearRightDrive":
-                return new DeviceInfo(20, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringControllerName(swerveInstance),20, false, simulationScalingValue);
 
             default:
                 return null;
@@ -70,18 +82,18 @@ public class CompetitionContract extends ElectricalContract {
     public DeviceInfo getSteeringEncoder(SwerveInstance swerveInstance) {
         double simulationScalingValue = 1.0;
 
-        switch (swerveInstance.getLabel()) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
-                return new DeviceInfo(51, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance),51, false, simulationScalingValue);
 
             case "FrontRightDrive":
-                return new DeviceInfo(52, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance),52, false, simulationScalingValue);
 
             case "RearLeftDrive":
-                return new DeviceInfo(53, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance),53, false, simulationScalingValue);
 
             case "RearRightDrive":
-                return new DeviceInfo(54, false, simulationScalingValue);
+                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance),54, false, simulationScalingValue);
 
             default:
                 return null;
@@ -90,7 +102,7 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public XYPair getSwerveModuleOffsets(SwerveInstance swerveInstance) {
-        switch (swerveInstance.getLabel()) {
+        switch (swerveInstance.label()) {
             case "FrontLeftDrive":
                 return new XYPair(15, 15);
             case "FrontRightDrive":
@@ -104,107 +116,40 @@ public class CompetitionContract extends ElectricalContract {
         }
     }
 
-    @Override
-    public DeviceInfo getLowerArmLeftMotor() {
-        return new DeviceInfo(37,true);
-    }
-
-    @Override
-    public DeviceInfo getLowerArmRightMotor() {
-        return new DeviceInfo(22,false);
-    }
-
-    public DeviceInfo getUpperArmLeftMotor(){
-        return new DeviceInfo(35,true);
-    }
-
-    @Override
-    public DeviceInfo getUpperArmRightMotor() {
-        return new DeviceInfo(24,true);
-    }
-
-    public boolean isLowerArmReady() { return true;}
-
-    public boolean isUpperArmReady() { return true;}
-
-    @Override
-    public boolean isLowerArmEncoderReady() {
-        return true;
-    }
-
-    @Override
-    public boolean isUpperArmEncoderReady() {
-        return true;
-    }
-
-    @Override
-    public DeviceInfo getLowerArmEncoder() {
-        return new DeviceInfo(0, true);
-    }
-
-    @Override
-    public DeviceInfo getUpperArmEncoder() {
-        return new DeviceInfo(1, true);
-    }
-
-    public DeviceInfo getClawSolenoid() {return new DeviceInfo(0, false);}
-
-    @Override
-    public DeviceInfo getLeftClawMotor() {
-        return new DeviceInfo(34, true, 1);
-    }
-
-    @Override
-    public DeviceInfo getRightClawMotor() {
-        return new DeviceInfo(33, false, 1);
-    }
-
-    @Override
-    public boolean areClawMotorsReady() {
-        return true;
-    }
-
-    @Override
-    public DeviceInfo getLowerArmBrakeSolenoid() {
-        return new DeviceInfo(1, false);
-    }
-
-    public DeviceInfo getCollectorMotor(){ return new DeviceInfo(25,true);}
+    public DeviceInfo getCollectorMotor(){ return new DeviceInfo("CollectorMotor",25,true);}
 
     @Override
     public boolean isCollectorReady() { return true; }
 
-    public DeviceInfo getCollectorSolenoid(){ return new DeviceInfo(2,false);}
+    public DeviceInfo getCollectorSolenoid(){ return new DeviceInfo("CollectorSolenoid",2,false);}
 
     @Override
     public DeviceInfo getLightsDio0() {
-        return new DeviceInfo(5);
+        return new DeviceInfo("Lights0", 5);
     }
 
     @Override
     public DeviceInfo getLightsDio1() {
-        return new DeviceInfo(6);
+        return new DeviceInfo("Lights1", 6);
     }
 
     @Override
     public DeviceInfo getLightsDio2() {
-        return new DeviceInfo(7);
+        return new DeviceInfo("Lights2", 7);
     }
 
     @Override
     public DeviceInfo getLightsDio3() {
-        return new DeviceInfo(8); // something on the navX, just out of the way
+        return new DeviceInfo("Lights3", 8); // something on the navX, just out of the way
     }
 
     @Override
     public DeviceInfo getLightsDio4() {
-        return new DeviceInfo(9); // something on the navX, just out of the way
+        return new DeviceInfo("Lights4",9); // something on the navX, just out of the way
     }
 
     @Override
     public DeviceInfo getLightsCubeDio() {
-        return new DeviceInfo(4);
+        return new DeviceInfo("LightsCube", 4);
     }
-
-    public DeviceInfo getPressureSensor() {return new DeviceInfo(3);}
 }

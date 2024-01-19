@@ -6,11 +6,17 @@ import competition.injection.components.DaggerPracticeRobotComponent;
 import competition.injection.components.DaggerRobotComponent;
 import competition.injection.components.DaggerRoboxComponent;
 import competition.injection.components.DaggerSimulationComponent;
+import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
+import xbot.common.subsystems.drive.BaseDriveSubsystem;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 public class Robot extends BaseRobot {
@@ -20,6 +26,9 @@ public class Robot extends BaseRobot {
         super.initializeSystems();
         getInjectorComponent().subsystemDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
+
+        dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
+        dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
     }
 
     protected BaseRobotComponent createDaggerComponent() {
@@ -59,7 +68,7 @@ public class Robot extends BaseRobot {
         // to start in a disabled state (as it would on the field). However, this does save you the 
         // hassle of navigating to the DS window and re-enabling the simulated robot.
         DriverStationSim.setEnabled(true);
-        webots.setFieldPoseOffset(getFieldOrigin());
+        //webots.setFieldPoseOffset(getFieldOrigin());
     }
 
     private FieldPose getFieldOrigin() {
@@ -71,5 +80,20 @@ public class Robot extends BaseRobot {
             -4.58*PoseSubsystem.INCHES_IN_A_METER, 
             BasePoseSubsystem.FACING_TOWARDS_DRIVERS
             );
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        super.simulationPeriodic();
+
+        var pose = (PoseSubsystem)getInjectorComponent().poseSubsystem();
+        var currentPose = pose.getCurrentPose2d();
+        DriveSubsystem drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
+        var updatedPose = new Pose2d(
+                new Translation2d(
+                        currentPose.getTranslation().getX() + drive.lastRawCommandedDirection.x * 0.1,
+                        currentPose.getTranslation().getY() + drive.lastRawCommandedDirection.y * 0.1),
+                currentPose.getRotation().plus(Rotation2d.fromDegrees(drive.lastRawCommandedRotation * 5.0)));
+        pose.setCurrentPoseInMeters(updatedPose);
     }
 }
