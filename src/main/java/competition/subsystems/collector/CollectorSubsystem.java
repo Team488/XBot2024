@@ -1,7 +1,9 @@
 package competition.subsystems.collector;
 
+import competition.electrical_contract.ElectricalContract;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.sensors.XDigitalInput;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
@@ -11,11 +13,14 @@ import javax.inject.Singleton;
 
 @Singleton
 public class CollectorSubsystem extends BaseSubsystem{
-    public XCANSparkMax collectorMotor;
+    public final XCANSparkMax collectorMotor;
     public DoubleProperty intakePower;
     public DoubleProperty ejectPower;
-
     private IntakeState intakeState;
+    private final BooleanProperty gamePieceCollected;
+    private final XDigitalInput noteSensor;
+    private final ElectricalContract contract;
+
 
     private int loopcount;
 
@@ -26,9 +31,14 @@ public class CollectorSubsystem extends BaseSubsystem{
     }
 
     @Inject
-    public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory){
+    public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
+                              ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
+        this.contract = electricalContract;
+        this.collectorMotor = sparkMaxFactory.create(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+        this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio().channel);
         intakePower = pf.createPersistentProperty("intakePower",0.1);
         ejectPower = pf.createPersistentProperty("ejectPower",0.1);
+        gamePieceCollected = pf.createEphemeralProperty("HasGamePiece", false);
         this.intakeState = IntakeState.STOPPED;
     }
 
@@ -48,8 +58,16 @@ public class CollectorSubsystem extends BaseSubsystem{
         intakeState = IntakeState.STOPPED;
     }
 
+    public boolean getGamePieceCollected() {
+        return gamePieceCollected.get();
+    }
+    public void updateGamePieceCollected() {
+        gamePieceCollected.set(noteSensor.get());
+    }
     @Override
     public void periodic() {
         loopcount++;
+        updateGamePieceCollected();
     }
+
 }
