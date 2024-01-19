@@ -21,7 +21,7 @@ public class ArmSubsystem extends BaseSubsystem {
     public DoubleProperty retractPower;
 
     public enum ArmState {
-        EXTENDEDING,
+        EXTENDING,
         RETRACTING,
         STOPPED
     }
@@ -48,7 +48,7 @@ public class ArmSubsystem extends BaseSubsystem {
 
     public void extend() {
         setPower(extendPower.get());
-        armState = ArmState.EXTENDEDING;
+        armState = ArmState.EXTENDING;
     }
 
     public void retract() {

@@ -17,7 +17,7 @@ public class ExtendArmCommand extends BaseCommand {
 
     @Override
     public void initialize() {
-
+        log.info("ExtendArmCommand initializing");
     }
 
     @Override

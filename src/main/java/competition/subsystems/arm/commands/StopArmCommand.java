@@ -17,7 +17,7 @@ public class StopArmCommand extends BaseCommand {
 
     @Override
     public void initialize() {
-
+        log.info("StopArmCommand initializing");
     }
 
     @Override

@@ -17,7 +17,7 @@ public class RetractArmCommand extends BaseCommand {
 
     @Override
     public void initialize() {
-
+        log.info("RetractArmCommand initializing");
     }
 
     @Override
