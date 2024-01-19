@@ -50,7 +50,7 @@ public class OperatorCommandMap {
 
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         points.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(5, 0), Rotation2d.fromDegrees(0), 10));
+                new Translation2d(0.9144, 0), Rotation2d.fromDegrees(0), 10));
         swerveTest.logic.setKeyPoints(points);
         swerveTest.logic.setEnableConstantVelocity(true);
         swerveTest.logic.setConstantVelocity(1);
