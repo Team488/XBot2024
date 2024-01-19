@@ -3,6 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.subsystems.drive.commands.ResetPositionCommand;
 import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -38,7 +39,8 @@ public class OperatorCommandMap {
             SwerveSimpleTrajectoryCommand avoidColumnTest,
             SwerveAccordingToOracleCommand oracleSwerve,
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
-            DynamicOracle oracle)
+            DynamicOracle oracle,
+            ResetPositionCommand resetPositionCommand)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -48,12 +50,13 @@ public class OperatorCommandMap {
 
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         points.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.6, 5.65), Rotation2d.fromDegrees(0), 10));
+                new Translation2d(5, 0), Rotation2d.fromDegrees(0), 10));
         swerveTest.logic.setKeyPoints(points);
         swerveTest.logic.setEnableConstantVelocity(true);
         swerveTest.logic.setConstantVelocity(1);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(swerveTest);
+        operatorInterface.driverGamepad.getPovIfAvailable(0).whileTrue(swerveTest);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(resetPositionCommand);
 
         ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
         columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
