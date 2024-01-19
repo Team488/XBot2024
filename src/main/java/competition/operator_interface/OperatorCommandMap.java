@@ -56,6 +56,7 @@ public class OperatorCommandMap {
         goForwardCommand.logic.setKeyPoints(points);
         goForwardCommand.logic.setEnableConstantVelocity(true);
         goForwardCommand.logic.setConstantVelocity(1);
+
         operatorInterface.driverGamepad.getPovIfAvailable(0).whileTrue(goForwardCommand);
 
         var goBackCommand = swerveSimpleTrajectoryCommandProvider.get();
@@ -65,6 +66,7 @@ public class OperatorCommandMap {
         goBackCommand.logic.setKeyPoints(goBackPoints);
         goBackCommand.logic.setEnableConstantVelocity(true);
         goBackCommand.logic.setConstantVelocity(1);
+
         operatorInterface.driverGamepad.getPovIfAvailable(180).whileTrue(goBackCommand);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(resetPositionCommand);
