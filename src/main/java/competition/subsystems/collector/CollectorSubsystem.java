@@ -6,6 +6,7 @@ import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.sensors.XDigitalInput;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
@@ -36,9 +37,12 @@ public class CollectorSubsystem extends BaseSubsystem{
         this.contract = electricalContract;
         this.collectorMotor = sparkMaxFactory.create(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
         this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio().channel);
+
+        pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.1);
         ejectPower = pf.createPersistentProperty("ejectPower",0.1);
         gamePieceCollected = pf.createEphemeralProperty("HasGamePiece", false);
+
         this.intakeState = IntakeState.STOPPED;
     }
 
