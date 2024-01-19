@@ -3,6 +3,8 @@ package competition.subsystems;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.arm.commands.StopArmCommand;
 import xbot.common.injection.swerve.FrontLeftDrive;
 import xbot.common.injection.swerve.FrontRightDrive;
 import xbot.common.injection.swerve.RearLeftDrive;
@@ -51,5 +53,10 @@ public class SubsystemDefaultCommandMap {
             @RearRightDrive SwerveComponent swerveComponent) {
         swerveComponent.swerveDriveSubsystem().setDefaultCommand(swerveComponent.swerveDriveMaintainerCommand());
         swerveComponent.swerveSteeringSubsystem().setDefaultCommand(swerveComponent.swerveSteeringMaintainerCommand());
+    }
+
+    @Inject
+    public void setupArmSubsystem(ArmSubsystem armSubsystem, StopArmCommand command) {
+        armSubsystem.setDefaultCommand(command);
     }
 }

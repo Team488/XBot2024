@@ -23,7 +23,7 @@ public class ArmSubsystem extends BaseSubsystem {
     public enum ArmState {
         EXTENDEDING,
         RETRACTING,
-        RESTING
+        STOPPED
     }
 
     @Inject
@@ -38,7 +38,7 @@ public class ArmSubsystem extends BaseSubsystem {
         armMotorLeft = sparkMaxFactory.create(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.create(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
-        this.armState = ArmState.RESTING;
+        this.armState = ArmState.STOPPED;
     }
 
     public void setPower(double power) {
@@ -58,6 +58,6 @@ public class ArmSubsystem extends BaseSubsystem {
 
     public void stop() {
         setPower(0);
-        armState = ArmState.RESTING;
+        armState = ArmState.STOPPED;
     }
 }
