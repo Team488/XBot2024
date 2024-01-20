@@ -36,7 +36,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
 
     @Override
     public Double getTargetValue() {
-        return targetRpmProp.get();
+        return targetRpmProp.get() + getTrimRPM();
     }
 
     @Override
