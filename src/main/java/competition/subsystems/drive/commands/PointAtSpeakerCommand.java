@@ -20,7 +20,9 @@ public class PointAtSpeakerCommand extends BaseCommand {
     HeadingModule headingModule;
 
     public PointAtSpeakerCommand(DriveSubsystem drive, PoseSubsystem pose, HeadingModule.HeadingModuleFactory headingModuleFactory){
-        
+        this.drive = drive;
+        this.pose = pose;
+
     }
 
 
