@@ -18,10 +18,6 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
 
     public abstract XYPair getSwerveModuleOffsets(SwerveInstance swerveInstance);
 
-    public abstract DeviceInfo getCollectorSolenoid();
-    public abstract DeviceInfo getCollectorMotor();
-    public abstract boolean isCollectorReady();
-
     public abstract DeviceInfo getLightsDio0();
     public abstract DeviceInfo getLightsDio1();
     public abstract DeviceInfo getLightsDio2();
