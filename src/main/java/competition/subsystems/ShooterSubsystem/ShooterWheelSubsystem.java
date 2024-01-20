@@ -7,7 +7,6 @@ import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
-
 import javax.inject.Singleton;
 
 
@@ -76,18 +75,18 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
 
 
         // MOTOR RELATED
-        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
-        wheelDefaultProps.p = 0.00008;
-        wheelDefaultProps.i = 0;
-        wheelDefaultProps.d = 0;
-        wheelDefaultProps.feedForward = 0.000185;
-        wheelDefaultProps.iZone = 200;
-        wheelDefaultProps.maxOutput = 1;
-        wheelDefaultProps.minOutput = -1;
+//        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
+//        wheelDefaultProps.p = 0.00008;
+//        wheelDefaultProps.i = 0;
+//        wheelDefaultProps.d = 0;
+//        wheelDefaultProps.feedForward = 0.000185;
+//        wheelDefaultProps.iZone = 200;
+//        wheelDefaultProps.maxOutput = 1;
+//        wheelDefaultProps.minOutput = -1;
 
         if (contract.isShooterReady()) {
             this.leader = sparkMaxFactory.create(contract.getShooterMotorLeader(), this.getPrefix(),
-                    "ShooterMaster", wheelDefaultProps);
+                    "ShooterMaster", null);
             this.follower = sparkMaxFactory.create(contract.getShooterMotorFollower(), this.getPrefix(),
                     "ShooterFollower");
             this.follower.follow(this.leader, true);
