@@ -1,10 +1,8 @@
-package competition.subsystems.ShooterSubsystem;
+package competition.subsystems.shooter;
 
-import com.revrobotics.REVLibError;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
-import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 import javax.inject.Singleton;
@@ -88,7 +86,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
             this.leader = sparkMaxFactory.create(contract.getShooterMotorLeader(), this.getPrefix(),
                     "ShooterMaster", null);
             this.follower = sparkMaxFactory.create(contract.getShooterMotorFollower(), this.getPrefix(),
-                    "ShooterFollower");
+                    "ShooterFollower", null);
             this.follower.follow(this.leader, true);
 
         }
