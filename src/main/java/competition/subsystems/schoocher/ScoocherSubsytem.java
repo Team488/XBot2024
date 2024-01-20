@@ -38,9 +38,7 @@ public class ScoocherSubsytem extends BaseSubsystem {
     public void ejectingNote(){
         ScoocherMotor.set(-sendingPower.get());
     }
-    public void noNote() {
-    }
-
+    
     public void stop() {
         ScoocherMotor.set(0);
     }
