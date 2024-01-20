@@ -17,6 +17,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
     XYPair speakerPosition = new XYPair(-0.0381,5.547868);
 
     Pose2d currentPosition;
+    double angle;
     HeadingModule headingModule;
 
     public PointAtSpeakerCommand(DriveSubsystem drive, PoseSubsystem pose, HeadingModule.HeadingModuleFactory headingModuleFactory){
@@ -26,8 +27,6 @@ public class PointAtSpeakerCommand extends BaseCommand {
     }
 
 
-
-    double angle;
     @Override
     public void initialize() {
     currentPosition = pose.getCurrentPose2d();
