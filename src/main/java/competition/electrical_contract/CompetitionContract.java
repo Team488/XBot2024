@@ -12,7 +12,9 @@ public class CompetitionContract extends ElectricalContract {
     protected final double simulationScalingValue = 256.0 * PoseSubsystem.INCHES_IN_A_METER;
 
     @Inject
-    public CompetitionContract() {}
+    public CompetitionContract() {
+    }
+
     @Override
     public boolean isShooterReady() {
         return false;
@@ -160,10 +162,14 @@ public class CompetitionContract extends ElectricalContract {
 
     // ArmSubsystem
     @Override
-    public DeviceInfo getArmMotorLeft() {return new DeviceInfo("ArmMotorLeft", 10, true);}
+    public DeviceInfo getArmMotorLeft() {
+        return new DeviceInfo("ArmMotorLeft", 10, true);
+    }
 
     @Override
-    public DeviceInfo getArmMotorRight() {return new DeviceInfo("ArmMotorRight", 11, true);}
+    public DeviceInfo getArmMotorRight() {
+        return new DeviceInfo("ArmMotorRight", 11, true);
+    }
 }
 
 
