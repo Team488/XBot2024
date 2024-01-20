@@ -1,6 +1,6 @@
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, edited, converted_to_draft, ready_for_review]
 
 jobs:
   create-asana-attachment-job:
