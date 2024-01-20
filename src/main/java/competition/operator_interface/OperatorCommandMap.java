@@ -3,6 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -39,10 +40,11 @@ public class OperatorCommandMap {
             SetRobotHeadingCommand resetHeading,
             SwerveSimpleTrajectoryCommand swerveTest,
             SwerveSimpleTrajectoryCommand avoidColumnTest,
-            SwerveSimpleTrajectoryCommand pointAtSpeaker,
+            //SwerveSimpleTrajectoryCommand pointAtSpeaker,
             SwerveAccordingToOracleCommand oracleSwerve,
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
-            DynamicOracle oracle)
+            DynamicOracle oracle,
+            PointAtSpeakerCommand pointAtSpeaker)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
