@@ -38,6 +38,6 @@ public class PointAtSpeakerCommand extends BaseCommand {
         currentPosition = pose.getCurrentPose2d();
 
         angle = (90 + (180 - Math.tan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
-
+        drive.fieldOrientedDrive();
     }
 }
