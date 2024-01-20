@@ -1,9 +1,11 @@
 package competition.electrical_contract;
-import javax.inject.Inject;
-import xbot.common.injection.swerve.SwerveInstance;
+
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.injection.electrical_contract.DeviceInfo;
+import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
+
+import javax.inject.Inject;
 
 public class CompetitionContract extends ElectricalContract {
 
