@@ -13,22 +13,26 @@ import javax.inject.Singleton;
 
 @Singleton
 public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
+    // IMPORTANT PROPERTIES
     private final DoubleProperty targetRpmProp;
     private final DoubleProperty currentRpmProp;
     private final DoubleProperty rpmTrimProp;
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
+
+    //DEFINING MOTORS
     public XCANSparkMax leader;
     public XCANSparkMax follower;
+
+    // DEFINING CONTRACT
     ElectricalContract contract;
 
     @Override
     public Double getCurrentValue() {
+        //We want the actual current value from the motor not from the code
         return leader.getVelocity();
     }
-
-    // WE
 
     @Override
     public Double getTargetValue() {
@@ -96,7 +100,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
             case SAFE -> setTargetValue(safeRpm.get());
             case NEARSHOT -> setTargetValue(nearShotRpm.get());
             case DISTANCESHOT -> setTargetValue(distanceShotRpm.get());
-            default -> setTargetValue(0);
+            default -> setTargetValue(0.0);
         }
     }
 
@@ -123,8 +127,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     public double getTargetRPM() {
         return targetRpmProp.get();
     }
-
-
 
 
 }
