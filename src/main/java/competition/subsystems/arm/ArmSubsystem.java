@@ -35,9 +35,6 @@ public class ArmSubsystem extends BaseSubsystem {
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
 
-        //armMotorLeft = sparkMaxFactory.create(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
-        //armMotorRight = sparkMaxFactory.create(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
-
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
