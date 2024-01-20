@@ -159,5 +159,10 @@ public class CompetitionContract extends ElectricalContract {
     public DeviceInfo getLightsCubeDio() {
         return new DeviceInfo("LightsCube", 4);
     }
+  
+    @Override
+    public DeviceInfo getNoteSensorDio() {
+        return new DeviceInfo("NoteSensor", 13);
+    }
 
 }
