@@ -60,7 +60,8 @@ public class SubsystemDefaultCommandMap {
     @Inject
     public void setupArmSubsystem(ArmSubsystem armSubsystem, StopArmCommand command) {
         armSubsystem.setDefaultCommand(command);
-    
+    }
+
     @Inject
     public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, StopCollectorCommand command) {
         collectorSubsystem.setDefaultCommand(command);
