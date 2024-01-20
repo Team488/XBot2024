@@ -9,6 +9,7 @@ import xbot.common.math.XYPair;
 
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
 
+import javax.inject.Inject;
 import java.lang.Math;
 
 public class PointAtSpeakerCommand extends BaseCommand {
@@ -21,6 +22,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
     double angle;
     XYPair currentPositionCord;
 
+    @Inject
     public PointAtSpeakerCommand(DriveSubsystem drive, PoseSubsystem pose){
         this.drive = drive;
         this.pose = pose;
@@ -40,7 +42,8 @@ public class PointAtSpeakerCommand extends BaseCommand {
         currentPosition = pose.getCurrentPose2d();
         currentPositionCord.x = currentPosition.getX();
         currentPositionCord.y = currentPosition.getY();
-        angle = (90 + (180 - Math.tan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
-        drive.fieldOrientedDrive(currentPositionCord,angle,pose.getCurrentHeading().getDegrees(),false);
+        angle = (90 + (180 - Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
+        drive.setDesiredHeading(angle);
+
     }
 }
