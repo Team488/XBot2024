@@ -3,6 +3,7 @@ package competition.subsystems.arm;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.math.MathUtils;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -20,6 +21,9 @@ public class ArmSubsystem extends BaseSubsystem {
     public DoubleProperty extendPower;
     public DoubleProperty retractPower;
 
+    private DoubleProperty setPowerMax;
+    private DoubleProperty setPowerMin;
+
     public enum ArmState {
         EXTENDING,
         RETRACTING,
@@ -34,6 +38,9 @@ public class ArmSubsystem extends BaseSubsystem {
 
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
+      
+        setPowerMax = pf.createPersistentProperty("SetPowerMax", 0.5);
+        setPowerMin = pf.createPersistentProperty("SetPowerMin", -0.5);
 
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
@@ -43,6 +50,10 @@ public class ArmSubsystem extends BaseSubsystem {
     }
 
     public void setPower(double power) {
+
+        // Put power within limit range (if not already)
+        power = MathUtils.constrainDouble(power, setPowerMin.get(), setPowerMax.get());
+
         armMotorLeft.set(power);
         armMotorRight.set(power);
     }
