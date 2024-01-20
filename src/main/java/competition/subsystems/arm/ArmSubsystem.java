@@ -20,6 +20,7 @@ public class ArmSubsystem extends BaseSubsystem {
 
     public DoubleProperty extendPower;
     public DoubleProperty retractPower;
+
     private DoubleProperty setPowerMax;
     private DoubleProperty setPowerMin;
 
@@ -37,7 +38,7 @@ public class ArmSubsystem extends BaseSubsystem {
 
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
-
+      
         setPowerMax = pf.createPersistentProperty("SetPowerMax", 0.5);
         setPowerMin = pf.createPersistentProperty("SetPowerMin", -0.5);
 
