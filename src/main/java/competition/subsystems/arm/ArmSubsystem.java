@@ -3,6 +3,7 @@ package competition.subsystems.arm;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.math.MathUtils;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -49,11 +50,8 @@ public class ArmSubsystem extends BaseSubsystem {
 
     public void setPower(double power) {
 
-        // Check if power within limit range
-        if (power < setPowerMin.get() || power > setPowerMax.get()) {
-            System.out.println("Attempted to set the ArmSubsystem motor's power over the limit!");
-            return;
-        }
+        // Put power within limit range (if not already)
+        power = MathUtils.constrainDouble(power, setPowerMin.get(), setPowerMax.get());
 
         armMotorLeft.set(power);
         armMotorRight.set(power);
