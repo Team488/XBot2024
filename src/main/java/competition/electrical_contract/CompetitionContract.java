@@ -165,4 +165,10 @@ public class CompetitionContract extends ElectricalContract {
         return new DeviceInfo("NoteSensor", 13);
     }
 
+    // ArmSubsystem
+    @Override
+    public DeviceInfo getArmMotorLeft() {return new DeviceInfo("ArmMotorLeft", 10, true);}
+
+    @Override
+    public DeviceInfo getArmMotorRight() {return new DeviceInfo("ArmMotorRight", 11, true);}
 }
