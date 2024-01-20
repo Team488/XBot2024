@@ -39,7 +39,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     public static final String TARGET_POSE = "forwardAprilCamera/targetPose";
     public static final String LATENCY_MILLIS = "forwardAprilCamera/latencyMillis";
 
-    //final PhotonCamera forwardAprilCamera;
+    final PhotonCameraExtended forwardAprilCamera;
     final PhotonCameraExtended rearAprilCamera;
 
     //final XPhotonCamera akitForwardAprilCamera;
@@ -62,11 +62,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     @Inject
     public VisionSubsystem(PropertyFactory pf, RobotAssertionManager assertionManager) {
-
-        // Temporary while waiting for PhotonVision to update and make this plausible
-        // akitForwardAprilCamera = cameraFactory.create("forwardAprilCamera");
-        //akitRearAprilCamera = cameraFactory.create("rearAprilCamera");
-
         this.assertionManager = assertionManager;
         visionTable = NetworkTableInstance.getDefault().getTable(VISION_TABLE);
 
@@ -83,7 +78,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         // of errors. Some sort of VisionReady in the ElectricalContract may also make sense. Similarly,
         // we need to handle cases like not having the AprilTag data loaded.
 
-        //forwardAprilCamera = new PhotonCamera("forwardAprilCamera");
+        forwardAprilCamera = new PhotonCameraExtended("forwardAprilCamera");
         rearAprilCamera = new PhotonCameraExtended("rearAprilCamera");
 
         try {
@@ -106,12 +101,12 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 16.421 / PoseSubsystem.INCHES_IN_A_METER),
                 new Rotation3d(0, 0, Math.toRadians(180 + 7.595)));
 
-        /*frontPhotonPoseEstimator = new PhotonPoseEstimator(
+        frontPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 forwardAprilCamera,
                 robotToCam
-        );*/
+        );
         rearPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
@@ -122,9 +117,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     public Optional<EstimatedRobotPose>[] getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
         if (visionWorking) {
-            //var frontEstimatedPose = getPhotonVisionEstimatedPose("Front", frontPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
+            var frontEstimatedPose = getPhotonVisionEstimatedPose("Front", frontPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
             var rearEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
-            return new Optional[] {/*frontEstimatedPose,*/ rearEstimatedPose};
+            return new Optional[] {frontEstimatedPose, rearEstimatedPose};
         } else {
             return new Optional[] {Optional.empty()};
         }
@@ -136,9 +131,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             estimator.setReferencePose(previousEstimatedRobotPose);
             var estimatedPose = estimator.update();
             // Log the estimated pose, and log an insane value if we don't have one (so we don't clutter up the visualization)
-            Logger.recordOutput(getPrefix()+name+"Estimate", estimatedPose.isPresent()
-                    ? estimatedPose.get().estimatedPose.toPose2d() :
-                    new Pose2d(-1000, -1000, new Rotation2d(0)));
+            if (estimatedPose.isPresent())
+            {
+                Logger.recordOutput(getPrefix()+name+"Estimate", estimatedPose.get().estimatedPose.toPose2d());
+            }
 
             var isReliable = !estimatedPose.isEmpty() && isEstimatedPoseReliable(estimatedPose.get(), previousEstimatedRobotPose);
             var isStable = waitForStablePoseTime.get() == 0.0 || poseTimeValidator.checkStable(isReliable);
@@ -211,6 +207,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     @Override
     public void refreshDataFrame() {
+        forwardAprilCamera.refreshDataFrame();
         rearAprilCamera.refreshDataFrame();
     }
 }
