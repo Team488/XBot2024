@@ -44,6 +44,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
         currentPositionCord.y = currentPosition.getY();
         angle = (90 + (180 - Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
         drive.setDesiredHeading(angle);
+        drive.move(currentPositionCord,angle);
 
     }
 }
