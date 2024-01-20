@@ -29,7 +29,11 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     public abstract DeviceInfo getLightsDio3();
     public abstract DeviceInfo getLightsDio4();
     public abstract DeviceInfo getLightsCubeDio();
-    public abstract DeviceInfo getNoteSensorDio();
 
+    // ArmSubsystem
+    public abstract DeviceInfo getArmMotorLeft();
+    public abstract DeviceInfo getArmMotorRight();
+
+    public abstract DeviceInfo getNoteSensorDio();
 }
 
