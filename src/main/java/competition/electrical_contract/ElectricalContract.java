@@ -1,10 +1,8 @@
 package competition.electrical_contract;
 
-import xbot.common.injection.electrical_contract.CANTalonInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.electrical_contract.XSwerveDriveElectricalContract;
 import xbot.common.injection.swerve.SwerveInstance;
-import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.math.XYPair;
 
 public abstract class ElectricalContract implements XSwerveDriveElectricalContract {
