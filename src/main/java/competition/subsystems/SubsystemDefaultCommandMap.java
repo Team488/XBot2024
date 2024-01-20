@@ -5,6 +5,8 @@ import javax.inject.Singleton;
 
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.StopArmCommand;
+import competition.subsystems.collector.CollectorSubsystem;
+import competition.subsystems.collector.commands.StopCollectorCommand;
 import xbot.common.injection.swerve.FrontLeftDrive;
 import xbot.common.injection.swerve.FrontRightDrive;
 import xbot.common.injection.swerve.RearLeftDrive;
@@ -58,5 +60,9 @@ public class SubsystemDefaultCommandMap {
     @Inject
     public void setupArmSubsystem(ArmSubsystem armSubsystem, StopArmCommand command) {
         armSubsystem.setDefaultCommand(command);
+    
+    @Inject
+    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, StopCollectorCommand command) {
+        collectorSubsystem.setDefaultCommand(command);
     }
 }

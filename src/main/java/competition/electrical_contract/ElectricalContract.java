@@ -32,4 +32,7 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     // ArmSubsystem
     public abstract DeviceInfo getArmMotorLeft();
     public abstract DeviceInfo getArmMotorRight();
+
+    public abstract DeviceInfo getNoteSensorDio();
 }
+
