@@ -17,7 +17,6 @@ public class ScoocherSubsytem extends BaseSubsystem {
     public final ElectricalContract contract;
     public DoubleProperty sendingPower;
     public final XCANSparkMax ScoocherMotor;
-    private BooleanProperty sendingNote;
 
 
     @Inject
@@ -28,7 +27,6 @@ public class ScoocherSubsytem extends BaseSubsystem {
 
         pf.setPrefix(this);
         sendingPower = pf.createPersistentProperty("sendingPower", 0.1);
-        sendingNote = pf.createEphemeralProperty("sendingNote", false);
 
     }
 
@@ -36,18 +34,15 @@ public class ScoocherSubsytem extends BaseSubsystem {
 
     public void intakeNote() {
         ScoocherMotor.set(sendingPower.get());
-        sendingNote.set(true);
     }
     public void ejectingNote(){
         ScoocherMotor.set(-sendingPower.get());
     }
     public void noNote() {
-        sendingNote.set(false);
     }
 
     public void stop() {
         ScoocherMotor.set(0);
-        sendingNote.set(false);
     }
 }
 
