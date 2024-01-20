@@ -28,7 +28,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     @Override
     public Double getCurrentValue() {
         //We want the actual current value from the motor not from the code
-        return leader.getVelocity();
+        if (contract.isShooterReady()) {
+            return leader.getVelocity();
+        }
+        return null;
     }
 
     @Override
