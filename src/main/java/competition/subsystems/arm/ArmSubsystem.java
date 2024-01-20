@@ -19,6 +19,8 @@ public class ArmSubsystem extends BaseSubsystem {
 
     public DoubleProperty extendPower;
     public DoubleProperty retractPower;
+    private DoubleProperty setPowerMax;
+    private DoubleProperty setPowerMin;
 
     public enum ArmState {
         EXTENDING,
@@ -35,6 +37,9 @@ public class ArmSubsystem extends BaseSubsystem {
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
 
+        setPowerMax = pf.createPersistentProperty("SetPowerMax", 0.5);
+        setPowerMin = pf.createPersistentProperty("SetPowerMin", -0.5);
+
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
@@ -43,6 +48,13 @@ public class ArmSubsystem extends BaseSubsystem {
     }
 
     public void setPower(double power) {
+
+        // Check if power within limit range
+        if (power < setPowerMin.get() || power > setPowerMax.get()) {
+            System.out.println("Attempted to set the ArmSubsystem motor's power over the limit!");
+            return;
+        }
+
         armMotorLeft.set(power);
         armMotorRight.set(power);
     }
