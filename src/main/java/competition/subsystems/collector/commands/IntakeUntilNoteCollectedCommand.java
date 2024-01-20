@@ -10,6 +10,7 @@ public class IntakeUntilNoteCollectedCommand extends BaseCommand {
     @Inject
     public IntakeUntilNoteCollectedCommand(CollectorSubsystem collector) {
         this.collector = collector;
+        addRequirements(collector);
     }
     @Override
     public void initialize() {
