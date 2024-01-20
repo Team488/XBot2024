@@ -21,6 +21,7 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     public abstract DeviceInfo getCollectorSolenoid();
     public abstract DeviceInfo getCollectorMotor();
     public abstract boolean isCollectorReady();
+    public abstract DeviceInfo getScoocherMotor();
 
     public abstract DeviceInfo getLightsDio0();
     public abstract DeviceInfo getLightsDio1();
