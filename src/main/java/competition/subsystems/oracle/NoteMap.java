@@ -1,5 +1,6 @@
 package competition.subsystems.oracle;
 
+import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -18,14 +19,14 @@ public class NoteMap {
     }
 
     private void initializeNotes() {
-        addNote(Note.KeyNoteNames.SpikeTop,    new Note(new Pose2d(2.8956, 7.0012, new Rotation2d())));
-        addNote(Note.KeyNoteNames.SpikeMiddle, new Note(new Pose2d(2.8956, 5.5534, new Rotation2d())));
-        addNote(Note.KeyNoteNames.SpikeBottom, new Note(new Pose2d(2.8956, 4.1056, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine1, new Note(new Pose2d(8.2956, 7.4584, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine2, new Note(new Pose2d(8.2956, 5.7820, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine3, new Note(new Pose2d(8.2956, 4.1056, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine4, new Note(new Pose2d(8.2956, 2.4292, new Rotation2d())));
-        addNote(Note.KeyNoteNames.CenterLine5, new Note(new Pose2d(8.2956, 0.7528, new Rotation2d())));
+        addNote(Note.KeyNoteNames.SpikeTop,    new Note(PoseSubsystem.SpikeTop));
+        addNote(Note.KeyNoteNames.SpikeMiddle, new Note(PoseSubsystem.SpikeMiddle));
+        addNote(Note.KeyNoteNames.SpikeBottom, new Note(PoseSubsystem.SpikeBottom));
+        addNote(Note.KeyNoteNames.CenterLine1, new Note(PoseSubsystem.CenterLine1));
+        addNote(Note.KeyNoteNames.CenterLine2, new Note(PoseSubsystem.CenterLine2));
+        addNote(Note.KeyNoteNames.CenterLine3, new Note(PoseSubsystem.CenterLine3));
+        addNote(Note.KeyNoteNames.CenterLine4, new Note(PoseSubsystem.CenterLine4));
+        addNote(Note.KeyNoteNames.CenterLine5, new Note(PoseSubsystem.CenterLine5));
     }
 
     public void addNote(String key, Note note) {
