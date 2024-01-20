@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
+import xbot.common.math.XYPair;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 import xbot.common.trajectory.LowResField;
@@ -72,7 +73,7 @@ public class OperatorCommandMap {
         speakerPoints.add(XbotSwervePoint.createXbotSwervePoint(
                 new Translation2d(5.7,6.3), Rotation2d.fromDegrees(190), 10));
         speakerPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(3.7,2.429256), Rotation2d.fromDegrees(132), 10));
+                new Translation2d(3.7,2.429256), Rotation2d.fromDegrees(90 + ), 10));
         pointAtSpeaker.logic.setKeyPoints(speakerPoints);
         pointAtSpeaker.logic.setEnableConstantVelocity(true);
         pointAtSpeaker.logic.setConstantVelocity(2);
