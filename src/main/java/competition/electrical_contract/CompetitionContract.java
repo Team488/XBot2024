@@ -117,6 +117,16 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
+    public DeviceInfo getShooterMotorLeader() {
+        return null;
+    }
+
+    @Override
+    public DeviceInfo getShooterMotorFollower() {
+        return null;
+    }
+
+    @Override
     public boolean isCollectorReady() {
         return true;
     }
