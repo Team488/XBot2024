@@ -27,7 +27,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
     public PointAtSpeakerCommand(DriveSubsystem drive, PoseSubsystem pose, HeadingModule.HeadingModuleFactory headingModuleFactory){
         this.drive = drive;
         this.pose = pose;
-        headingModule = headingModuleFactory.create();
+        headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
     }
 
 
@@ -43,9 +43,24 @@ public class PointAtSpeakerCommand extends BaseCommand {
         currentPosition = pose.getCurrentPose2d();
         currentPositionCord.x = currentPosition.getX();
         currentPositionCord.y = currentPosition.getY();
-        angle = (90 + (180 - Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
-        drive.setDesiredHeading(angle);
-        drive.move(currentPositionCord,angle);
 
+        if (currentPositionCord.y > speakerPosition.y) {
+            angle = (90 + (180 - Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
+        }
+        else if (currentPositionCord.y < speakerPosition.y){
+            angle = (90 + Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y)));
+        }
+        else{
+            angle = 180;
+        }
+        drive.setDesiredHeading(angle);
+        double headingPower = headingModule.calculateHeadingPower(angle);
+        drive.move(currentPositionCord,headingPower);
+
+    }
+
+    @Override
+    public boolean isFinished() {
+        return headingModule.isOnTarget();
     }
 }
