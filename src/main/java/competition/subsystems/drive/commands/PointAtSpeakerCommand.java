@@ -21,12 +21,13 @@ public class PointAtSpeakerCommand extends BaseCommand {
     Pose2d currentPosition;
     double angle;
     XYPair currentPositionCord;
+    HeadingModule headingModule;
 
     @Inject
-    public PointAtSpeakerCommand(DriveSubsystem drive, PoseSubsystem pose){
+    public PointAtSpeakerCommand(DriveSubsystem drive, PoseSubsystem pose, HeadingModule.HeadingModuleFactory headingModuleFactory){
         this.drive = drive;
         this.pose = pose;
-
+        headingModule = headingModuleFactory.create();
     }
 
 
