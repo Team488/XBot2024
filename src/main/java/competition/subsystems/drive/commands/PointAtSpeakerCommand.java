@@ -44,6 +44,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
         currentPositionCord.x = currentPosition.getX();
         currentPositionCord.y = currentPosition.getY();
 
+        //maybe move this initialize
         if (currentPositionCord.y > speakerPosition.y) {
             angle = (90 + (180 - Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
         }
