@@ -95,7 +95,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         if (contract.isShooterReady()) {
             return leader.getVelocity();
         }
-        return null;
+        // DON'T RETURN NULL, OR ROBOT COULD POTENTIALLY CRASH, 0.0 IS SAFER
+        return 0.0;
     }
 
     @Override
