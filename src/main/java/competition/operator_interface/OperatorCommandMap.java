@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 
 
 import competition.subsystems.drive.commands.ResetPositionCommand;
-import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
+import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
