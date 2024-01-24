@@ -10,10 +10,13 @@ import competition.subsystems.oracle.NoteFiringInfoSource;
 import competition.subsystems.vision.VisionSubsystem;
 import dagger.Binds;
 import xbot.common.injection.components.BaseComponent;
+import xbot.common.subsystems.drive.swerve.SwerveDefaultCommandMap;
 
 public abstract class BaseRobotComponent extends BaseComponent {
 
     public abstract SubsystemDefaultCommandMap subsystemDefaultCommandMap();
+
+    public abstract SwerveDefaultCommandMap swerveDefaultCommandMap();
 
     public abstract OperatorCommandMap operatorCommandMap();
 
