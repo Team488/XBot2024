@@ -81,6 +81,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         // of errors. Some sort of VisionReady in the ElectricalContract may also make sense. Similarly,
         // we need to handle cases like not having the AprilTag data loaded.
 
+        PhotonCameraExtended.setVersionCheckEnabled(false);
         forwardAprilCamera = new PhotonCameraExtended("forwardAprilCamera");
         rearAprilCamera = new PhotonCameraExtended("rearAprilCamera");
 
