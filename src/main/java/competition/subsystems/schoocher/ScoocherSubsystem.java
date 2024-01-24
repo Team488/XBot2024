@@ -10,18 +10,18 @@ import xbot.common.properties.PropertyFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 @Singleton
-public class scoocherSubsytem extends BaseSubsystem {
+public class ScoocherSubsystem extends BaseSubsystem {
 
     public final ElectricalContract contract;
     public DoubleProperty sendingPower;
-    public final XCANSparkMax ScoocherMotor;
+    public final XCANSparkMax scoocherMotor;
 
 
     @Inject
-    public scoocherSubsytem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
-                            ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
+    public ScoocherSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
+                             ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
-        this.ScoocherMotor = sparkMaxFactory.create(contract.getScoocherMotor(), getPrefix(), "ScoocherMotor", null);
+        this.scoocherMotor = sparkMaxFactory.create(contract.getScoocherMotor(), getPrefix(), "ScoocherMotor", null);
 
         pf.setPrefix(this);
         sendingPower = pf.createPersistentProperty("sendingPower", 0.1);
@@ -31,14 +31,14 @@ public class scoocherSubsytem extends BaseSubsystem {
 
 
     public void intakeNote() {
-        ScoocherMotor.set(sendingPower.get());
+        scoocherMotor.set(sendingPower.get());
     }
     public void ejectingNote(){
-        ScoocherMotor.set(-sendingPower.get());
+        scoocherMotor.set(-sendingPower.get());
     }
 
     public void stop() {
-        ScoocherMotor.set(0);
+        scoocherMotor.set(0);
     }
 }
 
