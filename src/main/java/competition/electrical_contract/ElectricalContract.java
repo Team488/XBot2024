@@ -7,9 +7,6 @@ import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
 
 public abstract class ElectricalContract implements XSwerveDriveElectricalContract {
-    public abstract CANTalonInfo getLeftLeader();
-    public abstract CANTalonInfo getRightLeader();
-
     public abstract boolean isShooterReady();
 
     public abstract boolean isDriveReady();

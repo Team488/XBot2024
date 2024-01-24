@@ -21,16 +21,6 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public CANTalonInfo getLeftLeader() {
-        return new CANTalonInfo(1, true, FeedbackDevice.CTRE_MagEncoder_Absolute, true, simulationScalingValue);
-    }
-
-    @Override
-    public CANTalonInfo getRightLeader() {
-        return new CANTalonInfo(2, true, FeedbackDevice.CTRE_MagEncoder_Absolute, true, simulationScalingValue);
-    }
-
-    @Override
     public boolean isDriveReady() {
         return true;
     }
