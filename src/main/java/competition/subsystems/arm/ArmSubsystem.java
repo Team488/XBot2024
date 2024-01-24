@@ -55,7 +55,7 @@ public class ArmSubsystem extends BaseSubsystem {
         if (armPowerMax.get() < 0 || armPowerMin.get() > 0) {
             armMotorLeft.set(0);
             armMotorRight.set(0);
-            System.out.println("armPowerMax or armPowerMin values out of bound!");
+            log.error("armPowerMax or armPowerMin values out of bound!");
             return;
         }
 
