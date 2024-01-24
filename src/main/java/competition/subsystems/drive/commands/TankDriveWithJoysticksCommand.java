@@ -16,7 +16,7 @@ public class TankDriveWithJoysticksCommand extends BaseCommand {
     public TankDriveWithJoysticksCommand(OperatorInterface oi, DriveSubsystem driveSubsystem) {
         this.oi = oi;
         this.driveSubsystem = driveSubsystem;
-        this.addRequirements(this.driveSubsystem);
+        this.addRequirements(driveSubsystem);
     }
 
     @Override
