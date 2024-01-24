@@ -63,7 +63,7 @@ public class OperatorCommandMap {
 
         ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
         columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.5, 5), Rotation2d.fromDegrees(170), 10));
+                new Translation2d(4.9, 5.4), Rotation2d.fromDegrees(0), 10));
         avoidColumnTest.logic.setKeyPoints(columnPoints);
         avoidColumnTest.logic.setEnableConstantVelocity(true);
         avoidColumnTest.logic.setConstantVelocity(2);
