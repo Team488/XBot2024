@@ -71,15 +71,8 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
 
-        ArrayList<XbotSwervePoint> speakerPoints = new ArrayList<>();
-        speakerPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(5.7,6.3), Rotation2d.fromDegrees(190), 10));
-        speakerPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(3.7,2.429256), Rotation2d.fromDegrees(132), 10));
-//        pointAtSpeaker.logic.setKeyPoints(speakerPoints);
-//        pointAtSpeaker.logic.setEnableConstantVelocity(true);
-//        pointAtSpeaker.logic.setConstantVelocity(2);
-//        pointAtSpeaker.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+
+
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(pointAtSpeaker);
 

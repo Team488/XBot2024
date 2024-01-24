@@ -54,7 +54,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
 //        currentPositionCord.x = currentPosition.getX();
 //        currentPositionCord.y = currentPosition.getY();
 //
-//        
+//
 
         double headingPower = headingModule.calculateHeadingPower(angle);
         drive.move(currentPositionCord,headingPower);
