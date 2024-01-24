@@ -1,18 +1,23 @@
 package competition.electrical_contract;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import competition.subsystems.pose.PoseSubsystem;
+import xbot.common.injection.electrical_contract.CANTalonInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
-
 import javax.inject.Inject;
 
 public class CompetitionContract extends ElectricalContract {
-
     protected final double simulationScalingValue = 256.0 * PoseSubsystem.INCHES_IN_A_METER;
 
     @Inject
     public CompetitionContract() {
+    }
+
+    @Override
+    public boolean isShooterReady() {
+        return false;
     }
 
     @Override
@@ -39,86 +44,76 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public DeviceInfo getDriveMotor(SwerveInstance swerveInstance) {
-        switch (swerveInstance.label()) {
-            case "FrontLeftDrive":
-                return new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
-
-            case "FrontRightDrive":
-                return new DeviceInfo(getDriveControllerName(swerveInstance), 29, false, simulationScalingValue);
-
-            case "RearLeftDrive":
-                return new DeviceInfo(getDriveControllerName(swerveInstance), 38, false, simulationScalingValue);
-
-            case "RearRightDrive":
-                return new DeviceInfo(getDriveControllerName(swerveInstance), 21, false, simulationScalingValue);
-
-            default:
-                return null;
-        }
+        return switch (swerveInstance.label()) {
+            case "FrontLeftDrive" ->
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
+            case "FrontRightDrive" ->
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 29, false, simulationScalingValue);
+            case "RearLeftDrive" ->
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 38, false, simulationScalingValue);
+            case "RearRightDrive" ->
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 21, false, simulationScalingValue);
+            default -> null;
+        };
     }
 
     @Override
     public DeviceInfo getSteeringMotor(SwerveInstance swerveInstance) {
         double simulationScalingValue = 1.0;
 
-        switch (swerveInstance.label()) {
-            case "FrontLeftDrive":
-                return new DeviceInfo(getSteeringControllerName(swerveInstance), 30, false, simulationScalingValue);
-
-            case "FrontRightDrive":
-                return new DeviceInfo(getSteeringControllerName(swerveInstance), 28, false, simulationScalingValue);
-
-            case "RearLeftDrive":
-                return new DeviceInfo(getSteeringControllerName(swerveInstance), 39, false, simulationScalingValue);
-
-            case "RearRightDrive":
-                return new DeviceInfo(getSteeringControllerName(swerveInstance), 20, false, simulationScalingValue);
-
-            default:
-                return null;
-        }
+        return switch (swerveInstance.label()) {
+            case "FrontLeftDrive" ->
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 30, false, simulationScalingValue);
+            case "FrontRightDrive" ->
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 28, false, simulationScalingValue);
+            case "RearLeftDrive" ->
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 39, false, simulationScalingValue);
+            case "RearRightDrive" ->
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 20, false, simulationScalingValue);
+            default -> null;
+        };
     }
 
     @Override
     public DeviceInfo getSteeringEncoder(SwerveInstance swerveInstance) {
         double simulationScalingValue = 1.0;
 
-        switch (swerveInstance.label()) {
-            case "FrontLeftDrive":
-                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 51, false, simulationScalingValue);
-
-            case "FrontRightDrive":
-                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 52, false, simulationScalingValue);
-
-            case "RearLeftDrive":
-                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 53, false, simulationScalingValue);
-
-            case "RearRightDrive":
-                return new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 54, false, simulationScalingValue);
-
-            default:
-                return null;
-        }
+        return switch (swerveInstance.label()) {
+            case "FrontLeftDrive" ->
+                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 51, false, simulationScalingValue);
+            case "FrontRightDrive" ->
+                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 52, false, simulationScalingValue);
+            case "RearLeftDrive" ->
+                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 53, false, simulationScalingValue);
+            case "RearRightDrive" ->
+                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 54, false, simulationScalingValue);
+            default -> null;
+        };
     }
 
     @Override
     public XYPair getSwerveModuleOffsets(SwerveInstance swerveInstance) {
-        switch (swerveInstance.label()) {
-            case "FrontLeftDrive":
-                return new XYPair(15, 15);
-            case "FrontRightDrive":
-                return new XYPair(15, -15);
-            case "RearLeftDrive":
-                return new XYPair(-15, 15);
-            case "RearRightDrive":
-                return new XYPair(-15, -15);
-            default:
-                return new XYPair(0, 0);
-        }
+        return switch (swerveInstance.label()) {
+            case "FrontLeftDrive" -> new XYPair(15, 15);
+            case "FrontRightDrive" -> new XYPair(15, -15);
+            case "RearLeftDrive" -> new XYPair(-15, 15);
+            case "RearRightDrive" -> new XYPair(-15, -15);
+            default -> new XYPair(0, 0);
+        };
     }
 
     public DeviceInfo getCollectorMotor() {
         return new DeviceInfo("CollectorMotor", 25, true);
+    }
+
+    @Override
+    public DeviceInfo getShooterMotorLeader() {
+        return null;
+    }
+
+    @Override
+    public DeviceInfo getShooterMotorFollower() {
+        return null;
     }
 
     @Override
@@ -162,7 +157,7 @@ public class CompetitionContract extends ElectricalContract {
     public DeviceInfo getLightsCubeDio() {
         return new DeviceInfo("LightsCube", 4);
     }
-  
+
     @Override
     public DeviceInfo getNoteSensorDio() {
         return new DeviceInfo("NoteSensor", 13);
@@ -170,8 +165,15 @@ public class CompetitionContract extends ElectricalContract {
 
     // ArmSubsystem
     @Override
-    public DeviceInfo getArmMotorLeft() {return new DeviceInfo("ArmMotorLeft", 10, true);}
+    public DeviceInfo getArmMotorLeft() {
+        return new DeviceInfo("ArmMotorLeft", 10, true);
+    }
 
     @Override
-    public DeviceInfo getArmMotorRight() {return new DeviceInfo("ArmMotorRight", 11, true);}
+    public DeviceInfo getArmMotorRight() {
+        return new DeviceInfo("ArmMotorRight", 11, true);
+    }
 }
+
+
+
