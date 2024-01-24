@@ -21,8 +21,8 @@ public class ArmSubsystem extends BaseSubsystem {
     public DoubleProperty extendPower;
     public DoubleProperty retractPower;
 
-    private DoubleProperty setPowerMax;
-    private DoubleProperty setPowerMin;
+    private DoubleProperty armPowerMax;
+    private DoubleProperty armPowerMin;
 
     public enum ArmState {
         EXTENDING,
@@ -39,8 +39,8 @@ public class ArmSubsystem extends BaseSubsystem {
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
       
-        setPowerMax = pf.createPersistentProperty("SetPowerMax", 0.5);
-        setPowerMin = pf.createPersistentProperty("SetPowerMin", -0.5);
+        armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
+        armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
@@ -51,9 +51,17 @@ public class ArmSubsystem extends BaseSubsystem {
 
     public void setPower(double leftPower, double rightPower) {
 
+        // Check if armPowerMin/armPowerMax are safe values
+        if (armPowerMax.get() < 0 || armPowerMin.get() > 0) {
+            armMotorLeft.set(0);
+            armMotorRight.set(0);
+            System.out.println("armPowerMax or armPowerMin values out of bound!");
+            return;
+        }
+
         // Put power within limit range (if not already)
-        leftPower = MathUtils.constrainDouble(leftPower, setPowerMin.get(), setPowerMax.get());
-        rightPower = MathUtils.constrainDouble(rightPower, setPowerMin.get(), setPowerMax.get());
+        leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
+        rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), armPowerMax.get());
 
         armMotorLeft.set(leftPower);
         armMotorRight.set(rightPower);
