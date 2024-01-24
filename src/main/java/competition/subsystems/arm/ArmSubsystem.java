@@ -49,13 +49,22 @@ public class ArmSubsystem extends BaseSubsystem {
         this.armState = ArmState.STOPPED;
     }
 
-    public void setPower(double power) {
+    public void setPower(double leftPower, double rightPower) {
 
         // Put power within limit range (if not already)
-        power = MathUtils.constrainDouble(power, setPowerMin.get(), setPowerMax.get());
+        leftPower = MathUtils.constrainDouble(leftPower, setPowerMin.get(), setPowerMax.get());
+        rightPower = MathUtils.constrainDouble(rightPower, setPowerMin.get(), setPowerMax.get());
 
-        armMotorLeft.set(power);
-        armMotorRight.set(power);
+        armMotorLeft.set(leftPower);
+        armMotorRight.set(rightPower);
+    }
+
+    /**
+     * This sets one power to both left and right arms at the same time
+     * @param power the power to send to both arms
+     */
+    public void setPower(double power) {
+        setPower(power, power);
     }
 
     public void extend() {
