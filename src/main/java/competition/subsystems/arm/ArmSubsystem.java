@@ -74,11 +74,11 @@ public class ArmSubsystem extends BaseSubsystem {
         armState = ArmState.STOPPED;
     }
 
-    public void ArmEncoderTicksUpdate() {
+    public void armEncoderTicksUpdate() {
         Logger.recordOutput(getPrefix()+ "ArmMotorLeftTicks", armMotorLeft.getPosition());
         Logger.recordOutput(getPrefix()+ "ArmMotorRightTicks", armMotorRight.getPosition());
     }
     public void periodic() {
-        ArmEncoderTicksUpdate();
+        armEncoderTicksUpdate();
     }
 }
