@@ -79,8 +79,8 @@ public class OperatorCommandMap {
                 .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
 
         // ReconcileArmAlignmentCommand
-        slightLeftArmForward.setReconcilePower(0.01);
-        slightLeftArmBackward.setReconcilePower(-0.01);
+        slightLeftArmForward.setReconcilePower(0.05);
+        slightLeftArmBackward.setReconcilePower(-0.05);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
