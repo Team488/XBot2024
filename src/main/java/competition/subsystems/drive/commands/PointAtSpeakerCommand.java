@@ -36,25 +36,26 @@ public class PointAtSpeakerCommand extends BaseCommand {
     public void initialize() {
     currentPosition = pose.getCurrentPose2d();
     currentPositionCord = new XYPair(currentPosition.getX(),currentPosition.getY());
-    }
 
-    @Override
-    public void execute() {
-        currentPosition = pose.getCurrentPose2d();
-        currentPositionCord.x = currentPosition.getX();
-        currentPositionCord.y = currentPosition.getY();
-
-        //maybe move this initialize
         if (currentPositionCord.y > speakerPosition.y) {
-            angle = (90 + (180 - Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y))));
+            angle = (90 + (180 - Math.toDegrees(Math.atan(Math.abs((currentPosition.getX() - speakerPosition.x)) / Math.abs((currentPosition.getY() - speakerPosition.y))))));
         }
         else if (currentPositionCord.y < speakerPosition.y){
-            angle = (90 + Math.atan((currentPosition.getX() - speakerPosition.x) / (currentPosition.getY() - speakerPosition.y)));
+            angle = (90 + Math.toDegrees(Math.atan(Math.abs((currentPosition.getX() - speakerPosition.x)) / Math.abs((currentPosition.getY() - speakerPosition.y)))));
         }
         else{
             angle = 180;
         }
-        drive.setDesiredHeading(angle);
+    }
+
+    @Override
+    public void execute() {
+//        currentPosition = pose.getCurrentPose2d();
+//        currentPositionCord.x = currentPosition.getX();
+//        currentPositionCord.y = currentPosition.getY();
+//
+//        
+
         double headingPower = headingModule.calculateHeadingPower(angle);
         drive.move(currentPositionCord,headingPower);
 
