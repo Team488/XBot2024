@@ -1,6 +1,7 @@
 package competition.subsystems.arm;
 
 import competition.electrical_contract.ElectricalContract;
+import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.math.MathUtils;
@@ -88,5 +89,13 @@ public class ArmSubsystem extends BaseSubsystem {
     public void stop() {
         setPower(0);
         armState = ArmState.STOPPED;
+    }
+
+    public void armEncoderTicksUpdate() {
+        Logger.recordOutput(getPrefix()+ "ArmMotorLeftTicks", armMotorLeft.getPosition());
+        Logger.recordOutput(getPrefix()+ "ArmMotorRightTicks", armMotorRight.getPosition());
+    }
+    public void periodic() {
+        armEncoderTicksUpdate();
     }
 }
