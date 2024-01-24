@@ -42,6 +42,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final PhotonCameraExtended forwardAprilCamera;
     final PhotonCameraExtended rearAprilCamera;
 
+    boolean forwardAprilCameraWorking = true;
+    boolean rearAprilCameraWorking = true;
+
     //final XPhotonCamera akitForwardAprilCamera;
     //final PhotonCameraExtended akitRearAprilCamera;
 
@@ -81,6 +84,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         forwardAprilCamera = new PhotonCameraExtended("forwardAprilCamera");
         rearAprilCamera = new PhotonCameraExtended("rearAprilCamera");
 
+        // Check to see if we have incorrect versions. If so, then we need to not use that camera as the underlying libraries
+        // could be unstable, leading to robot crashes or anomalous behavior.
+        forwardAprilCameraWorking &= forwardAprilCamera.doesLibraryVersionMatchCoprocessorVersion();
+        rearAprilCameraWorking &= rearAprilCamera.doesLibraryVersionMatchCoprocessorVersion();
+
         try {
             aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
             visionWorking = true;
@@ -117,8 +125,15 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     public Optional<EstimatedRobotPose>[] getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
         if (visionWorking) {
-            var frontEstimatedPose = getPhotonVisionEstimatedPose("Front", frontPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
-            var rearEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+            Optional<EstimatedRobotPose> frontEstimatedPose = Optional.empty();
+            Optional<EstimatedRobotPose> rearEstimatedPose = Optional.empty();
+
+            if (forwardAprilCameraWorking) {
+                frontEstimatedPose = getPhotonVisionEstimatedPose("Front", frontPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
+            }
+            if (rearAprilCameraWorking) {
+                rearEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+            }
             return new Optional[] {frontEstimatedPose, rearEstimatedPose};
         } else {
             return new Optional[] {Optional.empty()};
@@ -207,7 +222,13 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     @Override
     public void refreshDataFrame() {
-        forwardAprilCamera.refreshDataFrame();
-        rearAprilCamera.refreshDataFrame();
+        if (visionWorking) {
+            if (forwardAprilCameraWorking) {
+                forwardAprilCamera.refreshDataFrame();
+            }
+            if (rearAprilCameraWorking) {
+                rearAprilCamera.refreshDataFrame();
+            }
+        }
     }
 }
