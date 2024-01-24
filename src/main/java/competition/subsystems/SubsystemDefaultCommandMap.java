@@ -3,14 +3,17 @@ package competition.subsystems;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import competition.injection.swerve.FrontLeftDrive;
-import competition.injection.swerve.FrontRightDrive;
-import competition.injection.swerve.RearLeftDrive;
-import competition.injection.swerve.RearRightDrive;
-import competition.injection.swerve.SwerveComponent;
+import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.arm.commands.StopArmCommand;
+import competition.subsystems.collector.CollectorSubsystem;
+import competition.subsystems.collector.commands.StopCollectorCommand;
+import xbot.common.injection.swerve.FrontLeftDrive;
+import xbot.common.injection.swerve.FrontRightDrive;
+import xbot.common.injection.swerve.RearLeftDrive;
+import xbot.common.injection.swerve.RearRightDrive;
+import xbot.common.injection.swerve.SwerveComponent;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.SwerveDriveWithJoysticksCommand;
-import competition.subsystems.drive.commands.TankDriveWithJoysticksCommand;
 
 /**
  * For setting the default commands on subsystems
@@ -52,5 +55,15 @@ public class SubsystemDefaultCommandMap {
             @RearRightDrive SwerveComponent swerveComponent) {
         swerveComponent.swerveDriveSubsystem().setDefaultCommand(swerveComponent.swerveDriveMaintainerCommand());
         swerveComponent.swerveSteeringSubsystem().setDefaultCommand(swerveComponent.swerveSteeringMaintainerCommand());
+    }
+
+    @Inject
+    public void setupArmSubsystem(ArmSubsystem armSubsystem, StopArmCommand command) {
+        armSubsystem.setDefaultCommand(command);
+    }
+
+    @Inject
+    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, StopCollectorCommand command) {
+        collectorSubsystem.setDefaultCommand(command);
     }
 }

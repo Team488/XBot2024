@@ -3,8 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import competition.subsystems.drive.commands.PointAtSpeakerCommand;
-import competition.subsystems.drive.commands.SwerveAccordingToOracleCommand;
+import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
@@ -12,22 +11,17 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
-import xbot.common.math.XYPair;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
-import xbot.common.trajectory.LowResField;
-import xbot.common.trajectory.Obstacle;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import java.util.ArrayList;
-import java.lang.Math;
 
 /**
  * Maps operator interface buttons to commands
  */
 @Singleton
 public class OperatorCommandMap {
-
 
     @Inject
     public OperatorCommandMap() {}
@@ -40,11 +34,9 @@ public class OperatorCommandMap {
             SetRobotHeadingCommand resetHeading,
             SwerveSimpleTrajectoryCommand swerveTest,
             SwerveSimpleTrajectoryCommand avoidColumnTest,
-            //SwerveSimpleTrajectoryCommand pointAtSpeaker,
             SwerveAccordingToOracleCommand oracleSwerve,
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
-            DynamicOracle oracle,
-            PointAtSpeakerCommand pointAtSpeaker)
+            DynamicOracle oracle)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -66,15 +58,11 @@ public class OperatorCommandMap {
                 new Translation2d(4.9, 5.4), Rotation2d.fromDegrees(0), 10));
         avoidColumnTest.logic.setKeyPoints(columnPoints);
         avoidColumnTest.logic.setEnableConstantVelocity(true);
-        avoidColumnTest.logic.setConstantVelocity(2);
+        avoidColumnTest.logic.setConstantVelocity(1);
         avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
 
-
-
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(pointAtSpeaker);
 
         oracleSwerve.logic.setEnableConstantVelocity(true);
         oracleSwerve.logic.setConstantVelocity(3);

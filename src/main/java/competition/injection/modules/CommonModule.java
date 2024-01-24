@@ -2,16 +2,16 @@ package competition.injection.modules;
 
 import javax.inject.Singleton;
 
+import xbot.common.injection.swerve.FrontLeftDrive;
+import xbot.common.injection.swerve.FrontRightDrive;
+import xbot.common.injection.swerve.RearLeftDrive;
+import xbot.common.injection.swerve.RearRightDrive;
+import xbot.common.injection.swerve.SwerveComponent;
+import xbot.common.injection.swerve.SwerveInstance;
 import competition.injection.components.BaseRobotComponent;
 import competition.injection.components.CompetitionTestComponent;
 import competition.injection.components.RobotComponent;
 import competition.injection.components.SimulationComponent;
-import competition.injection.swerve.FrontLeftDrive;
-import competition.injection.swerve.FrontRightDrive;
-import competition.injection.swerve.RearLeftDrive;
-import competition.injection.swerve.RearRightDrive;
-import competition.injection.swerve.SwerveComponent;
-import competition.injection.swerve.SwerveInstance;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.oracle.NoteCollectionInfoSource;
 import dagger.Binds;
