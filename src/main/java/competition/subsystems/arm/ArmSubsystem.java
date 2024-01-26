@@ -24,6 +24,7 @@ public class ArmSubsystem extends BaseSubsystem {
 
     private DoubleProperty armPowerMax;
     private DoubleProperty armPowerMin;
+  
     public DoubleProperty ticksToDistanceRatio;
 
     public enum ArmState {
