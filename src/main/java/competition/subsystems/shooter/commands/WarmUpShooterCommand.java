@@ -29,7 +29,6 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
 
     public void initialize() {
         shooter.setTargetRPM(this.targetRPMSupplier.get());
-        shooter.setMaintainerIsAtGoal(false);
     }
 
     @Override
