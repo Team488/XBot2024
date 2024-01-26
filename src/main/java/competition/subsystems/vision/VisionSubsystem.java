@@ -222,10 +222,14 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     }
 
     @Override
-    public void refreshDataFrame() {
-
+    public void periodic() {
         Logger.recordOutput(getPrefix()+"ForwardAprilCameraWorking", forwardAprilCameraWorking);
         Logger.recordOutput(getPrefix()+"RearAprilCameraWorking", rearAprilCameraWorking);
+    }
+
+    @Override
+    public void refreshDataFrame() {
+
 
         if (visionWorking) {
             if (forwardAprilCameraWorking) {
