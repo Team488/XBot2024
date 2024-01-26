@@ -19,6 +19,6 @@ public class IntakeScoocherCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        scoocher.ejectingNote();
+        scoocher.intakeNote();
     }
 }
