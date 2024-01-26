@@ -1,5 +1,6 @@
 package competition.subsystems.shooter;
 
+import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
@@ -16,6 +17,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         DISTANCESHOT
     }
 
+    PoseSubsystem pose;
     // IMPORTANT PROPERTIES
     private final DoubleProperty targetRpmProp;
     private final DoubleProperty currentRpmProp;
@@ -24,6 +26,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
 
+
+
     //DEFINING MOTORS
     public XCANSparkMax leader;
     public XCANSparkMax follower;
@@ -31,7 +35,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     // DEFINING CONTRACT
     final ElectricalContract contract;
 
-    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract) {
+    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
 
@@ -43,6 +47,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
+
+        this.pose = pose;
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -120,4 +126,11 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     public boolean isCalibrated() {
         return false;
     }
+
+    public double getSpeedForRange(){
+
+        return 0;
+
+    }
 }
+
