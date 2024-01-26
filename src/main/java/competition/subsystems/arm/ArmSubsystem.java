@@ -136,6 +136,7 @@ public class ArmSubsystem extends BaseSubsystem {
             armMotorLeftPositionOffset.set(armMotorPositionLimit.get() - armMotorLeft.getPosition());
             armMotorRightPositionOffset.set(armMotorPositionLimit.get() - armMotorRight.getPosition());
         } else if (armMotorRight.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyClosed)) {
+            // At min (lowest) limit sensor?
             hasSetTruePositionOffset = true;
             armMotorLeftPositionOffset.set(-armMotorLeft.getPosition());
             armMotorRightPositionOffset.set(-armMotorRight.getPosition());
