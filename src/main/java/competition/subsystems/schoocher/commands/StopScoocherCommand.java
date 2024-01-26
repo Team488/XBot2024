@@ -15,11 +15,11 @@ public class StopScoocherCommand extends BaseCommand{
 
     @Override
     public void initialize() {
-
+        log.info("Initializing");
     }
 
     @Override
     public void execute() {
-
+        scoocher.stop();
     }
 }
