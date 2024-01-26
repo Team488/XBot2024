@@ -7,6 +7,7 @@ import xbot.common.command.BaseCommand;
 
 public class IntakeScoocherCommand extends BaseCommand {
     ScoocherSubsystem scoocher;
+    @Inject
     public IntakeScoocherCommand(ScoocherSubsystem scoocher){
         this.scoocher = scoocher;
         addRequirements(scoocher);

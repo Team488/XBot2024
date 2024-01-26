@@ -6,6 +6,7 @@ import competition.subsystems.schoocher.ScoocherSubsystem;
 import xbot.common.command.BaseCommand;
 public class EjectScoocherCommand extends BaseCommand{
     ScoocherSubsystem scoocher;
+    @Inject
     public EjectScoocherCommand(ScoocherSubsystem scoocher){
         this.scoocher = scoocher;
         addRequirements(scoocher);

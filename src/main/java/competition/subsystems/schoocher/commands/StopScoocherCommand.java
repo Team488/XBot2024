@@ -7,6 +7,7 @@ import xbot.common.command.BaseCommand;
 
 public class StopScoocherCommand extends BaseCommand{
     ScoocherSubsystem scoocher;
+    @Inject
     public StopScoocherCommand(ScoocherSubsystem scoocher){
         this.scoocher = scoocher;
         addRequirements(scoocher);
