@@ -27,6 +27,7 @@ public class ReconcileArmAlignmentCommand extends BaseCommand {
 
     @Override
     public void execute() {
+        // You only need to move one arm to reconcile, in this case, it is left.
         armSubsystem.setPower(power, 0);
     }
 }
