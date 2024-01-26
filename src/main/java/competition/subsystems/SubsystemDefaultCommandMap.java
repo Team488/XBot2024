@@ -32,34 +32,6 @@ public class SubsystemDefaultCommandMap {
     }
 
     @Inject
-    public void setupFrontLeftSubsystems(
-            @FrontLeftDrive SwerveComponent swerveComponent) {
-        swerveComponent.swerveDriveSubsystem().setDefaultCommand(swerveComponent.swerveDriveMaintainerCommand());
-        swerveComponent.swerveSteeringSubsystem().setDefaultCommand(swerveComponent.swerveSteeringMaintainerCommand());
-    }
-
-    @Inject
-    public void setupFrontRightSubsystems(
-            @FrontRightDrive SwerveComponent swerveComponent) {
-        swerveComponent.swerveDriveSubsystem().setDefaultCommand(swerveComponent.swerveDriveMaintainerCommand());
-        swerveComponent.swerveSteeringSubsystem().setDefaultCommand(swerveComponent.swerveSteeringMaintainerCommand());
-    }
-
-    @Inject
-    public void setupRearLeftSubsystems(
-            @RearLeftDrive SwerveComponent swerveComponent) {
-        swerveComponent.swerveDriveSubsystem().setDefaultCommand(swerveComponent.swerveDriveMaintainerCommand());
-        swerveComponent.swerveSteeringSubsystem().setDefaultCommand(swerveComponent.swerveSteeringMaintainerCommand());
-    }
-
-    @Inject
-    public void setupRearRightSubsystems(
-            @RearRightDrive SwerveComponent swerveComponent) {
-        swerveComponent.swerveDriveSubsystem().setDefaultCommand(swerveComponent.swerveDriveMaintainerCommand());
-        swerveComponent.swerveSteeringSubsystem().setDefaultCommand(swerveComponent.swerveSteeringMaintainerCommand());
-    }
-
-    @Inject
     public void setupArmSubsystem(ArmSubsystem armSubsystem, StopArmCommand command) {
         armSubsystem.setDefaultCommand(command);
     }
