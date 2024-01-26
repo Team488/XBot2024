@@ -16,7 +16,6 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
     public WarmUpShooterCommand(ShooterWheelSubsystem shooter) {
         super(shooter);
         this.shooter = shooter;
-        addRequirements(shooter);
     }
 
     public void setTargetRpm(Supplier<ShooterWheelSubsystem.TargetRPM> targetRPMSupplier) {
