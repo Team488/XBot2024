@@ -2,6 +2,7 @@ package competition.subsystems.shooter;
 
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
+import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
@@ -20,12 +21,15 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         DISTANCESHOT
     }
 
+    PoseSubsystem pose;
     // IMPORTANT PROPERTIES
     private double targetRpm;
     private double trimRpm;
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
+
+
 
     //DEFINING MOTORS
     public XCANSparkMax leader;
@@ -35,7 +39,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     final ElectricalContract contract;
 
     @Inject
-    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract) {
+    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
         pf.setPrefix(this);
@@ -43,6 +47,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
+
+        this.pose = pose;
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -135,4 +141,11 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
             follower.refreshDataFrame();
         }
     }
+    
+    public double getSpeedForRange(){
+
+        return 0;
+
+    }
 }
+
