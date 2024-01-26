@@ -57,8 +57,10 @@ public class ArmSubsystem extends BaseSubsystem {
         armMotorPositionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
         hasSetTruePositionOffset = false;
 
-        armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
-        armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+        armMotorLeft = sparkMaxFactory.createWithoutProperties(
+                contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
+        armMotorRight = sparkMaxFactory.createWithoutProperties(
+                contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
         this.armState = ArmState.STOPPED;
     }
@@ -120,9 +122,9 @@ public class ArmSubsystem extends BaseSubsystem {
         Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(
                 armMotorRight.getPosition() + armMotorRightPositionOffset.get()));
 
-        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle
-                ((armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftPositionOffset.get() +
-                        armMotorRightPositionOffset.get()) / 2));
+        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle(
+                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftPositionOffset.get()
+                        + armMotorRightPositionOffset.get()) / 2));
     }
 
     public void checkForArmOffset() {
