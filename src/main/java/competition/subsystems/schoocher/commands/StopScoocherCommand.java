@@ -7,12 +7,10 @@ import xbot.common.command.BaseCommand;
 
 public class StopScoocherCommand extends BaseCommand{
     ScoocherSubsystem scoocher;
-
     public StopScoocherCommand(ScoocherSubsystem scoocher){
         this.scoocher = scoocher;
         addRequirements(scoocher);
     }
-
     @Override
     public void initialize() {
         log.info("Initializing");
