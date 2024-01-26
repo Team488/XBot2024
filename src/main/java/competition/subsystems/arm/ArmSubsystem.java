@@ -24,6 +24,7 @@ public class ArmSubsystem extends BaseSubsystem {
 
     private DoubleProperty armPowerMax;
     private DoubleProperty armPowerMin;
+    public DoubleProperty ticksToDistanceRatio;
 
     public enum ArmState {
         EXTENDING,
@@ -43,9 +44,10 @@ public class ArmSubsystem extends BaseSubsystem {
         armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
         armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
+        ticksToDistanceRatio = pf.createPersistentProperty("TicksToDistanceRatio", 0);
+
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
-
 
         this.armState = ArmState.STOPPED;
     }
@@ -91,10 +93,24 @@ public class ArmSubsystem extends BaseSubsystem {
         armState = ArmState.STOPPED;
     }
 
-    public void armEncoderTicksUpdate() {
-        Logger.recordOutput(getPrefix()+ "ArmMotorLeftTicks", armMotorLeft.getPosition());
-        Logger.recordOutput(getPrefix()+ "ArmMotorRightTicks", armMotorRight.getPosition());
+    public double ticksToDistance(double ticks) {
+        return ticksToDistanceRatio.get() * ticks;
     }
+
+    public double ticksToShooterAngle(double ticks) {
+        return 0; // To be modified into ticks to shooter angle formula
+    }
+
+    public void armEncoderTicksUpdate() {
+        Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
+        Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
+        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(armMotorLeft.getPosition()));
+        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(armMotorRight.getPosition()));
+
+        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle
+                ((armMotorLeft.getPosition() + armMotorRight.getPosition()) / 2));
+    }
+
     public void periodic() {
         armEncoderTicksUpdate();
     }
