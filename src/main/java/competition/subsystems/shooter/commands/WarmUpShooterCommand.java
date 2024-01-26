@@ -23,6 +23,10 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
         this.targetRPMSupplier = targetRPMSupplier;
     }
 
+    public void setTargetRpm(ShooterWheelSubsystem.TargetRPM targetRpm) {
+        setTargetRpm(()-> targetRpm);
+    }
+
     public void initialize() {
         shooter.setTargetRPM(this.targetRPMSupplier.get());
         shooter.setMaintainerIsAtGoal(false);
@@ -35,6 +39,6 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
 
     @Override
     public boolean isFinished() {
-        return shooter.isMaintainerAtGoal();
+        return false;
     }
 }
