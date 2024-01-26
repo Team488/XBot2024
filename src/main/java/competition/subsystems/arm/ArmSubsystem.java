@@ -44,7 +44,7 @@ public class ArmSubsystem extends BaseSubsystem {
         armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
         armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
-        ticksToDistanceRatio = pf.createPersistentProperty("TicksToDistanceRatio", 0);
+        ticksToDistanceRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000); // Needs configuration
 
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
@@ -98,7 +98,7 @@ public class ArmSubsystem extends BaseSubsystem {
     }
 
     public double ticksToShooterAngle(double ticks) {
-        return 0; // To be modified into ticks to shooter angle formula
+        return ticks * 1000; // To be modified into ticks to shooter angle formula
     }
 
     public void armEncoderTicksUpdate() {
