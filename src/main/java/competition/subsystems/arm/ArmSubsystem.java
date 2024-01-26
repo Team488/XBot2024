@@ -1,5 +1,6 @@
 package competition.subsystems.arm;
 
+import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
@@ -26,6 +27,10 @@ public class ArmSubsystem extends BaseSubsystem {
     private DoubleProperty armPowerMin;
   
     public DoubleProperty ticksToDistanceRatio;
+    public DoubleProperty armMotorLeftPositionOffset;
+    public DoubleProperty armMotorRightPositionOffset;
+    public DoubleProperty armMotorPositionLimit;
+    boolean hasSetTruePositionOffset;
 
     public enum ArmState {
         EXTENDING,
@@ -45,7 +50,12 @@ public class ArmSubsystem extends BaseSubsystem {
         armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
         armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
-        ticksToDistanceRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000); // Needs configuration
+        // All the DoubleProperties below needs configuration.
+        ticksToDistanceRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000);
+        armMotorLeftPositionOffset = pf.createPersistentProperty("ArmMotorLeftPositionOffset", 0);
+        armMotorRightPositionOffset = pf.createPersistentProperty("ArmMotorRightPositionOffset", 0);
+        armMotorPositionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
+        hasSetTruePositionOffset = false;
 
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
@@ -105,14 +115,35 @@ public class ArmSubsystem extends BaseSubsystem {
     public void armEncoderTicksUpdate() {
         Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
         Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(armMotorLeft.getPosition()));
-        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(armMotorRight.getPosition()));
+        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(
+                armMotorLeft.getPosition() + armMotorLeftPositionOffset.get()));
+        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(
+                armMotorRight.getPosition() + armMotorRightPositionOffset.get()));
 
         Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle
-                ((armMotorLeft.getPosition() + armMotorRight.getPosition()) / 2));
+                ((armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftPositionOffset.get() +
+                        armMotorRightPositionOffset.get()) / 2));
+    }
+
+    public void checkForArmOffset() {
+        if (hasSetTruePositionOffset) {
+            return;
+        }
+
+        // At max limit sensor?
+        if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+            hasSetTruePositionOffset = true;
+            armMotorLeftPositionOffset.set(armMotorPositionLimit.get() - armMotorLeft.getPosition());
+            armMotorRightPositionOffset.set(armMotorPositionLimit.get() - armMotorRight.getPosition());
+        } else if (armMotorRight.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyClosed)) {
+            hasSetTruePositionOffset = true;
+            armMotorLeftPositionOffset.set(-armMotorLeft.getPosition());
+            armMotorRightPositionOffset.set(-armMotorRight.getPosition());
+        }
     }
 
     public void periodic() {
         armEncoderTicksUpdate();
+        checkForArmOffset();
     }
 }
