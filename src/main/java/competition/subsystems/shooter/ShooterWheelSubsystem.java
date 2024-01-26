@@ -6,12 +6,13 @@ import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.math.XYPair;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
+import java.lang.Math;
 
 @Singleton
 public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
@@ -21,7 +22,11 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         DISTANCESHOT
     }
 
+    //Speaker Coordinates
     PoseSubsystem pose;
+    XYPair speakerPosition = new XYPair(-0.0381,5.547868);
+
+
     // IMPORTANT PROPERTIES
     private double targetRpm;
     private double trimRpm;
@@ -142,9 +147,15 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         }
     }
     
+    //returns the RPM based on the distance from the speaker
     public double getSpeedForRange(){
-
-        return 0;
+        double xDistance = Math.abs(pose.getCurrentPose2d().getX() - speakerPosition.x);
+        double yDistance = Math.abs(pose.getCurrentPose2d().getY() - speakerPosition.y);
+        //distance in meters??
+        double distanceFromSpeaker = Math.sqrt((Math.pow(xDistance,2) + Math.pow(yDistance,2)));
+        //THIS IS A PLACEHOLDER SPEED FOR NOW UNTIL WE DO FURTHER TESTING WITH THE ROBOT, CHANGE 400 TO A MORE ACCURATE NUMBER
+        //AFTER TESTING
+        return distanceFromSpeaker * 400;
 
     }
 }
