@@ -18,9 +18,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         DISTANCESHOT
     }
 
-    //Speaker Coordinates
+    //need pose for real time calculations
     PoseSubsystem pose;
-    XYPair speakerPosition = new XYPair(-0.0381,5.547868);
 
 
     // IMPORTANT PROPERTIES
@@ -134,13 +133,13 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
 
     //returns the RPM based on the distance from the speaker
     public double getSpeedForRange(){
-        double xDistance = Math.abs(pose.getCurrentPose2d().getX() - speakerPosition.x);
-        double yDistance = Math.abs(pose.getCurrentPose2d().getY() - speakerPosition.y);
+        double xDistance = Math.abs(pose.getCurrentPose2d().getX() - PoseSubsystem.BLUE_SPEAKER_POSITION.getX());
+        double yDistance = Math.abs(pose.getCurrentPose2d().getY() - PoseSubsystem.BLUE_SPEAKER_POSITION.getY());
         //distance in meters??
-        double distanceFromSpeaker = Math.sqrt((Math.pow(xDistance,2) + Math.pow(yDistance,2)));
+        double distanceFromSpeakerInMeters = Math.hypot(xDistance,yDistance);
         //THIS IS A PLACEHOLDER SPEED FOR NOW UNTIL WE DO FURTHER TESTING WITH THE ROBOT, CHANGE 400 TO A MORE ACCURATE NUMBER
-        //AFTER TESTING
-        return distanceFromSpeaker * 400;
+        //AFTER TESTINGs
+        return distanceFromSpeakerInMeters * 400;
 
     }
 }
