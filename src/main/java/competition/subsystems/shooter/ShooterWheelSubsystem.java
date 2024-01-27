@@ -23,6 +23,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
+    private final DoubleProperty shortRangeErrorTolerance;
+    private final DoubleProperty longRangeErrorTolerance;
 
     //DEFINING MOTORS
     public XCANSparkMax leader;
@@ -43,6 +45,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
+
+        shortRangeErrorTolerance = pf.createPersistentProperty("ShortRangeErrorTolerance", 0);
+        longRangeErrorTolerance = pf.createPersistentProperty("LongRangeErrorTolerance", 0);
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -119,5 +124,41 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     @Override
     public boolean isCalibrated() {
         return false;
+    }
+
+    @Override
+    public void resetWheel() {
+        setPower((double) 0);
+        setTargetValue((double) 0);
+        resetPID();
+    }
+
+    @Override
+    public void stopWheel() {
+        setPower((double) 0);
+    }
+
+    @Override
+    public double getShortRangeErrorTolerance() {
+        return shortRangeErrorTolerance.get();
+    }
+
+    @Override
+    public double getLongRangeErrorTolerance() {
+        return longRangeErrorTolerance.get();
+    }
+
+    @Override
+    public void resetPID() {
+        if (contract.isShooterReady()) {
+            leader.setIAccum(0);
+        }
+    }
+
+    @Override
+    public void configurePID() {
+        if (contract.isShooterReady()) {
+            leader.setIMaxAccum(0, 0);
+        }
     }
 }
