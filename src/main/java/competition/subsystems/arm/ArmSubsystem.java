@@ -19,8 +19,10 @@ import javax.inject.Singleton;
 @Singleton
 public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
-    public final XCANSparkMax armMotorLeft;
-    public final XCANSparkMax armMotorRight;
+    public XCANSparkMax armMotorLeft;
+    public XCANSparkMax armMotorRight;
+
+    public final ElectricalContract contract;
 
     public ArmState armState;
 
@@ -47,6 +49,7 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
                         ElectricalContract contract) {
 
         pf.setPrefix(this);
+        this.contract = contract;
 
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
@@ -61,10 +64,12 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
         hasSetTruePositionOffset = false;
 
-        armMotorLeft = sparkMaxFactory.createWithoutProperties(
-                contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
-        armMotorRight = sparkMaxFactory.createWithoutProperties(
-                contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+        if (contract.isArmReady()) {
+            armMotorLeft = sparkMaxFactory.createWithoutProperties(
+                    contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
+            armMotorRight = sparkMaxFactory.createWithoutProperties(
+                    contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+        }
 
         this.armState = ArmState.STOPPED;
     }
@@ -83,8 +88,10 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
         rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), armPowerMax.get());
 
-        armMotorLeft.set(leftPower);
-        armMotorRight.set(rightPower);
+        if (contract.isArmReady()) {
+            armMotorLeft.set(leftPower);
+            armMotorRight.set(rightPower);
+        }
     }
 
     /**
@@ -150,14 +157,18 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
     }
 
     public void periodic() {
-        armEncoderTicksUpdate();
-        checkForArmOffset();
+        if (contract.isArmReady()) {
+            armEncoderTicksUpdate();
+            checkForArmOffset();
+        }
         Logger.recordOutput(getPrefix() + "Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     }
 
     @Override
     public void refreshDataFrame() {
-        armMotorLeft.refreshDataFrame();
-        armMotorRight.refreshDataFrame();
+        if (contract.isArmReady()) {
+            armMotorLeft.refreshDataFrame();
+            armMotorRight.refreshDataFrame();
+        }
     }
 }
