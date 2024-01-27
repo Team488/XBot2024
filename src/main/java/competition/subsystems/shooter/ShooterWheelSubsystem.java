@@ -148,15 +148,16 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     
     //returns the RPM based on the distance from the speaker
     public double getSpeedForRange(){
-        double distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION);
-//        double xDistance = Math.abs(pose.getCurrentPose2d().getX() - PoseSubsystem.BLUE_SPEAKER_POSITION.getX());
-//        double yDistance = Math.abs(pose.getCurrentPose2d().getY() - PoseSubsystem.BLUE_SPEAKER_POSITION.getY());
-//        //distance in meters??
-//        double distanceFromSpeakerInMeters = Math.hypot(xDistance,yDistance);
-        //THIS IS A PLACEHOLDER SPEED FOR NOW UNTIL WE DO FURTHER TESTING WITH THE ROBOT, CHANGE 400 TO A MORE ACCURATE NUMBER
-        //AFTER TESTINGs
-        return distanceFromSpeakerInMeters * 400;
+        switch(DriverStation.getAlliance().get()){
 
+            //returns the distance from speaker in meters based on alliance multiplied by the ratio for RPM
+            case Red -> {
+                return pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.RED_SPEAKER_POSITION) * 400;
+            }
+            default -> {
+                return pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION) * 400;
+            }
+        }
     }
 }
 
