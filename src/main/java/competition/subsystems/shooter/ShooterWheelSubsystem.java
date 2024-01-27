@@ -1,15 +1,19 @@
 package competition.subsystems.shooter;
 
+import org.littletonrobotics.junction.Logger;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
+
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 
 @Singleton
-public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
+public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
     public enum TargetRPM {
         SAFE,
         NEARSHOT,
@@ -17,9 +21,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     }
 
     // IMPORTANT PROPERTIES
-    private final DoubleProperty targetRpmProp;
-    private final DoubleProperty currentRpmProp;
-    private final DoubleProperty rpmTrimProp;
+    private double targetRpm;
+    private double trimRpm;
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
@@ -31,14 +34,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     // DEFINING CONTRACT
     final ElectricalContract contract;
 
+    @Inject
     public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
-
-        // EVERY VALUE SHOULD BE SET TO ZERO AT FIRST
-        targetRpmProp = pf.createEphemeralProperty("TargetRPM", 0);
-        currentRpmProp = pf.createEphemeralProperty("CurrentRPM", 0);
-        rpmTrimProp = pf.createEphemeralProperty("TrimRPM", 0);
 
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
@@ -74,19 +73,19 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     }
 
     public void changeTrimRPM(double changeRate) {
-        rpmTrimProp.set(getTrimRPM() + changeRate);
+        trimRpm = (getTrimRPM() + changeRate);
     }
 
     public void setTargetTrimRPM(double trim) {
-        rpmTrimProp.set(trim);
+        trimRpm = trim;
     }
 
     public double getTrimRPM() {
-        return rpmTrimProp.get();
+        return trimRpm;
     }
 
     public void resetTrimRPM() {
-        rpmTrimProp.set(0);
+        trimRpm = 0;
     }
 
     @Override
@@ -101,12 +100,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
 
     @Override
     public Double getTargetValue() {
-        return targetRpmProp.get() + getTrimRPM();
+        return targetRpm + getTrimRPM();
     }
 
     @Override
     public void setTargetValue(Double value) {
-        targetRpmProp.set(value);
+        targetRpm = value;
     }
 
     @Override
@@ -119,5 +118,18 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     @Override
     public boolean isCalibrated() {
         return false;
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput(getPrefix() + "TargetRPM", getTargetValue());
+        Logger.recordOutput(getPrefix() + "CurrentRPM", getCurrentValue());
+        Logger.recordOutput(getPrefix() + "TrimRPM", getTrimRPM());
+    }
+
+    @Override
+    public void refreshDataFrame() {
+        leader.refreshDataFrame();
+        follower.refreshDataFrame();
     }
 }

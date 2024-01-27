@@ -3,6 +3,7 @@ package competition.subsystems.arm;
 import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
 import org.littletonrobotics.junction.Logger;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.math.MathUtils;
@@ -13,7 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class ArmSubsystem extends BaseSubsystem {
+public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
     public final XCANSparkMax armMotorLeft;
     public final XCANSparkMax armMotorRight;
@@ -148,5 +149,11 @@ public class ArmSubsystem extends BaseSubsystem {
     public void periodic() {
         armEncoderTicksUpdate();
         checkForArmOffset();
+    }
+
+    @Override
+    public void refreshDataFrame() {
+        armMotorLeft.refreshDataFrame();
+        armMotorRight.refreshDataFrame();
     }
 }
