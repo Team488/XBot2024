@@ -1,6 +1,7 @@
 package competition.subsystems.shooter;
 
 import competition.subsystems.pose.PoseSubsystem;
+import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
@@ -31,7 +32,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     private final DoubleProperty distanceShotRpm;
 
 
-
     //DEFINING MOTORS
     public XCANSparkMax leader;
     public XCANSparkMax follower;
@@ -42,6 +42,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
+        pf.setPrefix(this);
 
         // EVERY VALUE SHOULD BE SET TO ZERO AT FIRST
         targetRpmProp = pf.createEphemeralProperty("TargetRPM", 0);
@@ -132,7 +133,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     }
 
     //returns the RPM based on the distance from the speaker
-    public double getSpeedForRange(){
+    public double getSpeedForRange() {
         double distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION);
 //        double xDistance = Math.abs(pose.getCurrentPose2d().getX() - PoseSubsystem.BLUE_SPEAKER_POSITION.getX());
 //        double yDistance = Math.abs(pose.getCurrentPose2d().getY() - PoseSubsystem.BLUE_SPEAKER_POSITION.getY());
@@ -143,5 +144,20 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         return distanceFromSpeakerInMeters * 400;
 
     }
-}
 
+    @Override
+    public void periodic() {
+        Logger.recordOutput(getPrefix() + "TargetRPM", getTargetValue());
+        Logger.recordOutput(getPrefix() + "CurrentRPM", getCurrentValue());
+        Logger.recordOutput(getPrefix() + "TrimRPM", getTrimRPM());
+    }
+
+
+    public void refreshDataFrame() {
+        if (contract.isShooterReady()) {
+            leader.refreshDataFrame();
+            follower.refreshDataFrame();
+        }
+
+    }
+}

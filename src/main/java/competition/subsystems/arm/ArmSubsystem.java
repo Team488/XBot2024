@@ -1,6 +1,9 @@
 package competition.subsystems.arm;
 
 import competition.electrical_contract.ElectricalContract;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
@@ -115,6 +118,7 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
 
     public void periodic() {
         armEncoderTicksUpdate();
+        Logger.recordOutput(getPrefix() + "Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     }
 
     @Override
