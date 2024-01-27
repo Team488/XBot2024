@@ -18,6 +18,6 @@ public class EjectScoocherCommand extends BaseCommand{
 
     @Override
     public void execute() {
-        scoocher.ejectingNote();
+        scoocher.ejectNote();
     }
 }
