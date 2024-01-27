@@ -28,6 +28,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty distanceShotRpm;
     private final DoubleProperty shortRangeErrorToleranceRpm;
     private final DoubleProperty longRangeErrorToleranceRpm;
+    private final DoubleProperty iMaxAccumValueForShooter;
+
 
     //DEFINING MOTORS
     public XCANSparkMax leader;
@@ -48,6 +50,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
         longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
+
+        // NEEDS TUNING TO FIND CORRECT VALUE
+        iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -151,7 +156,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     public void configurePID() {
         if (contract.isShooterReady()) {
-            leader.setIMaxAccum(0, 0);
+            leader.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
         }
     }
     public void periodic() {
