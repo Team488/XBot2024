@@ -1,8 +1,6 @@
 package competition.subsystems.shooter.commands;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import xbot.common.command.BaseSetpointCommand;
-
-import java.util.Objects;
 import java.util.function.Supplier;
 import javax.inject.Inject;
 
