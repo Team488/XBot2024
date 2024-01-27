@@ -1,13 +1,20 @@
 package competition.subsystems.shooter;
 
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
+
+import xbot.common.advantage.DataFrameRefreshable;
+import competition.subsystems.pose.PoseSubsystem;
+
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.math.XYPair;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
+
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.lang.Math;
 
@@ -32,12 +39,16 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     private final DoubleProperty distanceShotRpm;
 
 
+
     //DEFINING MOTORS
     public XCANSparkMax leader;
     public XCANSparkMax follower;
 
     // DEFINING CONTRACT
     final ElectricalContract contract;
+
+
+    @Inject
 
     public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
@@ -134,15 +145,16 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
 
     //returns the RPM based on the distance from the speaker
     public double getSpeedForRange() {
-        double distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION);
-//        double xDistance = Math.abs(pose.getCurrentPose2d().getX() - PoseSubsystem.BLUE_SPEAKER_POSITION.getX());
-//        double yDistance = Math.abs(pose.getCurrentPose2d().getY() - PoseSubsystem.BLUE_SPEAKER_POSITION.getY());
-//        //distance in meters??
-//        double distanceFromSpeakerInMeters = Math.hypot(xDistance,yDistance);
-        //THIS IS A PLACEHOLDER SPEED FOR NOW UNTIL WE DO FURTHER TESTING WITH THE ROBOT, CHANGE 400 TO A MORE ACCURATE NUMBER
-        //AFTER TESTINGs
-        return distanceFromSpeakerInMeters * 400;
+        switch(DriverStation.getAlliance().get()){
 
+            //returns the distance from speaker in meters based on alliance multiplied by the ratio for RPM
+            case Red -> {
+                return pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.RED_SPEAKER_POSITION) * 400;
+            }
+            default -> {
+                return pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION) * 400;
+            }
+        }
     }
 
     @Override
@@ -160,4 +172,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         }
 
     }
+
 }
+
