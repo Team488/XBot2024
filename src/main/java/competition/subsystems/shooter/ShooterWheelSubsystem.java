@@ -47,6 +47,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
+        pf.setPrefix(this);
 
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
@@ -151,8 +152,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     @Override
     public void refreshDataFrame() {
-        leader.refreshDataFrame();
-        follower.refreshDataFrame();
+        if (contract.isShooterReady()) {
+            leader.refreshDataFrame();
+            follower.refreshDataFrame();
+        }
     }
 }
 
