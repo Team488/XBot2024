@@ -23,8 +23,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
-    private final DoubleProperty shortRangeErrorTolerance;
-    private final DoubleProperty longRangeErrorTolerance;
+    private final DoubleProperty shortRangeErrorToleranceRpm;
+    private final DoubleProperty longRangeErrorToleranceRpm;
 
     //DEFINING MOTORS
     public XCANSparkMax leader;
@@ -46,8 +46,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
 
-        shortRangeErrorTolerance = pf.createPersistentProperty("ShortRangeErrorTolerance", 0);
-        longRangeErrorTolerance = pf.createPersistentProperty("LongRangeErrorTolerance", 0);
+        shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
+        longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -65,7 +65,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
             this.follower = sparkMaxFactory.create(contract.getShooterMotorFollower(), this.getPrefix(),
                     "ShooterFollower", null);
             this.follower.follow(this.leader, true);
-
         }
     }
 
@@ -127,22 +126,21 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     }
 
     public void resetWheel() {
-        setPower((double) 0);
-        setTargetValue((double) 0);
+        setPower(0.0);
+        setTargetValue(0.0);
         resetPID();
     }
 
     public void stopWheel() {
-        setPower((double) 0);
+        setPower(0.0);
     }
 
     public double getShortRangeErrorTolerance() {
-        return shortRangeErrorTolerance.get();
+        return shortRangeErrorToleranceRpm.get();
     }
 
-
     public double getLongRangeErrorTolerance() {
-        return longRangeErrorTolerance.get();
+        return longRangeErrorToleranceRpm.get();
     }
 
     public void resetPID() {
