@@ -4,27 +4,27 @@ import xbot.common.command.BaseSetpointCommand;
 import java.util.function.Supplier;
 import javax.inject.Inject;
 
-public class WarmUpShooterCommand extends BaseSetpointCommand {
+public class WarmUpShooterRPMCommand extends BaseSetpointCommand {
 
     ShooterWheelSubsystem shooter;
-    private Supplier<ShooterWheelSubsystem.TargetRPM> targetRPMSupplier;
+    private Supplier<Double> customRPM;
 
     @Inject
-    public WarmUpShooterCommand(ShooterWheelSubsystem shooter) {
+    public WarmUpShooterRPMCommand(ShooterWheelSubsystem shooter) {
         super(shooter);
         this.shooter = shooter;
     }
 
-    public void setTargetRpm(Supplier<ShooterWheelSubsystem.TargetRPM> targetRPMSupplier) {
-        this.targetRPMSupplier = targetRPMSupplier;
+    public void setTargetRpm(Supplier<Double> customRPM) {
+        this.customRPM = customRPM;
     }
 
-    public void setTargetRpm(ShooterWheelSubsystem.TargetRPM targetRpm) {
-        setTargetRpm(()-> targetRpm);
+    public void setTargetRpm(Double customRPM) {
+        setTargetRpm(()-> customRPM);
     }
 
     public void initialize() {
-        shooter.setTargetRPM(this.targetRPMSupplier.get());
+        shooter.setTargetValue(this.customRPM.get());
     }
 
     @Override
