@@ -313,6 +313,21 @@ public class PoseSubsystem extends BasePoseSubsystem {
         return matchTime;
     }
 
+    public double getDistanceFromSpeaker(){
+        double distanceFromSpeakerInMeters;
+        switch(DriverStation.getAlliance().get()){
+
+            //returns the distance from speaker in meters based on alliance multiplied by the ratio for RPM
+            case Red -> {
+                distanceFromSpeakerInMeters = getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.RED_SPEAKER_POSITION);
+            }
+            default -> {
+                distanceFromSpeakerInMeters = getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION);
+            }
+        }
+        return distanceFromSpeakerInMeters;
+    }
+
     @Override
     public void periodic() {
         super.periodic();

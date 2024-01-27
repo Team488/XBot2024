@@ -1,5 +1,6 @@
 package competition.subsystems.shooter;
 
+import competition.subsystems.vision.ShooterDistanceToRpmConverter;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -153,14 +154,14 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
             //returns the distance from speaker in meters based on alliance multiplied by the ratio for RPM
             case Red -> {
-                distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION);
+                distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.RED_SPEAKER_POSITION);
             }
             default -> {
                 distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION);
             }
         }
         //DISCLAIMER 400 IS JUST A PLACEHOLDER VALUE FOR METERS -> RPM RATIO, MORE TESTING IS REQUIRED TO FIGURE OUT THE CORRECT NUMBER
-        double rpm = distanceFromSpeakerInMeters * 400;
+        double rpm = distanceFromSpeakerInMeters * ShooterDistanceToRpmConverter.getSecantLineSlope();
         return rpm;
     }
 }
