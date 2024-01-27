@@ -10,7 +10,13 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
 
     ShooterWheelSubsystem shooter;
 
+    private enum Mode {
+        CUSTOM,
+        DEFAULT
+    }
     private Supplier<ShooterWheelSubsystem.TargetRPM> targetRPMSupplier;
+    private double customRPM;
+    private Mode mode;
 
     @Inject
     public WarmUpShooterCommand(ShooterWheelSubsystem shooter) {
@@ -18,7 +24,11 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
         this.shooter = shooter;
     }
 
+    private void setMode(Mode mode) {
+        this.mode = mode;
+    }
     public void setTargetRpm(Supplier<ShooterWheelSubsystem.TargetRPM> targetRPMSupplier) {
+        setMode(Mode.DEFAULT);
         this.targetRPMSupplier = targetRPMSupplier;
     }
 
@@ -26,8 +36,18 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
         setTargetRpm(()-> targetRpm);
     }
 
+    public void setArbitraryRPM(Double power) {
+        setMode(Mode.CUSTOM);
+        this.customRPM = power;
+    }
+
     public void initialize() {
-        shooter.setTargetRPM(this.targetRPMSupplier.get());
+        if (mode == Mode.CUSTOM) {
+            shooter.setTargetRPM(this.targetRPMSupplier.get());
+        }
+        else {
+            shooter.setTargetValue(this.customRPM);
+        }
     }
 
     @Override
