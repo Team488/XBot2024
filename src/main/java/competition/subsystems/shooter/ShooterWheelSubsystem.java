@@ -126,36 +126,31 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         return false;
     }
 
-    @Override
     public void resetWheel() {
         setPower((double) 0);
         setTargetValue((double) 0);
         resetPID();
     }
 
-    @Override
     public void stopWheel() {
         setPower((double) 0);
     }
 
-    @Override
     public double getShortRangeErrorTolerance() {
         return shortRangeErrorTolerance.get();
     }
 
-    @Override
+
     public double getLongRangeErrorTolerance() {
         return longRangeErrorTolerance.get();
     }
 
-    @Override
     public void resetPID() {
         if (contract.isShooterReady()) {
             leader.setIAccum(0);
         }
     }
 
-    @Override
     public void configurePID() {
         if (contract.isShooterReady()) {
             leader.setIMaxAccum(0, 0);
