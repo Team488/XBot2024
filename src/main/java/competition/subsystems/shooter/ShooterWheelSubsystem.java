@@ -123,9 +123,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     @Override
     public void periodic() {
-        Logger.recordOutput(getPrefix() + "TargetRPM", getTargetValue());
-        Logger.recordOutput(getPrefix() + "CurrentRPM", getCurrentValue());
-        Logger.recordOutput(getPrefix() + "TrimRPM", getTrimRPM());
+        aKitLog.record("TargetRPM", getTargetValue());
+        aKitLog.record("CurrentRPM", getCurrentValue());
+        aKitLog.record("TrimRPM", getTrimRPM());
     }
 
     @Override

@@ -155,8 +155,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
             improveFusedOdometryUsingPhotonLib(updatedPosition);
         }
 
-        Logger.recordOutput(getPrefix()+"VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
-        Logger.recordOutput(getPrefix()+"WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
+        aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
+        aKitLog.record("WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
         // Pull out the new estimated pose from odometry. Note that for now, we only pull out X and Y
         // and trust the gyro implicitly. Eventually, we should allow the gyro to be updated via vision
@@ -171,7 +171,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // Convert back to inches
         double prevTotalDistanceX = totalDistanceX;
         double prevTotalDistanceY = totalDistanceY;
-        Logger.recordOutput(this.getPrefix()+"RobotPose", estimatedPosition);
+        aKitLog.record("RobotPose", estimatedPosition);
 
         this.velocityX = ((totalDistanceX - prevTotalDistanceX));
         this.velocityY = ((totalDistanceY - prevTotalDistanceY));
@@ -312,8 +312,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
     @Override
     public void periodic() {
         super.periodic();
-        Logger.recordOutput(getPrefix()+"PoseHealthy", isPoseHealthy);
-        Logger.recordOutput(getPrefix()+"VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
+        aKitLog.record("PoseHealthy", isPoseHealthy);
+        aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
     }
 
 }

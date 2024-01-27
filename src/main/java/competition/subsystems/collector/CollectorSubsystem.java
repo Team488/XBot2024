@@ -66,7 +66,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     @Override
     public void periodic() {
-        Logger.recordOutput(getPrefix() + "HasGamePiece", getGamePieceCollected());
+        aKitLogger.record("HasGamePiece", getGamePieceCollected());
     }
 
     @Override

@@ -38,7 +38,7 @@ public class ManualRobotKnowledgeSubsystem extends BaseSubsystem implements Note
 
     @Override
     public void periodic() {
-        Logger.recordOutput(getPrefix()+"NoteCollected", noteCollected);
-        Logger.recordOutput(getPrefix()+"NoteShot", noteShot);
+        aKitLog.record("NoteCollected", noteCollected);
+        aKitLog.record("NoteShot", noteShot);
     }
 }

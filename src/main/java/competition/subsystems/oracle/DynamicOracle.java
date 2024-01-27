@@ -174,11 +174,11 @@ public class DynamicOracle extends BaseSubsystem {
             // Warm up the shooter
         }
 
-        Logger.recordOutput(this.getPrefix()+"Current Goal", currentHighLevelGoal);
-        Logger.recordOutput(this.getPrefix()+"Current Note",
+        aKitLog.record("Current Goal", currentHighLevelGoal);
+        aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
-        Logger.recordOutput(this.getPrefix()+"Terminating Point", getTerminatingPoint().getTerminatingPose());
-        Logger.recordOutput(this.getPrefix()+"MessageCount", getTerminatingPoint().getPoseMessageNumber());
+        aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
+        aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
     }
 
     Note targetNote;
