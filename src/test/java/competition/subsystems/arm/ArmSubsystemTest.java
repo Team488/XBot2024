@@ -25,13 +25,16 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         assertEquals(rightPower, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
     }
 
+    private void checkMotorPower(double power) {
+        checkMotorPower(power, power);
+    }
+
     @Test
     public void testExtend() {
         assertNotEquals(arm.extendPower.get(), 0, 0.0001);
-        checkMotorPower(0, 0);
+        checkMotorPower(0);
         arm.extend();
-        checkMotorPower(arm.extendPower.get(), arm.extendPower.get());
-        System.out.println(arm.armMotorLeft.getPosition());
+        checkMotorPower(arm.extendPower.get());
     }
 
     @Test
@@ -39,6 +42,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         assertNotEquals(arm.retractPower.get(), 0, 0.0001); // Check if retract power == 0
         checkMotorPower(0, 0); // Make sure motor not moving
         arm.retract();
+        checkMotorPower(arm.retractPower.get());
     }
 
     @Test
@@ -46,7 +50,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.extend();
         assertNotEquals(0, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
         arm.stop();
-        checkMotorPower(0, 0);
+        checkMotorPower(0);
     }
 
     @Test
@@ -69,7 +73,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     @Test
     public void testForwardLimitSwitch() {
         assertFalse(arm.hasSetTruePositionOffset);
-        ((MockCANSparkMax)arm.armMotorLeft).setPosition(14850);
+        ((MockCANSparkMax)arm.armMotorLeft).setPosition(arm.armMotorRevolutionLimit.get() - 150);
         ((MockCANSparkMax)arm.armMotorLeft).setForwardLimitSwitchStateForTesting(true);
         arm.periodic();
         assertEquals(150, arm.armMotorRevolutionOffset.get(), 0.0001);
