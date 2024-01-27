@@ -2,6 +2,7 @@ package competition.subsystems.collector;
 
 import competition.electrical_contract.ElectricalContract;
 import org.littletonrobotics.junction.Logger;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
@@ -14,7 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CollectorSubsystem extends BaseSubsystem{
+public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefreshable {
     public final XCANSparkMax collectorMotor;
     public final DoubleProperty intakePower;
     public final DoubleProperty ejectPower;
@@ -34,7 +35,7 @@ public class CollectorSubsystem extends BaseSubsystem{
                               ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
         this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
-        this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio().channel);
+        this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio());
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.1);
@@ -68,4 +69,9 @@ public class CollectorSubsystem extends BaseSubsystem{
         Logger.recordOutput(getPrefix() + "HasGamePiece", getGamePieceCollected());
     }
 
+    @Override
+    public void refreshDataFrame() {
+        collectorMotor.refreshDataFrame();
+        noteSensor.refreshDataFrame();
+    }
 }
