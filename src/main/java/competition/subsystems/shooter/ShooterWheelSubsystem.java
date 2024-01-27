@@ -1,16 +1,19 @@
 package competition.subsystems.shooter;
 
 import org.littletonrobotics.junction.Logger;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
+
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 
 @Singleton
-public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
+public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
     public enum TargetRPM {
         SAFE,
         NEARSHOT,
@@ -19,7 +22,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
 
     // IMPORTANT PROPERTIES
     private double targetRpm;
-    private double currentRpm;
     private double trimRpm;
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
@@ -32,6 +34,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
     // DEFINING CONTRACT
     final ElectricalContract contract;
 
+    @Inject
     public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
@@ -122,5 +125,11 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> {
         Logger.recordOutput(getPrefix() + "TargetRPM", getTargetValue());
         Logger.recordOutput(getPrefix() + "CurrentRPM", getCurrentValue());
         Logger.recordOutput(getPrefix() + "TrimRPM", getTrimRPM());
+    }
+
+    @Override
+    public void refreshDataFrame() {
+        leader.refreshDataFrame();
+        follower.refreshDataFrame();
     }
 }
