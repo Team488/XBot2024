@@ -52,8 +52,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final BooleanProperty allianceAwareFieldProp;
     private final BooleanProperty useVisionForPoseProp;
     private final Latch useVisionToUpdateGyroLatch;
-    public final static Translation2d BLUE_SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
-    public final static Translation2d RED_SPEAKER_POSITION = new Translation2d(16.579342,5.547868);
+    public static final  Translation2d BLUE_SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
+    public static final Translation2d RED_SPEAKER_POSITION = new Translation2d(16.579342,5.547868);
 
     private DoubleProperty matchTime;
 
