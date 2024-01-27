@@ -31,8 +31,7 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
     private DoubleProperty armPowerMin;
   
     public DoubleProperty ticksToMmRatio; // Millimeters
-    public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
-    public DoubleProperty armMotorRightRevolutionOffset;
+    public DoubleProperty armMotorRevolutionOffset; // # of revolutions
     public DoubleProperty armMotorRevolutionLimit;
     boolean hasSetTruePositionOffset;
 
@@ -56,8 +55,7 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
 
         // All the DoubleProperties below needs configuration.
         ticksToMmRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000);
-        armMotorLeftRevolutionOffset = pf.createPersistentProperty("ArmMotorLeftPositionOffset", 0);
-        armMotorRightRevolutionOffset = pf.createPersistentProperty("ArmMotorRightPositionOffset", 0);
+        armMotorRevolutionOffset = pf.createPersistentProperty("ArmMotorLeftPositionOffset", 0);
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
         hasSetTruePositionOffset = false;
 
@@ -122,15 +120,15 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
         Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
         Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(
-                armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
+                armMotorLeft.getPosition() + armMotorRevolutionOffset.get()));
         Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(
-                armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
+                armMotorRight.getPosition() + armMotorRevolutionOffset.get()));
 
         Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle(
-                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
-                        + armMotorRightRevolutionOffset.get()) / 2));
+                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorRevolutionOffset.get()) / 2));
     }
 
+    // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
     public void checkForArmOffset() {
         if (hasSetTruePositionOffset) {
             return;
@@ -139,13 +137,11 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         // At max limit sensor?
         if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
             hasSetTruePositionOffset = true;
-            armMotorLeftRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
-            armMotorRightRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorRight.getPosition());
+            armMotorRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
         } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
             // At min (lowest) limit sensor?
             hasSetTruePositionOffset = true;
-            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
-            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
+            armMotorRevolutionOffset.set(-armMotorLeft.getPosition());
         }
     }
 
