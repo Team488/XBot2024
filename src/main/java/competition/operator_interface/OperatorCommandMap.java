@@ -3,6 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.auto.DriveCoupleFeetCommand;
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
@@ -39,7 +40,8 @@ public class OperatorCommandMap {
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
             DynamicOracle oracle,
             ReconcileArmAlignmentCommand slightLeftArmForward,
-            ReconcileArmAlignmentCommand slightLeftArmBackward)
+            ReconcileArmAlignmentCommand slightLeftArmBackward,
+            DriveCoupleFeetCommand driveCoupleFeetCommand)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -64,7 +66,7 @@ public class OperatorCommandMap {
         avoidColumnTest.logic.setConstantVelocity(1);
         avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
 
 
         oracleSwerve.logic.setEnableConstantVelocity(true);
@@ -85,5 +87,6 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
 
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(driveCoupleFeetCommand);
     }
 }
