@@ -126,6 +126,7 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
     }
 
     public void armEncoderTicksUpdate() {
+
         aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
         aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
         aKitLog.record("ArmMotorLeftDistance", ticksToDistance(
@@ -138,6 +139,7 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
                         + armMotorRightRevolutionOffset.get()) / 2));
     }
 
+    // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
     public void checkForArmOffset() {
         if (hasSetTruePositionOffset) {
             return;
@@ -160,6 +162,8 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         if (contract.isArmReady()) {
             armEncoderTicksUpdate();
             checkForArmOffset();
+            armMotorLeft.periodic();
+            armMotorRight.periodic();
         }
         aKitLog.record("Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     }
