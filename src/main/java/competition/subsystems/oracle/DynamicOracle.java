@@ -64,27 +64,31 @@ public class DynamicOracle extends BaseSubsystem {
         Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(0));
 
         activeScoringPosition = scoringPositionTop;
-        createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.5, "PartnerA");
-        createRobotObstacle(scoringPositionBottom.getTranslation(), 1.5, "PartnerB");
+        createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.75, "PartnerA");
+        createRobotObstacle(scoringPositionBottom.getTranslation(), 1.75, "PartnerB");
     }
 
     Pose2d activeScoringPosition;
 
+    int noteCount = 1;
     private void reserveNote(Note.KeyNoteNames specificNote) {
         Note reserved = noteMap.getNote(specificNote);
         reserved.setAvailability(Note.NoteAvailability.ReservedByOthersInAuto);
         // create an obstacle at the same location.
         field.addObstacle(new Obstacle(reserved.getLocation().getTranslation().getX(),
-                reserved.getLocation().getTranslation().getY(), 1.25, 1.25, "ReservedNote"));
+                reserved.getLocation().getTranslation().getY(), 1.25, 1.25, "ReservedNote" + noteCount));
+        noteCount++;
     }
 
     private void createRobotObstacle(Translation2d location, double sideLength, String name) {
         field.addObstacle(new Obstacle(location.getX(), location.getY(), sideLength, sideLength, name));
     }
 
-    private void createObstacleWithRobotWidth(double x, double y, double width, double height,
+    private Obstacle createObstacleWithRobotWidth(double x, double y, double width, double height,
                                               double robotWidth, String name, LowResField field) {
-        field.addObstacle(new Obstacle(x, y, width+robotWidth, height+robotWidth, name));
+        var obstacle = new Obstacle(x, y, width+robotWidth, height+robotWidth, name);
+        field.addObstacle(obstacle);
+        return obstacle;
     }
 
     private LowResField setupLowResField() {
@@ -99,6 +103,11 @@ public class DynamicOracle extends BaseSubsystem {
         createObstacleWithRobotWidth(3.34, 4.122, 0.254,0.254, .914, "BlueLeftStageColumn", field);
         createObstacleWithRobotWidth(5.58, 5.42, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
         createObstacleWithRobotWidth(5.58,  2.82,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
+
+        var speaker = createObstacleWithRobotWidth(0.415, 5.57, 0.95, 1.1, 0, "BlueSpeaker", field);
+        speaker.defaultBottomLeft = false;
+        speaker.defaultTopLeft = false;
+
         return field;
     }
 
@@ -213,8 +222,9 @@ public class DynamicOracle extends BaseSubsystem {
 
         wpiStates.add(topLeftcorner);
         wpiStates.add(topRightCorner);
-        wpiStates.add(bottomLeftCorner);
         wpiStates.add(bottomRightCorner);
+        wpiStates.add(bottomLeftCorner);
+        wpiStates.add(topLeftcorner);
 
         return new Trajectory(wpiStates);
     }
