@@ -5,6 +5,7 @@ import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -51,6 +52,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final BooleanProperty allianceAwareFieldProp;
     private final BooleanProperty useVisionForPoseProp;
     private final Latch useVisionToUpdateGyroLatch;
+    public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
     public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
     public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5534, new Rotation2d());
     public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());

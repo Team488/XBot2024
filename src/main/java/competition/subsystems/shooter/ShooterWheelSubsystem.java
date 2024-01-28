@@ -1,7 +1,9 @@
 package competition.subsystems.shooter;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
+import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
@@ -20,6 +22,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         DISTANCESHOT
     }
 
+    //need pose for real time calculations
+    PoseSubsystem pose;
+
+
     // IMPORTANT PROPERTIES
     private double targetRpm;
     private double trimRpm;
@@ -31,6 +37,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty iMaxAccumValueForShooter;
 
 
+
+
     //DEFINING MOTORS
     public XCANSparkMax leader;
     public XCANSparkMax follower;
@@ -39,7 +47,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     final ElectricalContract contract;
 
     @Inject
-    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract) {
+    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
         pf.setPrefix(this);
@@ -47,6 +55,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
+
+        this.pose = pose;
 
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
         longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
@@ -171,4 +181,15 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
             follower.refreshDataFrame();
         }
     }
+    
+    //returns the RPM based on the distance from the speaker
+    public double getSpeedForRange(){
+        double distanceFromSpeakerInMeters;
+        distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(
+                PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+        //DISCLAIMER 400 IS JUST A PLACEHOLDER VALUE FOR METERS -> RPM RATIO, MORE TESTING IS REQUIRED TO FIGURE OUT THE CORRECT NUMBER
+        double rpm = distanceFromSpeakerInMeters * 400;
+        return rpm;
+    }
 }
+
