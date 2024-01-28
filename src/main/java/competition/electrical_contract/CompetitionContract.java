@@ -164,6 +164,12 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     // ArmSubsystem
+
+    @Override
+    public boolean isArmReady() {
+        return false;
+    }
+
     @Override
     public DeviceInfo getArmMotorLeft() {
         return new DeviceInfo("ArmMotorLeft", 10, true);

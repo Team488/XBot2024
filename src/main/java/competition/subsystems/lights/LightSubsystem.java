@@ -77,12 +77,12 @@ public class LightSubsystem extends BaseSubsystem {
             dioOutputs[i].set(((stateValue & (1 << i)) != 0));
         }
 
-        Logger.recordOutput(getPrefix() + "ArduinoState", currentState.toString());
-        Logger.recordOutput(getPrefix() + "DIO0", dio0.get());
-        Logger.recordOutput(getPrefix() + "DIO1", dio1.get());
-        Logger.recordOutput(getPrefix() + "DIO2", dio2.get());
-        Logger.recordOutput(getPrefix() + "DIO3", dio3.get());
-        Logger.recordOutput(getPrefix() + "DIO4", dio4.get());
-        Logger.recordOutput(getPrefix() + "IsConeDIO", cubeDio.get());
+        aKitLog.record("ArduinoState", currentState.toString());
+        aKitLog.record("DIO0", dio0.get());
+        aKitLog.record("DIO1", dio1.get());
+        aKitLog.record("DIO2", dio2.get());
+        aKitLog.record("DIO3", dio3.get());
+        aKitLog.record("DIO4", dio4.get());
+        aKitLog.record("IsConeDIO", cubeDio.get());
     }
 }

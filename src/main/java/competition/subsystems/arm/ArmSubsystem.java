@@ -20,8 +20,10 @@ import javax.inject.Singleton;
 @Singleton
 public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
 
-    public final XCANSparkMax armMotorLeft;
-    public final XCANSparkMax armMotorRight;
+    public XCANSparkMax armMotorLeft;
+    public XCANSparkMax armMotorRight;
+
+    public final ElectricalContract contract;
 
     public ArmState armState;
 
@@ -50,6 +52,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                         ElectricalContract contract) {
 
         pf.setPrefix(this);
+        this.contract = contract;
 
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
@@ -64,10 +67,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
         hasSetTruePositionOffset = false;
 
-        armMotorLeft = sparkMaxFactory.createWithoutProperties(
-                contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
-        armMotorRight = sparkMaxFactory.createWithoutProperties(
-                contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+        if (contract.isArmReady()) {
+            armMotorLeft = sparkMaxFactory.createWithoutProperties(
+                    contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
+            armMotorRight = sparkMaxFactory.createWithoutProperties(
+                    contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+        }
+
         this.armState = ArmState.STOPPED;
     }
 
@@ -85,8 +91,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
         rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), armPowerMax.get());
 
-        armMotorLeft.set(leftPower);
-        armMotorRight.set(rightPower);
+        if (contract.isArmReady()) {
+            armMotorLeft.set(leftPower);
+            armMotorRight.set(rightPower);
+        }
     }
 
     /**
@@ -95,6 +103,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
      */
     public void setPower(double power) {
         setPower(power, power);
+    }
+
+    @Override
+    public void setPower(Double power) {
+        setPower(power);
     }
 
     public void extend() {
@@ -121,18 +134,20 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void armEncoderTicksUpdate() {
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(
+
+        aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
+        aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
+        aKitLog.record("ArmMotorLeftDistance", ticksToDistance(
                 armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
-        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(
+        aKitLog.record("ArmMotorRightDistance", ticksToDistance(
                 armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
 
-        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle(
+        aKitLog.record("ArmMotorToShooterAngle", ticksToShooterAngle(
                 (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
                         + armMotorRightRevolutionOffset.get()) / 2));
     }
 
+    // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
     public void checkForArmOffset() {
         if (hasSetTruePositionOffset) {
             return;
@@ -168,12 +183,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
          targetAngle = value;
     }
 
-    @Override
-    public void setPower(Double power) {
-        armMotorLeft.set(power);
-        armMotorRight.set(power);
-    }
-
 
     @Override
     public boolean isCalibrated() {
@@ -181,14 +190,20 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void periodic() {
-        armEncoderTicksUpdate();
-        checkForArmOffset();
-        Logger.recordOutput(getPrefix() + "Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
+        if (contract.isArmReady()) {
+            armEncoderTicksUpdate();
+            checkForArmOffset();
+            armMotorLeft.periodic();
+            armMotorRight.periodic();
+        }
+        aKitLog.record("Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     }
 
     @Override
     public void refreshDataFrame() {
-        armMotorLeft.refreshDataFrame();
-        armMotorRight.refreshDataFrame();
+        if (contract.isArmReady()) {
+            armMotorLeft.refreshDataFrame();
+            armMotorRight.refreshDataFrame();
+        }
     }
 }
