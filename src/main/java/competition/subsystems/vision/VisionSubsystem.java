@@ -148,7 +148,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             // Log the estimated pose, and log an insane value if we don't have one (so we don't clutter up the visualization)
             if (estimatedPose.isPresent())
             {
-                Logger.recordOutput(getPrefix()+name+"Estimate", estimatedPose.get().estimatedPose.toPose2d());
+                aKitLog.record(name+"Estimate", estimatedPose.get().estimatedPose.toPose2d());
             }
 
             var isReliable = !estimatedPose.isEmpty() && isEstimatedPoseReliable(estimatedPose.get(), previousEstimatedRobotPose);
@@ -241,8 +241,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                     + ", Rear April camera working: " + rearAprilCameraWorking);
         }
 
-        Logger.recordOutput(getPrefix()+"ForwardAprilCameraWorking", forwardAprilCameraWorking);
-        Logger.recordOutput(getPrefix()+"RearAprilCameraWorking", rearAprilCameraWorking);
+        aKitLog.record("ForwardAprilCameraWorking", forwardAprilCameraWorking);
+        aKitLog.record("RearAprilCameraWorking", rearAprilCameraWorking);
     }
 
     @Override

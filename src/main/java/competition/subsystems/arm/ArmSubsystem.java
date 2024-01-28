@@ -126,14 +126,14 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
     }
 
     public void armEncoderTicksUpdate() {
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(
+        aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
+        aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
+        aKitLog.record("ArmMotorLeftDistance", ticksToDistance(
                 armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
-        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(
+        aKitLog.record("ArmMotorRightDistance", ticksToDistance(
                 armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
 
-        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle(
+        aKitLog.record("ArmMotorToShooterAngle", ticksToShooterAngle(
                 (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
                         + armMotorRightRevolutionOffset.get()) / 2));
     }
@@ -161,7 +161,7 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
             armEncoderTicksUpdate();
             checkForArmOffset();
         }
-        Logger.recordOutput(getPrefix() + "Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
+        aKitLog.record("Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     }
 
     @Override
