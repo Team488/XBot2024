@@ -33,7 +33,8 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
     private DoubleProperty armPowerMin;
   
     public DoubleProperty ticksToMmRatio; // Millimeters
-    public DoubleProperty armMotorRevolutionOffset; // # of revolutions
+    public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
+    public DoubleProperty armMotorRightRevolutionOffset;
     public DoubleProperty armMotorRevolutionLimit;
     boolean hasSetTruePositionOffset;
 
@@ -58,7 +59,8 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
 
         // All the DoubleProperties below needs configuration.
         ticksToMmRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000);
-        armMotorRevolutionOffset = pf.createPersistentProperty("ArmMotorLeftPositionOffset", 0);
+        armMotorLeftRevolutionOffset = pf.createPersistentProperty("ArmMotorLeftPositionOffset", 0);
+        armMotorRightRevolutionOffset = pf.createPersistentProperty("ArmMotorRightPositionOffset", 0);
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
         hasSetTruePositionOffset = false;
 
@@ -124,15 +126,17 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
     }
 
     public void armEncoderTicksUpdate() {
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(
-                armMotorLeft.getPosition() + armMotorRevolutionOffset.get()));
-        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(
-                armMotorRight.getPosition() + armMotorRevolutionOffset.get()));
 
-        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle(
-                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorRevolutionOffset.get()) / 2));
+        aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
+        aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
+        aKitLog.record("ArmMotorLeftDistance", ticksToDistance(
+                armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
+        aKitLog.record("ArmMotorRightDistance", ticksToDistance(
+                armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
+
+        aKitLog.record("ArmMotorToShooterAngle", ticksToShooterAngle(
+                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
+                        + armMotorRightRevolutionOffset.get()) / 2));
     }
 
     // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
@@ -144,11 +148,13 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         // At max limit sensor?
         if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
             hasSetTruePositionOffset = true;
-            armMotorRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
+            armMotorLeftRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
+            armMotorRightRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorRight.getPosition());
         } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
             // At min (lowest) limit sensor?
             hasSetTruePositionOffset = true;
-            armMotorRevolutionOffset.set(-armMotorLeft.getPosition());
+            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
+            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
         }
     }
 
@@ -156,8 +162,10 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         if (contract.isArmReady()) {
             armEncoderTicksUpdate();
             checkForArmOffset();
+            armMotorLeft.periodic();
+            armMotorRight.periodic();
         }
-        Logger.recordOutput(getPrefix() + "Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
+        aKitLog.record("Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     }
 
     @Override

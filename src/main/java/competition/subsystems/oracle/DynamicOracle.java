@@ -80,12 +80,19 @@ public class DynamicOracle extends BaseSubsystem {
         field.addObstacle(new Obstacle(location.getX(), location.getY(), sideLength, sideLength, name));
     }
 
+    private void createObstacleWithRobotWidth(double x, double y, double width, double height,
+                                              double robotWidth, String name, LowResField field) {
+        double calculatedWidth = (robotWidth / 2) + width;
+        field.addObstacle(new Obstacle(x, y, calculatedWidth, height, name));
+    }
+
     private LowResField setupLowResField() {
         field = new LowResField();
         // For now, just add the three columns in the middle.
-        field.addObstacle(new Obstacle(3.4, 4.1, 1,1, "BlueLeftStageColumn"));
-        field.addObstacle(new Obstacle(5.6, 5.3, 1,1, "BlueTopStageColumn"));
-        field.addObstacle(new Obstacle(5.6, 2.8, 1,1, "BlueBottomStageColumn"));
+        createObstacleWithRobotWidth(3.2004, 4.105656, 0.254,0.254, .914, "BlueLeftStageColumn", field);
+        // widths and height are different to account for angle differences
+        createObstacleWithRobotWidth(5.8129, 5.553456, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
+        createObstacleWithRobotWidth(5.8129,  2.657856,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
         return field;
     }
 
@@ -174,11 +181,11 @@ public class DynamicOracle extends BaseSubsystem {
             // Warm up the shooter
         }
 
-        Logger.recordOutput(this.getPrefix()+"Current Goal", currentHighLevelGoal);
-        Logger.recordOutput(this.getPrefix()+"Current Note",
+        aKitLog.record("Current Goal", currentHighLevelGoal);
+        aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
-        Logger.recordOutput(this.getPrefix()+"Terminating Point", getTerminatingPoint().getTerminatingPose());
-        Logger.recordOutput(this.getPrefix()+"MessageCount", getTerminatingPoint().getPoseMessageNumber());
+        aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
+        aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
     }
 
     Note targetNote;

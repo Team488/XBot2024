@@ -66,7 +66,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.periodic();
 
         // Check offset, offset is the actual position when you had initially started
-        assertEquals(150, arm.armMotorRevolutionOffset.get(), 0.0001);
+        assertEquals(150, arm.armMotorLeftRevolutionOffset.get(), 0.0001);
         assertTrue(arm.hasSetTruePositionOffset);
     }
 
@@ -76,7 +76,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         ((MockCANSparkMax)arm.armMotorLeft).setPosition(arm.armMotorRevolutionLimit.get() - 150);
         ((MockCANSparkMax)arm.armMotorLeft).setForwardLimitSwitchStateForTesting(true);
         arm.periodic();
-        assertEquals(150, arm.armMotorRevolutionOffset.get(), 0.0001);
+        assertEquals(150, arm.armMotorLeftRevolutionOffset.get(), 0.0001);
         assertTrue(arm.hasSetTruePositionOffset);
     }
 

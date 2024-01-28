@@ -143,8 +143,8 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         }
 
         // Log these just before sending them to the drive.
-        Logger.recordOutput(getPrefix()+"TranslationIntent", scaledTranslationIntent);
-        Logger.recordOutput(getPrefix()+"SuggestedRotateIntent", rotateIntent);
+        aKitLog.record("TranslationIntent", scaledTranslationIntent);
+        aKitLog.record("SuggestedRotateIntent", rotateIntent);
 
         // Finally, send the intents as either robot-relative or field-relative.
         if (drive.isRobotOrientedDriveActive()) {
