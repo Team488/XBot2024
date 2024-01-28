@@ -4,6 +4,7 @@ import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.trajectory.LowResField;
@@ -12,6 +13,7 @@ import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
 
 @Singleton
 public class DynamicOracle extends BaseSubsystem {
@@ -82,17 +84,21 @@ public class DynamicOracle extends BaseSubsystem {
 
     private void createObstacleWithRobotWidth(double x, double y, double width, double height,
                                               double robotWidth, String name, LowResField field) {
-        double calculatedWidth = (robotWidth / 2) + width;
-        field.addObstacle(new Obstacle(x, y, calculatedWidth, height, name));
+        field.addObstacle(new Obstacle(x, y, width+robotWidth, height+robotWidth, name));
     }
 
     private LowResField setupLowResField() {
         field = new LowResField();
         // For now, just add the three columns in the middle.
-        createObstacleWithRobotWidth(3.2004, 4.105656, 0.254,0.254, .914, "BlueLeftStageColumn", field);
+        // !!These values seem incorrect on simulator!!.
+        // createObstacleWithRobotWidth(3.2004, 4.105656, 0.254,0.254, .914, "BlueLeftStageColumn", field);
         // widths and height are different to account for angle differences
-        createObstacleWithRobotWidth(5.8129, 5.553456, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
-        createObstacleWithRobotWidth(5.8129,  2.657856,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
+        //createObstacleWithRobotWidth(5.8129, 5.553456, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
+        //createObstacleWithRobotWidth(5.8129,  2.657856,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
+
+        createObstacleWithRobotWidth(3.34, 4.122, 0.254,0.254, .914, "BlueLeftStageColumn", field);
+        createObstacleWithRobotWidth(5.58, 5.42, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
+        createObstacleWithRobotWidth(5.58,  2.82,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
         return field;
     }
 
@@ -186,6 +192,31 @@ public class DynamicOracle extends BaseSubsystem {
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
         aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
         aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+
+        // Let's show some major obstacles
+        field.getObstacles().forEach(obstacle -> {
+            aKitLog.record(obstacle.getName(), obstacleToTrajectory(obstacle));
+        });
+    }
+
+    private Trajectory obstacleToTrajectory(Obstacle o) {
+        // create a trajectory using the 4 corners of the obstacle.
+        ArrayList<Trajectory.State> wpiStates = new ArrayList<>();
+        var topLeftcorner = new Trajectory.State();
+        topLeftcorner.poseMeters = new Pose2d(o.topLeft, Rotation2d.fromDegrees(0));
+        var topRightCorner = new Trajectory.State();
+        topRightCorner.poseMeters = new Pose2d(o.topRight, Rotation2d.fromDegrees(0));
+        var bottomLeftCorner = new Trajectory.State();
+        bottomLeftCorner.poseMeters = new Pose2d(o.bottomLeft, Rotation2d.fromDegrees(0));
+        var bottomRightCorner = new Trajectory.State();
+        bottomRightCorner.poseMeters = new Pose2d(o.bottomRight, Rotation2d.fromDegrees(0));
+
+        wpiStates.add(topLeftcorner);
+        wpiStates.add(topRightCorner);
+        wpiStates.add(bottomLeftCorner);
+        wpiStates.add(bottomRightCorner);
+
+        return new Trajectory(wpiStates);
     }
 
     Note targetNote;
