@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
+import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.math.MathUtils;
@@ -17,7 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable {
+public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
 
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
@@ -31,12 +32,14 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
 
     private DoubleProperty armPowerMax;
     private DoubleProperty armPowerMin;
-  
+
+
     public DoubleProperty ticksToMmRatio; // Millimeters
     public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
     public DoubleProperty armMotorRightRevolutionOffset;
     public DoubleProperty armMotorRevolutionLimit;
     boolean hasSetTruePositionOffset;
+    private double targetAngle;
 
     public enum ArmState {
         EXTENDING,
@@ -102,6 +105,11 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
         setPower(power, power);
     }
 
+    @Override
+    public void setPower(Double power) {
+        setPower(power);
+    }
+
     public void extend() {
         setPower(extendPower.get());
         armState = ArmState.EXTENDING;
@@ -156,6 +164,29 @@ public class ArmSubsystem extends BaseSubsystem implements DataFrameRefreshable 
             armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
             armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
         }
+    }
+    @Override
+    public Double getCurrentValue() {
+        armMotorLeft.getPosition();
+        armMotorRight.getPosition();
+        //returning 0 for now value will be changed later
+        return 0.0;
+    }
+
+    @Override
+    public Double getTargetValue() {
+        return targetAngle;
+    }
+
+    @Override
+    public void setTargetValue(Double value) {
+         targetAngle = value;
+    }
+
+
+    @Override
+    public boolean isCalibrated() {
+        return false;
     }
 
     public void periodic() {
