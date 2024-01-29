@@ -5,11 +5,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
-import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.Obstacle;
-import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -56,8 +55,8 @@ public class DynamicOracle extends BaseSubsystem {
         firstRunInNewGoal = true;
         setupLowResField();
 
-        reserveNote(Note.KeyNoteNames.SpikeMiddle);
-        reserveNote(Note.KeyNoteNames.SpikeBottom);
+        reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
+        reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
 
         Pose2d scoringPositionTop = new Pose2d(1.3, 6.9, Rotation2d.fromDegrees(0));
         Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(0));
@@ -84,6 +83,13 @@ public class DynamicOracle extends BaseSubsystem {
         field.addObstacle(new Obstacle(location.getX(), location.getY(), sideLength, sideLength, name));
     }
 
+    private Obstacle createObstacleWithRobotWidth(Translation2d location, double width, double height,
+                                                  double robotWidth, String name, LowResField field) {
+        return createObstacleWithRobotWidth(location.getX(), location.getY(), width, height, robotWidth, name, field);
+    }
+
+
+
     private Obstacle createObstacleWithRobotWidth(double x, double y, double width, double height,
                                               double robotWidth, String name, LowResField field) {
         var obstacle = new Obstacle(x, y, width+robotWidth, height+robotWidth, name);
@@ -100,11 +106,29 @@ public class DynamicOracle extends BaseSubsystem {
         //createObstacleWithRobotWidth(5.8129, 5.553456, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
         //createObstacleWithRobotWidth(5.8129,  2.657856,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
 
-        createObstacleWithRobotWidth(3.34, 4.122, 0.254,0.254, .914, "BlueLeftStageColumn", field);
-        createObstacleWithRobotWidth(5.58, 5.42, 0.3469,0.3469, .914, "BlueTopStageColumn", field);
-        createObstacleWithRobotWidth(5.58,  2.82,0.3469, 0.3469, .914, "BlueBottomStageColumn", field);
+        // Blue obstacles
+        createObstacleWithRobotWidth(PoseSubsystem.BlueLeftStageColumn,
+                PoseSubsystem.closeColumnWidth, PoseSubsystem.closeColumnWidth, .914, "BlueLeftStageColumn", field);
+        createObstacleWithRobotWidth(PoseSubsystem.BlueTopStageColumn,
+                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, .914,"BlueTopStageColumn", field);
+        createObstacleWithRobotWidth(PoseSubsystem.BlueBottomStageColumn,
+                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, .914, "BlueBottomStageColumn", field);
 
-        var speaker = createObstacleWithRobotWidth(0.415, 5.57, 0.95, 1.1, 0, "BlueSpeaker", field);
+        var speaker = createObstacleWithRobotWidth(PoseSubsystem.BlueSubwoofer,
+                PoseSubsystem.SubwooferWidth, PoseSubsystem.SubwooferHeight, .914, "BlueSubwoofer", field);
+        speaker.defaultBottomLeft = false;
+        speaker.defaultTopLeft = false;
+
+        // Red obstacles
+        createObstacleWithRobotWidth(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueLeftStageColumn),
+                PoseSubsystem.closeColumnWidth, PoseSubsystem.closeColumnWidth, .914, "RedLeftStageColumn", field);
+        createObstacleWithRobotWidth(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueTopStageColumn),
+                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, .914, "RedTopStageColumn", field);
+        createObstacleWithRobotWidth(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueBottomStageColumn),
+                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, .914, "RedBottomStageColumn", field);
+
+        speaker = createObstacleWithRobotWidth(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueSubwoofer),
+                PoseSubsystem.SubwooferWidth, PoseSubsystem.SubwooferHeight, .914, "RedSubwoofer", field);
         speaker.defaultBottomLeft = false;
         speaker.defaultTopLeft = false;
 
