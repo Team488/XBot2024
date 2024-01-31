@@ -192,7 +192,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(
                 PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
         //DISCLAIMER 400 IS JUST A PLACEHOLDER VALUE FOR METERS -> RPM RATIO, MORE TESTING IS REQUIRED TO FIGURE OUT THE CORRECT NUMBER
-        double rpm = distanceFromSpeakerInMeters * 400;
+        double rpm = distanceFromSpeakerInMeters * ShooterDistanceToRpmConverter.getSecantLineSlope(pose);
 
         return rpm;
     }

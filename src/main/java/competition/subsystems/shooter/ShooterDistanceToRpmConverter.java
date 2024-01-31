@@ -10,6 +10,7 @@ public class ShooterDistanceToRpmConverter {
     //IMPORTANT: BOTH ARRAYS NEED TO BE ORDERED IN INCREASING ORDER, EACH ELEMENT AT EACH INDEX CORRESPONDS TO THE SAME INDEX IN THE OTHER ARRAY
     //THINK OF IT LIKE A COORDINATE PAIR: rpmForDistance[0] has the RPM needed for the distance in distancesFromSpeaker[0]
     static double[] distancesFromSpeaker = {};
+    //the values inputted here NEED TO BE TESTED ON THE ACTUAL ROBOT SHOOTER
     static double[] rpmForDistance = {};
 
 
