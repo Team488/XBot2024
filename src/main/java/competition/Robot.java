@@ -16,12 +16,18 @@ import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
+import xbot.common.math.MovingAverage;
+import xbot.common.math.MovingAverageForDouble;
+import xbot.common.math.MovingAverageForTranslation2d;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class Robot extends BaseRobot {
+
+    public Robot() {
+    }
 
     @Override
     protected void initializeSystems() {
@@ -91,6 +97,11 @@ public class Robot extends BaseRobot {
             );
     }
 
+    MovingAverageForTranslation2d translationAverageCalculator =
+            new MovingAverageForTranslation2d(15);
+    MovingAverageForDouble rotationAverageCalculator =
+            new MovingAverageForDouble(15);
+
     @Override
     public void simulationPeriodic() {
         super.simulationPeriodic();
@@ -123,78 +134,4 @@ public class Robot extends BaseRobot {
                 currentPose.getRotation().plus(Rotation2d.fromDegrees(currentRotationAverage * headingAdjustmentFactorForSimulation)));
         pose.setCurrentPoseInMeters(updatedPose);
     }
-
-    public class MovingAverage<T> {
-        private static final int SIZE = 15;
-        private Queue<T> queue;
-        private T sum;
-        private SumFunction<T> sumFunction;
-
-        public MovingAverage(SumFunction<T> sumFunction, T initialValue) {
-            this.queue = new LinkedList<>();
-            this.sum = initialValue;
-            this.sumFunction = sumFunction;
-        }
-
-        public void add(T value) {
-            sum = sumFunction.add(sum, value);
-            queue.add(value);
-            if (queue.size() > SIZE) {
-                sum = sumFunction.subtract(sum, queue.remove());
-            }
-        }
-
-        public T getAverage() {
-            if (queue.isEmpty()) {
-                return sum;
-            }
-            return sumFunction.divide(sum, queue.size());
-        }
-
-        public interface SumFunction<T> {
-            T add(T a, T b);
-            T subtract(T a, T b);
-            T divide(T a, int b);
-        }
-    }
-
-    MovingAverage<Translation2d> translationAverageCalculator = new MovingAverage<>(
-            new MovingAverage.SumFunction<Translation2d>() {
-                @Override
-                public Translation2d add(Translation2d a, Translation2d b) {
-                    return a.plus(b);
-                }
-
-                @Override
-                public Translation2d subtract(Translation2d a, Translation2d b) {
-                    return a.minus(b);
-                }
-
-                @Override
-                public Translation2d divide(Translation2d a, int b) {
-                    return new Translation2d(a.getX() / b, a.getY() / b);
-                }
-            },
-            new Translation2d()
-    );
-
-    MovingAverage<Double> rotationAverageCalculator = new MovingAverage<>(
-            new MovingAverage.SumFunction<Double>() {
-                @Override
-                public Double add(Double a, Double b) {
-                    return a + b;
-                }
-
-                @Override
-                public Double subtract(Double a, Double b) {
-                    return a - b;
-                }
-
-                @Override
-                public Double divide(Double a, int b) {
-                    return a / b;
-                }
-            },
-            0.0
-    );
 }
