@@ -2,16 +2,28 @@ package competition.subsystems.shooter;
 
 import competition.subsystems.pose.PoseSubsystem;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.lang.Math;
 
-@Singleton
 public class ShooterDistanceToRpmConverter {
     //IMPORTANT: BOTH ARRAYS NEED TO BE ORDERED IN INCREASING ORDER, EACH ELEMENT AT EACH INDEX CORRESPONDS TO THE SAME INDEX IN THE OTHER ARRAY
     //THINK OF IT LIKE A COORDINATE PAIR: rpmForDistance[0] has the RPM needed for the distance in distancesFromSpeaker[0]
     double[] distancesFromSpeaker = {};
     //the values inputted here NEED TO BE TESTED ON THE ACTUAL ROBOT SHOOTER
     double[] rpmForDistance = {};
+
+    //the only purpose for the contructor is for testing, its not required outside of testing
+    @Inject
+    public ShooterDistanceToRpmConverter(double[] distancesFromSpeaker, double[] rpmForDistance){
+        this.distancesFromSpeaker = distancesFromSpeaker;
+        this.rpmForDistance = rpmForDistance;
+    }
+
+    public ShooterDistanceToRpmConverter(){
+        this.distancesFromSpeaker = getDistancesFromSpeaker();
+        this.rpmForDistance = getRpmForDistance();
+    }
 
 
     //estimates the slope needed for our distance based on prerecorded data
@@ -29,6 +41,11 @@ public class ShooterDistanceToRpmConverter {
         return secantLineSlope;
     }
 
+    public double[] getRpmForDistance() {
+        return rpmForDistance;
+    }
 
-
+    public double[] getDistancesFromSpeaker() {
+        return distancesFromSpeaker;
+    }
 }
