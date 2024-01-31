@@ -94,4 +94,65 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         assertTrue(arm.hasCalibratedRight);
     }
 
+    @Test
+    public void testSoftLimit() {
+
+        // The goal is: at limit, set power, check motor power
+
+        // Both arm motors are static at first
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
+
+        // Left hit reverse limit!
+        ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
+        arm.periodic();
+
+        // Tries to set power of both motors to -0.3, but result should be: left: 0, right: -0.3
+        arm.setPower(-0.3);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
+        assertEquals(-0.3, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
+
+        // Reverse of above events
+        ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(false);
+        ((MockCANSparkMax)arm.armMotorRight).setReverseLimitSwitchStateForTesting(true);
+        arm.periodic();
+        arm.setPower(-0.3);
+        assertEquals(-0.3, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
+
+        // Left hits it again
+        ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
+        arm.periodic();
+        arm.setPower(-0.3);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
+
+        // Reset
+        ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(false);
+        ((MockCANSparkMax)arm.armMotorRight).setReverseLimitSwitchStateForTesting(false);
+
+        // New story: Left hit forward limit!
+        ((MockCANSparkMax)arm.armMotorLeft).setForwardLimitSwitchStateForTesting(true);
+        arm.periodic();
+
+        // Tries to set power of both motors to 0.3, but result should be: left: 0, right: 0.3
+        arm.setPower(0.3);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
+        assertEquals(0.3, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
+
+        // Now right hits the limit, left no longer at limit
+        ((MockCANSparkMax)arm.armMotorLeft).setForwardLimitSwitchStateForTesting(false);
+        ((MockCANSparkMax)arm.armMotorRight).setForwardLimitSwitchStateForTesting(true);
+        arm.periodic();
+        arm.setPower(0.3);
+        assertEquals(0.3, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
+
+        // Now left also hits forward limit
+        ((MockCANSparkMax)arm.armMotorLeft).setForwardLimitSwitchStateForTesting(true);
+        arm.periodic();
+        arm.setPower(0.2);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
+        assertEquals(0, ((MockCANSparkMax)arm.armMotorRight).get(), 0.0001);
+    }
 }
