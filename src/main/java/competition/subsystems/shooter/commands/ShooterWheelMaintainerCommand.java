@@ -11,7 +11,7 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
     final ShooterWheelSubsystem wheel;
     final OperatorInterface oi;
 
-    public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf, HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory, ShooterWheelSubsystem wheel1) {
+    public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf, HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory) {
         super(wheel, pf, hvmFactory, 0, 0);
         this.oi = oi;
         this.wheel = wheel;
@@ -21,32 +21,54 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
     @Override
     public void initialize() {
         log.info("Initializing...");
-    }
-
-    @Override
-    protected void coastAction() {
-
+        wheel.configurePID();
     }
 
     @Override
     protected void calibratedMachineControlAction() {
-
+        double speed = wheel.getTargetValue();
+        // NOT FINISHED
     }
 
     @Override
-    protected double getErrorMagnitude() {
-        return 0;
+    protected void coastAction() {
+        // DOES NOT NEED TO HAVE ANYTHING
+    }
+
+    protected void initializeMachineControlAction() {
+        wheel.resetPID();
     }
 
     @Override
     protected Double getHumanInput() {
+        // I THINK WE CURRENTLY DON'T HAVE ANY HUMAN INPUT.
         return 0.0;
     }
 
-    
+    protected void end() {
+        wheel.resetWheel();
+    }
 
     @Override
     protected double getHumanInputMagnitude() {
+        return 0.0;
+    }
+
+    protected boolean getErrorWithinTolerance() {
+        // THESE VALUES NEED TUNING
+        double tolerance = 400;
+        double limit = 1000;
+
+        if (wheel.getTargetValue() < limit) {
+            tolerance = wheel.getShortRangeErrorTolerance();
+        } else {
+            tolerance = wheel.getLongRangeErrorTolerance();
+        }
+        return false;
+    }
+
+    @Override
+    protected double getErrorMagnitude() {
         return 0;
     }
 }
