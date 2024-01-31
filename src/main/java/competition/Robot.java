@@ -25,6 +25,7 @@ public class Robot extends BaseRobot {
     protected void initializeSystems() {
         super.initializeSystems();
         getInjectorComponent().subsystemDefaultCommandMap();
+        getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());

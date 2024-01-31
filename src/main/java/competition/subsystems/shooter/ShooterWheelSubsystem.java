@@ -1,6 +1,8 @@
 package competition.subsystems.shooter;
 
+
 import competition.subsystems.vision.ShooterDistanceToRpmConverter;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -33,6 +35,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
+    private final DoubleProperty shortRangeErrorToleranceRpm;
+    private final DoubleProperty longRangeErrorToleranceRpm;
+    private final DoubleProperty iMaxAccumValueForShooter;
+
+
+
 
 
 
@@ -55,6 +63,14 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
         this.pose = pose;
 
+
+        shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
+        longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
+
+        // NEEDS TUNING TO FIND CORRECT VALUE
+        iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
+
+
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
 //        wheelDefaultProps.p = 0.00008;
@@ -71,7 +87,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
             this.follower = sparkMaxFactory.create(contract.getShooterMotorFollower(), this.getPrefix(),
                     "ShooterFollower", null);
             this.follower.follow(this.leader, true);
-
         }
     }
 
@@ -132,14 +147,41 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         return false;
     }
 
-    @Override
-    public void periodic() {
-        Logger.recordOutput(getPrefix() + "TargetRPM", getTargetValue());
-        Logger.recordOutput(getPrefix() + "CurrentRPM", getCurrentValue());
-        Logger.recordOutput(getPrefix() + "TrimRPM", getTrimRPM());
+    public void resetWheel() {
+        setPower(0.0);
+        setTargetValue(0.0);
+        resetPID();
     }
 
-    @Override
+    public void stopWheel() {
+        setPower(0.0);
+    }
+
+    public double getShortRangeErrorTolerance() {
+        return shortRangeErrorToleranceRpm.get();
+    }
+
+    public double getLongRangeErrorTolerance() {
+        return longRangeErrorToleranceRpm.get();
+    }
+
+    public void resetPID() {
+        if (contract.isShooterReady()) {
+            leader.setIAccum(0);
+        }
+    }
+
+    public void configurePID() {
+        if (contract.isShooterReady()) {
+            leader.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
+        }
+    }
+    public void periodic() {
+        aKitLog.record("TargetRPM", getTargetValue());
+        aKitLog.record("CurrentRPM", getCurrentValue());
+        aKitLog.record("TrimRPM", getTrimRPM());
+    }
+
     public void refreshDataFrame() {
         if (contract.isShooterReady()) {
             leader.refreshDataFrame();
@@ -150,18 +192,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     //returns the RPM based on the distance from the speaker
     public double getSpeedForRange(){
         double distanceFromSpeakerInMeters;
-        switch(DriverStation.getAlliance().get()){
 
-            //returns the distance from speaker in meters based on alliance multiplied by the ratio for RPM
-            case Red -> {
-                distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.RED_SPEAKER_POSITION);
-            }
-            default -> {
-                distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(PoseSubsystem.BLUE_SPEAKER_POSITION);
-            }
-        }
+        distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(
+                PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
         //DISCLAIMER 400 IS JUST A PLACEHOLDER VALUE FOR METERS -> RPM RATIO, MORE TESTING IS REQUIRED TO FIGURE OUT THE CORRECT NUMBER
-        double rpm = distanceFromSpeakerInMeters * ShooterDistanceToRpmConverter.getSecantLineSlope(pose);
+        double rpm = distanceFromSpeakerInMeters * 400;
+
         return rpm;
     }
 }
