@@ -42,39 +42,40 @@ public class OperatorCommandMap {
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).onTrue(pose.createCopyFusedOdometryToWheelsOdometryCommand());
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(pose.createSetPositionCommand(
-                new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0))));
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).onTrue(pose.createSetPositionCommand(
+                new Pose2d(2.760, 5.396, Rotation2d.fromDegrees(90))));
 
-        ArrayList<XbotSwervePoint> points = new ArrayList<>();
-        points.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.6, 5.65), Rotation2d.fromDegrees(0), 10));
-        swerveTest.logic.setKeyPoints(points);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).onTrue(swerveTest);
+
+        ArrayList<XbotSwervePoint> pointsB = new ArrayList<>();
+        pointsB.add(XbotSwervePoint.createXbotSwervePoint(
+                new Translation2d(1, 3), Rotation2d.fromDegrees(0), 10));
+        swerveTest.logic.setKeyPoints(pointsB);
         swerveTest.logic.setEnableConstantVelocity(true);
         swerveTest.logic.setConstantVelocity(1);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(swerveTest);
-
-        ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
-        columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.9, 5.4), Rotation2d.fromDegrees(0), 10));
-        avoidColumnTest.logic.setKeyPoints(columnPoints);
-        avoidColumnTest.logic.setEnableConstantVelocity(true);
-        avoidColumnTest.logic.setConstantVelocity(1);
-        avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(swerveTest);
 
 
-        oracleSwerve.logic.setEnableConstantVelocity(true);
-        oracleSwerve.logic.setConstantVelocity(3);
-        oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        ArrayList<XbotSwervePoint> pointsY = new ArrayList<>();
+        pointsY.add(XbotSwervePoint.createXbotSwervePoint(
+                new Translation2d(2.760, 5.396), Rotation2d.fromDegrees(0), 10));
+        swerveTest.logic.setKeyPoints(pointsY);
+        swerveTest.logic.setEnableConstantVelocity(true);
+        swerveTest.logic.setConstantVelocity(1);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(swerveTest);
+
+
+        ArrayList<XbotSwervePoint> pointsSt = new ArrayList<>();
+        pointsSt.add(XbotSwervePoint.createXbotSwervePoint(
+                new Translation2d(1.5, 5.5), Rotation2d.fromDegrees(90), 10));
+        swerveTest.logic.setKeyPoints(pointsSt);
+        swerveTest.logic.setEnableConstantVelocity(true);
+        swerveTest.logic.setConstantVelocity(1);
+
+
     }
 }
