@@ -40,6 +40,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty armMotorRevolutionLimit;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
+
     LimitState leftArmAtLimit;
     LimitState rightArmAtLimit;
 
@@ -199,7 +200,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
             leftArmAtLimit = LimitState.AT_REVERSE;
         }
-
         if (armMotorRight.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
             rightArmAtLimit = LimitState.AT_FORWARD;
         } else if (armMotorRight.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
