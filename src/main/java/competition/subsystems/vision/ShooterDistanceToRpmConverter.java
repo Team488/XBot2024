@@ -12,7 +12,7 @@ public class ShooterDistanceToRpmConverter {
 
     //estimates the slope needed for our distance based on prerecorded data
     public static double getSecantLineSlope(PoseSubsystem pose) {
-        double secantLineSlope;
+        double secantLineSlope = 0;
         for (int i = 1; i < distancesFromSpeaker.length - 1; i++) {
             //logic to find where currentPosition lies in the array
             if (distancesFromSpeaker[i - 1] < pose.getDistanceFromSpeaker() && pose.getDistanceFromSpeaker() < distancesFromSpeaker[i + 1]) {
@@ -21,7 +21,7 @@ public class ShooterDistanceToRpmConverter {
                         (rpmForDistance[i + 1] - rpmForDistance[i - 1]) / (distancesFromSpeaker[i + 1] - distancesFromSpeaker[i - 1]);
             }
         }
-        //experiment with rounding the numbers
+        //returns ZERO if our current distance is further than the greatest range tested on the robot
         return secantLineSlope;
     }
 
