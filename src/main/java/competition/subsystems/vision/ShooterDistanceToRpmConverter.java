@@ -9,6 +9,8 @@ public class ShooterDistanceToRpmConverter {
     static double[] distancesFromSpeaker = {};
     static double[] rpmForDistance = {};
 
+
+    //estimates the slope needed for our distance based on prerecorded data
     public static double getSecantLineSlope(PoseSubsystem pose) {
         double secantLineSlope;
         for (int i = 1; i < distancesFromSpeaker.length - 1; i++) {
