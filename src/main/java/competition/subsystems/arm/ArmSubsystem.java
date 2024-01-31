@@ -41,8 +41,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
 
-    LimitState leftArmAtLimit;
-    LimitState rightArmAtLimit;
+    LimitState leftArmLimitState;
+    LimitState rightArmLimitState;
 
     private double targetAngle;
 
@@ -58,8 +58,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         NOT_AT_LIMIT
     }
 
-    public enum UsefulArmPositions {
-
+    public enum UsefulArmPosition {
+        DEFAULT,
+        RAISED,
+        COLLECTING_FROM_GROUND,
+        FIRING_FROM_SPEAKER_FRONT
     }
 
     @Inject
@@ -91,8 +94,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
         this.armState = ArmState.STOPPED;
-        this.leftArmAtLimit = LimitState.NOT_AT_LIMIT;
-        this.rightArmAtLimit = LimitState.NOT_AT_LIMIT;
+        this.leftArmLimitState = LimitState.NOT_AT_LIMIT;
+        this.rightArmLimitState = LimitState.NOT_AT_LIMIT;
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -106,15 +109,15 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
         // Check if arm at limit
-        if (leftArmAtLimit == LimitState.AT_FORWARD) {
+        if (leftArmLimitState == LimitState.AT_FORWARD) {
             leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), 0);
-        } else if (leftArmAtLimit == LimitState.AT_REVERSE) {
+        } else if (leftArmLimitState == LimitState.AT_REVERSE) {
             leftPower = MathUtils.constrainDouble(leftPower, 0, armPowerMax.get());
         }
 
-        if (rightArmAtLimit == LimitState.AT_FORWARD) {
+        if (rightArmLimitState == LimitState.AT_FORWARD) {
             rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), 0);
-        } else if (rightArmAtLimit == LimitState.AT_REVERSE) {
+        } else if (rightArmLimitState == LimitState.AT_REVERSE) {
             rightPower = MathUtils.constrainDouble(rightPower, 0, armPowerMax.get());
         }
 
@@ -164,6 +167,23 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return ticks * 1000; // To be modified into ticks to shooter angle formula
     }
 
+    public double shooterAngleToTicks(double angle) {
+        return 0;
+    }
+
+    public double getUsefulArmPosition(UsefulArmPosition usefulArmPosition) {
+        double revolutions;
+        switch(usefulArmPosition) {
+            case DEFAULT -> revolutions = shooterAngleToTicks(40);
+            case RAISED -> revolutions = shooterAngleToTicks(40);
+            case COLLECTING_FROM_GROUND -> revolutions = shooterAngleToTicks(40);
+            case FIRING_FROM_SPEAKER_FRONT -> revolutions = shooterAngleToTicks(40);
+            default -> revolutions = shooterAngleToTicks(40);
+        }
+        return revolutions;
+    }
+
+
     public void armEncoderTicksUpdate() {
         aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
         aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
@@ -199,18 +219,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             }
         }
 
-        leftArmAtLimit = LimitState.NOT_AT_LIMIT;
-        rightArmAtLimit = LimitState.NOT_AT_LIMIT;
+        leftArmLimitState = LimitState.NOT_AT_LIMIT;
+        rightArmLimitState = LimitState.NOT_AT_LIMIT;
 
         if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
-            leftArmAtLimit = LimitState.AT_FORWARD;
+            leftArmLimitState = LimitState.AT_FORWARD;
         } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
-            leftArmAtLimit = LimitState.AT_REVERSE;
+            leftArmLimitState = LimitState.AT_REVERSE;
         }
         if (armMotorRight.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
-            rightArmAtLimit = LimitState.AT_FORWARD;
+            rightArmLimitState = LimitState.AT_FORWARD;
         } else if (armMotorRight.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
-            rightArmAtLimit = LimitState.AT_REVERSE;
+            rightArmLimitState = LimitState.AT_REVERSE;
         }
 
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);

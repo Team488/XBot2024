@@ -24,10 +24,10 @@ public class BaseArmCommandsTest extends BaseCompetitionTest {
     public void setUp() {
         super.setUp();
         arm = getInjectorComponent().armSubsystem();
-        extend = new ExtendArmCommand(arm);
-        retract = new RetractArmCommand(arm);
-        stop = new StopArmCommand(arm);
-        reconcile = new ReconcileArmAlignmentCommand(arm);
+        extend = getInjectorComponent().extendArmCommand();
+        retract = getInjectorComponent().retractArmCommand();
+        stop = getInjectorComponent().stopArmCommand();
+        reconcile = getInjectorComponent().reconcileArmAlignmentCommand();
     }
 
     private void checkMotorPower(double power) {
