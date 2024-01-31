@@ -8,7 +8,7 @@ import javax.inject.Inject;
 public class ReconcileArmAlignmentCommand extends BaseCommand {
 
     ArmSubsystem armSubsystem;
-    public double power = 0.05;
+    double power;
 
     @Inject
     public ReconcileArmAlignmentCommand(ArmSubsystem armSubsystem) {
@@ -28,6 +28,6 @@ public class ReconcileArmAlignmentCommand extends BaseCommand {
     @Override
     public void execute() {
         // You only need to move one arm to reconcile, in this case, it is left.
-        armSubsystem.setPower(0, power);
+        armSubsystem.setPower(power, 0);
     }
 }

@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 
 import competition.electrical_contract.ElectricalContract;
 import edu.wpi.first.wpilibj.DriverStation;
-import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XDigitalOutput;
 import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
@@ -29,7 +28,14 @@ public class LightSubsystem extends BaseSubsystem {
     final XDigitalOutput[] dioOutputs;
     private int loopCounter;
     private final int loopMod = 5;
-    private String chosenState;
+    private final StringProperty chosenState;
+
+    private final BooleanProperty dio0Property;
+    private final BooleanProperty dio1Property;
+    private final BooleanProperty dio2Property;
+    private final BooleanProperty dio3Property;
+    private final BooleanProperty dio4Property;
+    private final BooleanProperty cubeDioProperty;
 
     public enum LightsStateMessage{
         //at this time values are here as placeholders
@@ -67,7 +73,13 @@ public class LightSubsystem extends BaseSubsystem {
 
         pf.setPrefix(this);
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
-        chosenState = "Nothing Yet Set";
+        chosenState = pf.createEphemeralProperty("ArduinoState", "Nothing Yet Set");
+        dio0Property = pf.createEphemeralProperty("DIO0", false);
+        dio1Property = pf.createEphemeralProperty("DIO1", false);
+        dio2Property = pf.createEphemeralProperty("DIO2", false);
+        dio3Property = pf.createEphemeralProperty("DIO3", false);
+        dio4Property = pf.createEphemeralProperty("DIO4", false);
+        cubeDioProperty = pf.createEphemeralProperty("IsConeDIO", false);
     }
     public void periodic() {
         LightsStateMessage currentState = LightsStateMessage.RobotNotBooted;
@@ -77,12 +89,13 @@ public class LightSubsystem extends BaseSubsystem {
             dioOutputs[i].set(((stateValue & (1 << i)) != 0));
         }
 
-        aKitLog.record("ArduinoState", currentState.toString());
-        aKitLog.record("DIO0", dio0.get());
-        aKitLog.record("DIO1", dio1.get());
-        aKitLog.record("DIO2", dio2.get());
-        aKitLog.record("DIO3", dio3.get());
-        aKitLog.record("DIO4", dio4.get());
-        aKitLog.record("IsConeDIO", cubeDio.get());
+        boolean dsEnabled = DriverStation.isEnabled();
+        chosenState.set(currentState.toString());
+        dio0Property.set(dio0.get());
+        dio1Property.set(dio1.get());
+        dio2Property.set(dio2.get());
+        dio3Property.set(dio3.get());
+        dio4Property.set(dio4.get());
+        cubeDioProperty.set(cubeDio.get());
     }
 }

@@ -112,7 +112,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
 
         Twist2d powers = logic.calculatePowers(pose.getCurrentPose2d(), drive.getPositionalPid(), headingModule);
 
-        aKitLog.record("Powers", powers);
+        Logger.recordOutput(getPrefix()+"Powers", powers);
 
         drive.fieldOrientedDrive(
                 new XYPair(powers.dx, powers.dy),

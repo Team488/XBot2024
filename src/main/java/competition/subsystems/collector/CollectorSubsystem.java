@@ -1,8 +1,6 @@
 package competition.subsystems.collector;
 
 import competition.electrical_contract.ElectricalContract;
-import org.littletonrobotics.junction.Logger;
-import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
@@ -15,11 +13,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefreshable {
+public class CollectorSubsystem extends BaseSubsystem{
     public final XCANSparkMax collectorMotor;
     public final DoubleProperty intakePower;
     public final DoubleProperty ejectPower;
     private IntakeState intakeState;
+    private final BooleanProperty gamePieceCollected;
     private final XDigitalInput noteSensor;
     private final ElectricalContract contract;
 
@@ -34,12 +33,13 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                               ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
-        this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
-        this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio());
+        this.collectorMotor = sparkMaxFactory.create(contract.getCollectorMotor(), getPrefix(), "CollectorMotor", null);
+        this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio().channel);
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.1);
         ejectPower = pf.createPersistentProperty("ejectPower",0.1);
+        gamePieceCollected = pf.createEphemeralProperty("HasGamePiece", false);
 
         this.intakeState = IntakeState.STOPPED;
     }
@@ -61,17 +61,14 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
 
     public boolean getGamePieceCollected() {
-        return noteSensor.get();
+        return gamePieceCollected.get();
     }
-
+    public void updateGamePieceCollected() {
+        gamePieceCollected.set(noteSensor.get());
+    }
     @Override
     public void periodic() {
-        aKitLog.record("HasGamePiece", getGamePieceCollected());
+        updateGamePieceCollected();
     }
 
-    @Override
-    public void refreshDataFrame() {
-        collectorMotor.refreshDataFrame();
-        noteSensor.refreshDataFrame();
-    }
 }

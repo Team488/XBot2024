@@ -1,9 +1,5 @@
 package competition.injection.components;
 
-import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.collector.CollectorSubsystem;
-import competition.subsystems.schoocher.ScoocherSubsystem;
-import competition.subsystems.shooter.ShooterWheelSubsystem;
 import xbot.common.injection.swerve.SwerveComponentHolder;
 import competition.operator_interface.OperatorCommandMap;
 import competition.operator_interface.OperatorInterface;
@@ -29,12 +25,4 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract SwerveComponentHolder swerveComponents();
 
     public abstract VisionSubsystem visionSubsystem();
-
-    public abstract ArmSubsystem armSubsystem();
-
-    public abstract ScoocherSubsystem scoocherSubsystem();
-
-    public abstract CollectorSubsystem collectorSubsystem();
-
-    public abstract ShooterWheelSubsystem shooterSubsystem();
 }
