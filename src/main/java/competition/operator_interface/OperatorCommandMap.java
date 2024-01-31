@@ -8,6 +8,8 @@ import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.schoocher.commands.EjectScoocherCommand;
+import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -85,5 +87,11 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
 
+    }
+
+    @Inject
+    // eject is placeholder for ArmSetPoint
+    public void setupScooching(IntakeScoocherCommand intake, EjectScoocherCommand eject) {
+        var combinedCommand = intake.alongWith(eject);
     }
 }
