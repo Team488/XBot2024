@@ -57,6 +57,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         NOT_AT_LIMIT
     }
 
+    public enum UsefulArmPositions {
+
+    }
+
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         ElectricalContract contract) {
@@ -193,6 +197,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
             }
         }
+
+        leftArmAtLimit = LimitState.NOT_AT_LIMIT;
+        rightArmAtLimit = LimitState.NOT_AT_LIMIT;
 
         if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
             leftArmAtLimit = LimitState.AT_FORWARD;
