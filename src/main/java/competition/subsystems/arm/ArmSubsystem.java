@@ -40,12 +40,21 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty armMotorRevolutionLimit;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
+    LimitState leftArmAtLimit;
+    LimitState rightArmAtLimit;
+
     private double targetAngle;
 
     public enum ArmState {
         EXTENDING,
         RETRACTING,
         STOPPED
+    }
+
+    public enum LimitState {
+        AT_FORWARD,
+        AT_REVERSE,
+        NOT_AT_LIMIT
     }
 
     @Inject
@@ -77,6 +86,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
         this.armState = ArmState.STOPPED;
+        this.leftArmAtLimit = LimitState.NOT_AT_LIMIT;
+        this.rightArmAtLimit = LimitState.NOT_AT_LIMIT;
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -87,6 +98,19 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.set(0);
             log.error("armPowerMax or armPowerMin values out of bound!");
             return;
+        }
+
+        // Check if arm at limit
+        if (leftArmAtLimit == LimitState.AT_FORWARD) {
+            leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), 0);
+        } else if (leftArmAtLimit == LimitState.AT_REVERSE) {
+            leftPower = MathUtils.constrainDouble(leftPower, 0, armPowerMax.get());
+        }
+
+        if (rightArmAtLimit == LimitState.AT_FORWARD) {
+            rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), 0);
+        } else if (rightArmAtLimit == LimitState.AT_REVERSE) {
+            rightPower = MathUtils.constrainDouble(rightPower, 0, armPowerMax.get());
         }
 
         // Put power within limit range (if not already)
@@ -168,6 +192,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 hasCalibratedRight = true;
                 armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
             }
+        }
+
+        if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+            leftArmAtLimit = LimitState.AT_FORWARD;
+        } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+            leftArmAtLimit = LimitState.AT_REVERSE;
+        }
+
+        if (armMotorRight.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+            rightArmAtLimit = LimitState.AT_FORWARD;
+        } else if (armMotorRight.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+            rightArmAtLimit = LimitState.AT_REVERSE;
         }
 
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
