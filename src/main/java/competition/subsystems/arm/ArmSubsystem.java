@@ -38,7 +38,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
     public DoubleProperty armMotorRightRevolutionOffset;
     public DoubleProperty armMotorRevolutionLimit;
-    boolean hasSetTruePositionOffset;
+    boolean hasCalibratedLeft;
+    boolean hasCalibratedRight;
     private double targetAngle;
 
     public enum ArmState {
@@ -62,10 +63,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         // All the DoubleProperties below needs configuration.
         ticksToMmRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000);
-        armMotorLeftRevolutionOffset = pf.createPersistentProperty("ArmMotorLeftPositionOffset", 0);
-        armMotorRightRevolutionOffset = pf.createPersistentProperty("ArmMotorRightPositionOffset", 0);
+        armMotorLeftRevolutionOffset = pf.createPersistentProperty("ArmMotorLeftRevolutionOffset", 0);
+        armMotorRightRevolutionOffset = pf.createPersistentProperty("ArmMotorRightRevolutionOffset", 0);
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
-        hasSetTruePositionOffset = false;
+        hasCalibratedLeft = false;
+        hasCalibratedRight = false;
 
         if (contract.isArmReady()) {
             armMotorLeft = sparkMaxFactory.createWithoutProperties(
@@ -107,7 +109,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     public void setPower(Double power) {
-        setPower(power);
+        setPower(power.doubleValue());
     }
 
     public void extend() {
@@ -134,7 +136,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void armEncoderTicksUpdate() {
-
         aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
         aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
         aKitLog.record("ArmMotorLeftDistance", ticksToDistance(
@@ -148,22 +149,29 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
-    public void checkForArmOffset() {
-        if (hasSetTruePositionOffset) {
-            return;
+    public void calibrateArmOffset() {
+        if (!hasCalibratedLeft) {
+            if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+                hasCalibratedLeft = true;
+                armMotorLeftRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
+            } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+                hasCalibratedLeft = true;
+                armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
+            }
         }
 
-        // At max limit sensor?
-        if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
-            hasSetTruePositionOffset = true;
-            armMotorLeftRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
-            armMotorRightRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorRight.getPosition());
-        } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
-            // At min (lowest) limit sensor?
-            hasSetTruePositionOffset = true;
-            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
-            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
+        if (!hasCalibratedRight) {
+            if (armMotorRight.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+                hasCalibratedRight = true;
+                armMotorRightRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorRight.getPosition());
+            } else if (armMotorRight.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+                hasCalibratedRight = true;
+                armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
+            }
         }
+
+        aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
+        aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
     }
     @Override
     public Double getCurrentValue() {
@@ -192,7 +200,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public void periodic() {
         if (contract.isArmReady()) {
             armEncoderTicksUpdate();
-            checkForArmOffset();
+            calibrateArmOffset();
             armMotorLeft.periodic();
             armMotorRight.periodic();
         }
