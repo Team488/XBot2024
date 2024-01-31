@@ -1,4 +1,4 @@
-package competition.subsystems.vision;
+package competition.subsystems.shooter;
 
 import competition.subsystems.pose.PoseSubsystem;
 

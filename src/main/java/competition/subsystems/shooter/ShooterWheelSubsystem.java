@@ -1,10 +1,6 @@
 package competition.subsystems.shooter;
 
 
-import competition.subsystems.vision.ShooterDistanceToRpmConverter;
-
-import edu.wpi.first.wpilibj.DriverStation;
-import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
