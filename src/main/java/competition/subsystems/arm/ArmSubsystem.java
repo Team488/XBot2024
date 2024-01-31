@@ -107,7 +107,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     public void setPower(Double power) {
-        setPower(power);
+        if (contract.isArmReady()) {
+            armMotorLeft.set(power);
+            armMotorRight.set(power);
+        }
     }
 
     public void extend() {
@@ -186,6 +189,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     public boolean isCalibrated() {
+        aKitLog.record("Target Angle" + targetAngle);
         return false;
     }
 
