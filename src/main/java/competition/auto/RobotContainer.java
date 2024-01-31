@@ -24,7 +24,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class RobotContainer {
     private final DriveSubsystem drive;
     private final PoseSubsystem pose;
@@ -50,7 +52,8 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
 //        return autoChooser.getSelected();
         PathPlannerPath path = PathPlannerPath.fromPathFile("TESTPATH");
-
+        path.preventFlipping = true;
         return AutoBuilder.followPath(path);
+//        return new PathPlannerAuto("TESTAUTO");
     }
 }

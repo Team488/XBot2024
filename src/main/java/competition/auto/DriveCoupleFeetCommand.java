@@ -1,9 +1,10 @@
 package competition.auto;
 
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.math.WrappedRotation2d;
 
 import javax.inject.Inject;
 
@@ -12,21 +13,27 @@ public class DriveCoupleFeetCommand extends BaseCommand {
     Command autonomousCommand;
     RobotContainer robotContainer;
     DriveSubsystem driveSubsystem;
+    PoseSubsystem pose;
 
     @Inject
-    public DriveCoupleFeetCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer, DriveSubsystem driveSubsystem) {
+    public DriveCoupleFeetCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
+                                  DriveSubsystem driveSubsystem, PoseSubsystem pose) {
         this.robotContainer = robotContainer;
         this.drive = drive;
         this.driveSubsystem = driveSubsystem;
-        this.addRequirements(driveSubsystem);
-        this.addRequirements(drive);
+        this.pose = pose;
+        addRequirements(driveSubsystem);
+        addRequirements(drive);
         this.autonomousCommand = robotContainer.getAutonomousCommand();
+        autonomousCommand.addRequirements(drive);
+        autonomousCommand.addRequirements(driveSubsystem);
 
     }
 
     @Override
     public void initialize() {
         log.info("Initializing");
+        pose.setCurrentPosition(0.61, 7, new WrappedRotation2d(0));
         autonomousCommand.schedule();
     }
 
@@ -36,7 +43,7 @@ public class DriveCoupleFeetCommand extends BaseCommand {
 
     @Override
     public boolean isFinished() {
-        return false;
+        return autonomousCommand.isFinished();
     }
 
     @Override

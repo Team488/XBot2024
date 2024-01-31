@@ -9,11 +9,14 @@ import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.math.XYPair;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class PathPlannerDriveSubsystem extends BaseSubsystem {
     final DriveSubsystem drive;
     final PoseSubsystem pose;
@@ -31,7 +34,7 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                         new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                         new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
-                        0.3, // Max module speed, in m/s
+                        0.5, // Max module speed, in m/s
                         0.4, // Drive base radius in meters. Distance from robot center to furthest module.
                         new ReplanningConfig() // Default path replanning config. See the API for the options here
                 ),
@@ -61,11 +64,18 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
         return drive.getSwerveDriveKinematics().toChassisSpeeds(drive.getSwerveModuleStates());
     }
 
-    public void driveRobotRelative(ChassisSpeeds speeds) {
-        XYPair xySpeeds = new XYPair(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond);
-        drive.move(xySpeeds, getChassisSpeeds().omegaRadiansPerSecond);
+    public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
+        XYPair xySpeeds = new XYPair(robotRelativeSpeeds.vxMetersPerSecond, robotRelativeSpeeds.vyMetersPerSecond);
+        drive.move(xySpeeds, robotRelativeSpeeds.omegaRadiansPerSecond);
     }
+
     public void stop() {
         drive.stop();
+    }
+
+    @Override
+    public void periodic() {
+        Logger.recordOutput(getPrefix() + "CurrentPose", pose.getCurrentPose2d());
+        Logger.recordOutput(getPrefix() + "Current ChassisSpeeds", getChassisSpeeds());
     }
 }

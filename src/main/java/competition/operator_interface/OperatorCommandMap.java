@@ -66,7 +66,7 @@ public class OperatorCommandMap {
         avoidColumnTest.logic.setConstantVelocity(1);
         avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(avoidColumnTest);
 
 
         oracleSwerve.logic.setEnableConstantVelocity(true);
@@ -75,17 +75,17 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper)
+//                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
+//                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
 
         // ReconcileArmAlignmentCommand
-        slightLeftArmForward.setReconcilePower(0.05);
-        slightLeftArmBackward.setReconcilePower(-0.05);
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
+//        slightLeftArmForward.setReconcilePower(0.05);
+//        slightLeftArmBackward.setReconcilePower(-0.05);
+//
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(driveCoupleFeetCommand);
     }
