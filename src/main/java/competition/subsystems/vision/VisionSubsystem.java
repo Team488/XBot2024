@@ -5,7 +5,6 @@ import competition.subsystems.pose.XbotPhotonPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -42,6 +41,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final PhotonCameraExtended forwardAprilCamera;
     final PhotonCameraExtended rearAprilCamera;
 
+    boolean forwardAprilCameraWorking = true;
+    boolean rearAprilCameraWorking = true;
+
     //final XPhotonCamera akitForwardAprilCamera;
     //final PhotonCameraExtended akitRearAprilCamera;
 
@@ -57,7 +59,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     XbotPhotonPoseEstimator customPhotonPoseEstimator;
     PhotonPoseEstimator frontPhotonPoseEstimator;
     PhotonPoseEstimator rearPhotonPoseEstimator;
-    boolean visionWorking = false;
+    boolean aprilTagsLoaded = false;
     long logCounter = 0;
 
     @Inject
@@ -78,12 +80,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         // of errors. Some sort of VisionReady in the ElectricalContract may also make sense. Similarly,
         // we need to handle cases like not having the AprilTag data loaded.
 
+        PhotonCameraExtended.setVersionCheckEnabled(false);
         forwardAprilCamera = new PhotonCameraExtended("forwardAprilCamera");
         rearAprilCamera = new PhotonCameraExtended("rearAprilCamera");
 
+        // Check to see if we have incorrect versions. If so, then we need to not use that camera as the underlying libraries
+        // could be unstable, leading to robot crashes or anomalous behavior.
+        forwardAprilCameraWorking = isCameraWorking(forwardAprilCamera);
+        rearAprilCameraWorking = isCameraWorking(rearAprilCamera);
+
         try {
             aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
-            visionWorking = true;
+            aprilTagsLoaded = true;
             log.info("Successfully loaded AprilTagFieldLayout");
         } catch (IOException e) {
             log.error("Could not load AprilTagFieldLayout!", e);
@@ -116,9 +124,16 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     }
 
     public Optional<EstimatedRobotPose>[] getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
-        if (visionWorking) {
-            var frontEstimatedPose = getPhotonVisionEstimatedPose("Front", frontPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
-            var rearEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+        if (aprilTagsLoaded) {
+            Optional<EstimatedRobotPose> frontEstimatedPose = Optional.empty();
+            Optional<EstimatedRobotPose> rearEstimatedPose = Optional.empty();
+
+            if (forwardAprilCameraWorking) {
+                frontEstimatedPose = getPhotonVisionEstimatedPose("Front", frontPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
+            }
+            if (rearAprilCameraWorking) {
+                rearEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+            }
             return new Optional[] {frontEstimatedPose, rearEstimatedPose};
         } else {
             return new Optional[] {Optional.empty()};
@@ -127,7 +142,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     public Optional<EstimatedRobotPose> getPhotonVisionEstimatedPose(
             String name, PhotonPoseEstimator estimator, Pose2d previousEstimatedRobotPose, TimeStableValidator poseTimeValidator) {
-        if (visionWorking) {
+        if (aprilTagsLoaded) {
             estimator.setReferencePose(previousEstimatedRobotPose);
             var estimatedPose = estimator.update();
             // Log the estimated pose, and log an insane value if we don't have one (so we don't clutter up the visualization)
@@ -205,9 +220,40 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return String.join(", ", list.stream().mapToInt(id -> id).mapToObj(id -> Integer.toString(id)).toArray(String[]::new));
     }
 
+    private boolean isCameraWorking(PhotonCameraExtended camera) {
+        return camera.doesLibraryVersionMatchCoprocessorVersion();
+    }
+
+    int loopCounter = 0;
+
+    @Override
+    public void periodic() {
+        loopCounter++;
+
+        // If one of the cameras is not working, see if they have self healed every 5 seconds
+        if (loopCounter % (50 * 5) == 0 && (!forwardAprilCameraWorking || !rearAprilCameraWorking)) {
+            log.info("Before check, Forward April camera working: " + forwardAprilCameraWorking
+                    + ", Rear April camera working: " + rearAprilCameraWorking);
+            log.info("Checking if cameras have self healed");
+            forwardAprilCameraWorking = isCameraWorking(forwardAprilCamera);
+            rearAprilCameraWorking = isCameraWorking(rearAprilCamera);
+            log.info("After check, Forward April camera working: " + forwardAprilCameraWorking
+                    + ", Rear April camera working: " + rearAprilCameraWorking);
+        }
+
+        Logger.recordOutput(getPrefix()+"ForwardAprilCameraWorking", forwardAprilCameraWorking);
+        Logger.recordOutput(getPrefix()+"RearAprilCameraWorking", rearAprilCameraWorking);
+    }
+
     @Override
     public void refreshDataFrame() {
-        forwardAprilCamera.refreshDataFrame();
-        rearAprilCamera.refreshDataFrame();
+        if (aprilTagsLoaded) {
+            if (forwardAprilCameraWorking) {
+                forwardAprilCamera.refreshDataFrame();
+            }
+            if (rearAprilCameraWorking) {
+                rearAprilCamera.refreshDataFrame();
+            }
+        }
     }
 }

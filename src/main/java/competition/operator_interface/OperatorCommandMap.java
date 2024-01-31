@@ -5,8 +5,10 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 
+
 import competition.subsystems.drive.commands.ResetPositionCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
+import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -41,7 +43,10 @@ public class OperatorCommandMap {
             SwerveAccordingToOracleCommand oracleSwerve,
             ManualRobotKnowledgeSubsystem knowledgeSubsystem,
             DynamicOracle oracle,
-            ResetPositionCommand resetPositionCommand)
+            ResetPositionCommand resetPositionCommand,
+            ReconcileArmAlignmentCommand slightLeftArmForward,
+            ReconcileArmAlignmentCommand slightLeftArmBackward)
+
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -92,5 +97,13 @@ public class OperatorCommandMap {
                 .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+
+        // ReconcileArmAlignmentCommand
+        slightLeftArmForward.setReconcilePower(0.05);
+        slightLeftArmBackward.setReconcilePower(-0.05);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
+
     }
 }

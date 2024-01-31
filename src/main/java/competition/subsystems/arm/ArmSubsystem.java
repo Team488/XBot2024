@@ -1,6 +1,7 @@
 package competition.subsystems.arm;
 
 import competition.electrical_contract.ElectricalContract;
+import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.math.MathUtils;
@@ -21,8 +22,10 @@ public class ArmSubsystem extends BaseSubsystem {
     public DoubleProperty extendPower;
     public DoubleProperty retractPower;
 
-    private DoubleProperty setPowerMax;
-    private DoubleProperty setPowerMin;
+    private DoubleProperty armPowerMax;
+    private DoubleProperty armPowerMin;
+  
+    public DoubleProperty ticksToDistanceRatio;
 
     public enum ArmState {
         EXTENDING,
@@ -39,23 +42,41 @@ public class ArmSubsystem extends BaseSubsystem {
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
       
-        setPowerMax = pf.createPersistentProperty("SetPowerMax", 0.5);
-        setPowerMin = pf.createPersistentProperty("SetPowerMin", -0.5);
+        armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
+        armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
+
+        ticksToDistanceRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000); // Needs configuration
 
         armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
         armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
-
         this.armState = ArmState.STOPPED;
     }
 
-    public void setPower(double power) {
+    public void setPower(double leftPower, double rightPower) {
+
+        // Check if armPowerMin/armPowerMax are safe values
+        if (armPowerMax.get() < 0 || armPowerMin.get() > 0) {
+            armMotorLeft.set(0);
+            armMotorRight.set(0);
+            log.error("armPowerMax or armPowerMin values out of bound!");
+            return;
+        }
 
         // Put power within limit range (if not already)
-        power = MathUtils.constrainDouble(power, setPowerMin.get(), setPowerMax.get());
+        leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
+        rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), armPowerMax.get());
 
-        armMotorLeft.set(power);
-        armMotorRight.set(power);
+        armMotorLeft.set(leftPower);
+        armMotorRight.set(rightPower);
+    }
+
+    /**
+     * This sets one power to both left and right arms at the same time
+     * @param power the power to send to both arms
+     */
+    public void setPower(double power) {
+        setPower(power, power);
     }
 
     public void extend() {
@@ -71,5 +92,27 @@ public class ArmSubsystem extends BaseSubsystem {
     public void stop() {
         setPower(0);
         armState = ArmState.STOPPED;
+    }
+
+    public double ticksToDistance(double ticks) {
+        return ticksToDistanceRatio.get() * ticks;
+    }
+
+    public double ticksToShooterAngle(double ticks) {
+        return ticks * 1000; // To be modified into ticks to shooter angle formula
+    }
+
+    public void armEncoderTicksUpdate() {
+        Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
+        Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
+        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(armMotorLeft.getPosition()));
+        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(armMotorRight.getPosition()));
+
+        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle
+                ((armMotorLeft.getPosition() + armMotorRight.getPosition()) / 2));
+    }
+
+    public void periodic() {
+        armEncoderTicksUpdate();
     }
 }
