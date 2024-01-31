@@ -169,6 +169,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
             }
         }
+
+        aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
+        aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
     }
     @Override
     public Double getCurrentValue() {
