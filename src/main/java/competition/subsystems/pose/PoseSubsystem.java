@@ -5,6 +5,7 @@ import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -38,20 +39,28 @@ public class PoseSubsystem extends BasePoseSubsystem {
     final SwerveDrivePoseEstimator fusedSwerveOdometry;
     final SwerveDrivePoseEstimator onlyWheelsGyroSwerveOdometry;
     private final VisionSubsystem vision;
-    private final Field2d fieldForDisplay;
     protected Optional<DriverStation.Alliance> cachedAlliance;
 
     private TimeStableValidator noSurprisingDistanceRequests = new TimeStableValidator(1);
     private final DoubleProperty suprisingVisionUpdateDistanceInMetersProp;
-    private final BooleanProperty isPoseHealthyProp;
+    private boolean isPoseHealthy;
     private final BooleanProperty useForwardCameraForPose;
     private final BooleanProperty useRearCameraForPose;
     private TimeStableValidator extremelyConfidentVisionValidator = new TimeStableValidator(10);
     private final DoubleProperty extremelyConfidentVisionDistanceUpdateInMetersProp;
-    private final BooleanProperty isVisionPoseExtremelyConfidentProp;
+    private final boolean isVisionPoseExtremelyConfident;
     private final BooleanProperty allianceAwareFieldProp;
     private final BooleanProperty useVisionForPoseProp;
     private final Latch useVisionToUpdateGyroLatch;
+    public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
+    public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
+    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5534, new Rotation2d());
+    public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
+    public static Pose2d CenterLine1 = new Pose2d(8.2956, 7.4584, new Rotation2d());
+    public static Pose2d CenterLine2 = new Pose2d(8.2956, 5.7820, new Rotation2d());
+    public static Pose2d CenterLine3 = new Pose2d(8.2956, 4.1056, new Rotation2d());
+    public static Pose2d CenterLine4 = new Pose2d(8.2956, 2.4292, new Rotation2d());
+    public static Pose2d CenterLine5 = new Pose2d(8.2956, 0.7528, new Rotation2d());
 
     private DoubleProperty matchTime;
 
@@ -62,20 +71,13 @@ public class PoseSubsystem extends BasePoseSubsystem {
         this.vision = vision;
 
         suprisingVisionUpdateDistanceInMetersProp = propManager.createPersistentProperty("SuprisingVisionUpdateDistanceInMeters", 0.5);
-        isPoseHealthyProp = propManager.createEphemeralProperty("IsPoseHealthy", false);
+        isPoseHealthy = false;
         extremelyConfidentVisionDistanceUpdateInMetersProp = propManager.createPersistentProperty("ExtremelyConfidentVisionDistanceUpdateInMeters", 0.01);
-        isVisionPoseExtremelyConfidentProp = propManager.createEphemeralProperty("IsVisionPoseExtremelyConfident", false);
+        isVisionPoseExtremelyConfident = false;
         allianceAwareFieldProp = propManager.createPersistentProperty("Alliance Aware Field", true);
         useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", true);
         useForwardCameraForPose = propManager.createPersistentProperty("Use forward april cam", true);
         useRearCameraForPose = propManager.createPersistentProperty("Use rear april cam", true);
-
-        // TODO: This is a hack to get the field visualization working. Eventually this is going to cause problems
-        // once there are test cases that try and invoke the PoseSubsystem. Right now, the SmartDashboardCommandPutter
-        // is the only class we have that manages direct calls to SmartDashboard. Maybe we should broaden it to a more
-        // generic "XSmartDashboard" class for scenarios like these?
-        fieldForDisplay = new Field2d();
-        SmartDashboard.putData("Field", fieldForDisplay);
 
         // In the DriveSubsystem, the swerve modules were initialized in this order:
         // FrontLeft, FrontRight, RearLeft, RearRight.
@@ -90,9 +92,6 @@ public class PoseSubsystem extends BasePoseSubsystem {
                this.setCurrentPoseInMeters(getVisionAssistedPositionInMeters());
            }
         });
-        // creating matchtime doubleProperty
-        matchTime = propManager.createEphemeralProperty("Time", DriverStation.getMatchTime());
-
     }
 
     private SwerveDrivePoseEstimator initializeSwerveOdometry() {
@@ -167,8 +166,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
             improveFusedOdometryUsingPhotonLib(updatedPosition);
         }
 
-        Logger.recordOutput(getPrefix()+"VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
-        Logger.recordOutput(getPrefix()+"WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
+        aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
+        aKitLog.record("WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
         // Pull out the new estimated pose from odometry. Note that for now, we only pull out X and Y
         // and trust the gyro implicitly. Eventually, we should allow the gyro to be updated via vision
@@ -183,8 +182,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // Convert back to inches
         double prevTotalDistanceX = totalDistanceX;
         double prevTotalDistanceY = totalDistanceY;
-        fieldForDisplay.setRobotPose(estimatedPosition);
-        Logger.recordOutput(this.getPrefix()+"RobotPose", fieldForDisplay.getRobotPose());
+        aKitLog.record("RobotPose", estimatedPosition);
 
         this.velocityX = ((totalDistanceX - prevTotalDistanceX));
         this.velocityY = ((totalDistanceY - prevTotalDistanceY));
@@ -216,7 +214,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
         if (!appliedAnyVisionData) {
             // Since we didn't get any vision updates, by definition we didn't get any surprising distance updates.
-            isPoseHealthyProp.set(noSurprisingDistanceRequests.checkStable(true));
+            isPoseHealthy = noSurprisingDistanceRequests.checkStable(true);
         }
     }
 
@@ -229,7 +227,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
             // the healthy pose validator.
             double distance = recentPosition.getTranslation().getDistance(recentPosition.getTranslation());
             boolean isSurprisingDistance = (distance > suprisingVisionUpdateDistanceInMetersProp.get());
-            isPoseHealthyProp.set(noSurprisingDistanceRequests.checkStable(isSurprisingDistance));
+            isPoseHealthy = noSurprisingDistanceRequests.checkStable(isSurprisingDistance);
 
             // In any case, update the odometry with the new pose from the camera.
             fusedSwerveOdometry.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
@@ -239,11 +237,11 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public boolean getIsPoseHealthy() {
-        return isPoseHealthyProp.get();
+        return isPoseHealthy;
     }
 
     public boolean getIsVisionPoseExtremelyConfident() {
-        return isVisionPoseExtremelyConfidentProp.get();
+        return isVisionPoseExtremelyConfident;
     }
 
     public Pose2d getVisionAssistedPositionInMeters() {
@@ -325,7 +323,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
     @Override
     public void periodic() {
         super.periodic();
-        matchTime.set(DriverStation.getMatchTime());
+        aKitLog.record("PoseHealthy", isPoseHealthy);
+        aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
     }
 
 }

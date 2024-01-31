@@ -1,7 +1,13 @@
 package competition.subsystems.arm;
 
+import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import org.littletonrobotics.junction.Logger;
+import xbot.common.advantage.DataFrameRefreshable;
+import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.math.MathUtils;
@@ -12,10 +18,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class ArmSubsystem extends BaseSubsystem {
+public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
 
-    public final XCANSparkMax armMotorLeft;
-    public final XCANSparkMax armMotorRight;
+    public XCANSparkMax armMotorLeft;
+    public XCANSparkMax armMotorRight;
+
+    public final ElectricalContract contract;
 
     public ArmState armState;
 
@@ -24,8 +32,14 @@ public class ArmSubsystem extends BaseSubsystem {
 
     private DoubleProperty armPowerMax;
     private DoubleProperty armPowerMin;
-  
-    public DoubleProperty ticksToDistanceRatio;
+
+
+    public DoubleProperty ticksToMmRatio; // Millimeters
+    public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
+    public DoubleProperty armMotorRightRevolutionOffset;
+    public DoubleProperty armMotorRevolutionLimit;
+    boolean hasSetTruePositionOffset;
+    private double targetAngle;
 
     public enum ArmState {
         EXTENDING,
@@ -38,6 +52,7 @@ public class ArmSubsystem extends BaseSubsystem {
                         ElectricalContract contract) {
 
         pf.setPrefix(this);
+        this.contract = contract;
 
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
@@ -45,10 +60,19 @@ public class ArmSubsystem extends BaseSubsystem {
         armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
         armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
-        ticksToDistanceRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000); // Needs configuration
+        // All the DoubleProperties below needs configuration.
+        ticksToMmRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000);
+        armMotorLeftRevolutionOffset = pf.createPersistentProperty("ArmMotorLeftPositionOffset", 0);
+        armMotorRightRevolutionOffset = pf.createPersistentProperty("ArmMotorRightPositionOffset", 0);
+        armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
+        hasSetTruePositionOffset = false;
 
-        armMotorLeft = sparkMaxFactory.createWithoutProperties(contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
-        armMotorRight = sparkMaxFactory.createWithoutProperties(contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+        if (contract.isArmReady()) {
+            armMotorLeft = sparkMaxFactory.createWithoutProperties(
+                    contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
+            armMotorRight = sparkMaxFactory.createWithoutProperties(
+                    contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+        }
 
         this.armState = ArmState.STOPPED;
     }
@@ -67,8 +91,10 @@ public class ArmSubsystem extends BaseSubsystem {
         leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
         rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), armPowerMax.get());
 
-        armMotorLeft.set(leftPower);
-        armMotorRight.set(rightPower);
+        if (contract.isArmReady()) {
+            armMotorLeft.set(leftPower);
+            armMotorRight.set(rightPower);
+        }
     }
 
     /**
@@ -77,6 +103,11 @@ public class ArmSubsystem extends BaseSubsystem {
      */
     public void setPower(double power) {
         setPower(power, power);
+    }
+
+    @Override
+    public void setPower(Double power) {
+        setPower(power);
     }
 
     public void extend() {
@@ -95,7 +126,7 @@ public class ArmSubsystem extends BaseSubsystem {
     }
 
     public double ticksToDistance(double ticks) {
-        return ticksToDistanceRatio.get() * ticks;
+        return ticksToMmRatio.get() * ticks;
     }
 
     public double ticksToShooterAngle(double ticks) {
@@ -103,16 +134,76 @@ public class ArmSubsystem extends BaseSubsystem {
     }
 
     public void armEncoderTicksUpdate() {
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftTicks", armMotorLeft.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorRightTicks", armMotorRight.getPosition());
-        Logger.recordOutput(getPrefix() + "ArmMotorLeftDistance", ticksToDistance(armMotorLeft.getPosition()));
-        Logger.recordOutput(getPrefix() + "ArmMotorRightDistance", ticksToDistance(armMotorRight.getPosition()));
 
-        Logger.recordOutput(getPrefix() + "ArmMotorToShooterAngle", ticksToShooterAngle
-                ((armMotorLeft.getPosition() + armMotorRight.getPosition()) / 2));
+        aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
+        aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
+        aKitLog.record("ArmMotorLeftDistance", ticksToDistance(
+                armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
+        aKitLog.record("ArmMotorRightDistance", ticksToDistance(
+                armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
+
+        aKitLog.record("ArmMotorToShooterAngle", ticksToShooterAngle(
+                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
+                        + armMotorRightRevolutionOffset.get()) / 2));
+    }
+
+    // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
+    public void checkForArmOffset() {
+        if (hasSetTruePositionOffset) {
+            return;
+        }
+
+        // At max limit sensor?
+        if (armMotorLeft.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+            hasSetTruePositionOffset = true;
+            armMotorLeftRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
+            armMotorRightRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorRight.getPosition());
+        } else if (armMotorLeft.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen)) {
+            // At min (lowest) limit sensor?
+            hasSetTruePositionOffset = true;
+            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
+            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
+        }
+    }
+    @Override
+    public Double getCurrentValue() {
+        armMotorLeft.getPosition();
+        armMotorRight.getPosition();
+        //returning 0 for now value will be changed later
+        return 0.0;
+    }
+
+    @Override
+    public Double getTargetValue() {
+        return targetAngle;
+    }
+
+    @Override
+    public void setTargetValue(Double value) {
+         targetAngle = value;
+    }
+
+
+    @Override
+    public boolean isCalibrated() {
+        return false;
     }
 
     public void periodic() {
-        armEncoderTicksUpdate();
+        if (contract.isArmReady()) {
+            armEncoderTicksUpdate();
+            checkForArmOffset();
+            armMotorLeft.periodic();
+            armMotorRight.periodic();
+        }
+        aKitLog.record("Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
+    }
+
+    @Override
+    public void refreshDataFrame() {
+        if (contract.isArmReady()) {
+            armMotorLeft.refreshDataFrame();
+            armMotorRight.refreshDataFrame();
+        }
     }
 }
