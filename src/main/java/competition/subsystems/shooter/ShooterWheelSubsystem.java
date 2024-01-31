@@ -23,6 +23,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     //need pose for real time calculations
     PoseSubsystem pose;
+    ShooterDistanceToRpmConverter converter;
 
 
     // IMPORTANT PROPERTIES
@@ -48,7 +49,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     final ElectricalContract contract;
 
     @Inject
-    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
+    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose, ShooterDistanceToRpmConverter converter) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
         pf.setPrefix(this);
@@ -58,6 +59,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
 
         this.pose = pose;
+        this.converter = converter;
 
 
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
@@ -187,7 +189,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     
     //returns the RPM based on the distance from the speaker
     public double getSpeedForRange(){
-        return pose.getDistanceFromSpeaker() * ShooterDistanceToRpmConverter.getSecantLineSlope(pose);
+        return pose.getDistanceFromSpeaker() * converter.getSecantLineSlope(pose);
     }
 }
 
