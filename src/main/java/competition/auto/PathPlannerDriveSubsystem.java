@@ -20,10 +20,15 @@ import javax.inject.Singleton;
 public class PathPlannerDriveSubsystem extends BaseSubsystem {
     final DriveSubsystem drive;
     final PoseSubsystem pose;
+    XYPair temp;
+    double vX;
+    double vY;
+    double omegaRad;
     @Inject
     public PathPlannerDriveSubsystem(DriveSubsystem drive, PoseSubsystem pose) {
         this.drive = drive;
         this.pose = pose;
+        this.temp = new XYPair(0,0);
 
         // Configure AutoBuilder last
         AutoBuilder.configureHolonomic(
@@ -34,7 +39,7 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                         new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                         new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
-                        0.5, // Max module speed, in m/s
+                        0.2, // Max module speed, in m/s
                         0.4, // Drive base radius in meters. Distance from robot center to furthest module.
                         new ReplanningConfig() // Default path replanning config. See the API for the options here
                 ),
@@ -66,6 +71,8 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
 
     public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
         XYPair xySpeeds = new XYPair(robotRelativeSpeeds.vxMetersPerSecond, robotRelativeSpeeds.vyMetersPerSecond);
+        temp = xySpeeds;
+
         drive.move(xySpeeds, robotRelativeSpeeds.omegaRadiansPerSecond);
     }
 
@@ -75,7 +82,17 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
 
     @Override
     public void periodic() {
+        //getPose()
         Logger.recordOutput(getPrefix() + "CurrentPose", pose.getCurrentPose2d());
+
+        //getChassisSpeeds()
+        Logger.recordOutput(getPrefix() + "SwerveModuleStates", drive.getSwerveModuleStates());
         Logger.recordOutput(getPrefix() + "Current ChassisSpeeds", getChassisSpeeds());
+
+        //driveRobotRelative()
+        Logger.recordOutput(getPrefix() + "xySpeeds", temp);
+        Logger.recordOutput(getPrefix() + "vxMetersPerSecond", vX);
+        Logger.recordOutput(getPrefix() + "vyMetersPerSecond", vY);
+        Logger.recordOutput(getPrefix() + "omegaRadiansPerSecond:", omegaRad);
     }
 }
