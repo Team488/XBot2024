@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
+import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -90,9 +91,8 @@ public class OperatorCommandMap {
     }
 
     @Inject
-    // eject is placeholder for ArmSetPoint
-    public void setupScooch(IntakeScoocherCommand intake, EjectScoocherCommand eject) {
-        // intake a note, and raise arms so note does not stay in
-        var combinedCommand = intake.alongWith(eject);
+    public void setupScooch(IntakeScoocherCommand intake, SetArmAngleCommand armAngle) {
+        var scoochNote = intake.alongWith(armAngle);
+        // TODO: bind to operatorInterface when there is a scoocher
     }
 }
