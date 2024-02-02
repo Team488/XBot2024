@@ -25,10 +25,16 @@ public class ShooterDistanceToRpmConverter {
         this.rpmForDistance = getRpmForDistanceArray();
     }
 
+    //why am i doing algebra :sob:
+    public double getYIntercept(double slope, double x1, double y1){
+        return  y1 - slope * x1;
+    }
+
 
     //estimates the slope needed for our distance based on prerecorded data
     public double getRPMForDistance(double distanceFromSpeaker) {
         double secantLineSlope = 0;
+        double yIntercept = 0;
         for (int i = 0; i <= distancesFromSpeaker.length - 1; i++) {
             //logic to find where currentPosition lies in the array
             if (distancesFromSpeaker[i] == distanceFromSpeaker){
@@ -38,11 +44,12 @@ public class ShooterDistanceToRpmConverter {
                 //secant line calculator
                 secantLineSlope =
                         (rpmForDistance[i + 1] - rpmForDistance[i]) / (distancesFromSpeaker[i + 1] - distancesFromSpeaker[i]);
+                yIntercept = getYIntercept(secantLineSlope,distancesFromSpeaker[i],rpmForDistance[i]);
                 break;
             }
         }
         //returns ZERO if our current distance is further than the greatest range tested on the robot
-        return secantLineSlope * distanceFromSpeaker;
+        return secantLineSlope * distanceFromSpeaker + yIntercept;
     }
 
     public double[] getRpmForDistanceArray() {
