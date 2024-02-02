@@ -91,7 +91,8 @@ public class OperatorCommandMap {
 
     @Inject
     // eject is placeholder for ArmSetPoint
-    public void setupScooching(IntakeScoocherCommand intake, EjectScoocherCommand eject) {
+    public void setupScooch(IntakeScoocherCommand intake, EjectScoocherCommand eject) {
+        // intake a note, and raise arms so note does not stay in
         var combinedCommand = intake.alongWith(eject);
     }
 }
