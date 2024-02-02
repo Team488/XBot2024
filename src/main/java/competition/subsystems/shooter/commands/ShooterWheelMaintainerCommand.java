@@ -11,7 +11,8 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
     final ShooterWheelSubsystem wheel;
     final OperatorInterface oi;
 
-    public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf, HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory) {
+    public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf,
+                                         HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory) {
         super(wheel, pf, hvmFactory, 0, 0);
         this.oi = oi;
         this.wheel = wheel;
@@ -25,18 +26,22 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
     }
 
     @Override
-    protected void calibratedMachineControlAction() {
-        double speed = wheel.getTargetValue();
-        // NOT FINISHED
-    }
-
-    @Override
     protected void coastAction() {
         // DOES NOT NEED TO HAVE ANYTHING
     }
 
     protected void initializeMachineControlAction() {
         wheel.resetPID();
+        super.initializeMachineControlAction();
+    }
+
+    @Override
+    protected void calibratedMachineControlAction() {
+        double speed = wheel.getTargetValue();
+
+        if (wheel.isCalibrated()) {
+            wheel.setPower(1.0);
+        }
     }
 
     @Override
