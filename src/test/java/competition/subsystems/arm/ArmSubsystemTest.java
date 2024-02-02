@@ -32,6 +32,10 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
     @Test
     public void testExtend() {
+        // Assuming arm motors has already calibrated
+        arm.hasCalibratedLeft = true;
+        arm.hasCalibratedRight = true;
+
         assertNotEquals(arm.extendPower.get(), 0, 0.0001);
         checkMotorPower(0);
         arm.extend();
@@ -41,6 +45,9 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
     @Test
     public void testRetract() {
+        arm.hasCalibratedLeft = true;
+        arm.hasCalibratedRight = true;
+
         assertNotEquals(arm.retractPower.get(), 0, 0.0001); // Check if retract power == 0
         checkMotorPower(0, 0); // Make sure motor not moving
         arm.retract();
@@ -50,6 +57,9 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
     @Test
     public void testStopped() {
+        arm.hasCalibratedLeft = true;
+        arm.hasCalibratedRight = true;
+
         arm.extend();
         assertNotEquals(0, ((MockCANSparkMax)arm.armMotorLeft).get(), 0.0001);
         arm.stop();
@@ -100,8 +110,11 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     }
 
 
+    // THIS DOESN'T WORK
     @Test
     public void testSoftLimit() {
+        arm.hasCalibratedLeft = true;
+        arm.hasCalibratedRight = true;
 
         // The goal is: at limit, set power, check motor power
 

@@ -61,6 +61,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         FIRING_IN_AMP
     }
 
+    public enum ArmNearLimitState {
+        NEAR_UPPER_LIMIT,
+        NEAR_LOWER_LIMIT,
+        NOT_NEAR_LIMIT
+    }
+
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         ElectricalContract contract) {
@@ -91,9 +97,24 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                     contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
             armMotorRight = sparkMaxFactory.createWithoutProperties(
                     contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+
+            // Enable hardware limits
+            armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
         }
 
         this.armState = ArmState.STOPPED;
+    }
+
+    public ArmNearLimitState checkIsArmNearLimit(double actualPosition) {
+        if (actualPosition >= armMotorRevolutionLimit.get() * 0.85) {
+            return ArmNearLimitState.NEAR_UPPER_LIMIT;
+        } else if (actualPosition <= armMotorRevolutionLimit.get() * 0.15) {
+            return ArmNearLimitState.NEAR_LOWER_LIMIT;
+        }
+        return ArmNearLimitState.NOT_NEAR_LIMIT;
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -104,6 +125,35 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.set(0);
             log.error("armPowerMax or armPowerMin values out of bound!");
             return;
+        }
+
+        // If not calibrated, motor can only go down at slow rate
+        // If calibrated, move at -0.1 to 0.1 power (at maximum) when near limit (or some pid function perhaps?)
+        if (!(hasCalibratedLeft && hasCalibratedRight)) {
+            leftPower = MathUtils.constrainDouble(leftPower, -0.1, 0);
+            rightPower = MathUtils.constrainDouble(leftPower, -0.1, 0);
+
+        } else {
+            ArmNearLimitState left = checkIsArmNearLimit(
+                    armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+            ArmNearLimitState right = checkIsArmNearLimit(
+                    armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get());
+
+            switch (left) {
+                case NEAR_LOWER_LIMIT -> leftPower = MathUtils.constrainDouble(
+                        leftPower, 0, armPowerMax.get());
+                case NEAR_UPPER_LIMIT -> leftPower = MathUtils.constrainDouble(
+                        leftPower, armPowerMin.get(), 0);
+                default -> {}
+            }
+
+            switch (right) {
+                case NEAR_LOWER_LIMIT -> rightPower = MathUtils.constrainDouble(
+                        rightPower, 0, armPowerMax.get());
+                case NEAR_UPPER_LIMIT -> rightPower = MathUtils.constrainDouble(
+                        rightPower, armPowerMin.get(), 0);
+                default -> {}
+            }
         }
 
         // Arm at limit hit power restrictions
@@ -187,8 +237,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
 
     public LimitState getLimitState(XCANSparkMax motor) {
-        boolean upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
-        boolean lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+        boolean upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyClosed);
+        boolean lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyClosed);
 
         if (upperHit && lowerHit) {
             return LimitState.BOTH_LIMITS_HIT;
