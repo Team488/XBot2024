@@ -39,9 +39,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
 
-    LimitState leftArmLimitState;
-    LimitState rightArmLimitState;
-
     private double targetAngle;
 
     public enum ArmState {
@@ -97,8 +94,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
         this.armState = ArmState.STOPPED;
-        this.leftArmLimitState = LimitState.NOT_AT_LIMIT;
-        this.rightArmLimitState = LimitState.NOT_AT_LIMIT;
     }
 
     public void setPower(double leftPower, double rightPower) {
@@ -112,14 +107,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
         // Arm at limit hit power restrictions
-        switch(leftArmLimitState) {
+        switch(getLimitState(armMotorLeft)) {
             case BOTH_LIMITS_HIT -> leftPower = 0;
             case UPPER_LIMIT_HIT -> leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), 0);
             case LOWER_LIMIT_HIT -> leftPower = MathUtils.constrainDouble(leftPower, 0, armPowerMax.get());
             default -> {}
         }
 
-        switch(rightArmLimitState) {
+        switch(getLimitState(armMotorRight)) {
             case BOTH_LIMITS_HIT -> rightPower = 0;
             case UPPER_LIMIT_HIT -> rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), 0);
             case LOWER_LIMIT_HIT -> rightPower = MathUtils.constrainDouble(rightPower, 0, armPowerMax.get());
@@ -222,8 +217,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
     public void calibrateArmOffset() {
-        leftArmLimitState = getLimitState(armMotorLeft);
-        rightArmLimitState = getLimitState(armMotorRight);
+        LimitState leftArmLimitState = getLimitState(armMotorLeft);
+        LimitState rightArmLimitState = getLimitState(armMotorRight);
 
         if (!hasCalibratedLeft) {
             if (leftArmLimitState == LimitState.UPPER_LIMIT_HIT) {
