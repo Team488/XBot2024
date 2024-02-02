@@ -49,7 +49,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     final ElectricalContract contract;
 
     @Inject
-    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose, ShooterDistanceToRpmConverter converter) {
+    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
         pf.setPrefix(this);
@@ -59,7 +59,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
 
         this.pose = pose;
-        this.converter = converter;
+        this.converter = new ShooterDistanceToRpmConverter();
 
 
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);

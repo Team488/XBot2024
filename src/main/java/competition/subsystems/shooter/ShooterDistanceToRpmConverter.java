@@ -12,14 +12,12 @@ public class ShooterDistanceToRpmConverter {
     double[] distancesFromSpeaker = {};
     //the values inputted here NEED TO BE TESTED ON THE ACTUAL ROBOT SHOOTER
     double[] rpmForDistance = {};
-    PoseSubsystem pose;
+
 
     //the only purpose for the contructor is for testing, its not required outside of testing
-    @Inject
-    public ShooterDistanceToRpmConverter(double[] distancesFromSpeaker, double[] rpmForDistance, PoseSubsystem pose){
+    public ShooterDistanceToRpmConverter(double[] distancesFromSpeaker, double[] rpmForDistance){
         this.distancesFromSpeaker = distancesFromSpeaker;
         this.rpmForDistance = rpmForDistance;
-        this.pose = pose;
     }
 
     public ShooterDistanceToRpmConverter(){
@@ -31,16 +29,20 @@ public class ShooterDistanceToRpmConverter {
     //estimates the slope needed for our distance based on prerecorded data
     public double getRPMForDistance(double distanceFromSpeaker) {
         double secantLineSlope = 0;
-        for (int i = 1; i < distancesFromSpeaker.length - 1; i++) {
+        for (int i = 0; i <= distancesFromSpeaker.length - 1; i++) {
             //logic to find where currentPosition lies in the array
-            if (distancesFromSpeaker[i - 1] < pose.getDistanceFromSpeaker() && pose.getDistanceFromSpeaker() < distancesFromSpeaker[i + 1]) {
+            if (distancesFromSpeaker[i] == distanceFromSpeaker){
+                return rpmForDistance[i];
+            }
+            else if (distancesFromSpeaker[i] < distanceFromSpeaker && distanceFromSpeaker < distancesFromSpeaker[i + 1]) {
                 //secant line calculator
                 secantLineSlope =
-                        (rpmForDistance[i + 1] - rpmForDistance[i - 1]) / (distancesFromSpeaker[i + 1] - distancesFromSpeaker[i - 1]);
+                        (rpmForDistance[i + 1] - rpmForDistance[i]) / (distancesFromSpeaker[i + 1] - distancesFromSpeaker[i]);
+                break;
             }
         }
         //returns ZERO if our current distance is further than the greatest range tested on the robot
-        return secantLineSlope * pose.getDistanceFromSpeaker();
+        return secantLineSlope * distanceFromSpeaker;
     }
 
     public double[] getRpmForDistanceArray() {
