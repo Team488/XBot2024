@@ -21,7 +21,7 @@ public class ScoocherSubsystem extends BaseSubsystem implements DataFrameRefresh
     public ScoocherSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                              ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
-        this.scoocherMotor = sparkMaxFactory.create(contract.getScoocherMotor(), getPrefix(), "ScoocherMotor", null);
+        this.scoocherMotor = sparkMaxFactory.createWithoutProperties(contract.getScoocherMotor(), getPrefix(), "Scoocher");
 
         pf.setPrefix(this);
         sendingPower = pf.createPersistentProperty("sendingPower", 0.1);
