@@ -56,28 +56,42 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     @Test
     public void testReverseLimitSwitch() {
         // Ensure that hasSetTruePositionOffset is false at start
-        assertFalse(arm.hasSetTruePositionOffset);
+        assertFalse(arm.hasCalibratedLeft);
+        assertFalse(arm.hasCalibratedRight);
 
-        // Start at 0 with actual position of left: 150/limit,; and you move back to actual 0
+        // Start at 0 with actual position of left: 150/limit, right: 160/limit; and you move back to actual 0
         ((MockCANSparkMax)arm.armMotorLeft).setPosition(-150);
+        ((MockCANSparkMax)arm.armMotorRight).setPosition(-160);
 
         // You hit the reverse limit switch and a periodic runs
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
+        ((MockCANSparkMax)arm.armMotorRight).setReverseLimitSwitchStateForTesting(true);
         arm.periodic();
 
         // Check offset, offset is the actual position when you had initially started
         assertEquals(150, arm.armMotorLeftRevolutionOffset.get(), 0.0001);
-        assertTrue(arm.hasSetTruePositionOffset);
+        assertEquals(160, arm.armMotorRightRevolutionOffset.get(), 0.0001);
+        assertTrue(arm.hasCalibratedLeft);
+        assertTrue(arm.hasCalibratedRight);
     }
 
     @Test
     public void testForwardLimitSwitch() {
-        assertFalse(arm.hasSetTruePositionOffset);
+        assertFalse(arm.hasCalibratedLeft);
+        assertFalse(arm.hasCalibratedRight);
+
         ((MockCANSparkMax)arm.armMotorLeft).setPosition(arm.armMotorRevolutionLimit.get() - 150);
+        ((MockCANSparkMax)arm.armMotorRight).setPosition(arm.armMotorRevolutionLimit.get() - 160);
+
         ((MockCANSparkMax)arm.armMotorLeft).setForwardLimitSwitchStateForTesting(true);
+        ((MockCANSparkMax)arm.armMotorRight).setForwardLimitSwitchStateForTesting(true);
         arm.periodic();
+
         assertEquals(150, arm.armMotorLeftRevolutionOffset.get(), 0.0001);
-        assertTrue(arm.hasSetTruePositionOffset);
+        assertEquals(160, arm.armMotorRightRevolutionOffset.get(), 0.0001);
+
+        assertTrue(arm.hasCalibratedLeft);
+        assertTrue(arm.hasCalibratedRight);
     }
 
 }
