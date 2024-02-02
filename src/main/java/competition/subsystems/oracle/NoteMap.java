@@ -1,9 +1,8 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PoseSubsystem;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Singleton;
 import java.util.Arrays;
@@ -19,14 +18,17 @@ public class NoteMap {
     }
 
     private void initializeNotes() {
-        addNote(Note.KeyNoteNames.SpikeTop,    new Note(PoseSubsystem.SpikeTop));
-        addNote(Note.KeyNoteNames.SpikeMiddle, new Note(PoseSubsystem.SpikeMiddle));
-        addNote(Note.KeyNoteNames.SpikeBottom, new Note(PoseSubsystem.SpikeBottom));
+        addNote(Note.KeyNoteNames.BlueSpikeTop,    new Note(PoseSubsystem.SpikeTop));
+        addNote(Note.KeyNoteNames.BlueSpikeMiddle, new Note(PoseSubsystem.SpikeMiddle));
+        addNote(Note.KeyNoteNames.BlueSpikeBottom, new Note(PoseSubsystem.SpikeBottom));
         addNote(Note.KeyNoteNames.CenterLine1, new Note(PoseSubsystem.CenterLine1));
         addNote(Note.KeyNoteNames.CenterLine2, new Note(PoseSubsystem.CenterLine2));
         addNote(Note.KeyNoteNames.CenterLine3, new Note(PoseSubsystem.CenterLine3));
         addNote(Note.KeyNoteNames.CenterLine4, new Note(PoseSubsystem.CenterLine4));
         addNote(Note.KeyNoteNames.CenterLine5, new Note(PoseSubsystem.CenterLine5));
+        addNote(Note.KeyNoteNames.RedSpikeTop,    new Note(BasePoseSubsystem.convertBluetoRed(PoseSubsystem.SpikeTop)));
+        addNote(Note.KeyNoteNames.RedSpikeMiddle, new Note(BasePoseSubsystem.convertBluetoRed(PoseSubsystem.SpikeMiddle)));
+        addNote(Note.KeyNoteNames.RedSpikeBottom, new Note(BasePoseSubsystem.convertBluetoRed(PoseSubsystem.SpikeBottom)));
     }
 
     public void addNote(String key, Note note) {

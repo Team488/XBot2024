@@ -70,7 +70,7 @@ public class OperatorCommandMap {
 
 
         oracleSwerve.logic.setEnableConstantVelocity(true);
-        oracleSwerve.logic.setConstantVelocity(3);
+        oracleSwerve.logic.setConstantVelocity(2.8);
         oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
