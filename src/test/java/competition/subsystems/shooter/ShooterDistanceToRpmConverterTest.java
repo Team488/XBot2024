@@ -19,14 +19,12 @@ public class ShooterDistanceToRpmConverterTest extends BaseCompetitionTest {
     @Override
     public void setUp() {
         super.setUp();
-        converter = new ShooterDistanceToRpmConverter(testDistance,testRPM);
+        converter = new ShooterDistanceToRpmConverter(testDistance,testRPM,pose);
     }
 
-    public void compareConverter(){
-        assertEquals(500,converter.getSecantLineSlope(pose) * pose.getDistanceFromSpeaker(),0.00001);
-    }
     @Test
     public void testConverter(){
-        compareConverter();
+        assertEquals(500,converter.getRPMForDistance(pose.getDistanceFromSpeaker()) , 0.00001);
+
     }
 }

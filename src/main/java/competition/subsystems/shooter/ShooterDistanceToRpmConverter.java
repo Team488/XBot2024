@@ -12,22 +12,24 @@ public class ShooterDistanceToRpmConverter {
     double[] distancesFromSpeaker = {};
     //the values inputted here NEED TO BE TESTED ON THE ACTUAL ROBOT SHOOTER
     double[] rpmForDistance = {};
+    PoseSubsystem pose;
 
     //the only purpose for the contructor is for testing, its not required outside of testing
     @Inject
-    public ShooterDistanceToRpmConverter(double[] distancesFromSpeaker, double[] rpmForDistance){
+    public ShooterDistanceToRpmConverter(double[] distancesFromSpeaker, double[] rpmForDistance, PoseSubsystem pose){
         this.distancesFromSpeaker = distancesFromSpeaker;
         this.rpmForDistance = rpmForDistance;
+        this.pose = pose;
     }
 
     public ShooterDistanceToRpmConverter(){
-        this.distancesFromSpeaker = getDistancesFromSpeaker();
-        this.rpmForDistance = getRpmForDistance();
+        this.distancesFromSpeaker = getDistancesFromSpeakerArray();
+        this.rpmForDistance = getRpmForDistanceArray();
     }
 
 
     //estimates the slope needed for our distance based on prerecorded data
-    public double getSecantLineSlope(PoseSubsystem pose) {
+    public double getRPMForDistance(double distanceFromSpeaker) {
         double secantLineSlope = 0;
         for (int i = 1; i < distancesFromSpeaker.length - 1; i++) {
             //logic to find where currentPosition lies in the array
@@ -38,14 +40,14 @@ public class ShooterDistanceToRpmConverter {
             }
         }
         //returns ZERO if our current distance is further than the greatest range tested on the robot
-        return secantLineSlope;
+        return secantLineSlope * pose.getDistanceFromSpeaker();
     }
 
-    public double[] getRpmForDistance() {
+    public double[] getRpmForDistanceArray() {
         return rpmForDistance;
     }
 
-    public double[] getDistancesFromSpeaker() {
+    public double[] getDistancesFromSpeakerArray() {
         return distancesFromSpeaker;
     }
 }

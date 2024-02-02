@@ -189,7 +189,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     
     //returns the RPM based on the distance from the speaker
     public double getSpeedForRange(){
-        return pose.getDistanceFromSpeaker() * converter.getSecantLineSlope(pose);
+        return converter.getRPMForDistance(pose.getDistanceFromSpeaker());
     }
 }
 
