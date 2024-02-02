@@ -4,6 +4,8 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -50,6 +52,25 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final BooleanProperty allianceAwareFieldProp;
     private final BooleanProperty useVisionForPoseProp;
     private final Latch useVisionToUpdateGyroLatch;
+    public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
+    public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
+    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5534, new Rotation2d());
+    public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
+    public static Pose2d CenterLine1 = new Pose2d(8.2956, 7.4584, new Rotation2d());
+    public static Pose2d CenterLine2 = new Pose2d(8.2956, 5.7820, new Rotation2d());
+    public static Pose2d CenterLine3 = new Pose2d(8.2956, 4.1056, new Rotation2d());
+    public static Pose2d CenterLine4 = new Pose2d(8.2956, 2.4292, new Rotation2d());
+    public static Pose2d CenterLine5 = new Pose2d(8.2956, 0.7528, new Rotation2d());
+
+    public static double closeColumnWidth = 0.254;
+    public static double farColumnWidths = 0.3469;
+    public static Translation2d BlueLeftStageColumn = new Translation2d(3.34, 4.122);
+    public static Translation2d BlueTopStageColumn = new Translation2d(5.58, 5.42);
+    public static Translation2d BlueBottomStageColumn = new Translation2d(5.58,  2.82);
+
+    public static double SubwooferWidth = 0.95;
+    public static double SubwooferHeight = 1.1;
+    public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.57);
 
     private DoubleProperty matchTime;
 
@@ -155,8 +176,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
             improveFusedOdometryUsingPhotonLib(updatedPosition);
         }
 
-        Logger.recordOutput(getPrefix()+"VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
-        Logger.recordOutput(getPrefix()+"WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
+        aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
+        aKitLog.record("WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
         // Pull out the new estimated pose from odometry. Note that for now, we only pull out X and Y
         // and trust the gyro implicitly. Eventually, we should allow the gyro to be updated via vision
@@ -171,7 +192,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         // Convert back to inches
         double prevTotalDistanceX = totalDistanceX;
         double prevTotalDistanceY = totalDistanceY;
-        Logger.recordOutput(this.getPrefix()+"RobotPose", estimatedPosition);
+        aKitLog.record("RobotPose", estimatedPosition);
 
         this.velocityX = ((totalDistanceX - prevTotalDistanceX));
         this.velocityY = ((totalDistanceY - prevTotalDistanceY));
@@ -312,8 +333,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
     @Override
     public void periodic() {
         super.periodic();
-        Logger.recordOutput(getPrefix()+"PoseHealthy", isPoseHealthy);
-        Logger.recordOutput(getPrefix()+"VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
+        aKitLog.record("PoseHealthy", isPoseHealthy);
+        aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
     }
 
 }

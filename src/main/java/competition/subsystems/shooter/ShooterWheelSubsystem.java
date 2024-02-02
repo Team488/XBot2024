@@ -1,7 +1,9 @@
 package competition.subsystems.shooter;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
+import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
@@ -20,12 +22,22 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         DISTANCESHOT
     }
 
+    //need pose for real time calculations
+    PoseSubsystem pose;
+
+
     // IMPORTANT PROPERTIES
     private double targetRpm;
     private double trimRpm;
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
+    private final DoubleProperty shortRangeErrorToleranceRpm;
+    private final DoubleProperty longRangeErrorToleranceRpm;
+    private final DoubleProperty iMaxAccumValueForShooter;
+
+
+
 
     //DEFINING MOTORS
     public XCANSparkMax leader;
@@ -35,7 +47,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     final ElectricalContract contract;
 
     @Inject
-    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract) {
+    public ShooterWheelSubsystem(XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory, PropertyFactory pf, ElectricalContract contract, PoseSubsystem pose) {
         log.info("Creating ShooterWheelSubsystem");
         this.contract = contract;
         pf.setPrefix(this);
@@ -43,6 +55,14 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
+
+        this.pose = pose;
+
+        shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
+        longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
+
+        // NEEDS TUNING TO FIND CORRECT VALUE
+        iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -60,7 +80,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
             this.follower = sparkMaxFactory.create(contract.getShooterMotorFollower(), this.getPrefix(),
                     "ShooterFollower", null);
             this.follower.follow(this.leader, true);
-
         }
     }
 
@@ -121,18 +140,56 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         return false;
     }
 
-    @Override
-    public void periodic() {
-        Logger.recordOutput(getPrefix() + "TargetRPM", getTargetValue());
-        Logger.recordOutput(getPrefix() + "CurrentRPM", getCurrentValue());
-        Logger.recordOutput(getPrefix() + "TrimRPM", getTrimRPM());
+    public void resetWheel() {
+        setPower(0.0);
+        setTargetValue(0.0);
+        resetPID();
     }
 
-    @Override
+    public void stopWheel() {
+        setPower(0.0);
+    }
+
+    public double getShortRangeErrorTolerance() {
+        return shortRangeErrorToleranceRpm.get();
+    }
+
+    public double getLongRangeErrorTolerance() {
+        return longRangeErrorToleranceRpm.get();
+    }
+
+    public void resetPID() {
+        if (contract.isShooterReady()) {
+            leader.setIAccum(0);
+        }
+    }
+
+    public void configurePID() {
+        if (contract.isShooterReady()) {
+            leader.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
+        }
+    }
+    public void periodic() {
+        aKitLog.record("TargetRPM", getTargetValue());
+        aKitLog.record("CurrentRPM", getCurrentValue());
+        aKitLog.record("TrimRPM", getTrimRPM());
+    }
+
     public void refreshDataFrame() {
         if (contract.isShooterReady()) {
             leader.refreshDataFrame();
             follower.refreshDataFrame();
         }
     }
+    
+    //returns the RPM based on the distance from the speaker
+    public double getSpeedForRange(){
+        double distanceFromSpeakerInMeters;
+        distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(
+                PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+        //DISCLAIMER 400 IS JUST A PLACEHOLDER VALUE FOR METERS -> RPM RATIO, MORE TESTING IS REQUIRED TO FIGURE OUT THE CORRECT NUMBER
+        double rpm = distanceFromSpeakerInMeters * 400;
+        return rpm;
+    }
 }
+

@@ -8,18 +8,26 @@ import competition.injection.components.DaggerRoboxComponent;
 import competition.injection.components.DaggerSimulationComponent;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
-import xbot.common.subsystems.drive.BaseDriveSubsystem;
+import xbot.common.math.MovingAverage;
+import xbot.common.math.MovingAverageForDouble;
+import xbot.common.math.MovingAverageForTranslation2d;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class Robot extends BaseRobot {
+
+    public Robot() {
+    }
 
     @Override
     protected void initializeSystems() {
@@ -75,6 +83,7 @@ public class Robot extends BaseRobot {
         // hassle of navigating to the DS window and re-enabling the simulated robot.
         DriverStationSim.setEnabled(true);
         //webots.setFieldPoseOffset(getFieldOrigin());
+        DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
     }
 
     private FieldPose getFieldOrigin() {
@@ -88,6 +97,11 @@ public class Robot extends BaseRobot {
             );
     }
 
+    MovingAverageForTranslation2d translationAverageCalculator =
+            new MovingAverageForTranslation2d(15);
+    MovingAverageForDouble rotationAverageCalculator =
+            new MovingAverageForDouble(15);
+
     @Override
     public void simulationPeriodic() {
         super.simulationPeriodic();
@@ -96,17 +110,28 @@ public class Robot extends BaseRobot {
         double robotLoopPeriod = 0.02;
         double poseAdjustmentFactorForSimulation = robotTopSpeedInMetersPerSecond * robotLoopPeriod;
 
-        double robotTopAngularSpeedInDegreesPerSecond = 180.0;
+        double robotTopAngularSpeedInDegreesPerSecond = 360;
         double headingAdjustmentFactorForSimulation = robotTopAngularSpeedInDegreesPerSecond * robotLoopPeriod;
 
         var pose = (PoseSubsystem)getInjectorComponent().poseSubsystem();
         var currentPose = pose.getCurrentPose2d();
         DriveSubsystem drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
+
+        // Extremely simple physics simulation. We want to give the robot some very basic translational and rotational
+        // inertia. We can take the moving average of the last second or so of robot commands and apply that to the
+        // robot's pose. This is a very simple way to simulate the robot's movement without having to do any real physics.
+
+        translationAverageCalculator.add(drive.lastRawCommandedDirection);
+        var currentAverage = translationAverageCalculator.getAverage();
+
+        rotationAverageCalculator.add(drive.lastRawCommandedRotation);
+        var currentRotationAverage = rotationAverageCalculator.getAverage();
+
         var updatedPose = new Pose2d(
                 new Translation2d(
-                        currentPose.getTranslation().getX() + drive.lastRawCommandedDirection.x * poseAdjustmentFactorForSimulation,
-                        currentPose.getTranslation().getY() + drive.lastRawCommandedDirection.y * poseAdjustmentFactorForSimulation),
-                currentPose.getRotation().plus(Rotation2d.fromDegrees(drive.lastRawCommandedRotation * headingAdjustmentFactorForSimulation)));
+                        currentPose.getTranslation().getX() + currentAverage.getX() * poseAdjustmentFactorForSimulation,
+                        currentPose.getTranslation().getY() + currentAverage.getY() * poseAdjustmentFactorForSimulation),
+                currentPose.getRotation().plus(Rotation2d.fromDegrees(currentRotationAverage * headingAdjustmentFactorForSimulation)));
         pose.setCurrentPoseInMeters(updatedPose);
     }
 }
