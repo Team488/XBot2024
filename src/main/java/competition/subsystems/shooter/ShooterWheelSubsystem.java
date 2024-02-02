@@ -1,5 +1,6 @@
 package competition.subsystems.shooter;
 
+import com.revrobotics.CANSparkBase;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -35,6 +36,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty shortRangeErrorToleranceRpm;
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
+    private final DoubleProperty acceptableToleranceRPM;
 
 
 
@@ -63,6 +65,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
         // NEEDS TUNING TO FIND CORRECT VALUE
         iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
+
+        // THIS IS HOW MUCH RPM WE CAN TOLERATE (needs testing)
+        acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -161,6 +166,13 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     public void resetPID() {
         if (contract.isShooterReady()) {
             leader.setIAccum(0);
+        }
+    }
+
+    //WAY TO SET THE ACTUAL PID
+    public void setPidSetpoint(double speed) {
+        if (contract.isShooterReady()) {
+            leader.setReference(speed, CANSparkBase.ControlType.kVelocity);
         }
     }
 
