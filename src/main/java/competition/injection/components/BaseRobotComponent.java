@@ -1,6 +1,10 @@
 package competition.injection.components;
 
 import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.arm.commands.ExtendArmCommand;
+import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
+import competition.subsystems.arm.commands.RetractArmCommand;
+import competition.subsystems.arm.commands.StopArmCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
@@ -31,6 +35,10 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract VisionSubsystem visionSubsystem();
 
     public abstract ArmSubsystem armSubsystem();
+    public abstract ExtendArmCommand extendArmCommand();
+    public abstract RetractArmCommand retractArmCommand();
+    public abstract StopArmCommand stopArmCommand();
+    public abstract ReconcileArmAlignmentCommand reconcileArmAlignmentCommand();
 
     public abstract ScoocherSubsystem scoocherSubsystem();
 
