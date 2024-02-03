@@ -189,7 +189,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     public boolean isCalibrated() {
-        aKitLog.record("Target Angle" + targetAngle);
         return false;
     }
 
@@ -200,6 +199,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorLeft.periodic();
             armMotorRight.periodic();
         }
+        aKitLog.record("Target Angle" + targetAngle);
         aKitLog.record("Arm3dState", new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     }
 

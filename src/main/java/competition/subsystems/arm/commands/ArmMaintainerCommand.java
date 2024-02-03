@@ -5,6 +5,7 @@ import competition.subsystems.arm.ArmSubsystem;
 import xbot.common.command.BaseMaintainerCommand;
 import xbot.common.logic.CalibrationDecider;
 import xbot.common.logic.HumanVsMachineDecider;
+import xbot.common.math.MathUtils;
 import xbot.common.math.PIDManager;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
@@ -26,9 +27,8 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand {
         super(arm, pf, hvmFactory, 1, .001);
         this.arm = arm;
         this.oi = oi;
-        pf.setPrefix(getName() + "/");
-        pf.setDefaultLevel(Property.PropertyLevel.Debug);
-        positionPid = pidf.create(getName() + "/" + "PoisitionPID", 0.66, 0.1, 0);
+        pf.setPrefix(this);
+        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.66, 0.1, 0);
 
 
     }
@@ -53,21 +53,17 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand {
     protected double getErrorMagnitude() {
             double current = arm.getCurrentValue();
             double target = arm.getTargetValue();
-            double armError = 0;
-            if(current != target){
-                armError = Math.abs(target - current);
-                return armError;
-            }
-        return armError;
+            double armError = Math.abs(target - current);
+            return armError;
     }
 
     @Override
     protected Double getHumanInput() {
-        return 0.0;
+        return MathUtils.deadband(oi.operatorGamepad.getLeftVector().y, oi.getOperatorGamepadTypicalDeadband());
     }
 
     @Override
     protected double getHumanInputMagnitude() {
-        return 0.0;
+        return Math.abs(getHumanInput());
     }
 }
