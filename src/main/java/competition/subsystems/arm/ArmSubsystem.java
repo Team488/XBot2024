@@ -222,17 +222,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
 
+    // Returns an angle for the shooter that can be converted into arm position later if needed
     public double getUsefulArmPosition(UsefulArmPosition usefulArmPosition) {
-        double revolutions;
+        double angle;
         switch(usefulArmPosition) {
             // THESE ARE ALL PLACEHOLDER VALUES!!!
-            case STARTING_POSITION -> revolutions = convertShooterAngleToTicks(40);
-            case COLLECTING_FROM_GROUND -> revolutions = convertShooterAngleToTicks(0);
-            case FIRING_FROM_SPEAKER_FRONT -> revolutions = convertShooterAngleToTicks(30);
-            case FIRING_IN_AMP -> revolutions = convertShooterAngleToTicks(80);
-            default -> revolutions = convertShooterAngleToTicks(40);
+            case STARTING_POSITION -> angle = 40;
+            case COLLECTING_FROM_GROUND -> angle = 0;
+            case FIRING_FROM_SPEAKER_FRONT -> angle = 30;
+            case FIRING_IN_AMP -> angle = 80;
+            default -> angle = 40;
         }
-        return revolutions;
+        return angle;
     }
 
 
