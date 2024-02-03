@@ -27,8 +27,9 @@ public class IntakeAndShootCommand extends BaseCommand {
     public void initialize() {
         log.info("Initializing");
 
-        //collects the game piece and gets it in
-        while(!collector.getGamePieceCollected()){
+        //collects the game piece and gets the arm into position
+        //if arm is able to extend while intaking then I can change this
+        while(!collector.getGamePieceInControl()){
             collector.intake();
         }
         while (!arm.isMaintainerAtGoal()) {
@@ -38,14 +39,16 @@ public class IntakeAndShootCommand extends BaseCommand {
 
     @Override
     public void execute() {
+        //sets the shooter to desired RPM then fires if note is collected and ready
         shooter.setTargetValue(shooter.getSpeedForRange());
-        if(shooter.isMaintainerAtGoal()){
-
+        if(shooter.isMaintainerAtGoal() && collector.getGamePieceReady()){
+            collector.fire();
         }
     }
 
     @Override
     public boolean isFinished() {
-        return !collector.getGamePieceCollected();
+        //if note is no longer in posession (aka its been fired), the command is finished
+        return !collector.getGamePieceInControl();
     }
 }
