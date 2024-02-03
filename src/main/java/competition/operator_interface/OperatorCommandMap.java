@@ -142,6 +142,19 @@ public class OperatorCommandMap {
     }
 
     @Inject
+    public void scoringCommands(
+            SetArmAngleCommand armAngle,
+            WarmUpShooterCommand shooter
+            )
+    {
+        // Prepare to score in Amp
+        armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.FIRING_IN_AMP);
+        shooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
+        var prepareToScoreInAmp = armAngle.alongWith(shooter);
+        // TODO: Bind command to a button in operatorGamepad
+    }
+
+    @Inject
     public void setupOracleCommands(OperatorInterface oi,
                                     SwerveAccordingToOracleCommand oracleSwerve,
                                     ManualRobotKnowledgeSubsystem knowledgeSubsystem,
