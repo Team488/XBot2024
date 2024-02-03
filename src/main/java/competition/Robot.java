@@ -1,13 +1,16 @@
 
 package competition;
 
+import com.revrobotics.CANSparkBase;
 import competition.injection.components.BaseRobotComponent;
 import competition.injection.components.DaggerPracticeRobotComponent;
 import competition.injection.components.DaggerRobotComponent;
 import competition.injection.components.DaggerRoboxComponent;
 import competition.injection.components.DaggerSimulationComponent;
+import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.shooter.ShooterWheelSubsystem;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,6 +18,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
+import xbot.common.controls.actuators.mock_adapters.MockCANSparkMax;
 import xbot.common.math.FieldPose;
 import xbot.common.math.MovingAverage;
 import xbot.common.math.MovingAverageForDouble;
@@ -29,12 +33,22 @@ public class Robot extends BaseRobot {
     public Robot() {
     }
 
+    PoseSubsystem pose;
+    DriveSubsystem drive;
+    ArmSubsystem arm;
+    ShooterWheelSubsystem shooter;
+
     @Override
     protected void initializeSystems() {
         super.initializeSystems();
         getInjectorComponent().subsystemDefaultCommandMap();
         getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
+
+        this.pose = (PoseSubsystem)getInjectorComponent().poseSubsystem();
+        this.drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
+        this.arm = getInjectorComponent().armSubsystem();
+        this.shooter = getInjectorComponent().shooterSubsystem();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
@@ -102,6 +116,12 @@ public class Robot extends BaseRobot {
             new MovingAverageForTranslation2d(15);
     MovingAverageForDouble rotationAverageCalculator =
             new MovingAverageForDouble(15);
+    MovingAverageForDouble leftArmPositionCalculator =
+            new MovingAverageForDouble(15);
+    MovingAverageForDouble rightArmPositionCalculator =
+            new MovingAverageForDouble(15);
+    MovingAverageForDouble shooterVelocityCalculator =
+            new MovingAverageForDouble(50);
 
     @Override
     public void simulationPeriodic() {
@@ -114,9 +134,8 @@ public class Robot extends BaseRobot {
         double robotTopAngularSpeedInDegreesPerSecond = 360;
         double headingAdjustmentFactorForSimulation = robotTopAngularSpeedInDegreesPerSecond * robotLoopPeriod;
 
-        var pose = (PoseSubsystem)getInjectorComponent().poseSubsystem();
+
         var currentPose = pose.getCurrentPose2d();
-        DriveSubsystem drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
 
         // Extremely simple physics simulation. We want to give the robot some very basic translational and rotational
         // inertia. We can take the moving average of the last second or so of robot commands and apply that to the
@@ -134,5 +153,34 @@ public class Robot extends BaseRobot {
                         currentPose.getTranslation().getY() + currentAverage.getY() * poseAdjustmentFactorForSimulation),
                 currentPose.getRotation().plus(Rotation2d.fromDegrees(currentRotationAverage * headingAdjustmentFactorForSimulation)));
         pose.setCurrentPoseInMeters(updatedPose);
+
+        // Let's also have a very simple physics mock for the arm and the shooter.
+        // Get the power or setpoint for each arm.
+        double powerToTicksRatio = 1;
+        var leftMockMotor = ((MockCANSparkMax)arm.armMotorLeft);
+        var rightMockMotor = ((MockCANSparkMax)arm.armMotorRight);
+
+        leftMockMotor.setPosition(leftMockMotor.getPosition() +  (leftMockMotor.get() * powerToTicksRatio));
+        rightMockMotor.setPosition(rightMockMotor.getPosition() +  (rightMockMotor.get() * powerToTicksRatio));
+
+        // They might be using PID to control the arm. If so, we can use a moving aveage of their setpoint
+        // to approximate internal PID.
+        leftArmPositionCalculator.add(leftMockMotor.getReference());
+        rightArmPositionCalculator.add(rightMockMotor.getReference());
+
+        if (leftMockMotor.getControlType() == CANSparkBase.ControlType.kPosition) {
+            leftMockMotor.setPosition(leftArmPositionCalculator.getAverage());
+        }
+        if (rightMockMotor.getControlType() == CANSparkBase.ControlType.kPosition) {
+            rightMockMotor.setPosition(rightArmPositionCalculator.getAverage());
+        }
+
+        // The shooter wheel should pretty much always be in velocity mode.
+        var shooterMockMotor = (MockCANSparkMax)shooter.leader;
+        shooterVelocityCalculator.add(shooterMockMotor.getReference());
+        if (shooterMockMotor.getControlType() == CANSparkBase.ControlType.kVelocity) {
+            shooterMockMotor.setVelocity(shooterVelocityCalculator.getAverage());
+        }
     }
 }
+
