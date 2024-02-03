@@ -103,8 +103,6 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
     @Test
     public void testLimits() {
-        // A hacky way to bypass "Soft-limits" since we only want to test when actually AT limit
-        setMotorPosition(5000);
 
         // Check both arms are not yet calibrated and are static
         assertFalse(arm.hasCalibratedLeft);
@@ -136,6 +134,10 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         checkMotorPower(0.3);
 
         // Test LimitState: UPPER_LIMIT_HIT (Usually you can't get here)
+
+        // A hacky way to bypass "Soft-limits" since we only want to test when actually AT limit
+        setMotorPosition(5000);
+
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(false);
         ((MockCANSparkMax)arm.armMotorRight).setReverseLimitSwitchStateForTesting(false);
 

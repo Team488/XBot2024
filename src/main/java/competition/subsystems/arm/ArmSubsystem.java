@@ -142,9 +142,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
             switch (left) {
                 case NEAR_LOWER_LIMIT -> leftPower = MathUtils.constrainDouble(
-                        leftPower, 0, armPowerMax.get());
+                            leftPower, 0, armPowerMax.get());
                 case NEAR_UPPER_LIMIT -> leftPower = MathUtils.constrainDouble(
-                        leftPower, armPowerMin.get(), 0);
+                            leftPower, armPowerMin.get(), 0);
                 default -> {}
             }
 
