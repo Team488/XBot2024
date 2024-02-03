@@ -38,6 +38,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.armMotorLeft.setPosition(position);
         arm.armMotorRight.setPosition(position);
     }
+  
 
     @Test
     public void testExtend() {
@@ -98,6 +99,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         assertTrue(arm.hasCalibratedLeft);
         assertTrue(arm.hasCalibratedRight);
     }
+
 
     @Test
     public void testLimits() {
