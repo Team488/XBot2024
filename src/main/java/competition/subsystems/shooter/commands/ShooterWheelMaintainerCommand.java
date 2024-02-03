@@ -58,14 +58,6 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
         return 0.0;
     }
 
-    protected boolean getErrorWithinTolerance() {
-        // THESE VALUES NEED TUNING
-        if (Math.abs(wheel.getCurrentValue() - wheel.getTargetValue()) < wheel.getAcceptableToleranceRPM()) {
-            return true;
-        }
-        return false;
-    }
-
     @Override
     protected double getErrorMagnitude() {
         double current = wheel.getCurrentValue();
