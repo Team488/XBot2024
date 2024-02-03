@@ -229,6 +229,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getArmAngleFromDistance(double distance) {
+        // Distance: Inches; Angle: Degrees; Distance = Measured Distance - Calibration Offset
         return (0.0019 * Math.pow(distance, 2) + (-0.7106 * distance) + 82.844) + angleTrim.get();
     }
 
