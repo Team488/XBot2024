@@ -4,6 +4,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
@@ -45,7 +47,8 @@ public class OperatorCommandMap {
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
             WarmUpShooterCommand shooterWarmUp,
-            FireCollectorCommand fireCollectorCommand
+            FireCollectorCommand fireCollectorCommand,
+            SetArmAngleCommand armAngle
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntake);
@@ -59,7 +62,11 @@ public class OperatorCommandMap {
         shooterWarmUp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
         oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
         oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(fireCollectorCommand);
+
         // Arms are taken care of via their maintainer & human overrides.
+        armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
+        var scoochNote = scoocherIntake.alongWith(armAngle);
+        // TODO: bind scoochNote action to a button in operatorGamepad
     }
     
     // Example for setting up a command to fire when a button is pressed:
