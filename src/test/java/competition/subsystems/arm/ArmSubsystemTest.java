@@ -1,6 +1,5 @@
 package competition.subsystems.arm;
 
-import com.revrobotics.SparkLimitSwitch;
 import competition.BaseCompetitionTest;
 import org.junit.Test;
 import xbot.common.controls.actuators.mock_adapters.MockCANSparkMax;
@@ -9,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+// Expect, Actual
 
 public class ArmSubsystemTest extends BaseCompetitionTest {
 
@@ -163,5 +163,14 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
         arm.setPower(-0.3);
         checkMotorPower(0);
+    }
+
+
+    @Test
+    public void testGetArmAngleFromDistance() {
+        // In case if getArmAngleFromDistance for whatever reason is wayyyyyy off
+        assertEquals(52, arm.getArmAngleFromDistance(50), 5);
+        assertEquals(31, arm.getArmAngleFromDistance(100), 5);
+        assertEquals(20, arm.getArmAngleFromDistance(150), 5);
     }
 }
