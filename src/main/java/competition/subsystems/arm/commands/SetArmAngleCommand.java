@@ -13,12 +13,15 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
 
     @Inject
     public SetArmAngleCommand(ArmSubsystem armSubsystem) {
-        addRequirements(armSubsystem);
         this.armSubsystem = armSubsystem;
     }
 
     public void setTargetAngle(double targetAngle) {
         this.targetAngle = targetAngle;
+    }
+
+    public void setArmPosition(ArmSubsystem.UsefulArmPosition armPosition) {
+        this.targetAngle = armSubsystem.getUsefulArmPosition(armPosition);
     }
 
     @Override
