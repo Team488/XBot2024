@@ -120,6 +120,10 @@ public class CompetitionContract extends ElectricalContract {
     public boolean isCollectorReady() {
         return true;
     }
+
+    public boolean isScoocherReady() {
+        return false;
+    }
     public DeviceInfo getScoocherMotor(){
         return new DeviceInfo("ScoocherMotor", 14);
     }
@@ -159,8 +163,12 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getNoteSensorDio() {
-        return new DeviceInfo("NoteSensor", 13);
+    public DeviceInfo getInControlNoteSensorDio() {
+        return new DeviceInfo("InControlNoteSensor", 13);
+    }
+    @Override
+    public DeviceInfo getReadyToFireNoteSensorDio() {
+        return new DeviceInfo("ReadyToFireNoteSensor", 15);
     }
 
     // ArmSubsystem

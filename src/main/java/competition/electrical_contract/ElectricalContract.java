@@ -22,6 +22,8 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     public abstract XYPair getSwerveModuleOffsets(SwerveInstance swerveInstance);
 
     public abstract boolean isCollectorReady();
+
+    public abstract boolean isScoocherReady();
     public abstract DeviceInfo getScoocherMotor();
 
     public abstract DeviceInfo getLightsDio0();
@@ -36,7 +38,8 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
 
     public abstract DeviceInfo getLightsCubeDio();
 
-    public abstract DeviceInfo getNoteSensorDio();
+    public abstract DeviceInfo getInControlNoteSensorDio();
+    public abstract DeviceInfo getReadyToFireNoteSensorDio();
 
     // ArmSubsystem
     public abstract boolean isArmReady();
