@@ -108,17 +108,21 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public DeviceInfo getShooterMotorLeader() {
-        return null;
+        return new DeviceInfo("ShooterLeader", 50, false);
     }
 
     @Override
     public DeviceInfo getShooterMotorFollower() {
-        return null;
+        return new DeviceInfo("ShooterFollower", 49, false);
     }
 
     @Override
     public boolean isCollectorReady() {
         return true;
+    }
+
+    public boolean isScoocherReady() {
+        return false;
     }
     public DeviceInfo getScoocherMotor(){
         return new DeviceInfo("ScoocherMotor", 14);
@@ -159,8 +163,12 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getNoteSensorDio() {
-        return new DeviceInfo("NoteSensor", 13);
+    public DeviceInfo getInControlNoteSensorDio() {
+        return new DeviceInfo("InControlNoteSensor", 13);
+    }
+    @Override
+    public DeviceInfo getReadyToFireNoteSensorDio() {
+        return new DeviceInfo("ReadyToFireNoteSensor", 15);
     }
 
     // ArmSubsystem
