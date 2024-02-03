@@ -96,7 +96,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         this.armState = ArmState.STOPPED;
     }
 
-    public void setPower(double leftPower, double rightPower) {
+    public void setPowerToLeftAndRightArms(double leftPower, double rightPower) {
 
         // Check if armPowerMin/armPowerMax are safe values
         if (armPowerMax.get() < 0 || armPowerMin.get() > 0) {
@@ -131,17 +131,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
     }
 
-    /**
-     * This sets one power to both left and right arms at the same time
-     * @param power the power to send to both arms
-     */
-    public void setPower(double power) {
-        setPower(power, power);
-    }
-
     @Override
     public void setPower(Double power) {
-        setPower(power.doubleValue());
+        setPowerToLeftAndRightArms(power, power);
     }
 
     public void extend() {
@@ -155,7 +147,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void stop() {
-        setPower(0);
+        setPower(0.0);
         armState = ArmState.STOPPED;
     }
 
@@ -187,8 +179,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
 
     public LimitState getLimitState(XCANSparkMax motor) {
-        boolean upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
-        boolean lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+        boolean upperHit = false;
+        boolean lowerHit = false;
+
+        if (contract.isArmReady()) {
+            upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+            lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+        }
 
         if (upperHit && lowerHit) {
             return LimitState.BOTH_LIMITS_HIT;
@@ -273,6 +270,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorLeft.periodic();
             armMotorRight.periodic();
         }
+        aKitLog.record("Target Angle" + targetAngle);
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));

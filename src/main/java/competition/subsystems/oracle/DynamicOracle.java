@@ -55,16 +55,16 @@ public class DynamicOracle extends BaseSubsystem {
         firstRunInNewGoal = true;
         setupLowResField();
 
-        reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
-        reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
+        //reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
+        //reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
 
         Pose2d scoringPositionTop = new Pose2d(1.3, 6.9, Rotation2d.fromDegrees(0));
         Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(0));
         Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(0));
 
         activeScoringPosition = scoringPositionTop;
-        createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.75, "PartnerA");
-        createRobotObstacle(scoringPositionBottom.getTranslation(), 1.75, "PartnerB");
+        //createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.75, "PartnerA");
+        //createRobotObstacle(scoringPositionBottom.getTranslation(), 1.75, "PartnerB");
     }
 
     Pose2d activeScoringPosition;
