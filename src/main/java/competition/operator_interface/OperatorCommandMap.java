@@ -5,6 +5,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.subsystems.collector.commands.EjectCollectorCommand;
+import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
@@ -43,7 +44,8 @@ public class OperatorCommandMap {
             EjectScoocherCommand scoocherEject,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
-            WarmUpShooterCommand shooterWarmUp
+            WarmUpShooterCommand shooterWarmUp,
+            FireCollectorCommand fireCollectorCommand
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntake);
@@ -56,7 +58,7 @@ public class OperatorCommandMap {
         // Fire
         shooterWarmUp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
         oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
-
+        oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(fireCollectorCommand);
         // Arms are taken care of via their maintainer & human overrides.
     }
     
