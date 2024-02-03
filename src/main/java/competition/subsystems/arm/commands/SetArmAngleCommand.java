@@ -21,7 +21,7 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
     }
 
     public void setArmPosition(ArmSubsystem.UsefulArmPosition armPosition) {
-        this.targetAngle = armSubsystem.getUsefulArmPosition(armPosition);
+        this.targetAngle = armSubsystem.getUsefulArmPositionAngle(armPosition);
     }
 
     @Override
