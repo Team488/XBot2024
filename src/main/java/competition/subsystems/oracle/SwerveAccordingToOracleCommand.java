@@ -1,10 +1,8 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Twist2d;
-import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseCommand;
 import xbot.common.math.XYPair;
 import xbot.common.properties.PropertyFactory;
@@ -95,7 +93,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         // Now that our swerve logic is configured to satisfaction, give it the goal point and reset it to start
         // the new path.
         lastSeenInstructionNumber = goalPosition.getPoseMessageNumber();
-        logic.setKeyPoints(List.of(XbotSwervePoint.createXbotSwervePoint(
+        logic.setKeyPoints(List.of(new XbotSwervePoint(
                 goalPosition.getTerminatingPose().getTranslation(),
                 goalPosition.getTerminatingPose().getRotation(),
                 10)));
