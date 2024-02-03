@@ -41,8 +41,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.1);
-        ejectPower = pf.createPersistentProperty("ejectPower",0.1);
-        firePower = pf.createPersistentProperty("firePower", 0.1);
+        ejectPower = pf.createPersistentProperty("ejectPower",-0.1);
+        firePower = pf.createPersistentProperty("firePower", 1.0);
         this.intakeState = IntakeState.STOPPED;
     }
 
