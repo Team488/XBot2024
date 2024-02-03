@@ -1,19 +1,25 @@
 package competition.operator_interface;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
+import competition.subsystems.collector.commands.EjectCollectorCommand;
+import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.schoocher.commands.EjectScoocherCommand;
+import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
+import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
+import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import java.util.ArrayList;
@@ -26,64 +32,134 @@ public class OperatorCommandMap {
 
     @Inject
     public OperatorCommandMap() {}
+
+
+    @Inject
+    public void setupFundamentalCommands(
+            OperatorInterface oi,
+            IntakeScoocherCommand scoocherIntake,
+            EjectScoocherCommand scoocherEject,
+            IntakeCollectorCommand collectorIntake,
+            EjectCollectorCommand collectorEject,
+            WarmUpShooterCommand shooterWarmUp
+    ) {
+        // Scooch
+        oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntake);
+        oi.operatorGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
+
+        // Collect
+        oi.operatorGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake);
+        oi.operatorGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
+
+        // Fire
+        shooterWarmUp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
+        oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
+
+        // Arms are taken care of via their maintainer & human overrides.
+    }
     
     // Example for setting up a command to fire when a button is pressed:
     @Inject
-    public void setupMyCommands(
+    public void setupMobilityComands(
             PoseSubsystem pose,
             OperatorInterface operatorInterface,
+            Provider<SwerveSimpleTrajectoryCommand> swerveCommandProvider,
             SetRobotHeadingCommand resetHeading,
-            SwerveSimpleTrajectoryCommand swerveTest,
-            SwerveSimpleTrajectoryCommand avoidColumnTest,
-            SwerveAccordingToOracleCommand oracleSwerve,
-            ManualRobotKnowledgeSubsystem knowledgeSubsystem,
-            DynamicOracle oracle,
-            ReconcileArmAlignmentCommand slightLeftArmForward,
-            ReconcileArmAlignmentCommand slightLeftArmBackward)
+            DynamicOracle oracle
+            )
     {
+        double typicalVelocity = 2.5;
+        // Manipulate heading and position for easy testing
         resetHeading.setHeadingToApply(0);
+        var teleportRobot = pose.createSetPositionCommand(new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0)));
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).onTrue(pose.createCopyFusedOdometryToWheelsOdometryCommand());
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(pose.createSetPositionCommand(
-                new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0))));
+        LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
 
-        ArrayList<XbotSwervePoint> points = new ArrayList<>();
-        points.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.6, 5.65), Rotation2d.fromDegrees(0), 10));
-        swerveTest.logic.setKeyPoints(points);
-        swerveTest.logic.setEnableConstantVelocity(true);
-        swerveTest.logic.setConstantVelocity(1);
+        // Where are some cool places we may want to go..
+        // 1) Where there are Notes!
+        var goToTopSpike = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.SpikeTop, typicalVelocity, fieldWithObstacles, true);
+        var goToMiddleSpike = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.SpikeMiddle, typicalVelocity, fieldWithObstacles, true);
+        var goToBottomSpike = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.SpikeBottom, typicalVelocity, fieldWithObstacles, true);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(swerveTest);
+        var goToCenterLine1 = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.CenterLine1, typicalVelocity, fieldWithObstacles, true);
+        var goToCenterLine2 = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.CenterLine2, typicalVelocity, fieldWithObstacles, true);
+        var goToCenterLine3 = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.CenterLine3, typicalVelocity, fieldWithObstacles, true);
+        var goToCenterLine4 = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.CenterLine4, typicalVelocity, fieldWithObstacles, true);
+        var goToCenterLine5 = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.CenterLine5, typicalVelocity, fieldWithObstacles, true);
 
-        ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
-        columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.9, 5.4), Rotation2d.fromDegrees(0), 10));
-        avoidColumnTest.logic.setKeyPoints(columnPoints);
-        avoidColumnTest.logic.setEnableConstantVelocity(true);
-        avoidColumnTest.logic.setConstantVelocity(1);
-        avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        // 2) Or to go score!
+        var goToAmp = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.AmpScoringLocation, typicalVelocity, fieldWithObstacles);
+        var goToSpeaker = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.SubwooferCentralScoringLocation, typicalVelocity, fieldWithObstacles);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(avoidColumnTest);
+        // 3) Or pick up a new note from the source!
+        var goToNoteSource = createAndConfigureTypicalSwerveCommand(
+                swerveCommandProvider.get(), PoseSubsystem.NearbySource, typicalVelocity, fieldWithObstacles, true);
 
+        // Bind these to buttons on the neotrellis.
+        operatorInterface.neoTrellis.getifAvailable(10).whileTrue(goToTopSpike);
+        operatorInterface.neoTrellis.getifAvailable(11).whileTrue(goToMiddleSpike);
+        operatorInterface.neoTrellis.getifAvailable(12).whileTrue(goToBottomSpike);
 
+        operatorInterface.neoTrellis.getifAvailable(2).whileTrue(goToCenterLine1);
+        operatorInterface.neoTrellis.getifAvailable(3).whileTrue(goToCenterLine2);
+        operatorInterface.neoTrellis.getifAvailable(4).whileTrue(goToCenterLine3);
+        operatorInterface.neoTrellis.getifAvailable(5).whileTrue(goToCenterLine4);
+        operatorInterface.neoTrellis.getifAvailable(6).whileTrue(goToCenterLine5);
+
+        operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
+        operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
+        operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
+
+    }
+
+    @Inject
+    public void setupOracleCommands(OperatorInterface oi,
+                                    SwerveAccordingToOracleCommand oracleSwerve,
+                                    ManualRobotKnowledgeSubsystem knowledgeSubsystem,
+                                    DynamicOracle oracle) {
         oracleSwerve.logic.setEnableConstantVelocity(true);
         oracleSwerve.logic.setConstantVelocity(2.8);
         oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper)
+        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
+        oi.driverGamepad.getXboxButton(XboxButton.LeftBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
+        oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+    }
 
-        // ReconcileArmAlignmentCommand
-        slightLeftArmForward.setReconcilePower(0.05);
-        slightLeftArmBackward.setReconcilePower(-0.05);
+    private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
+            SwerveSimpleTrajectoryCommand command, Pose2d target, double targetVelocity, LowResField fieldWithObstacles) {
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
+        return createAndConfigureTypicalSwerveCommand(command, target, targetVelocity,
+                fieldWithObstacles, false);
+    }
 
+    private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
+            SwerveSimpleTrajectoryCommand command, Pose2d target, double targetVelocity, LowResField fieldWithObstacles,
+            boolean aimAtGoalDuringFinalLeg) {
+
+        ArrayList<XbotSwervePoint> points = new ArrayList<>();
+        points.add(new XbotSwervePoint(
+                target.getTranslation(), target.getRotation(), 10));
+        command.logic.setEnableConstantVelocity(true);
+        command.logic.setConstantVelocity(targetVelocity);
+        command.logic.setFieldWithObstacles(fieldWithObstacles);
+        command.logic.setAimAtGoalDuringFinalLeg(aimAtGoalDuringFinalLeg);
+
+        command.logic.setKeyPoints(points);
+
+        return command;
     }
 }

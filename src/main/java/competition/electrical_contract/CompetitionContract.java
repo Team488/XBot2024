@@ -108,12 +108,12 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public DeviceInfo getShooterMotorLeader() {
-        return null;
+        return new DeviceInfo("ShooterLeader", 50, false);
     }
 
     @Override
     public DeviceInfo getShooterMotorFollower() {
-        return null;
+        return new DeviceInfo("ShooterFollower", 49, false);
     }
 
     @Override

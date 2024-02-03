@@ -187,8 +187,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
 
     public LimitState getLimitState(XCANSparkMax motor) {
-        boolean upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
-        boolean lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+        boolean upperHit = false;
+        boolean lowerHit = false;
+
+        if (contract.isArmReady()) {
+            upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+            lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+        }
 
         if (upperHit && lowerHit) {
             return LimitState.BOTH_LIMITS_HIT;
