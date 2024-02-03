@@ -1,11 +1,5 @@
 package competition.subsystems.shooter;
 
-import competition.subsystems.pose.PoseSubsystem;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.lang.Math;
-
 public class ShooterDistanceToRpmConverter {
     //IMPORTANT: BOTH ARRAYS NEED TO BE ORDERED IN INCREASING ORDER, EACH ELEMENT AT EACH INDEX CORRESPONDS TO THE SAME INDEX IN THE OTHER ARRAY
     //THINK OF IT LIKE A COORDINATE PAIR: rpmForDistance[0] has the RPM needed for the distance in distancesFromSpeaker[0]
@@ -33,8 +27,8 @@ public class ShooterDistanceToRpmConverter {
 
     //estimates the RPM we need to fire at our distance based on prerecorded data
     public double getRPMForDistance(double distanceFromSpeaker) {
-        double secantLineSlope = 0;
-        double yIntercept = 0;
+        double secantLineSlope;
+        double yIntercept;
 
         for (int i = 0; i < distancesFromSpeaker.length - 1; i++) {
             //logic to find where currentPosition lies in the array

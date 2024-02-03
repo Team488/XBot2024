@@ -1,7 +1,7 @@
 package competition.subsystems.shooter;
 
 import competition.BaseCompetitionTest;
-import competition.subsystems.pose.PoseSubsystem;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 public class ShooterDistanceToRpmConverterTest extends BaseCompetitionTest {
     ShooterDistanceToRpmConverter converter;
-    PoseSubsystem pose;
     //meters
     double[] testDistance = {1,2,3,4,5,6,7,8,10,11};
     double[] testRPM = {500,950,1300,1500,1700,2200,2500,2700,3000,3500};
