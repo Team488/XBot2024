@@ -216,7 +216,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
 
     // Returns an angle for the shooter that can be converted into arm position later if needed
-    public double getUsefulArmPosition(UsefulArmPosition usefulArmPosition) {
+    public double getUsefulArmPositionAngle(UsefulArmPosition usefulArmPosition) {
         double angle;
         switch(usefulArmPosition) {
             // THESE ARE ALL PLACEHOLDER VALUES!!!
