@@ -128,12 +128,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
         // If not calibrated, motor can only go down at slow rate
-        // If calibrated, move at -0.1 to 0.1 power (at maximum) when near limit (or some pid function perhaps?)
         if (!(hasCalibratedLeft && hasCalibratedRight)) {
             leftPower = MathUtils.constrainDouble(leftPower, -0.1, 0);
             rightPower = MathUtils.constrainDouble(leftPower, -0.1, 0);
 
         } else {
+            // If calibrated, restrict movement to area
             ArmNearLimitState left = checkIsArmNearLimit(
                     armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
             ArmNearLimitState right = checkIsArmNearLimit(
@@ -270,24 +270,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         LimitState leftArmLimitState = getLimitState(armMotorLeft);
         LimitState rightArmLimitState = getLimitState(armMotorRight);
 
-        if (!hasCalibratedLeft) {
-            if (leftArmLimitState == LimitState.UPPER_LIMIT_HIT) {
-                hasCalibratedLeft = true;
-                armMotorLeftRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
-            } else if (leftArmLimitState == LimitState.LOWER_LIMIT_HIT) {
-                hasCalibratedLeft = true;
-                armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
-            }
+        if (!hasCalibratedLeft && leftArmLimitState == LimitState.LOWER_LIMIT_HIT) {
+            hasCalibratedLeft = true;
+            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
         }
 
-        if (!hasCalibratedRight) {
-            if (rightArmLimitState == LimitState.UPPER_LIMIT_HIT) {
-                hasCalibratedRight = true;
-                armMotorRightRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorRight.getPosition());
-            } else if (rightArmLimitState == LimitState.LOWER_LIMIT_HIT) {
-                hasCalibratedRight = true;
-                armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
-            }
+        if (!hasCalibratedRight && rightArmLimitState == LimitState.LOWER_LIMIT_HIT) {
+            hasCalibratedRight = true;
+            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
         }
 
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
