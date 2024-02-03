@@ -62,6 +62,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Pose2d CenterLine4 = new Pose2d(8.2956, 2.4292, new Rotation2d());
     public static Pose2d CenterLine5 = new Pose2d(8.2956, 0.7528, new Rotation2d());
 
+    public static Pose2d NearbySource = new Pose2d(14, 1.2, Rotation2d.fromDegrees(0));
+
     public static double closeColumnWidth = 0.254;
     public static double farColumnWidths = 0.3469;
     public static Translation2d BlueLeftStageColumn = new Translation2d(3.34, 4.122);
@@ -71,6 +73,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static double SubwooferWidth = 0.95;
     public static double SubwooferHeight = 1.1;
     public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.57);
+
+    public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
+    public static Pose2d SubwooferCentralScoringLocation = new Pose2d(1.41, 5.54, Rotation2d.fromDegrees(0));
 
     private DoubleProperty matchTime;
 
