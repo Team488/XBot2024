@@ -12,28 +12,40 @@ import javax.inject.Inject;
 
 public class IntakeAndShootCommand extends BaseCommand {
     CollectorSubsystem collector;
-    ShooterDistanceToRpmConverter converter;
     ShooterWheelSubsystem shooter;
     ArmSubsystem arm;
 
     @Inject
     public IntakeAndShootCommand(CollectorSubsystem collector, ShooterWheelSubsystem shooter, ArmSubsystem arm){
+        addRequirements(collector,shooter,arm);
         this.collector = collector;
         this.shooter = shooter;
-        this.converter = new ShooterDistanceToRpmConverter();
         this.arm = arm;
-        addRequirements(collector,shooter);
-
     }
 
     @Override
     public void initialize() {
         log.info("Initializing");
 
+        //collects the game piece and gets it in
+        while(!collector.getGamePieceCollected()){
+            collector.intake();
+        }
+        while (!arm.isMaintainerAtGoal()) {
+            arm.extend();
+        }
     }
 
     @Override
     public void execute() {
-        
+        shooter.setTargetValue(shooter.getSpeedForRange());
+        if(shooter.isMaintainerAtGoal()){
+
+        }
+    }
+
+    @Override
+    public boolean isFinished() {
+        return !collector.getGamePieceCollected();
     }
 }
