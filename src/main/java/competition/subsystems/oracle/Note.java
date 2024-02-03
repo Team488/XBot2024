@@ -13,16 +13,17 @@ public class Note {
     }
 
     public enum KeyNoteNames{
-        SpikeTop,
-        SpikeMiddle,
-        SpikeBottom,
+        BlueSpikeTop,
+        BlueSpikeMiddle,
+        BlueSpikeBottom,
+        RedSpikeTop,
+        RedSpikeMiddle,
+        RedSpikeBottom,
         CenterLine1,
         CenterLine2,
         CenterLine3,
         CenterLine4,
-        CenterLine5,
-        BlueSource,
-        RedSource
+        CenterLine5
     }
 
     private int priority;
