@@ -36,6 +36,7 @@ public class ShooterDistanceToRpmConverterTest extends BaseCompetitionTest {
         //testing when distance is less than the lowest or greater than the highest recorded data point(should return zero?? Unless we should return something else)
         assertEquals(0,converter.getRPMForDistance(0.5),0.00001);
         assertEquals(0,converter.getRPMForDistance(200),0.00001);
+        assertEquals(0,converter.getRPMForDistance(-192391),0.00001);
 
     }
 }
