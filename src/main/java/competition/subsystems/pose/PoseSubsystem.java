@@ -55,7 +55,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
     public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
-    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5534, new Rotation2d());
+    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
     public static Pose2d CenterLine1 = new Pose2d(8.2956, 7.4584, new Rotation2d());
     public static Pose2d CenterLine2 = new Pose2d(8.2956, 5.7820, new Rotation2d());
