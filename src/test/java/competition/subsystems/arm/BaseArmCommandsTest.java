@@ -37,6 +37,9 @@ public class BaseArmCommandsTest extends BaseCompetitionTest {
 
     @Test
     public void test() {
+        arm.hasCalibratedLeft = true;
+        arm.hasCalibratedRight = true;
+
         // Start at zero
         checkMotorPower(0);
 

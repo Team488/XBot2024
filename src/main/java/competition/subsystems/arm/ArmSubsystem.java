@@ -36,6 +36,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
     public DoubleProperty armMotorRightRevolutionOffset;
     public DoubleProperty armMotorRevolutionLimit;
+    public DoubleProperty softUpperLimit;
+    public DoubleProperty softLowerLimit;
+    public DoubleProperty speedLimitForNotCalibrated;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
 
@@ -61,6 +64,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         FIRING_IN_AMP
     }
 
+    public enum ArmNearLimitState {
+        NEAR_UPPER_LIMIT,
+        NEAR_LOWER_LIMIT,
+        NOT_NEAR_LIMIT
+    }
+
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         ElectricalContract contract) {
@@ -83,6 +92,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "ArmMotorRightRevolutionOffset", 0);
 
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
+        softLowerLimit = pf.createPersistentProperty(
+                "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
+        softUpperLimit = pf.createPersistentProperty(
+                "SoftUpperLimit", armMotorRevolutionLimit.get() * 0.85);
+
+        speedLimitForNotCalibrated = pf.createPersistentProperty(
+                "SpeedLimitForNotCalibrated", -0.1);
+
         hasCalibratedLeft = false;
         hasCalibratedRight = false;
 
@@ -91,21 +108,62 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                     contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
             armMotorRight = sparkMaxFactory.createWithoutProperties(
                     contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+
+            // Enable hardware limits
+            armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
         }
 
         this.armState = ArmState.STOPPED;
     }
 
-    public void setPowerToLeftAndRightArms(double leftPower, double rightPower) {
 
+    public ArmNearLimitState checkIsPositionNearLimit(double actualPosition) {
+        if (actualPosition >= softUpperLimit.get()) {
+            return ArmNearLimitState.NEAR_UPPER_LIMIT;
+        } else if (actualPosition <= softLowerLimit.get()) {
+            return ArmNearLimitState.NEAR_LOWER_LIMIT;
+        }
+        return ArmNearLimitState.NOT_NEAR_LIMIT;
+    }
+
+    public double constrainPowerIfNearLimit(double power, double actualPosition) {
+        ArmNearLimitState state = checkIsPositionNearLimit(actualPosition);
+        switch (state) {
+            case NEAR_LOWER_LIMIT -> power = MathUtils.constrainDouble(
+                    power, 0, armPowerMax.get());
+            case NEAR_UPPER_LIMIT -> power = MathUtils.constrainDouble(
+                    power, armPowerMin.get(), 0);
+            default -> {}
+        }
+        return power;
+    }
+
+  
+    public void setPowerToLeftAndRightArms(double leftPower, double rightPower) {
         // Check if armPowerMin/armPowerMax are safe values
-        if (armPowerMax.get() < 0 || armPowerMin.get() > 0) {
+        if (armPowerMax.get() < 0 || armPowerMin.get() > 0 || speedLimitForNotCalibrated.get() > 0) {
             armMotorLeft.set(0);
             armMotorRight.set(0);
-            log.error("armPowerMax or armPowerMin values out of bound!");
+            log.error("armPowerMax or armPowerMin or speedLimitForNotCalibrated values out of bound!");
             return;
         }
 
+        // If not calibrated, motor can only go down at slow rate
+        if (!(hasCalibratedLeft && hasCalibratedRight)) {
+            leftPower = MathUtils.constrainDouble(leftPower, speedLimitForNotCalibrated.get(), 0);
+            rightPower = MathUtils.constrainDouble(rightPower, speedLimitForNotCalibrated.get(), 0);
+
+        } else {
+            // If calibrated, restrict movement to area
+            leftPower = constrainPowerIfNearLimit(
+                    leftPower, armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+            rightPower = constrainPowerIfNearLimit(
+                    rightPower, armMotorRight.getPosition() + armMotorRightRevolutionOffset.get());
+        }
+  
         // Arm at limit hit power restrictions
         switch(getLimitState(armMotorLeft)) {
             case BOTH_LIMITS_HIT -> leftPower = 0;
@@ -151,30 +209,34 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armState = ArmState.STOPPED;
     }
 
+    // TO-DO
     public double convertTicksToDistance(double ticks) {
         return ticksToMmRatio.get() * ticks;
     }
 
+    // TO-DO
     public double convertTicksToShooterAngle(double ticks) {
         return ticks * 1000; // To be modified into ticks to shooter angle formula
     }
 
+    // TO-DO
     public double convertShooterAngleToTicks(double angle) {
         return 0;
     }
 
 
-    public double getUsefulArmPosition(UsefulArmPosition usefulArmPosition) {
-        double revolutions;
+    // Returns an angle for the shooter that can be converted into arm position later if needed
+    public double getUsefulArmPositionAngle(UsefulArmPosition usefulArmPosition) {
+        double angle;
         switch(usefulArmPosition) {
             // THESE ARE ALL PLACEHOLDER VALUES!!!
-            case STARTING_POSITION -> revolutions = convertShooterAngleToTicks(40);
-            case COLLECTING_FROM_GROUND -> revolutions = convertShooterAngleToTicks(0);
-            case FIRING_FROM_SPEAKER_FRONT -> revolutions = convertShooterAngleToTicks(30);
-            case FIRING_IN_AMP -> revolutions = convertShooterAngleToTicks(80);
-            default -> revolutions = convertShooterAngleToTicks(40);
+            case STARTING_POSITION -> angle = 40;
+            case COLLECTING_FROM_GROUND -> angle = 0;
+            case FIRING_FROM_SPEAKER_FRONT -> angle = 30;
+            case FIRING_IN_AMP -> angle = 80;
+            default -> angle = 40;
         }
-        return revolutions;
+        return angle;
     }
 
 
@@ -217,24 +279,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         LimitState leftArmLimitState = getLimitState(armMotorLeft);
         LimitState rightArmLimitState = getLimitState(armMotorRight);
 
-        if (!hasCalibratedLeft) {
-            if (leftArmLimitState == LimitState.UPPER_LIMIT_HIT) {
-                hasCalibratedLeft = true;
-                armMotorLeftRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorLeft.getPosition());
-            } else if (leftArmLimitState == LimitState.LOWER_LIMIT_HIT) {
-                hasCalibratedLeft = true;
-                armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
-            }
+        if (!hasCalibratedLeft && leftArmLimitState == LimitState.LOWER_LIMIT_HIT) {
+            hasCalibratedLeft = true;
+            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
         }
 
-        if (!hasCalibratedRight) {
-            if (rightArmLimitState == LimitState.UPPER_LIMIT_HIT) {
-                hasCalibratedRight = true;
-                armMotorRightRevolutionOffset.set(armMotorRevolutionLimit.get() - armMotorRight.getPosition());
-            } else if (rightArmLimitState == LimitState.LOWER_LIMIT_HIT) {
-                hasCalibratedRight = true;
-                armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
-            }
+        if (!hasCalibratedRight && rightArmLimitState == LimitState.LOWER_LIMIT_HIT) {
+            hasCalibratedRight = true;
+            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
         }
 
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
@@ -270,6 +322,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorLeft.periodic();
             armMotorRight.periodic();
         }
+
         aKitLog.record("Target Angle" + targetAngle);
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
