@@ -120,6 +120,10 @@ public class CompetitionContract extends ElectricalContract {
     public boolean isCollectorReady() {
         return true;
     }
+
+    public boolean isScoocherReady() {
+        return false;
+    }
     public DeviceInfo getScoocherMotor(){
         return new DeviceInfo("ScoocherMotor", 14);
     }
