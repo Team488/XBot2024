@@ -3,6 +3,7 @@ package competition.operator_interface;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.subsystems.NeoTrellisGamepadSubsystem;
 import xbot.common.controls.sensors.XJoystick;
 import xbot.common.controls.sensors.XXboxController;
 import xbot.common.controls.sensors.XXboxController.XXboxControllerFactory;
@@ -21,6 +22,7 @@ public class OperatorInterface {
 
     public XXboxController autoGamepad;
     public XJoystick neoTrellis;
+    public NeoTrellisGamepadSubsystem neoTrellisLights;
 
     final DoubleProperty driverDeadband;
     final DoubleProperty operatorDeadband;
@@ -28,6 +30,7 @@ public class OperatorInterface {
     @Inject
     public OperatorInterface(XXboxControllerFactory controllerFactory,
                              XJoystick.XJoystickFactory joystickFactory,
+                             NeoTrellisGamepadSubsystem neoTrellisSubsystem,
                              RobotAssertionManager assertionManager,
                              PropertyFactory pf) {
         driverGamepad = controllerFactory.create(0);
@@ -41,6 +44,7 @@ public class OperatorInterface {
         autoGamepad = controllerFactory.create(3);
 
         neoTrellis = joystickFactory.create(2, 32);
+        neoTrellisLights = neoTrellisSubsystem;
 
         pf.setPrefix("OperatorInterface");
         driverDeadband = pf.createPersistentProperty("Driver Deadband", 0.12);
