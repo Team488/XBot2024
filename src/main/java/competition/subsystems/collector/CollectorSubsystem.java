@@ -24,6 +24,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     private final XDigitalInput readyToFireNoteSensor;
     private final ElectricalContract contract;
     private final DoubleProperty firePower;
+    private final DoubleProperty intakePowerInControlMultiplier;
 
 
     public enum IntakeState {
@@ -45,6 +46,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         intakePower = pf.createPersistentProperty("intakePower",0.1);
         ejectPower = pf.createPersistentProperty("ejectPower",-0.1);
         firePower = pf.createPersistentProperty("firePower", 1.0);
+        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 0.5);
         this.intakeState = IntakeState.STOPPED;
     }
 
@@ -54,7 +56,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public void intake(){
         double power = intakePower.get();
         if (getGamePieceInControl()) {
-            power *= 0.5;
+            power *= intakePowerInControlMultiplier.get();
         }
         collectorMotor.set(power);
         intakeState = IntakeState.INTAKING;
