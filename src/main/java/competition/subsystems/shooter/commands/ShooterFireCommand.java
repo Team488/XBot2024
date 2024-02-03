@@ -40,9 +40,6 @@ public class ShooterFireCommand extends BaseCommand {
 
         if (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal()) {
             wheel.setPower(shooterPower.get());
-        } else {
-            log.info("Desired RPM and arm angle have not been reached yet");
         }
-
     }
 }
