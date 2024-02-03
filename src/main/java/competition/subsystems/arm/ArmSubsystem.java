@@ -61,7 +61,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         STARTING_POSITION,
         COLLECTING_FROM_GROUND,
         FIRING_FROM_SPEAKER_FRONT,
-        FIRING_IN_AMP
+        FIRING_IN_AMP,
+        SCOOCH_NOTE
     }
 
     @Inject
@@ -216,6 +217,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case COLLECTING_FROM_GROUND -> angle = 0;
             case FIRING_FROM_SPEAKER_FRONT -> angle = 30;
             case FIRING_IN_AMP -> angle = 80;
+            case SCOOCH_NOTE -> angle = 60; // placeholder value, safe angle to let note through while still low
             default -> angle = 40;
         }
         return angle;
