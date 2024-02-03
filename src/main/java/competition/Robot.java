@@ -43,6 +43,7 @@ public class Robot extends BaseRobot {
         dataFrameRefreshables.add(getInjectorComponent().scoocherSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().collectorSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().shooterSubsystem());
+        dataFrameRefreshables.add(getInjectorComponent().neoTrellisGamepadSubsystem());
     }
 
     protected BaseRobotComponent createDaggerComponent() {
