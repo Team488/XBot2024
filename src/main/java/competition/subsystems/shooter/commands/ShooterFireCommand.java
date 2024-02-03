@@ -34,10 +34,15 @@ public class ShooterFireCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        if (wheel.getCurrentValue() == wheel.getTargetValue() && arm.getCurrentValue() == arm.getTargetValue()) {
+        /* WE CANNOT CHECK IF CURRENT VALUE OF WHEEL AND TARGET VALUE ARE EXACTLY THE SAME, THAT IS WHY WE
+        HAVE THE TOLERANCE PROPERTIES IN THE FIRST PLACE
+        */
+
+        if (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal()) {
             wheel.setPower(shooterPower.get());
         } else {
-            log.info("Desired RPM and arm position have not been reached yet");
+            log.info("Desired RPM and arm angle have not been reached yet");
         }
+
     }
 }
