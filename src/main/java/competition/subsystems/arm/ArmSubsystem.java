@@ -122,7 +122,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return power;
     }
 
-    public double constrainPowerIfAtLimit(double power, LimitState state) {
+    public double constrainPowerIfAtLimit(double power) {
         switch(getLimitState(armMotorRight)) {
             case BOTH_LIMITS_HIT -> power = 0;
             case UPPER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, armPowerMin.get(), 0);
@@ -158,8 +158,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
   
         // Arm at limit hit power restrictions
-        leftPower = constrainPowerIfAtLimit(leftPower, getLimitState(armMotorLeft));
-        rightPower = constrainPowerIfAtLimit(rightPower, getLimitState(armMotorRight));
+        leftPower = constrainPowerIfAtLimit(leftPower);
+        rightPower = constrainPowerIfAtLimit(rightPower);
 
         // Put power within limit range (if not already)
         leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
