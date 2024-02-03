@@ -36,6 +36,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
     public DoubleProperty armMotorRightRevolutionOffset;
     public DoubleProperty armMotorRevolutionLimit;
+    public DoubleProperty softUpperLimit;
+    public DoubleProperty softLowerLimit;
+    public DoubleProperty speedLimitForNotCalibrated;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
 
@@ -89,6 +92,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "ArmMotorRightRevolutionOffset", 0);
 
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
+        softLowerLimit = pf.createPersistentProperty(
+                "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
+        softUpperLimit = pf.createPersistentProperty(
+                "SoftUpperLimit", armMotorRevolutionLimit.get() * 0.85);
+
+        speedLimitForNotCalibrated = pf.createPersistentProperty(
+                "SpeedLimitForNotCalibrated", -0.1);
+
         hasCalibratedLeft = false;
         hasCalibratedRight = false;
 
@@ -110,9 +121,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
 
     public ArmNearLimitState checkIsArmNearLimit(double actualPosition) {
-        if (actualPosition >= armMotorRevolutionLimit.get() * 0.85) {
+        if (actualPosition >= softUpperLimit.get()) {
             return ArmNearLimitState.NEAR_UPPER_LIMIT;
-        } else if (actualPosition <= armMotorRevolutionLimit.get() * 0.15) {
+        } else if (actualPosition <= softLowerLimit.get()) {
             return ArmNearLimitState.NEAR_LOWER_LIMIT;
         }
         return ArmNearLimitState.NOT_NEAR_LIMIT;
@@ -121,17 +132,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
   
     public void setPowerToLeftAndRightArms(double leftPower, double rightPower) {
         // Check if armPowerMin/armPowerMax are safe values
-        if (armPowerMax.get() < 0 || armPowerMin.get() > 0) {
+        if (armPowerMax.get() < 0 || armPowerMin.get() > 0 || speedLimitForNotCalibrated.get() > 0) {
             armMotorLeft.set(0);
             armMotorRight.set(0);
-            log.error("armPowerMax or armPowerMin values out of bound!");
+            log.error("armPowerMax or armPowerMin or speedLimitForNotCalibrated values out of bound!");
             return;
         }
 
         // If not calibrated, motor can only go down at slow rate
         if (!(hasCalibratedLeft && hasCalibratedRight)) {
-            leftPower = MathUtils.constrainDouble(leftPower, -0.1, 0);
-            rightPower = MathUtils.constrainDouble(leftPower, -0.1, 0);
+            leftPower = MathUtils.constrainDouble(leftPower, speedLimitForNotCalibrated.get(), 0);
+            rightPower = MathUtils.constrainDouble(rightPower, speedLimitForNotCalibrated.get(), 0);
 
         } else {
             // If calibrated, restrict movement to area
@@ -202,14 +213,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armState = ArmState.STOPPED;
     }
 
+    // TO-DO
     public double convertTicksToDistance(double ticks) {
         return ticksToMmRatio.get() * ticks;
     }
 
+    // TO-DO
     public double convertTicksToShooterAngle(double ticks) {
         return ticks * 1000; // To be modified into ticks to shooter angle formula
     }
 
+    // TO-DO
     public double convertShooterAngleToTicks(double angle) {
         return 0;
     }
