@@ -62,7 +62,7 @@ public class DynamicOracle extends BaseSubsystem {
         Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(0));
         Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(0));
 
-        activeScoringPosition = scoringPositionTop;
+        activeScoringPosition = scoringPositionMiddle;
         //createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.75, "PartnerA");
         //createRobotObstacle(scoringPositionBottom.getTranslation(), 1.75, "PartnerB");
     }

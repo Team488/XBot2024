@@ -52,6 +52,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty yawOffset;
     final DoubleProperty waitForStablePoseTime;
     final DoubleProperty errorThreshold;
+    final DoubleProperty singleTagStableDistance;
+    final DoubleProperty multiTagStableDistance;
     final TimeStableValidator frontReliablePoseIsStable;
     final TimeStableValidator rearReliablePoseIsStable;
     NetworkTable visionTable;
@@ -70,6 +72,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         pf.setPrefix(this);
         isInverted = pf.createPersistentProperty("Yaw inverted", true);
         yawOffset = pf.createPersistentProperty("Yaw offset", 0);
+        singleTagStableDistance = pf.createPersistentProperty("Single tag stable distance", 2.0);
+        multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
+
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
         errorThreshold = pf.createPersistentProperty("Error threshold",200);
@@ -152,6 +157,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
 
             var isReliable = !estimatedPose.isEmpty() && isEstimatedPoseReliable(estimatedPose.get(), previousEstimatedRobotPose);
+            aKitLog.record(name+"Reliable", isReliable);
             var isStable = waitForStablePoseTime.get() == 0.0 || poseTimeValidator.checkStable(isReliable);
             if (isReliable && isStable) {
                 return estimatedPose;
@@ -201,14 +207,19 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             //        estimatedPose.estimatedPose.toPose2d(), getStringFromList(allTagIds), previousEstimatedPose));
         }
 
-        // Two or more targets tends to be very reliable
-        if (estimatedPose.targetsUsed.size() > 1) {
+        // How far away is the camera from the target?
+        double cameraDistance =
+                estimatedPose.targetsUsed.get(0).getBestCameraToTarget().getTranslation().getNorm();
+
+        // Two or more targets tends to be very reliable, but there's still a limit for distance
+        if (estimatedPose.targetsUsed.size() > 1
+        && cameraDistance < multiTagStableDistance.get()) {
             return true;
         }
 
         // For a single target we need to be above reliability threshold and within 1m
         return estimatedPose.targetsUsed.get(0).getPoseAmbiguity() < 0.20
-                && estimatedPose.targetsUsed.get(0).getBestCameraToTarget().getTranslation().getX() < 1.5;
+                && cameraDistance < singleTagStableDistance.get();
     }
 
     private List<Integer> getTagListFromPose(EstimatedRobotPose estimatedPose) {
