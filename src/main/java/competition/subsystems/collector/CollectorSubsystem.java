@@ -20,9 +20,11 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public final DoubleProperty intakePower;
     public final DoubleProperty ejectPower;
     private IntakeState intakeState;
-    private final XDigitalInput noteSensor;
+    private final XDigitalInput inControlNoteSensor;
+    private final XDigitalInput readyToFireNoteSensor;
     private final ElectricalContract contract;
     private final DoubleProperty firePower;
+    private final DoubleProperty intakePowerInControlMultiplier;
 
 
     public enum IntakeState {
@@ -37,12 +39,14 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                               ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
         this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
-        this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio());
+        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio());
+        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio());
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.1);
         ejectPower = pf.createPersistentProperty("ejectPower",-0.1);
         firePower = pf.createPersistentProperty("firePower", 1.0);
+        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 0.5);
         this.intakeState = IntakeState.STOPPED;
     }
 
@@ -50,7 +54,11 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return intakeState;
     }
     public void intake(){
-        collectorMotor.set(intakePower.get());
+        double power = intakePower.get();
+        if (getGamePieceInControl()) {
+            power *= intakePowerInControlMultiplier.get();
+        }
+        collectorMotor.set(power);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
@@ -65,18 +73,23 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         collectorMotor.set(firePower.get());
         intakeState = IntakeState.FIRING;
     }
-    public boolean getGamePieceCollected() {
-        return noteSensor.get();
+    public boolean getGamePieceInControl() {
+        return inControlNoteSensor.get();
+    }
+
+    public boolean getGamePieceReady() {
+        return readyToFireNoteSensor.get();
     }
 
     @Override
     public void periodic() {
-        aKitLog.record("HasGamePiece", getGamePieceCollected());
+        aKitLog.record("HasGamePiece", getGamePieceReady());
     }
 
     @Override
     public void refreshDataFrame() {
         collectorMotor.refreshDataFrame();
-        noteSensor.refreshDataFrame();
+        inControlNoteSensor.refreshDataFrame();
+        readyToFireNoteSensor.refreshDataFrame();
     }
 }

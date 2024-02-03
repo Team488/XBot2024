@@ -36,7 +36,8 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
 
     public abstract DeviceInfo getLightsCubeDio();
 
-    public abstract DeviceInfo getNoteSensorDio();
+    public abstract DeviceInfo getInControlNoteSensorDio();
+    public abstract DeviceInfo getReadyToFireNoteSensorDio();
 
     // ArmSubsystem
     public abstract boolean isArmReady();
