@@ -120,13 +120,25 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
 
-    public ArmNearLimitState checkIsArmNearLimit(double actualPosition) {
+    public ArmNearLimitState checkIsPositionNearLimit(double actualPosition) {
         if (actualPosition >= softUpperLimit.get()) {
             return ArmNearLimitState.NEAR_UPPER_LIMIT;
         } else if (actualPosition <= softLowerLimit.get()) {
             return ArmNearLimitState.NEAR_LOWER_LIMIT;
         }
         return ArmNearLimitState.NOT_NEAR_LIMIT;
+    }
+
+    public double constrainPowerIfNearLimit(double power, double actualPosition) {
+        ArmNearLimitState state = checkIsPositionNearLimit(actualPosition);
+        switch (state) {
+            case NEAR_LOWER_LIMIT -> power = MathUtils.constrainDouble(
+                    power, 0, armPowerMax.get());
+            case NEAR_UPPER_LIMIT -> power = MathUtils.constrainDouble(
+                    power, armPowerMin.get(), 0);
+            default -> {}
+        }
+        return power;
     }
 
   
@@ -146,26 +158,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         } else {
             // If calibrated, restrict movement to area
-            ArmNearLimitState left = checkIsArmNearLimit(
-                    armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
-            ArmNearLimitState right = checkIsArmNearLimit(
-                    armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get());
-
-            switch (left) {
-                case NEAR_LOWER_LIMIT -> leftPower = MathUtils.constrainDouble(
-                            leftPower, 0, armPowerMax.get());
-                case NEAR_UPPER_LIMIT -> leftPower = MathUtils.constrainDouble(
-                            leftPower, armPowerMin.get(), 0);
-                default -> {}
-            }
-
-            switch (right) {
-                case NEAR_LOWER_LIMIT -> rightPower = MathUtils.constrainDouble(
-                        rightPower, 0, armPowerMax.get());
-                case NEAR_UPPER_LIMIT -> rightPower = MathUtils.constrainDouble(
-                        rightPower, armPowerMin.get(), 0);
-                default -> {}
-            }
+            leftPower = constrainPowerIfNearLimit(
+                    leftPower, armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+            rightPower = constrainPowerIfNearLimit(
+                    rightPower, armMotorRight.getPosition() + armMotorRightRevolutionOffset.get());
         }
   
         // Arm at limit hit power restrictions
