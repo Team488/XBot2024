@@ -23,6 +23,6 @@ public class IntakeUntilNoteCollectedCommand extends BaseCommand {
     }
     @Override
     public boolean isFinished() {
-        return collector.getGamePieceCollected();
+        return collector.getGamePieceReady();
     }
 }
