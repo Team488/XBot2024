@@ -1,5 +1,8 @@
 package competition.subsystems.shooter;
 
+import com.revrobotics.CANSparkBase;
+import edu.wpi.first.wpilibj.DriverStation;
+import org.littletonrobotics.junction.Logger;
 
 import xbot.common.advantage.DataFrameRefreshable;
 import competition.subsystems.pose.PoseSubsystem;
@@ -35,6 +38,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty shortRangeErrorToleranceRpm;
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
+    private final DoubleProperty acceptableToleranceRPM;
+
 
 
 
@@ -62,11 +67,16 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         this.converter = new ShooterDistanceToRpmConverter();
 
 
+        // WE WON'T BE NEEDING THESE AS CURRENTLY WE ARE USING A UNIVERSAL ERROR TOLERANCE "acceptableToleranceRPM"
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
         longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
 
         // NEEDS TUNING TO FIND CORRECT VALUE
         iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
+
+
+        // THIS IS HOW MUCH RPM WE CAN TOLERATE (needs testing and is UNIVERSAL)
+        acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
 
 
         // MOTOR RELATED, COULD BE USED LATER
@@ -155,6 +165,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         setPower(0.0);
     }
 
+
+    // GET ALL THE TOLERANCES
     public double getShortRangeErrorTolerance() {
         return shortRangeErrorToleranceRpm.get();
     }
@@ -163,9 +175,20 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         return longRangeErrorToleranceRpm.get();
     }
 
+    public double getAcceptableToleranceRPM() {
+        return acceptableToleranceRPM.get();
+    }
+
     public void resetPID() {
         if (contract.isShooterReady()) {
             leader.setIAccum(0);
+        }
+    }
+
+    //WAY TO SET THE ACTUAL PID
+    public void setPidSetpoint(double speed) {
+        if (contract.isShooterReady()) {
+            leader.setReference(speed, CANSparkBase.ControlType.kVelocity);
         }
     }
 
