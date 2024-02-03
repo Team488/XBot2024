@@ -22,12 +22,14 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     private IntakeState intakeState;
     private final XDigitalInput noteSensor;
     private final ElectricalContract contract;
+    private final DoubleProperty firePower;
 
 
     public enum IntakeState {
         INTAKING,
         EJECTING,
-        STOPPED
+        STOPPED,
+        FIRING
     }
 
     @Inject
@@ -40,7 +42,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.1);
         ejectPower = pf.createPersistentProperty("ejectPower",0.1);
-
+        firePower = pf.createPersistentProperty("firePower", 0.1);
         this.intakeState = IntakeState.STOPPED;
     }
 
@@ -59,7 +61,10 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         collectorMotor.set(0);
         intakeState = IntakeState.STOPPED;
     }
-
+    public void fire(){
+        collectorMotor.set(firePower.get());
+        intakeState = IntakeState.FIRING;
+    }
     public boolean getGamePieceCollected() {
         return noteSensor.get();
     }
