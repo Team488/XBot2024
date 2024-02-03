@@ -20,7 +20,7 @@ public class OperatorInterface {
     public XXboxController operatorGamepad;
 
     public XXboxController autoGamepad;
-    public XJoystick experimentalInput;
+    public XJoystick neoTrellis;
 
     final DoubleProperty driverDeadband;
     final DoubleProperty operatorDeadband;
@@ -40,7 +40,7 @@ public class OperatorInterface {
 
         autoGamepad = controllerFactory.create(3);
 
-        experimentalInput = joystickFactory.create(2, 32);
+        neoTrellis = joystickFactory.create(2, 32);
 
         pf.setPrefix("OperatorInterface");
         driverDeadband = pf.createPersistentProperty("Driver Deadband", 0.12);
