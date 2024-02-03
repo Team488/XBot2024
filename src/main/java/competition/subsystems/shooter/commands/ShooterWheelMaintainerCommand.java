@@ -16,7 +16,6 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
         super(wheel, pf, hvmFactory, 0, 0);
         this.oi = oi;
         this.wheel = wheel;
-        this.addRequirements(this.wheel);
     }
 
     @Override
@@ -40,7 +39,7 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
         double speed = wheel.getTargetValue();
 
         if (wheel.isCalibrated()) {
-            wheel.setPower(1.0);
+            wheel.setPidSetpoint(speed);
         }
     }
 
@@ -61,19 +60,18 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
 
     protected boolean getErrorWithinTolerance() {
         // THESE VALUES NEED TUNING
-        double tolerance = 400;
-        double limit = 1000;
-
-        if (wheel.getTargetValue() < limit) {
-            tolerance = wheel.getShortRangeErrorTolerance();
-        } else {
-            tolerance = wheel.getLongRangeErrorTolerance();
+        if (Math.abs(wheel.getCurrentValue() - wheel.getTargetValue()) < wheel.getAcceptableToleranceRPM()) {
+            return true;
         }
         return false;
     }
 
     @Override
     protected double getErrorMagnitude() {
-        return 0;
+        double current = wheel.getCurrentValue();
+        double target = wheel.getTargetValue();
+
+        double shooterError = target - current;
+        return shooterError;
     }
 }

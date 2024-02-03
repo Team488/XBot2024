@@ -41,6 +41,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
 
 
+
     //DEFINING MOTORS
     public XCANSparkMax leader;
     public XCANSparkMax follower;
