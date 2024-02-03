@@ -3,6 +3,7 @@ package competition.subsystems.shooter;
 import com.revrobotics.CANSparkBase;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
+
 import xbot.common.advantage.DataFrameRefreshable;
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
@@ -25,6 +26,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     //need pose for real time calculations
     PoseSubsystem pose;
+    ShooterDistanceToRpmConverter converter;
 
 
     // IMPORTANT PROPERTIES
@@ -37,6 +39,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
     private final DoubleProperty acceptableToleranceRPM;
+
+
+
 
 
 
@@ -59,6 +64,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
 
         this.pose = pose;
+        this.converter = new ShooterDistanceToRpmConverter();
+
 
         // WE WON'T BE NEEDING THESE AS CURRENTLY WE ARE USING A UNIVERSAL ERROR TOLERANCE "acceptableToleranceRPM"
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
@@ -67,8 +74,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         // NEEDS TUNING TO FIND CORRECT VALUE
         iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
 
+
         // THIS IS HOW MUCH RPM WE CAN TOLERATE (needs testing and is UNIVERSAL)
         acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
+
 
         // MOTOR RELATED, COULD BE USED LATER
 //        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
@@ -203,12 +212,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     
     //returns the RPM based on the distance from the speaker
     public double getSpeedForRange(){
-        double distanceFromSpeakerInMeters;
-        distanceFromSpeakerInMeters = pose.getCurrentPose2d().getTranslation().getDistance(
-                PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
-        //DISCLAIMER 400 IS JUST A PLACEHOLDER VALUE FOR METERS -> RPM RATIO, MORE TESTING IS REQUIRED TO FIGURE OUT THE CORRECT NUMBER
-        double rpm = distanceFromSpeakerInMeters * 400;
-        return rpm;
+        return converter.getRPMForDistance(pose.getDistanceFromSpeaker());
     }
 }
 

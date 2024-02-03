@@ -52,6 +52,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final BooleanProperty allianceAwareFieldProp;
     private final BooleanProperty useVisionForPoseProp;
     private final Latch useVisionToUpdateGyroLatch;
+
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
     public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
     public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
@@ -335,11 +336,21 @@ public class PoseSubsystem extends BasePoseSubsystem {
         return matchTime;
     }
 
+    public double getDistanceFromSpeaker(){
+        double distanceFromSpeakerInMeters;
+
+        distanceFromSpeakerInMeters = getCurrentPose2d().getTranslation().getDistance(
+                PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+        return distanceFromSpeakerInMeters;
+    }
+
     @Override
     public void periodic() {
         super.periodic();
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
     }
-
 }
+
+
+
