@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
+import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -16,6 +17,7 @@ import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
@@ -65,7 +67,8 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             Provider<SwerveSimpleTrajectoryCommand> swerveCommandProvider,
             SetRobotHeadingCommand resetHeading,
-            DynamicOracle oracle
+            DynamicOracle oracle,
+            DriveSubsystem drive
             )
     {
         double typicalVelocity = 2.5;
@@ -75,6 +78,12 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
+
+        var noviceMode = new InstantCommand(() -> drive.setNoviceMode(true));
+        var expertMode = new InstantCommand(() -> drive.setNoviceMode(false));
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftStick).onTrue(noviceMode);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightStick).onTrue(expertMode);
 
         // Where are some cool places we may want to go..
         // 1) Where there are Notes!
