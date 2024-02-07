@@ -44,8 +44,10 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     // ArmSubsystem
     public abstract boolean isArmReady();
     public abstract DeviceInfo getArmMotorLeft();
+    public abstract boolean getArmEncoderLeftInverted();
 
     public abstract DeviceInfo getArmMotorRight();
+    public abstract boolean getArmEncoderRightInverted();
 
     public abstract DeviceInfo getCollectorMotor();
 
