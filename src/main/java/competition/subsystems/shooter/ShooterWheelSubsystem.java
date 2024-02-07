@@ -21,7 +21,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     public enum TargetRPM {
         SAFE,
         NEARSHOT,
-        DISTANCESHOT
+        DISTANCESHOT,
+        AMP_SHOT
     }
 
     //need pose for real time calculations
@@ -35,6 +36,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
+    private final DoubleProperty ampShotRpm;
     private final DoubleProperty shortRangeErrorToleranceRpm;
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
@@ -62,6 +64,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         safeRpm = pf.createPersistentProperty("SafeRpm", 500);
         nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
+        // placeholder value for rpm when preparing to score in amp
+        ampShotRpm = pf.createPersistentProperty("AmpShotRpm", 2000);
 
         this.pose = pose;
         this.converter = new ShooterDistanceToRpmConverter();
@@ -103,6 +107,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
             case SAFE -> setTargetValue(safeRpm.get());
             case NEARSHOT -> setTargetValue(nearShotRpm.get());
             case DISTANCESHOT -> setTargetValue(distanceShotRpm.get());
+            case AMP_SHOT -> setTargetValue(ampShotRpm.get());
             default -> setTargetValue(0.0);
         }
     }
