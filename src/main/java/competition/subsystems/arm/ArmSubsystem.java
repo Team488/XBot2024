@@ -75,7 +75,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                         XSolenoid.XSolenoidFactory xSolenoidFactory,
                         ElectricalContract contract) {
         this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
-
+        // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
         this.contract = contract;
         setArmBrakeSolenoid(false);
