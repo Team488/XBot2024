@@ -184,18 +184,18 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public boolean getArmEncoderLeftInverted() {
-        return false;
-    }
-
-    @Override
     public DeviceInfo getArmMotorRight() {
         return new DeviceInfo("ArmMotorRight", 11, true);
     }
 
     @Override
-    public boolean getArmEncoderRightInverted() {
+    public boolean getArmEncoderInverted() {
         return false;
+    }
+
+    @Override
+    public boolean getArmEncoderIsOnLeftMotor() {
+        return true;
     }
 }
 

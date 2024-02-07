@@ -22,8 +22,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
 
-    public XSparkAbsoluteEncoder armAbsoluteEncoderLeft;
-    public XSparkAbsoluteEncoder armAbsoluteEncoderRight;
+    public XSparkAbsoluteEncoder armAbsoluteEncoder;
 
     public final ElectricalContract contract;
 
@@ -40,8 +39,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
     public DoubleProperty armMotorRightRevolutionOffset;
     public DoubleProperty armMotorRevolutionLimit;
-    public DoubleProperty armAbsoluteEncoderLeftOffset;
-    public DoubleProperty armAbsoluteEncoderRightOffset;
+    public DoubleProperty armAbsoluteEncoderOffset;
     public DoubleProperty armAbsoluteEncoderTicksPerDegree;
     public DoubleProperty softUpperLimit;
     public DoubleProperty softLowerLimit;
@@ -97,10 +95,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armMotorRightRevolutionOffset = pf.createPersistentProperty(
                 "ArmMotorRightRevolutionOffset", 0);
 
-        armAbsoluteEncoderLeftOffset = pf.createPersistentProperty(
-                "ArmAbsoluteEncoderLeftOffset", 0);
-        armAbsoluteEncoderRightOffset = pf.createPersistentProperty(
-                "ArmAbsoluteEncoderRightOffset", 0);
+        armAbsoluteEncoderOffset = pf.createPersistentProperty(
+                "ArmAbsoluteEncoderOffset", 0);
         armAbsoluteEncoderTicksPerDegree = pf.createPersistentProperty(
                 "ArmAbsoluteEncoderTicksPerDegree", 1);
 
@@ -122,12 +118,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                     contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
             // Get through-bore encoders
-            armAbsoluteEncoderLeft = armMotorLeft.getAbsoluteEncoder(
-                    this.getPrefix() + "ArmEncoderLeft",
-                    contract.getArmEncoderLeftInverted());
-            armAbsoluteEncoderRight = armMotorRight.getAbsoluteEncoder(
-                    this.getPrefix() + "ArmEncoderRight",
-                    contract.getArmEncoderRightInverted());
+            var armWithEncoder = contract.getArmEncoderIsOnLeftMotor() ? armMotorLeft : armMotorRight;
+            armAbsoluteEncoder = armWithEncoder.getAbsoluteEncoder(
+                    this.getPrefix() + "ArmEncoder",
+                    contract.getArmEncoderInverted());
 
             // Enable hardware limits
             armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
@@ -273,12 +267,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return LimitState.NOT_AT_LIMIT;
     }
 
-    public double getLeftArmAbsoluteAngle() {
-        return (armAbsoluteEncoderLeft.getPosition() + armAbsoluteEncoderLeftOffset.get()) / armAbsoluteEncoderTicksPerDegree.get();
-    }
-
-    public double getRightArmAbsoluteAngle() {
-        return (armAbsoluteEncoderRight.getPosition() + armAbsoluteEncoderRightOffset.get()) / armAbsoluteEncoderTicksPerDegree.get();
+    public double getArmAbsoluteAngle() {
+        return (armAbsoluteEncoder.getPosition() + armAbsoluteEncoderOffset.get()) / armAbsoluteEncoderTicksPerDegree.get();
     }
 
     public void armEncoderTicksUpdate() {
@@ -293,8 +283,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
                         + armMotorRightRevolutionOffset.get()) / 2));
 
-        aKitLog.record("ArmAbsoluteEncoderLeftAngle", getLeftArmAbsoluteAngle());
-        aKitLog.record("ArmAbsoluteEncoderRightAngle", getRightArmAbsoluteAngle());
+        aKitLog.record("ArmAbsoluteEncoderAngle", getArmAbsoluteAngle());
     }
 
 
@@ -358,8 +347,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         if (contract.isArmReady()) {
             armMotorLeft.refreshDataFrame();
             armMotorRight.refreshDataFrame();
-            armAbsoluteEncoderLeft.refreshDataFrame();
-            armAbsoluteEncoderRight.refreshDataFrame();
+            armAbsoluteEncoder.refreshDataFrame();
         }
     }
 }
