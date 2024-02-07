@@ -325,7 +325,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.periodic();
         }
 
-        aKitLog.record("Target Angle" + targetAngle);
+        aKitLog.record("Target Angle", targetAngle);
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
