@@ -5,6 +5,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.commandgroups.SetArmAndShooterForAmpCommandGroup;
+import competition.commandgroups.SetArmAndShooterForSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -144,7 +145,8 @@ public class OperatorCommandMap {
 
     @Inject
     public void scoringCommands(
-            SetArmAndShooterForAmpCommandGroup setArmAndShooterForAmpCommand
+            SetArmAndShooterForAmpCommandGroup setArmAndShooterForAmpCommand,
+            SetArmAndShooterForSpeakerCommandGroup setArmAndShooterForSpeakerCommand
             )
     {
         // Prepare to score in Amp
