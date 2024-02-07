@@ -39,6 +39,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty softUpperLimit;
     public DoubleProperty softLowerLimit;
     public DoubleProperty speedLimitForNotCalibrated;
+    public DoubleProperty angleTrim;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
 
@@ -65,12 +66,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         SCOOCH_NOTE
     }
 
-    public enum ArmNearLimitState {
-        NEAR_UPPER_LIMIT,
-        NEAR_LOWER_LIMIT,
-        NOT_NEAR_LIMIT
-    }
-
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         ElectricalContract contract) {
@@ -84,15 +79,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
         armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
-        // All the DoubleProperties below needs configuration.
-        ticksToMmRatio = pf.createPersistentProperty("TicksToDistanceRatio", 1000);
+        // ticksToMmRatio and armMotorRevLimit needs configuration
+        ticksToMmRatio = pf.createPersistentProperty("TicksToArmMmRatio", 1000);
+        armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
+
+        angleTrim = pf.createPersistentProperty("AngleTrim", 0);
 
         armMotorLeftRevolutionOffset = pf.createPersistentProperty(
                 "ArmMotorLeftRevolutionOffset", 0);
         armMotorRightRevolutionOffset = pf.createPersistentProperty(
                 "ArmMotorRightRevolutionOffset", 0);
 
-        armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
         softLowerLimit = pf.createPersistentProperty(
                 "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
         softUpperLimit = pf.createPersistentProperty(
@@ -120,23 +117,20 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         this.armState = ArmState.STOPPED;
     }
 
-
-    public ArmNearLimitState checkIsPositionNearLimit(double actualPosition) {
+    public double constrainPowerIfNearLimit(double power, double actualPosition) {
         if (actualPosition >= softUpperLimit.get()) {
-            return ArmNearLimitState.NEAR_UPPER_LIMIT;
+            power = MathUtils.constrainDouble(power, armPowerMin.get(), 0);
         } else if (actualPosition <= softLowerLimit.get()) {
-            return ArmNearLimitState.NEAR_LOWER_LIMIT;
+            power = MathUtils.constrainDouble(power, 0, armPowerMax.get());
         }
-        return ArmNearLimitState.NOT_NEAR_LIMIT;
+        return power;
     }
 
-    public double constrainPowerIfNearLimit(double power, double actualPosition) {
-        ArmNearLimitState state = checkIsPositionNearLimit(actualPosition);
-        switch (state) {
-            case NEAR_LOWER_LIMIT -> power = MathUtils.constrainDouble(
-                    power, 0, armPowerMax.get());
-            case NEAR_UPPER_LIMIT -> power = MathUtils.constrainDouble(
-                    power, armPowerMin.get(), 0);
+    public double constrainPowerIfAtLimit(double power) {
+        switch(getLimitState(armMotorRight)) {
+            case BOTH_LIMITS_HIT -> power = 0;
+            case UPPER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, armPowerMin.get(), 0);
+            case LOWER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, 0, armPowerMax.get());
             default -> {}
         }
         return power;
@@ -160,25 +154,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         } else {
             // If calibrated, restrict movement to area
             leftPower = constrainPowerIfNearLimit(
-                    leftPower, armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+                    leftPower,
+                    armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
             rightPower = constrainPowerIfNearLimit(
-                    rightPower, armMotorRight.getPosition() + armMotorRightRevolutionOffset.get());
+                    rightPower,
+                    armMotorRight.getPosition() + armMotorRightRevolutionOffset.get());
         }
   
         // Arm at limit hit power restrictions
-        switch(getLimitState(armMotorLeft)) {
-            case BOTH_LIMITS_HIT -> leftPower = 0;
-            case UPPER_LIMIT_HIT -> leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), 0);
-            case LOWER_LIMIT_HIT -> leftPower = MathUtils.constrainDouble(leftPower, 0, armPowerMax.get());
-            default -> {}
-        }
-
-        switch(getLimitState(armMotorRight)) {
-            case BOTH_LIMITS_HIT -> rightPower = 0;
-            case UPPER_LIMIT_HIT -> rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), 0);
-            case LOWER_LIMIT_HIT -> rightPower = MathUtils.constrainDouble(rightPower, 0, armPowerMax.get());
-            default -> {}
-        }
+        leftPower = constrainPowerIfAtLimit(leftPower);
+        rightPower = constrainPowerIfAtLimit(rightPower);
 
         // Put power within limit range (if not already)
         leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
@@ -211,7 +196,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     // TO-DO
-    public double convertTicksToDistance(double ticks) {
+    public double convertTicksToMm(double ticks) {
         return ticksToMmRatio.get() * ticks;
     }
 
@@ -223,6 +208,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     // TO-DO
     public double convertShooterAngleToTicks(double angle) {
         return 0;
+    }
+
+    public double getArmAngleFromDistance(double distanceFromSpeaker) {
+        // Distance: Inches; Angle: Degrees; Distance = Measured Distance - Calibration Offset
+        return (0.0019 * Math.pow(distanceFromSpeaker, 2) + (-0.7106 * distanceFromSpeaker) + 82.844) + angleTrim.get();
     }
 
 
@@ -265,9 +255,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public void armEncoderTicksUpdate() {
         aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
         aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
-        aKitLog.record("ArmMotorLeftDistance", convertTicksToDistance(
+        aKitLog.record("ArmMotorLeftMm", convertTicksToMm(
                 armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
-        aKitLog.record("ArmMotorRightDistance", convertTicksToDistance(
+        aKitLog.record("ArmMotorRightMm", convertTicksToMm(
                 armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
 
         aKitLog.record("ArmMotorToShooterAngle", convertTicksToShooterAngle(
