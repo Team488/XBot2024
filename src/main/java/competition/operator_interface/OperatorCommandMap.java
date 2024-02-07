@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.commandgroups.SetArmAndShooterCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -143,23 +144,11 @@ public class OperatorCommandMap {
 
     @Inject
     public void scoringCommands(
-            SetArmAngleCommand armAngle,
-            WarmUpShooterCommand shooter
+            SetArmAndShooterCommandGroup setArmAndShooterCommand
             )
     {
         // Prepare to score in Amp
-        setArmPositionAndShooterWheel(armAngle, shooter,
-                ArmSubsystem.UsefulArmPosition.FIRING_IN_AMP, ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
-        var prepareToScoreInAmp = armAngle.alongWith(shooter);
-        // TODO: Bind command to a button in operatorGamepad
-    }
-
-    public void setArmPositionAndShooterWheel(SetArmAngleCommand armAngle,
-                                              WarmUpShooterCommand shooter,
-                                              ArmSubsystem.UsefulArmPosition armPosition,
-                                              ShooterWheelSubsystem.TargetRPM targetRpm) {
-        armAngle.setArmPosition(armPosition);
-        shooter.setTargetRpm(targetRpm);
+        // TODO: Bind setArmAndShooterCommand to a button in operatorGamepad
     }
 
     @Inject
