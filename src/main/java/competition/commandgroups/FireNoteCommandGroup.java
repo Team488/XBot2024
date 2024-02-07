@@ -13,8 +13,6 @@ import javax.inject.Inject;
 
 public class FireNoteCommandGroup extends ParallelCommandGroup {
 
-    public DoubleProperty waitTimeAlongShooting;
-
     @Inject
     FireNoteCommandGroup(PoseSubsystem pose,
                          ArmSubsystem arm,
@@ -23,8 +21,6 @@ public class FireNoteCommandGroup extends ParallelCommandGroup {
                          PropertyFactory pf,
                          FireWhenReadyCommand fireWhenReadyCommand) {
 
-        waitTimeAlongShooting = pf.createPersistentProperty("FireNoteWaitTime", 0.5);
-
         // Set arm angle
         setArmAngleCommand.setTargetAngle(arm.getArmAngleFromDistance(pose.getDistanceFromSpeaker()));
         this.addCommands(setArmAngleCommand);
@@ -32,7 +28,7 @@ public class FireNoteCommandGroup extends ParallelCommandGroup {
         // Set shooter rpm
         this.addCommands(setShooterSpeedFromLocationCommand);
 
-        // Call Alan's fire command along with timeout
-        this.addCommands(fireWhenReadyCommand.withTimeout(waitTimeAlongShooting.get()));
+        // Fire when ready
+        this.addCommands(fireWhenReadyCommand);
     }
 }

@@ -4,6 +4,9 @@ import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.controls.sensors.XTimer;
+import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 
@@ -12,11 +15,19 @@ public class FireWhenReadyCommand extends BaseCommand {
     final ArmSubsystem arm;
     final CollectorSubsystem collector;
 
+    DoubleProperty waitTimeAfterFiring;
+    boolean hasFired;
+    double timeWhenFired;
+
     @Inject
-    public FireWhenReadyCommand(ShooterWheelSubsystem wheel, ArmSubsystem arm, CollectorSubsystem collector) {
+    public FireWhenReadyCommand(ShooterWheelSubsystem wheel, ArmSubsystem arm, CollectorSubsystem collector,
+                                PropertyFactory pf) {
         this.wheel = wheel;
         this.arm = arm;
         this.collector = collector;
+
+        this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
+        this.hasFired = false;
     }
 
     @Override
@@ -33,6 +44,12 @@ public class FireWhenReadyCommand extends BaseCommand {
         */
         if (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal()) {
             collector.fire();
+            timeWhenFired = XTimer.getFPGATimestamp();
         }
+    }
+
+    @Override
+    public boolean isFinished() {
+        return hasFired && XTimer.getFPGATimestamp() + waitTimeAfterFiring.get() >= timeWhenFired;
     }
 }
