@@ -10,7 +10,7 @@ import javax.inject.Inject;
 
 public class CompetitionContract extends ElectricalContract {
     protected final double simulationScalingValue = 256.0 * PoseSubsystem.INCHES_IN_A_METER;
-
+d
     @Inject
     public CompetitionContract() {
     }
