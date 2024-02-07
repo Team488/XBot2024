@@ -33,6 +33,7 @@ public class FireWhenReadyCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing...");
+        this.hasFired = false;
     }
 
     @Override
@@ -44,7 +45,11 @@ public class FireWhenReadyCommand extends BaseCommand {
         */
         if (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal()) {
             collector.fire();
-            timeWhenFired = XTimer.getFPGATimestamp();
+
+            if (!hasFired) {
+                hasFired = true;
+                timeWhenFired = XTimer.getFPGATimestamp();
+            }
         }
     }
 
