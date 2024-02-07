@@ -148,10 +148,18 @@ public class OperatorCommandMap {
             )
     {
         // Prepare to score in Amp
-        armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.FIRING_IN_AMP);
-        shooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
+        setArmPositionAndShooterWheel(armAngle, shooter,
+                ArmSubsystem.UsefulArmPosition.FIRING_IN_AMP, ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
         var prepareToScoreInAmp = armAngle.alongWith(shooter);
         // TODO: Bind command to a button in operatorGamepad
+    }
+
+    public void setArmPositionAndShooterWheel(SetArmAngleCommand armAngle,
+                                              WarmUpShooterCommand shooter,
+                                              ArmSubsystem.UsefulArmPosition armPosition,
+                                              ShooterWheelSubsystem.TargetRPM targetRpm) {
+        armAngle.setArmPosition(armPosition);
+        shooter.setTargetRpm(targetRpm);
     }
 
     @Inject
