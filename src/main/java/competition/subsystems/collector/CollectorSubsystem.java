@@ -38,9 +38,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                               ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
-        this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+        if (contract.isCollectorReady()) {
+            this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+        } else {
+            this.collectorMotor = null;
+        }
 
-        //PUT IF STATEMENT (isCollectorReady() AROUND THESE NOTE SENSORS )
         this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio());
         this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio());
 
@@ -56,39 +59,44 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return intakeState;
     }
     public void intake(){
-        if (contract.isCollectorReady()) {
-            double power = intakePower.get();
-            if (getGamePieceInControl()) {
-                power *= intakePowerInControlMultiplier.get();
-            }
-            collectorMotor.set(power);
-            intakeState = IntakeState.INTAKING;
+        double power = intakePower.get();
+        if (getGamePieceInControl()) {
+            power *= intakePowerInControlMultiplier.get();
         }
+        setPower(power);
+        intakeState = IntakeState.INTAKING;
     }
     public void eject(){
-        if (contract.isCollectorReady()) {
-            collectorMotor.set(ejectPower.get());
-            intakeState = IntakeState.EJECTING;
-        }
+        setPower(ejectPower.get());
+        intakeState = IntakeState.EJECTING;
     }
     public void stop(){
-        if (contract.isCollectorReady()) {
-            collectorMotor.set(0);
-            intakeState = IntakeState.STOPPED;
-        }
+        setPower(0);
+        intakeState = IntakeState.STOPPED;
     }
     public void fire(){
+        setPower(firePower.get());
+        intakeState = IntakeState.FIRING;
+    }
+
+    public void setPower(double power) {
         if (contract.isCollectorReady()) {
-            collectorMotor.set(firePower.get());
-            intakeState = IntakeState.FIRING;
+            collectorMotor.set(power);
         }
     }
+
     public boolean getGamePieceInControl() {
-        return inControlNoteSensor.get();
+        if (contract.isCollectorReady()) {
+            return inControlNoteSensor.get();
+        }
+        return false;
     }
 
     public boolean getGamePieceReady() {
-        return readyToFireNoteSensor.get();
+        if (contract.isCollectorReady()) {
+            return readyToFireNoteSensor.get();
+        }
+        return false;
     }
 
     @Override

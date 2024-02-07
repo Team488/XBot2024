@@ -1,33 +1,22 @@
 package competition.subsystems.shooter.commands;
 
-import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import xbot.common.command.BaseCommand;
-import xbot.common.properties.DoubleProperty;
-import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 
-public class ShooterFireCommand extends BaseCommand {
-
+public class FireWhenReadyCommand extends BaseCommand {
     final ShooterWheelSubsystem wheel;
     final ArmSubsystem arm;
     final CollectorSubsystem collector;
-    final DoubleProperty shooterPower;
-    final OperatorInterface oi;
 
     @Inject
-    public ShooterFireCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, ArmSubsystem arm, CollectorSubsystem collector, PropertyFactory pf) {
-        this.oi = oi;
-
-
+    public FireWhenReadyCommand(ShooterWheelSubsystem wheel, ArmSubsystem arm, CollectorSubsystem collector) {
         this.wheel = wheel;
-        shooterPower = pf.createPersistentProperty("Shooter Power", 1);
-        this.collector = collector;
         this.arm = arm;
-        this.addRequirements(this.wheel);
+        this.collector = collector;
     }
 
     @Override
@@ -42,7 +31,6 @@ public class ShooterFireCommand extends BaseCommand {
 
         RUNS 50 TIMES A SECOND
         */
-
         if (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal()) {
             collector.fire();
         }
