@@ -1,5 +1,6 @@
 package competition.injection.components;
 
+import competition.simulation.Simulator2024;
 import competition.subsystems.NeoTrellisGamepadSubsystem;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ExtendArmCommand;
@@ -48,4 +49,6 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract CollectorSubsystem collectorSubsystem();
 
     public abstract ShooterWheelSubsystem shooterSubsystem();
+
+    public abstract Simulator2024 simulator2024();
 }
