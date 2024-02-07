@@ -61,12 +61,12 @@ public class OperatorCommandMap {
         // Fire
         shooterWarmUp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
         oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
-        oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(fireCollectorCommand);
+        oi.operatorGamepad.getXboxButton(XboxButton.Y).whileTrue(fireCollectorCommand);
 
         // Arms are taken care of via their maintainer & human overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var scoochNote = scoocherIntake.alongWith(armAngle);
-        // TODO: bind scoochNote action to a button in operatorGamepad
+        oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(scoochNote);
     }
     
     // Example for setting up a command to fire when a button is pressed:
@@ -94,7 +94,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftStick).onTrue(noviceMode);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightStick).onTrue(expertMode);
 
-        // Where are some cool places we may want to go..
+        // Where are some cool places we may want to go.
         // 1) Where there are Notes!
         var goToTopSpike = createAndConfigureTypicalSwerveCommand(
                 swerveCommandProvider.get(), PoseSubsystem.SpikeTop, typicalVelocity, fieldWithObstacles, true);
