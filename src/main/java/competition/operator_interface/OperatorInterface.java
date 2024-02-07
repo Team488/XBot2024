@@ -45,7 +45,7 @@ public class OperatorInterface {
         operatorGamepad.setLeftInversion(false, true);
         operatorGamepad.setRightInversion(false, true);
 
-        operatorGamepadSecond = controllerFactory.create(2);
+        operatorGamepadSecond = controllerFactory.create(4);
         operatorGamepadSecond.setLeftInversion(false, true);
         operatorGamepadSecond.setRightInversion(false, true);
 
