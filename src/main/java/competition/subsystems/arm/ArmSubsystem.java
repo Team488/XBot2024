@@ -46,8 +46,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedRight;
 
     private double targetAngle;
-    public BooleanProperty brakeEnabled;
-    public BooleanProperty brakeDisabled;
+
 
 
     public enum ArmState {
@@ -79,9 +78,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         pf.setPrefix(this);
         this.contract = contract;
-        brakeEnabled = pf.createPersistentProperty("BrakeEnabled", false);
-        brakeDisabled = pf.createPersistentProperty("BrakeDisabled", false);
-        brakeEnabled();
+        setArmBrakeSolenoid(false);
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
       
@@ -184,8 +181,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
     }
     //brake solenoid
-    public boolean brakeEnabled() { return brakeEnabled.get();}
-    public boolean brakeDisabled() { return  brakeDisabled.get();}
+    public void setArmBrakeSolenoid(boolean on){armBrakeSolenoid.setOn(on);}
+
     @Override
     public void setPower(Double power) {
         setPowerToLeftAndRightArms(power, power);
