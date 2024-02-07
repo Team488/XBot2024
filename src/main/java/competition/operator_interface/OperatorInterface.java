@@ -17,15 +17,21 @@ import xbot.common.properties.PropertyFactory;
  */
 @Singleton
 public class OperatorInterface {
+
+    // ONE GAMEPAD IS FOR COMPETITION, SECOND GAMEPAD IS USED DURING PRACTICE
     public XXboxController driverGamepad;
+    public XXboxController driverGamepadSecond;
     public XXboxController operatorGamepad;
+    public XXboxController operatorGamepadSecond;
 
     public XXboxController autoGamepad;
     public XJoystick neoTrellis;
     public NeoTrellisGamepadSubsystem neoTrellisLights;
 
     final DoubleProperty driverDeadband;
+    final DoubleProperty driverDeadbandSecond;
     final DoubleProperty operatorDeadband;
+    final DoubleProperty operatorDeadbandSecond;
 
     @Inject
     public OperatorInterface(XXboxControllerFactory controllerFactory,
@@ -37,9 +43,17 @@ public class OperatorInterface {
         driverGamepad.setLeftInversion(false, true);
         driverGamepad.setRightInversion(true, true);
 
+        driverGamepadSecond = controllerFactory.create(0);
+        driverGamepadSecond.setLeftInversion(false, true);
+        driverGamepadSecond.setRightInversion(true, true);
+
         operatorGamepad = controllerFactory.create(1);
         operatorGamepad.setLeftInversion(false, true);
         operatorGamepad.setRightInversion(false, true);
+
+        operatorGamepadSecond = controllerFactory.create(1);
+        operatorGamepadSecond.setLeftInversion(false, true);
+        operatorGamepadSecond.setRightInversion(false, true);
 
         autoGamepad = controllerFactory.create(3);
 
@@ -49,6 +63,9 @@ public class OperatorInterface {
         pf.setPrefix("OperatorInterface");
         driverDeadband = pf.createPersistentProperty("Driver Deadband", 0.12);
         operatorDeadband = pf.createPersistentProperty("Operator Deadband", 0.15);
+
+        driverDeadbandSecond = pf.createPersistentProperty("Driver Deadband Second", 0.12);
+        operatorDeadbandSecond = pf.createPersistentProperty("Operator Deadband Second", 0.15);
     }
 
     public double getDriverGamepadTypicalDeadband() {
@@ -59,4 +76,11 @@ public class OperatorInterface {
         return operatorDeadband.get();
     }
 
+    public double getDriverGamepadTypicalDeadbandSecond() {
+        return driverDeadbandSecond.get();
+    }
+
+    public double getOperatorGamepadTypicalDeadbandSecond() {
+        return operatorDeadbandSecond.get();
+    }
 }
