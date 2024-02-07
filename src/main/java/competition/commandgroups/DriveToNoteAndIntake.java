@@ -26,6 +26,7 @@ public class DriveToNoteAndIntake extends ParallelCommandGroup {
         swerveToNote.logic.setEnableConstantVelocity(true);
         swerveToNote.logic.setConstantVelocity(1);
 
+        yo dumbass ur not done with this dont make this a pr u still got to get the arm into position before intake
         this.addCommands(waitForArm);
         this.addCommands(swerveToNote);
         this.addCommands(intakeUntilNoteCollectedCommand);
