@@ -8,7 +8,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.math.MathUtils;
+import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -20,7 +22,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
-
+    public XSolenoid armBrakeSolenoid;
     public final ElectricalContract contract;
 
     public ArmState armState;
@@ -44,6 +46,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedRight;
 
     private double targetAngle;
+    public BooleanProperty brakeEnabled;
+    public BooleanProperty brakeDisabled;
+
 
     public enum ArmState {
         EXTENDING,
@@ -68,11 +73,15 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
+                        XSolenoid.XSolenoidFactory xSolenoidFactory,
                         ElectricalContract contract) {
+        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
 
         pf.setPrefix(this);
         this.contract = contract;
-
+        brakeEnabled = pf.createPersistentProperty("BrakeEnabled", false);
+        brakeDisabled = pf.createPersistentProperty("BrakeDisabled", false);
+        brakeEnabled();
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
       
@@ -174,7 +183,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.set(rightPower);
         }
     }
-
+    //brake solenoid
+    public boolean brakeEnabled() { return brakeEnabled.get();}
+    public boolean brakeDisabled() { return  brakeDisabled.get();}
     @Override
     public void setPower(Double power) {
         setPowerToLeftAndRightArms(power, power);

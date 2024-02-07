@@ -46,8 +46,10 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     public abstract DeviceInfo getArmMotorLeft();
 
     public abstract DeviceInfo getArmMotorRight();
+    public abstract DeviceInfo getBrakeSolenoid();
 
     public abstract DeviceInfo getCollectorMotor();
+
 
     // ShooterSubsystem
     public abstract DeviceInfo getShooterMotorLeader();
