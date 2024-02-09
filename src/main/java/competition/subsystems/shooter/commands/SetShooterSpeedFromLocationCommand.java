@@ -14,7 +14,6 @@ public class SetShooterSpeedFromLocationCommand extends BaseSetpointCommand {
     public SetShooterSpeedFromLocationCommand(ShooterWheelSubsystem shooter){
         super(shooter);
         this.shooter = shooter;
-        addRequirements(shooter);
     }
 
     @Override

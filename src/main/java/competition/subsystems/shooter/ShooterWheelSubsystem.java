@@ -42,14 +42,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     private final DoubleProperty iMaxAccumValueForShooter;
     private final DoubleProperty acceptableToleranceRPM;
 
-
-
-
-
-
-
-
-
     //DEFINING MOTORS
     public XCANSparkMax leader;
     public XCANSparkMax follower;
