@@ -149,8 +149,8 @@ public class OperatorCommandMap {
             SetArmAndShooterForSpeakerCommandGroup setArmAndShooterForSpeakerCommand
             )
     {
-        // Prepare to score in Amp
-        // TODO: Bind setArmAndShooterCommand to a button in operatorGamepad
+        // TODO: Bind setArmAndShooterForAmpCommand to a button in operatorGamepad
+        // TODO: Bind setArmAndShooterForSpeakerCommand to a button in operatorGamepad
     }
 
     @Inject
