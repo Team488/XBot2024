@@ -81,7 +81,7 @@ public class OperatorCommandMap {
 
         ArrayList<XbotSwervePoint> pointsY = new ArrayList<>();
         pointsY.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                new Translation2d(2.760, 5.396), Rotation2d.fromDegrees(0), 10));
+                new Translation2d(2.8956, 5.5534), Rotation2d.fromDegrees(0), 10));
         startMiddleRing.logic.setKeyPoints(pointsY);
         startMiddleRing.logic.setEnableConstantVelocity(true);
         startMiddleRing.logic.setConstantVelocity(1);
