@@ -21,6 +21,7 @@ public class ShootThenMoveOutOfLine extends SequentialCommandGroup {
         this.addCommands(fireNoteCommand);
 
         // Move straight out of line
+        // Pose2d x: 2.65 *may step into note*, may need adjustment in the future
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 new Pose2d(2.65, pose.getCurrentVelocity().y, new Rotation2d()), 10));
