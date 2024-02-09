@@ -6,11 +6,14 @@ import xbot.common.command.BaseMaintainerCommand;
 import xbot.common.logic.HumanVsMachineDecider;
 import xbot.common.properties.PropertyFactory;
 
+import javax.inject.Inject;
+
 public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     final ShooterWheelSubsystem wheel;
     final OperatorInterface oi;
 
+    @Inject
     public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf,
                                          HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory) {
         super(wheel, pf, hvmFactory, 0, 0);
