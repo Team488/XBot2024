@@ -14,15 +14,16 @@ import java.util.ArrayList;
 public class ShootThenMoveOutOfLine extends SequentialCommandGroup {
 
     @Inject
-    ShootThenMoveOutOfLine(FireNoteCommandGroup fireNoteCommand, SwerveSimpleTrajectoryCommand moveOutOfLineCommand) {
-
-        // Fire
+    ShootThenMoveOutOfLine(FireNoteCommandGroup fireNoteCommand,
+                           SwerveSimpleTrajectoryCommand moveOutOfLineCommand,
+                           PoseSubsystem pose) {
+        // Fire the note we hold at the start
         this.addCommands(fireNoteCommand);
 
-        // The Pose2d x and y is around the center spike node so this *MAY* cause collision with ally.
+        // Move straight out of line
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                new Pose2d(2.65, 5, new Rotation2d()), 10));
+                new Pose2d(2.65, pose.getCurrentVelocity().y, new Rotation2d()), 10));
         moveOutOfLineCommand.logic.setKeyPoints(points);
         moveOutOfLineCommand.logic.setEnableConstantVelocity(true);
         moveOutOfLineCommand.logic.setConstantVelocity(1);

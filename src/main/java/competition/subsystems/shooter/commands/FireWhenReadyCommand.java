@@ -28,6 +28,8 @@ public class FireWhenReadyCommand extends BaseCommand {
 
         this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
         this.hasFired = false;
+
+        pf.setPrefix(this);
     }
 
     @Override
