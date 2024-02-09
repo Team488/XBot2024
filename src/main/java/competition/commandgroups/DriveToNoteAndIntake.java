@@ -21,7 +21,13 @@ import java.util.stream.Collector;
 
 public class DriveToNoteAndIntake extends SequentialCommandGroup {
     @Inject
-    DriveToNoteAndIntake(Provider<SwerveSimpleTrajectoryCommand> swerveProvider, Pose2d notePosition, IntakeUntilNoteCollectedCommand intakeUntilNoteCollected, Provider<WaitForArmToBeAtGoalCommand> waitForArmProvider, Provider<SetArmAngleCommand> setArmAngleProvider){
+    DriveToNoteAndIntake(
+            Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
+            Pose2d notePosition,
+            IntakeUntilNoteCollectedCommand intakeUntilNoteCollected,
+            Provider<WaitForArmToBeAtGoalCommand> waitForArmProvider,
+            Provider<SetArmAngleCommand> setArmAngleProvider)
+    {
 
         SwerveSimpleTrajectoryCommand swerveToNote = swerveProvider.get();
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
