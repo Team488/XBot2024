@@ -17,7 +17,13 @@ public class PracticeContract extends CompetitionContract {
     public PracticeContract() {
 
     }
-
+    public boolean isScoocherReady() {
+        return false;
+    }
+    @Override
+    public boolean isArmReady() {
+        return false;
+    }
     @Override
     public boolean isShooterReady() {
         return false;
@@ -33,15 +39,15 @@ public class PracticeContract extends CompetitionContract {
         return true;
     }
 
-    private String getDriveControllerName(SwerveInstance swerveInstance) {
+    protected String getDriveControllerName(SwerveInstance swerveInstance) {
         return "DriveSubsystem/" + swerveInstance.label() + "/Drive";
     }
 
-    private String getSteeringControllerName(SwerveInstance swerveInstance) {
+    protected String getSteeringControllerName(SwerveInstance swerveInstance) {
         return "DriveSubsystem/" + swerveInstance.label() + "/Steering";
     }
 
-    private String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
+    protected String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
         return "DriveSubsystem/" + swerveInstance.label() + "/SteeringEncoder";
     }
 
@@ -105,10 +111,6 @@ public class PracticeContract extends CompetitionContract {
         };
     }
 
-    public DeviceInfo getCollectorMotor() {
-        return new DeviceInfo("CollectorMotor", 25, true);
-    }
-
     @Override
     public DeviceInfo getShooterMotorLeader() {
         return new DeviceInfo("ShooterLeader", 50, false);
@@ -119,77 +121,7 @@ public class PracticeContract extends CompetitionContract {
         return new DeviceInfo("ShooterFollower", 49, false);
     }
 
-    @Override
-    public boolean isCollectorReady() {
-        return true;
-    }
 
-    public boolean isScoocherReady() {
-        return false;
-    }
-    public DeviceInfo getScoocherMotor(){
-        return new DeviceInfo("ScoocherMotor", 14);
-    }
-
-    public DeviceInfo getCollectorSolenoid() {
-        return new DeviceInfo("CollectorSolenoid", 2, false);
-    }
-
-    @Override
-    public DeviceInfo getLightsDio0() {
-        return new DeviceInfo("Lights0", 5);
-    }
-
-    @Override
-    public DeviceInfo getLightsDio1() {
-        return new DeviceInfo("Lights1", 6);
-    }
-
-    @Override
-    public DeviceInfo getLightsDio2() {
-        return new DeviceInfo("Lights2", 7);
-    }
-
-    @Override
-    public DeviceInfo getLightsDio3() {
-        return new DeviceInfo("Lights3", 8); // something on the navX, just out of the way
-    }
-
-    @Override
-    public DeviceInfo getLightsDio4() {
-        return new DeviceInfo("Lights4", 9); // something on the navX, just out of the way
-    }
-
-    @Override
-    public DeviceInfo getLightsCubeDio() {
-        return new DeviceInfo("LightsCube", 4);
-    }
-
-    @Override
-    public DeviceInfo getInControlNoteSensorDio() {
-        return new DeviceInfo("InControlNoteSensor", 13);
-    }
-    @Override
-    public DeviceInfo getReadyToFireNoteSensorDio() {
-        return new DeviceInfo("ReadyToFireNoteSensor", 15);
-    }
-
-    // ArmSubsystem
-
-    @Override
-    public boolean isArmReady() {
-        return false;
-    }
-
-    @Override
-    public DeviceInfo getArmMotorLeft() {
-        return new DeviceInfo("ArmMotorLeft", 10, true);
-    }
-
-    @Override
-    public DeviceInfo getArmMotorRight() {
-        return new DeviceInfo("ArmMotorRight", 11, true);
-    }
 }
 
 
