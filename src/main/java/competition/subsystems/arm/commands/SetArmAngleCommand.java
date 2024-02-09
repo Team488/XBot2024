@@ -4,6 +4,7 @@ import competition.subsystems.arm.ArmSubsystem;
 import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 public class SetArmAngleCommand extends BaseSetpointCommand {
 

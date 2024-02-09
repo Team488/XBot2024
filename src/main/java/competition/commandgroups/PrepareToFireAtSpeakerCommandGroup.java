@@ -9,18 +9,18 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 
 import javax.inject.Inject;
 
-public class SetArmAndShooterForSpeakerCommandGroup extends ParallelCommandGroup {
+public class PrepareToFireAtSpeakerCommandGroup extends ParallelCommandGroup {
 
     @Inject
-    public SetArmAndShooterForSpeakerCommandGroup(SetArmAngleCommand armAngle,
-                                                  WarmUpShooterRPMCommand shooter,
-                                                  ShooterDistanceToRpmConverter distToRpm,
-                                                  PoseSubsystem pose,
-                                                  ArmSubsystem arm) {
+    public PrepareToFireAtSpeakerCommandGroup(SetArmAngleCommand armAngle,
+                                              WarmUpShooterRPMCommand shooter,
+                                              PoseSubsystem pose,
+                                              ArmSubsystem arm) {
         // Move arm to preset position
         armAngle.setTargetAngle(arm.getArmAngleFromDistance(pose.getDistanceFromSpeaker()));
         this.addCommands(armAngle);
         // Set shooter wheels to target RPM
+        ShooterDistanceToRpmConverter distToRpm = new ShooterDistanceToRpmConverter();
         shooter.setTargetRpm(distToRpm.getRPMForDistance(pose.getDistanceFromSpeaker()));
         this.addCommands(shooter);
     }
