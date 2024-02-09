@@ -17,13 +17,16 @@ public class PracticeContract extends CompetitionContract {
     public PracticeContract() {
 
     }
+
     public boolean isScoocherReady() {
         return false;
     }
+
     @Override
     public boolean isArmReady() {
         return false;
     }
+
     @Override
     public boolean isShooterReady() {
         return false;
@@ -39,17 +42,6 @@ public class PracticeContract extends CompetitionContract {
         return true;
     }
 
-    protected String getDriveControllerName(SwerveInstance swerveInstance) {
-        return "DriveSubsystem/" + swerveInstance.label() + "/Drive";
-    }
-
-    protected String getSteeringControllerName(SwerveInstance swerveInstance) {
-        return "DriveSubsystem/" + swerveInstance.label() + "/Steering";
-    }
-
-    protected String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
-        return "DriveSubsystem/" + swerveInstance.label() + "/SteeringEncoder";
-    }
 
     @Override
     public DeviceInfo getDriveMotor(SwerveInstance swerveInstance) {
@@ -110,19 +102,6 @@ public class PracticeContract extends CompetitionContract {
             default -> new XYPair(0, 0);
         };
     }
-
-    @Override
-    public DeviceInfo getShooterMotorLeader() {
-        return new DeviceInfo("ShooterLeader", 50, false);
-    }
-
-    @Override
-    public DeviceInfo getShooterMotorFollower() {
-        return new DeviceInfo("ShooterFollower", 49, false);
-    }
-
-
 }
-
 
 
