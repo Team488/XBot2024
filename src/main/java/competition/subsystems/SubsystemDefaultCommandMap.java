@@ -9,6 +9,8 @@ import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.schoocher.commands.StopScoocherCommand;
+import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
 import xbot.common.injection.swerve.FrontLeftDrive;
 import xbot.common.injection.swerve.FrontRightDrive;
 import xbot.common.injection.swerve.RearLeftDrive;
@@ -42,5 +44,10 @@ public class SubsystemDefaultCommandMap {
     @Inject
     public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, StopCollectorCommand command) {
         collectorSubsystem.setDefaultCommand(command);
+    }
+
+    @Inject
+    public void setupShooterWheelSubsystem(ShooterWheelSubsystem shooterWheelSubsystem, ShooterWheelMaintainerCommand command) {
+        shooterWheelSubsystem.setDefaultCommand(command);
     }
 }

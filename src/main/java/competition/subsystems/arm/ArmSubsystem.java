@@ -8,8 +8,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
 import xbot.common.math.MathUtils;
+import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -21,9 +23,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
-
+    public XSolenoid armBrakeSolenoid;
     public XSparkAbsoluteEncoder armAbsoluteEncoder;
-
     public final ElectricalContract contract;
 
     public ArmState armState;
@@ -50,6 +51,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     private double targetAngle;
 
+
+
     public enum ArmState {
         EXTENDING,
         RETRACTING,
@@ -73,11 +76,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
+                        XSolenoid.XSolenoidFactory xSolenoidFactory,
                         ElectricalContract contract) {
-
+        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
+        // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
         this.contract = contract;
-
+        setArmBrakeSolenoid(false);
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
       
@@ -190,6 +195,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.set(rightPower);
         }
     }
+    //brake solenoid
+    public void setArmBrakeSolenoid(boolean on){armBrakeSolenoid.setOn(on);}
 
     @Override
     public void setPower(Double power) {
