@@ -188,7 +188,7 @@ public class CompetitionContract extends ElectricalContract {
         return new DeviceInfo("ArmMotorRight", 11, true);
     }
     @Override
-    public DeviceInfo getBrakeSolenoid(){return new DeviceInfo("BrakeSolenoid", 16, false);}
+    public DeviceInfo getBrakeSolenoid(){return new DeviceInfo("BrakeSolenoid", 1, false);}
 }
 
 
