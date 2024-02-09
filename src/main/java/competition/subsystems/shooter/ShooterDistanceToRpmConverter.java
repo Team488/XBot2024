@@ -1,8 +1,5 @@
 package competition.subsystems.shooter;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 public class ShooterDistanceToRpmConverter {
     //IMPORTANT: BOTH ARRAYS NEED TO BE ORDERED IN INCREASING ORDER, EACH ELEMENT AT EACH INDEX CORRESPONDS TO THE SAME INDEX IN THE OTHER ARRAY
     //THINK OF IT LIKE A COORDINATE PAIR: rpmForDistance[0] has the RPM needed for the distance in distancesFromSpeaker[0]
