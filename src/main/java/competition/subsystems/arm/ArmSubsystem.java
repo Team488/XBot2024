@@ -8,7 +8,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XSolenoid;
+import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
 import xbot.common.math.MathUtils;
+import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -20,7 +23,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
-
+    public XSolenoid armBrakeSolenoid;
+    public XSparkAbsoluteEncoder armAbsoluteEncoder;
     public final ElectricalContract contract;
 
     public ArmState armState;
@@ -36,6 +40,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
     public DoubleProperty armMotorRightRevolutionOffset;
     public DoubleProperty armMotorRevolutionLimit;
+    public DoubleProperty armAbsoluteEncoderOffset;
+    public DoubleProperty armAbsoluteEncoderTicksPerDegree;
     public DoubleProperty softUpperLimit;
     public DoubleProperty softLowerLimit;
     public DoubleProperty speedLimitForNotCalibrated;
@@ -44,6 +50,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedRight;
 
     private double targetAngle;
+
+
 
     public enum ArmState {
         EXTENDING,
@@ -68,11 +76,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
+                        XSolenoid.XSolenoidFactory xSolenoidFactory,
                         ElectricalContract contract) {
-
+        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
+        // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
         this.contract = contract;
-
+        setArmBrakeSolenoid(false);
         extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
         retractPower = pf.createPersistentProperty("RetractPower", 0.1);
       
@@ -90,6 +100,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armMotorRightRevolutionOffset = pf.createPersistentProperty(
                 "ArmMotorRightRevolutionOffset", 0);
 
+        armAbsoluteEncoderOffset = pf.createPersistentProperty(
+                "ArmAbsoluteEncoderOffset", 0);
+        armAbsoluteEncoderTicksPerDegree = pf.createPersistentProperty(
+                "ArmAbsoluteEncoderTicksPerDegree", 1);
+
         softLowerLimit = pf.createPersistentProperty(
                 "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
         softUpperLimit = pf.createPersistentProperty(
@@ -106,6 +121,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                     contract.getArmMotorLeft(), this.getPrefix(), "ArmMotorLeft");
             armMotorRight = sparkMaxFactory.createWithoutProperties(
                     contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
+
+            // Get through-bore encoders
+            var armWithEncoder = contract.getArmEncoderIsOnLeftMotor() ? armMotorLeft : armMotorRight;
+            armAbsoluteEncoder = armWithEncoder.getAbsoluteEncoder(
+                    this.getPrefix() + "ArmEncoder",
+                    contract.getArmEncoderInverted());
 
             // Enable hardware limits
             armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
@@ -174,6 +195,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.set(rightPower);
         }
     }
+    //brake solenoid
+    public void setArmBrakeSolenoid(boolean on){armBrakeSolenoid.setOn(on);}
 
     @Override
     public void setPower(Double power) {
@@ -251,6 +274,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return LimitState.NOT_AT_LIMIT;
     }
 
+    public double getArmAbsoluteAngle() {
+        return (armAbsoluteEncoder.getPosition() + armAbsoluteEncoderOffset.get()) / armAbsoluteEncoderTicksPerDegree.get();
+    }
 
     public void armEncoderTicksUpdate() {
         aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
@@ -263,6 +289,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("ArmMotorToShooterAngle", convertTicksToShooterAngle(
                 (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
                         + armMotorRightRevolutionOffset.get()) / 2));
+
+        aKitLog.record("ArmAbsoluteEncoderAngle", getArmAbsoluteAngle());
     }
 
 
@@ -286,10 +314,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
     @Override
     public Double getCurrentValue() {
-        armMotorLeft.getPosition();
-        armMotorRight.getPosition();
-        //returning 0 for now value will be changed later
-        return 0.0;
+        return convertTicksToMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
     }
 
     @Override
@@ -326,6 +351,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         if (contract.isArmReady()) {
             armMotorLeft.refreshDataFrame();
             armMotorRight.refreshDataFrame();
+            armAbsoluteEncoder.refreshDataFrame();
         }
     }
 }
