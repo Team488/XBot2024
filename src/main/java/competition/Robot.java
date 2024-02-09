@@ -6,28 +6,24 @@ import competition.injection.components.DaggerPracticeRobotComponent;
 import competition.injection.components.DaggerRobotComponent;
 import competition.injection.components.DaggerRoboxComponent;
 import competition.injection.components.DaggerSimulationComponent;
+import competition.simulation.Simulator2024;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
-import xbot.common.math.MovingAverage;
 import xbot.common.math.MovingAverageForDouble;
 import xbot.common.math.MovingAverageForTranslation2d;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
-
-import java.util.LinkedList;
-import java.util.Queue;
 
 public class Robot extends BaseRobot {
 
     public Robot() {
     }
+
+    Simulator2024 simulator;
 
     @Override
     protected void initializeSystems() {
@@ -35,6 +31,8 @@ public class Robot extends BaseRobot {
         getInjectorComponent().subsystemDefaultCommandMap();
         getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
+
+        simulator = getInjectorComponent().simulator2024();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
@@ -102,37 +100,20 @@ public class Robot extends BaseRobot {
             new MovingAverageForTranslation2d(15);
     MovingAverageForDouble rotationAverageCalculator =
             new MovingAverageForDouble(15);
+    MovingAverageForDouble leftArmPositionCalculator =
+            new MovingAverageForDouble(15);
+    MovingAverageForDouble rightArmPositionCalculator =
+            new MovingAverageForDouble(15);
+    MovingAverageForDouble shooterVelocityCalculator =
+            new MovingAverageForDouble(50);
 
     @Override
     public void simulationPeriodic() {
         super.simulationPeriodic();
 
-        double robotTopSpeedInMetersPerSecond = 3.0;
-        double robotLoopPeriod = 0.02;
-        double poseAdjustmentFactorForSimulation = robotTopSpeedInMetersPerSecond * robotLoopPeriod;
-
-        double robotTopAngularSpeedInDegreesPerSecond = 360;
-        double headingAdjustmentFactorForSimulation = robotTopAngularSpeedInDegreesPerSecond * robotLoopPeriod;
-
-        var pose = (PoseSubsystem)getInjectorComponent().poseSubsystem();
-        var currentPose = pose.getCurrentPose2d();
-        DriveSubsystem drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
-
-        // Extremely simple physics simulation. We want to give the robot some very basic translational and rotational
-        // inertia. We can take the moving average of the last second or so of robot commands and apply that to the
-        // robot's pose. This is a very simple way to simulate the robot's movement without having to do any real physics.
-
-        translationAverageCalculator.add(drive.lastRawCommandedDirection);
-        var currentAverage = translationAverageCalculator.getAverage();
-
-        rotationAverageCalculator.add(drive.lastRawCommandedRotation);
-        var currentRotationAverage = rotationAverageCalculator.getAverage();
-
-        var updatedPose = new Pose2d(
-                new Translation2d(
-                        currentPose.getTranslation().getX() + currentAverage.getX() * poseAdjustmentFactorForSimulation,
-                        currentPose.getTranslation().getY() + currentAverage.getY() * poseAdjustmentFactorForSimulation),
-                currentPose.getRotation().plus(Rotation2d.fromDegrees(currentRotationAverage * headingAdjustmentFactorForSimulation)));
-        pose.setCurrentPoseInMeters(updatedPose);
+        if (simulator != null) {
+            simulator.update();
+        }
     }
 }
+

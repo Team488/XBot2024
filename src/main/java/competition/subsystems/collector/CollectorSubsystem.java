@@ -38,7 +38,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                               ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
-        this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+        if (contract.isCollectorReady()) {
+            this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+        } else {
+            this.collectorMotor = null;
+        }
+
         this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio());
         this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio());
 
@@ -58,38 +63,55 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         if (getGamePieceInControl()) {
             power *= intakePowerInControlMultiplier.get();
         }
-        collectorMotor.set(power);
+        setPower(power);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
-        collectorMotor.set(ejectPower.get());
+        setPower(ejectPower.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
-        collectorMotor.set(0);
+        setPower(0);
         intakeState = IntakeState.STOPPED;
     }
     public void fire(){
-        collectorMotor.set(firePower.get());
+        setPower(firePower.get());
         intakeState = IntakeState.FIRING;
     }
+
+    public void setPower(double power) {
+        if (contract.isCollectorReady()) {
+            collectorMotor.set(power);
+        }
+    }
+
     public boolean getGamePieceInControl() {
-        return inControlNoteSensor.get();
+        if (contract.isCollectorReady()) {
+            return inControlNoteSensor.get();
+        }
+        return false;
     }
 
     public boolean getGamePieceReady() {
-        return readyToFireNoteSensor.get();
+        if (contract.isCollectorReady()) {
+            return readyToFireNoteSensor.get();
+        }
+        return false;
     }
 
     @Override
     public void periodic() {
-        aKitLog.record("HasGamePiece", getGamePieceReady());
+        if (contract.isCollectorReady()) {
+            aKitLog.record("HasGamePiece", getGamePieceReady());
+        }
     }
 
     @Override
     public void refreshDataFrame() {
-        collectorMotor.refreshDataFrame();
-        inControlNoteSensor.refreshDataFrame();
-        readyToFireNoteSensor.refreshDataFrame();
+        if (contract.isCollectorReady()) {
+            collectorMotor.refreshDataFrame();
+            inControlNoteSensor.refreshDataFrame();
+            readyToFireNoteSensor.refreshDataFrame();
+        }
     }
 }

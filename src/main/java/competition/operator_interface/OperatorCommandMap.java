@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.commandgroups.SetArmAndShooterForAmpCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -139,6 +140,15 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
 
+    }
+
+    @Inject
+    public void scoringCommands(
+            SetArmAndShooterForAmpCommandGroup setArmAndShooterForAmpCommand
+            )
+    {
+        // Prepare to score in Amp
+        // TODO: Bind setArmAndShooterCommand to a button in operatorGamepad
     }
 
     @Inject

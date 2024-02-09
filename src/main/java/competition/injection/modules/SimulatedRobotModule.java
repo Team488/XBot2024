@@ -4,6 +4,7 @@ import javax.inject.Singleton;
 
 import competition.electrical_contract.CompetitionContract;
 import competition.electrical_contract.ElectricalContract;
+import competition.electrical_contract.UnitTestCompetitionContract;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import dagger.Binds;
@@ -17,7 +18,7 @@ import xbot.common.subsystems.pose.BasePoseSubsystem;
 public abstract class SimulatedRobotModule {
     @Binds
     @Singleton
-    public abstract ElectricalContract getElectricalContract(CompetitionContract impl);
+    public abstract ElectricalContract getElectricalContract(UnitTestCompetitionContract impl);
 
     @Binds
     @Singleton
