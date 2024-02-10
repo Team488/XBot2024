@@ -45,7 +45,7 @@ public class FireWhenReadyCommand extends BaseCommand {
 
         RUNS 50 TIMES A SECOND
         */
-        if (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal()) {
+        if (hasFired || (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal())) {
             collector.fire();
 
             if (!hasFired) {

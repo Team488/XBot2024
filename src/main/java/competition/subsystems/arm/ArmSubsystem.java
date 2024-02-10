@@ -2,6 +2,7 @@ package competition.subsystems.arm;
 
 import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
+import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -51,7 +52,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     private double targetAngle;
 
-
+    PoseSubsystem pose;
 
     public enum ArmState {
         EXTENDING,
@@ -77,7 +78,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         XSolenoid.XSolenoidFactory xSolenoidFactory,
-                        ElectricalContract contract) {
+                        ElectricalContract contract, PoseSubsystem pose) {
+        this.pose = pose;
+
         this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
         // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
@@ -353,5 +356,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.refreshDataFrame();
             armAbsoluteEncoder.refreshDataFrame();
         }
+    }
+
+    public double getAngleFromRange() {
+        return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
     }
 }
