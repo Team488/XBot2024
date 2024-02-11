@@ -56,4 +56,17 @@ public class RobotContainer {
         return AutoBuilder.followPath(path);
 //        return new PathPlannerAuto("TESTAUTO");
     }
+
+    public Command getFourNoteAutoCommand() {
+        return new PathPlannerAuto("4noteAutoClose");
+    }
+    public Command getMidNoteCommand() {
+        return new PathPlannerAuto("midnote");
+    }
+    public Command getFast4NoteFarCommand() {
+        return new PathPlannerAuto("4noteAutoFar");
+    }
+    public Command getFast4NoteCloseCommand() {
+        return new PathPlannerAuto("Fast4NoteAutoClose");
+    }
 }

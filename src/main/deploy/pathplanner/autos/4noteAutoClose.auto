@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.3940937283605104,
+      "y": 5.5086133925236975
+    },
+    "rotation": 0.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CloseNoteLeft1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CloseNoteMid2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CloseNoteRight3"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

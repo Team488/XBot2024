@@ -8,7 +8,7 @@ import xbot.common.math.WrappedRotation2d;
 
 import javax.inject.Inject;
 
-public class DriveCoupleFeetCommand extends BaseCommand {
+public class MidNoteCommand extends BaseCommand {
     PathPlannerDriveSubsystem drive;
     Command autonomousCommand;
     RobotContainer robotContainer;
@@ -16,7 +16,7 @@ public class DriveCoupleFeetCommand extends BaseCommand {
     PoseSubsystem pose;
 
     @Inject
-    public DriveCoupleFeetCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
+    public MidNoteCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
                                   DriveSubsystem driveSubsystem, PoseSubsystem pose) {
         this.robotContainer = robotContainer;
         this.drive = drive;
@@ -24,7 +24,7 @@ public class DriveCoupleFeetCommand extends BaseCommand {
         this.pose = pose;
         addRequirements(driveSubsystem);
         addRequirements(drive);
-        this.autonomousCommand = robotContainer.getAutonomousCommand();
+        this.autonomousCommand = robotContainer.getMidNoteCommand();
         autonomousCommand.addRequirements(drive);
         autonomousCommand.addRequirements(driveSubsystem);
 
@@ -33,7 +33,7 @@ public class DriveCoupleFeetCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
-        pose.setCurrentPosition(0.61, 7, new WrappedRotation2d(0));
+        pose.setCurrentPosition(0.51, 4.07, new WrappedRotation2d(0));
         autonomousCommand.schedule();
     }
 

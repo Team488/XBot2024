@@ -4,6 +4,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.auto.DriveCoupleFeetCommand;
+import competition.auto.Fast4NoteCloseCommand;
+import competition.auto.Fast4NoteFarCommand;
+import competition.auto.FourNoteAutoCommand;
+import competition.auto.MidNoteCommand;
+import competition.auto.UpdateHolonomicCommand;
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
@@ -41,7 +46,12 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             ReconcileArmAlignmentCommand slightLeftArmForward,
             ReconcileArmAlignmentCommand slightLeftArmBackward,
-            DriveCoupleFeetCommand driveCoupleFeetCommand)
+            DriveCoupleFeetCommand driveCoupleFeetCommand,
+            FourNoteAutoCommand fourNoteAutoCommand,
+            UpdateHolonomicCommand updateHolonomicCommand,
+            MidNoteCommand midNoteCommand,
+            Fast4NoteFarCommand fast4NoteFarCommand,
+            Fast4NoteCloseCommand fast4NoteCloseCommand)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -56,7 +66,7 @@ public class OperatorCommandMap {
         swerveTest.logic.setEnableConstantVelocity(true);
         swerveTest.logic.setConstantVelocity(1);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(swerveTest);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(swerveTest);
 
         ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
         columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
@@ -84,9 +94,14 @@ public class OperatorCommandMap {
         slightLeftArmForward.setReconcilePower(0.05);
         slightLeftArmBackward.setReconcilePower(-0.05);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(driveCoupleFeetCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(fourNoteAutoCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(updateHolonomicCommand);
+        midNoteCommand.includeOnSmartDashboard();
+        fast4NoteFarCommand.includeOnSmartDashboard();
+        fast4NoteCloseCommand.includeOnSmartDashboard();
     }
 }
