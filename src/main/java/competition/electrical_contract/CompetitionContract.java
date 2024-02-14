@@ -118,7 +118,7 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public boolean isCollectorReady() {
-        return true;
+        return false;
     }
 
     public boolean isScoocherReady() {
