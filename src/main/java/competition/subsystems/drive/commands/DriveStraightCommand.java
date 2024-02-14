@@ -25,6 +25,6 @@ public class DriveStraightCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        drive.move(new XYPair(0.6, 0), 0);
+        drive.move(new XYPair(0.1, 0), 0);
     }
 }
