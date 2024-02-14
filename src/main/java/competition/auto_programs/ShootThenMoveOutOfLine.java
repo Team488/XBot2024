@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
+import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
@@ -23,7 +24,9 @@ public class ShootThenMoveOutOfLine extends SequentialCommandGroup {
         // This is our starting position, to be changed later if needed
         InstantCommand forceSetPosition = new InstantCommand(
                 () -> {
-                    pose.setCurrentPoseInMeters(new Pose2d(0.5, 5.5478, new Rotation2d()));
+                    pose.setCurrentPoseInMeters(
+                            BasePoseSubsystem.convertBlueToRedIfNeeded(new Pose2d(0.5, 5.5478, new Rotation2d()))
+                    );
                 }
         );
         this.addCommands(forceSetPosition);
