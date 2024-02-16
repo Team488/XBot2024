@@ -27,7 +27,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand {
         this.arm = arm;
         this.oi = oi;
         pf.setPrefix(this);
-        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.66, 0.1, 0);
+        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.01, 0.0, 0);
 
 
     }

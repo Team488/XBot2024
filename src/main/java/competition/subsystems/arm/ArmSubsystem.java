@@ -29,25 +29,26 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public ArmState armState;
 
-    public DoubleProperty extendPower;
-    public DoubleProperty retractPower;
+    public final DoubleProperty extendPower;
+    public final DoubleProperty retractPower;
 
-    private DoubleProperty armPowerMax;
-    private DoubleProperty armPowerMin;
+    private final DoubleProperty armPowerMax;
+    private final DoubleProperty armPowerMin;
 
 
-    public DoubleProperty ticksToMmRatio; // Millimeters
-    public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
-    public DoubleProperty armMotorRightRevolutionOffset;
-    public DoubleProperty armMotorRevolutionLimit;
-    public DoubleProperty armAbsoluteEncoderOffset;
-    public DoubleProperty armAbsoluteEncoderTicksPerDegree;
-    public DoubleProperty softUpperLimit;
-    public DoubleProperty softLowerLimit;
-    public DoubleProperty speedLimitForNotCalibrated;
-    public DoubleProperty angleTrim;
+    public final DoubleProperty ticksToMmRatio; // Millimeters
+    private double armMotorLeftRevolutionOffset; // # of revolutions
+    private double armMotorRightRevolutionOffset;
+    public final DoubleProperty armMotorRevolutionLimit;
+    public final DoubleProperty armAbsoluteEncoderOffset;
+    public final DoubleProperty armAbsoluteEncoderTicksPerDegree;
+    public final DoubleProperty softUpperLimit;
+    public final DoubleProperty softLowerLimit;
+    public final DoubleProperty speedLimitForNotCalibrated;
+    public final DoubleProperty angleTrim;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
+    private final DoubleProperty maximumArmDesyncInMm;
 
     private double targetAngle;
     private final DoubleProperty armPowerClamp;
@@ -96,11 +97,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         angleTrim = pf.createPersistentProperty("AngleTrim", 0);
 
-        armMotorLeftRevolutionOffset = pf.createPersistentProperty(
-                "ArmMotorLeftRevolutionOffset", 0);
-        armMotorRightRevolutionOffset = pf.createPersistentProperty(
-                "ArmMotorRightRevolutionOffset", 0);
-
         armAbsoluteEncoderOffset = pf.createPersistentProperty(
                 "ArmAbsoluteEncoderOffset", 0);
         armAbsoluteEncoderTicksPerDegree = pf.createPersistentProperty(
@@ -115,6 +111,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "SpeedLimitForNotCalibrated", -0.1);
 
         armPowerClamp = pf.createPersistentProperty("ArmPowerClamp", 0.05);
+        maximumArmDesyncInMm = pf.createPersistentProperty("MaximumArmDesyncInMm", 5);
 
         hasCalibratedLeft = false;
         hasCalibratedRight = false;
@@ -164,15 +161,66 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     boolean unsafeMinOrMax = false;
+
+    private double getLeftArmPosition() {
+        return armMotorLeft.getPosition() + armMotorLeftRevolutionOffset;
+    }
+
+    private double getRightArmPosition() {
+        return armMotorRight.getPosition() + armMotorRightRevolutionOffset;
+    }
   
     public void setPowerToLeftAndRightArms(double leftPower, double rightPower) {
 
+        // First, if we are calibrated, apply a power factor based on the difference between the two
+        // arms to make sure they stay in sync
+        if (hasCalibratedLeft && hasCalibratedRight) {
+            double distanceLeftAhead = getLeftArmPosition() - getRightArmPosition();
+
+            // If the left arm is ahead, and the left arm wants to go up/forward, reduce its power.
+            // If the left arm is ahead, and the left arm wants to go down/backward, make no change to power.
+            // If the right arm is ahead, and the right arm wants to go up/forward, reduce its power.
+            // If the right arm is ahead, and the right arm wants to go down/backward, make no change to power.
+
+            // If we have to make any changes to power, do so by a factor proportional to the maximum
+            // allowed desync in mm. At 50% of the desync, it would restrict power by 50%.
+
+            double potentialReductionFactor = Math.min(1, Math.abs(distanceLeftAhead) / maximumArmDesyncInMm.get());
+            aKitLog.record("PotentialReductionFactor", potentialReductionFactor);
+
+            // If left arm is ahead
+            if (distanceLeftAhead> 0) {
+                // and left arm wants to go more ahead, slow down (or stop)
+                if (leftPower > 0) {
+                    leftPower *= potentialReductionFactor;
+                }
+                // and right arm wants to get further behind, slow down (or stop)
+                if (rightPower < 0) {
+                    rightPower *= potentialReductionFactor;
+                }
+            }
+            // If right arm is ahead
+            else if (distanceLeftAhead < 0) {
+                // and right arm wants to go more ahead, slow down (or stop)
+                if (rightPower > 0) {
+                    rightPower *= potentialReductionFactor;
+                }
+                // and left arm wants to get further behind, slow down (or stop)
+                if (leftPower < 0) {
+                    leftPower *= potentialReductionFactor;
+                }
+            }
+        }
+
+        // Next, completely flatten the power within a known range.
+        // Primarily used for validating the arm behavior with very small power values.
         double clampLimit = Math.abs(armPowerClamp.get());
 
         leftPower = MathUtils.constrainDouble(leftPower, -clampLimit, clampLimit);
         rightPower = MathUtils.constrainDouble(rightPower, -clampLimit, clampLimit);
 
-        // Check if armPowerMin/armPowerMax are safe values
+        // Next, a sanity check; if we have been grossly misconfigured to where the
+        // max/min powers are out of bounds (e.g. a max smaller than min), freeze the arm entirely.
         if (armPowerMax.get() < 0 || armPowerMin.get() > 0 || speedLimitForNotCalibrated.get() > 0) {
             armMotorLeft.set(0);
             armMotorRight.set(0);
@@ -184,26 +232,30 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
         unsafeMinOrMax = false;
 
-        // If not calibrated, motor can only go down at slow rate
+        // If not calibrated, motor can only go down at slow rate since we don't know where we are.
         if (!(hasCalibratedLeft && hasCalibratedRight)) {
             leftPower = MathUtils.constrainDouble(leftPower, speedLimitForNotCalibrated.get(), 0);
             rightPower = MathUtils.constrainDouble(rightPower, speedLimitForNotCalibrated.get(), 0);
+        }
 
-        } else {
-            // If calibrated, restrict movement to area
+
+        // If calibrated, but near limits, slow the system down a bit so we
+        // don't slam into the hard limits.
+        if (hasCalibratedLeft && hasCalibratedRight)
+        {
             leftPower = constrainPowerIfNearLimit(
                     leftPower,
-                    armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+                    getLeftArmPosition());
             rightPower = constrainPowerIfNearLimit(
                     rightPower,
-                    armMotorRight.getPosition() + armMotorRightRevolutionOffset.get());
+                    getRightArmPosition());
         }
   
-        // Arm at limit hit power restrictions
+        // If we are actually at our hard limits, stop the motors
         leftPower = constrainPowerIfAtLimit(leftPower);
         rightPower = constrainPowerIfAtLimit(rightPower);
 
-        // Put power within limit range (if not already)
+        // Respect overall max/min power limits.
         leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
         rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), armPowerMax.get());
 
@@ -298,14 +350,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public void armEncoderTicksUpdate() {
         aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
         aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
-        aKitLog.record("ArmMotorLeftMm", convertTicksToMm(
-                armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
-        aKitLog.record("ArmMotorRightMm", convertTicksToMm(
-                armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
+        aKitLog.record("ArmMotorLeftMm", convertTicksToMm(getLeftArmPosition()));
+        aKitLog.record("ArmMotorRightMm", convertTicksToMm(getRightArmPosition()));
 
         aKitLog.record("ArmMotorToShooterAngle", convertTicksToShooterAngle(
-                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
-                        + armMotorRightRevolutionOffset.get()) / 2));
+                (getLeftArmPosition() + getRightArmPosition()) / 2));
 
         aKitLog.record("ArmAbsoluteEncoderAngle", getArmAbsoluteAngle());
     }
@@ -313,25 +362,21 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
     public void calibrateArmOffset() {
-        LimitState leftArmLimitState = getLimitState(armMotorLeft);
-        LimitState rightArmLimitState = getLimitState(armMotorRight);
-
-        if (!hasCalibratedLeft && leftArmLimitState == LimitState.LOWER_LIMIT_HIT) {
+        // For now keeping the concept of left/right having independent calibration,
+        // but for simplicity, hitting either limit will calibrate both for now.
+        if ((!hasCalibratedLeft || !hasCalibratedRight)
+                && (getLimitState(armMotorLeft) == LimitState.LOWER_LIMIT_HIT
+                    || getLimitState(armMotorRight) == LimitState.LOWER_LIMIT_HIT))
+        {
             hasCalibratedLeft = true;
-            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
-        }
-
-        if (!hasCalibratedRight && rightArmLimitState == LimitState.LOWER_LIMIT_HIT) {
             hasCalibratedRight = true;
-            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
+            armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
+            armMotorRightRevolutionOffset = -armMotorRight.getPosition();
         }
-
-        aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
-        aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
     }
     @Override
     public Double getCurrentValue() {
-        return convertTicksToMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+        return convertTicksToMm(getLeftArmPosition());
     }
 
     @Override
@@ -349,6 +394,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return false;
     }
 
+    public double getLeftArmOffset() {
+        return armMotorLeftRevolutionOffset;
+    }
+
+    public double getRightArmOffset() {
+        return armMotorRightRevolutionOffset;
+    }
+
     /**
      * Do not call this from competition code.
      * @param clampPower maximum power under any circumstance
@@ -364,6 +417,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorLeft.periodic();
             armMotorRight.periodic();
         }
+
+        aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
+        aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
 
         aKitLog.record("Target Angle", targetAngle);
         aKitLog.record("Arm3dState", new Pose3d(
