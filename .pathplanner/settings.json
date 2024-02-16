@@ -4,9 +4,9 @@
   "holonomicMode": true,
   "pathFolders": [
     "GoingForMid",
-    "New Folder",
     "ShootingClose",
-    "ShootingFar"
+    "ShootingFar",
+    "Simple2Note"
   ],
   "autoFolders": [],
   "defaultMaxVel": 3.0,

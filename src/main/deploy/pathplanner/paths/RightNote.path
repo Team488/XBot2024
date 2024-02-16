@@ -3,41 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.57,
-        "y": 5.51
+        "x": 0.7275269251393202,
+        "y": 4.385307915914978
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3067948077276577,
-        "y": 5.51
+        "x": 1.7275269251393195,
+        "y": 4.385307915914978
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.515296939529621,
-        "y": 5.51
+        "x": 2.5,
+        "y": 4.126492109141929
       },
       "prevControl": {
-        "x": 2.610065740305248,
-        "y": 5.508345804429292
+        "x": 2.5117690520281326,
+        "y": 4.225892421902668
       },
       "nextControl": {
-        "x": 2.304824206519849,
-        "y": 5.513673815220304
+        "x": 2.4882309479718674,
+        "y": 4.02709179638119
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.51,
-        "y": 5.51
+        "x": 2.4313719284817554,
+        "y": 3.8168165797453404
       },
       "prevControl": {
-        "x": 1.8305764203859152,
-        "y": 5.51
+        "x": 2.425920331205802,
+        "y": 3.9249507741702043
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,15 +47,15 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 1,
-      "rotationDegrees": 0,
+      "rotationDegrees": -0.6214587192804604,
       "rotateFast": false
     }
   ],
   "constraintZones": [
     {
       "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0.25,
-      "maxWaypointRelativePos": 1.05,
+      "minWaypointRelativePos": 0.65,
+      "maxWaypointRelativePos": 0.95,
       "constraints": {
         "maxVelocity": 1.5,
         "maxAcceleration": 1.5,
@@ -73,11 +73,14 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -37.99873244250464,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "ShootingClose",
-  "previewStartingState": null,
+  "folder": "Simple2Note",
+  "previewStartingState": {
+    "rotation": -59.03624346792652,
+    "velocity": 0
+  },
   "useDefaultConstraints": true
 }
