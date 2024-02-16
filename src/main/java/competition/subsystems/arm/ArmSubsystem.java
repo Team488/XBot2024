@@ -314,10 +314,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
     @Override
     public Double getCurrentValue() {
-        armMotorLeft.getPosition();
-        armMotorRight.getPosition();
-        //returning 0 for now value will be changed later
-        return 0.0;
+        return convertTicksToMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
     }
 
     @Override

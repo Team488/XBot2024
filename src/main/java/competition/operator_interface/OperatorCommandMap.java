@@ -4,8 +4,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import competition.commandgroups.SetArmAndShooterForAmpCommandGroup;
+import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
+import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
@@ -49,7 +51,8 @@ public class OperatorCommandMap {
             EjectCollectorCommand collectorEject,
             WarmUpShooterCommand shooterWarmUp,
             FireCollectorCommand fireCollectorCommand,
-            SetArmAngleCommand armAngle
+            SetArmAngleCommand armAngle,
+            ArmMaintainerCommand armMaintainer
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntake);
@@ -63,6 +66,9 @@ public class OperatorCommandMap {
         shooterWarmUp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
         oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
         oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(fireCollectorCommand);
+
+        // Adding armMaintainer command to smartdashboard
+        armMaintainer.includeOnSmartDashboard();
 
         // Arms are taken care of via their maintainer & human overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
@@ -144,11 +150,12 @@ public class OperatorCommandMap {
 
     @Inject
     public void scoringCommands(
-            SetArmAndShooterForAmpCommandGroup setArmAndShooterForAmpCommand
+            PrepareToFireAtAmpCommandGroup prepareToFireAtAmpCommand,
+            PrepareToFireAtSpeakerCommandGroup prepareToFireAtSpeakerCommand
             )
     {
-        // Prepare to score in Amp
-        // TODO: Bind setArmAndShooterCommand to a button in operatorGamepad
+        // TODO: Bind prepareToFireAtAmpCommand to a button in operatorGamepad
+        // TODO: Bind prepareToFireAtSpeakerCommand to a button in operatorGamepad
     }
 
     @Inject
