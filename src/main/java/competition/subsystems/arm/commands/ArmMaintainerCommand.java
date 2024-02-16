@@ -18,7 +18,6 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand {
     // oi used for human input
     private final OperatorInterface oi;
 
-
     @Inject
     public ArmMaintainerCommand(ArmSubsystem arm, PropertyFactory pf,
                                 HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory,
@@ -40,7 +39,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand {
 
     @Override
     protected void coastAction() {
-        //Don't think anything is needed here...
+        arm.setPower(0.0);
     }
 
     @Override

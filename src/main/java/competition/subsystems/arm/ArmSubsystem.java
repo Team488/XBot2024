@@ -50,6 +50,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedRight;
 
     private double targetAngle;
+    private final DoubleProperty armPowerClamp;
 
 
 
@@ -113,6 +114,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         speedLimitForNotCalibrated = pf.createPersistentProperty(
                 "SpeedLimitForNotCalibrated", -0.1);
 
+        armPowerClamp = pf.createPersistentProperty("ArmPowerClamp", 0.05);
+
         hasCalibratedLeft = false;
         hasCalibratedRight = false;
 
@@ -128,11 +131,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                     this.getPrefix() + "ArmEncoder",
                     contract.getArmEncoderInverted());
 
+            armMotorLeft.setSmartCurrentLimit(20);
+            armMotorRight.setSmartCurrentLimit(20);
+
             // Enable hardware limits
-            armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
-            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
-            armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
-            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
+            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
+            armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
+            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
         }
 
         this.armState = ArmState.STOPPED;
@@ -157,15 +163,26 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return power;
     }
 
+    boolean unsafeMinOrMax = false;
   
     public void setPowerToLeftAndRightArms(double leftPower, double rightPower) {
+
+        double clampLimit = Math.abs(armPowerClamp.get());
+
+        leftPower = MathUtils.constrainDouble(leftPower, -clampLimit, clampLimit);
+        rightPower = MathUtils.constrainDouble(rightPower, -clampLimit, clampLimit);
+
         // Check if armPowerMin/armPowerMax are safe values
         if (armPowerMax.get() < 0 || armPowerMin.get() > 0 || speedLimitForNotCalibrated.get() > 0) {
             armMotorLeft.set(0);
             armMotorRight.set(0);
-            log.error("armPowerMax or armPowerMin or speedLimitForNotCalibrated values out of bound!");
+            if (!unsafeMinOrMax) {
+                log.error("armPowerMax or armPowerMin or speedLimitForNotCalibrated values out of bound!");
+                unsafeMinOrMax = true;
+            }
             return;
         }
+        unsafeMinOrMax = false;
 
         // If not calibrated, motor can only go down at slow rate
         if (!(hasCalibratedLeft && hasCalibratedRight)) {
@@ -260,8 +277,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         boolean lowerHit = false;
 
         if (contract.isArmReady()) {
-            upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
-            lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+            upperHit = motor.getForwardLimitSwitchPressed();
+            lowerHit = motor.getReverseLimitSwitchPressed();
         }
 
         if (upperHit && lowerHit) {
@@ -330,6 +347,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     @Override
     public boolean isCalibrated() {
         return false;
+    }
+
+    /**
+     * Do not call this from competition code.
+     * @param clampPower maximum power under any circumstance
+     */
+    public void setClampLimit(double clampPower) {
+        armPowerClamp.set(Math.abs(clampPower));
     }
 
     public void periodic() {

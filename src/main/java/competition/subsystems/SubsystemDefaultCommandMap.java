@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.StopArmCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.collector.commands.StopCollectorCommand;
@@ -34,7 +35,7 @@ public class SubsystemDefaultCommandMap {
     }
 
     @Inject
-    public void setupArmSubsystem(ArmSubsystem armSubsystem, StopArmCommand command) {
+    public void setupArmSubsystem(ArmSubsystem armSubsystem, ArmMaintainerCommand command) {
         armSubsystem.setDefaultCommand(command);
     }
     @Inject
