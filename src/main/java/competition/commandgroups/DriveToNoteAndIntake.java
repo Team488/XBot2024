@@ -5,6 +5,7 @@ import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.WaitForArmToBeAtGoalCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
+import competition.subsystems.collector.commands.WaitForNoteCollectedCommand;
 import competition.subsystems.drive.commands.SwerveDriveWithJoysticksCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,16 +28,20 @@ public class DriveToNoteAndIntake extends ParallelDeadlineGroup {
             Pose2d notePosition,
             IntakeUntilNoteCollectedCommand intakeUntilNoteCollected,
             Provider<WaitForArmToBeAtGoalCommand> waitForArmProvider,
-            Provider<SetArmAngleCommand> setArmAngleProvider)
+            Provider<SetArmAngleCommand> setArmAngleProvider,
+            WaitForNoteCollectedCommand waitForNote)
     {
-
+        //sets the deadline to waitForNoteCollected
+        super(waitForNote);
+        setDeadline(waitForNote);
 
         SwerveSimpleTrajectoryCommand swerveToNote = swerveProvider.get();
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
 
-        //doesnt set an angle though im pretty sure? unless pose2d can calculate the angle towards the note
+        //doesnt set an angle though im pretty sure? unless swerveToNote can calculate the angle towards the note
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 notePosition,10));
+        swerveToNote.logic.setDriveBackwards(true);
         swerveToNote.logic.setKeyPoints(swervePoints);
         swerveToNote.logic.setEnableConstantVelocity(true);
         swerveToNote.logic.setConstantVelocity(1);
@@ -45,18 +50,17 @@ public class DriveToNoteAndIntake extends ParallelDeadlineGroup {
         extendArm.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
         //drives to note then extends the arm
-        var swerveToNoteAndExtend = new ParallelCommandGroup(swerveToNote,extendArm);
+        var extendThenSwerveToNoteInCorrectOrientation = new SequentialCommandGroup(extendArm,waitForArmProvider.get(),swerveToNote);
 
         //waits for arm in case there are any previous commands called that use the arm
-        this.addCommands(waitForArmProvider.get());
-        this.addCommands(swerveToNoteAndExtend);
-
+        //this.addCommands(waitForArmProvider.get());
+        this.addCommands(extendThenSwerveToNoteInCorrectOrientation);
+        this.addCommands(intakeUntilNoteCollected);
         SetArmAngleCommand retractArm = setArmAngleProvider.get();
         retractArm.setArmPosition(ArmSubsystem.UsefulArmPosition.STARTING_POSITION);
         //waits for arm to be in position then intakes and retracts
-        var intakeAndRetract = new SequentialCommandGroup(waitForArmProvider.get(),intakeUntilNoteCollected,retractArm, waitForArmProvider.get());
-
-        this.addCommands(intakeAndRetract);
+        var retract = new SequentialCommandGroup(retractArm, waitForArmProvider.get());
+        this.addCommands(retract);
 
     }
 }
