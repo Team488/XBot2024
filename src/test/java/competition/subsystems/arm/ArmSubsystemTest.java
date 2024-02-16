@@ -18,6 +18,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     public void setUp() {
         super.setUp();
         arm = getInjectorComponent().armSubsystem();
+        arm.setClampLimit(1.0);
     }
 
     private void checkMotorPower(double leftPower, double rightPower) {
@@ -91,6 +92,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         // You hit the reverse limit switch and a periodic runs
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
         ((MockCANSparkMax)arm.armMotorRight).setReverseLimitSwitchStateForTesting(true);
+        arm.refreshDataFrame();
         arm.periodic();
 
         // Check offset, offset is the actual position when you had initially started
@@ -121,6 +123,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         // Reverse limit hit (Usually you only get here for calibration)
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
         ((MockCANSparkMax)arm.armMotorRight).setReverseLimitSwitchStateForTesting(true);
+        arm.refreshDataFrame();
         arm.periodic();
         checkLimitState(ArmSubsystem.LimitState.LOWER_LIMIT_HIT);
 
@@ -143,6 +146,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
         ((MockCANSparkMax)arm.armMotorLeft).setForwardLimitSwitchStateForTesting(true);
         ((MockCANSparkMax)arm.armMotorRight).setForwardLimitSwitchStateForTesting(true);
+        arm.refreshDataFrame();
         arm.periodic();
         checkLimitState(ArmSubsystem.LimitState.UPPER_LIMIT_HIT);
 
@@ -155,6 +159,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         // Test LimitState: BOTH_LIMITS_HIT (Activates when there is issues...)
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
         ((MockCANSparkMax)arm.armMotorRight).setReverseLimitSwitchStateForTesting(true);
+        arm.refreshDataFrame();
         arm.periodic();
         checkLimitState(ArmSubsystem.LimitState.BOTH_LIMITS_HIT);
 

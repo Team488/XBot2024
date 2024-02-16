@@ -67,9 +67,6 @@ public class OperatorCommandMap {
         oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
         oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(fireCollectorCommand);
 
-        // Adding armMaintainer command to smartdashboard
-        armMaintainer.includeOnSmartDashboard();
-
         // Arms are taken care of via their maintainer & human overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var scoochNote = scoocherIntake.alongWith(armAngle);
