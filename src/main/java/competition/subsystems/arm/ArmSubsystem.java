@@ -131,6 +131,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                     this.getPrefix() + "ArmEncoder",
                     contract.getArmEncoderInverted());
 
+            armMotorLeft.setSmartCurrentLimit(20);
+            armMotorRight.setSmartCurrentLimit(20);
+
             // Enable hardware limits
             armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
             armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
@@ -274,8 +277,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         boolean lowerHit = false;
 
         if (contract.isArmReady()) {
-            upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
-            lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+            upperHit = motor.getForwardLimitSwitchPressed();
+            lowerHit = motor.getReverseLimitSwitchPressed();
         }
 
         if (upperHit && lowerHit) {
