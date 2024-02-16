@@ -351,10 +351,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     /**
      * Do not call this from competition code.
-     * @param clampPower
+     * @param clampPower maximum power under any circumstance
      */
     public void setClampLimit(double clampPower) {
-        armPowerClamp.set(clampPower);
+        armPowerClamp.set(Math.abs(clampPower));
     }
 
     public void periodic() {
