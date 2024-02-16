@@ -349,6 +349,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return false;
     }
 
+    /**
+     * Do not call this from competition code.
+     * @param clampPower
+     */
+    public void setClampLimit(double clampPower) {
+        armPowerClamp.set(clampPower);
+    }
+
     public void periodic() {
         if (contract.isArmReady()) {
             armEncoderTicksUpdate();
