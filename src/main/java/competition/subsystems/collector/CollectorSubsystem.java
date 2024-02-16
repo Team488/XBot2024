@@ -68,7 +68,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
     public void eject(){
         setPower(ejectPower.get());
-        log.info("Collector Eject Power: " + ejectPower.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
