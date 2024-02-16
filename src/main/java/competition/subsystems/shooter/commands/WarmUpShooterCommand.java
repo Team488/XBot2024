@@ -36,6 +36,6 @@ public class WarmUpShooterCommand extends BaseSetpointCommand {
 
     @Override
     public boolean isFinished() {
-        return true;
+        return false;
     }
 }

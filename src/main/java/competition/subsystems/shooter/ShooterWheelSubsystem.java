@@ -146,7 +146,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     @Override
     public void setTargetValue(Double value) {
         targetRpm = value;
-        log.info("RPM: " + value);
+        log.info("Target RPM: " + value);
     }
 
     @Override
