@@ -70,6 +70,7 @@ public class OperatorCommandMap {
         // Arms are taken care of via their maintainer & human overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var scoochNote = scoocherIntakeProvider.get();
+        scoochNote.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
     }
     

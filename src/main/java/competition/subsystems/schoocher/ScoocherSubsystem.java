@@ -37,11 +37,9 @@ public class ScoocherSubsystem extends BaseSubsystem implements DataFrameRefresh
 
     public void intakeNote() {
         setPower(sendingPower.get());
-        log.info("Scooch Power: " + sendingPower.get());
     }
     public void ejectNote(){
         setPower(-sendingPower.get());
-        log.info("Scooch Power:" + -sendingPower.get());
     }
 
     public void stop() {

@@ -64,7 +64,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             power *= intakePowerInControlMultiplier.get();
         }
         setPower(power);
-        log.info("Collector Intake Power:" + power);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
