@@ -28,6 +28,7 @@ public class BaseArmCommandsTest extends BaseCompetitionTest {
         retract = getInjectorComponent().retractArmCommand();
         stop = getInjectorComponent().stopArmCommand();
         reconcile = getInjectorComponent().reconcileArmAlignmentCommand();
+        arm.setClampLimit(1.0);
     }
 
     private void checkMotorPower(double power) {
