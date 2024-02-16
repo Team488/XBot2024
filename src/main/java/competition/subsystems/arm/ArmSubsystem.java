@@ -175,7 +175,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         // First, if we are calibrated, apply a power factor based on the difference between the two
         // arms to make sure they stay in sync
         if (hasCalibratedLeft && hasCalibratedRight) {
-            double distanceLeftAhead = getLeftArmPosition() - getRightArmPosition();
+            double distanceLeftAhead = convertTicksToMm(getLeftArmPosition() - getRightArmPosition());
 
             // If the left arm is ahead, and the left arm wants to go up/forward, reduce its power.
             // If the left arm is ahead, and the left arm wants to go down/backward, make no change to power.
