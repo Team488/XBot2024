@@ -1,17 +1,16 @@
 package competition.subsystems.arm.commands;
 
 import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
 
-public class SetArmFromLocationCommand extends BaseSetpointCommand {
+public class SetArmAngleForSpeakerFromLocation extends BaseSetpointCommand {
 
     ArmSubsystem arm;
 
     @Inject
-    SetArmFromLocationCommand(ArmSubsystem arm) {
+    SetArmAngleForSpeakerFromLocation(ArmSubsystem arm) {
         super(arm);
         this.arm = arm;
     }
