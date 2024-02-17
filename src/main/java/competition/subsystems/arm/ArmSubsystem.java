@@ -56,6 +56,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double targetExtension;
     private final DoubleProperty armPowerClamp;
 
+    // for rendering the arm in advantage scope
+    public final Mechanism2d armActual2d;
+    public final MechanismLigament2d armLigament;
+    // what angle does the arm make with the pivot when it's at our concept of zero?
+    public final double armPivotAngleAtArmAngleZero = 45;
 
 
     public enum ArmState {
@@ -142,6 +147,15 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
         this.armState = ArmState.STOPPED;
+
+        armActual2d = new Mechanism2d(10, 10, new Color8Bit(255, 255, 255));
+        armLigament = new MechanismLigament2d("arm", 5, getArmAngle() - armPivotAngleAtArmAngleZero, 10, new Color8Bit(255, 0, 0)); 
+        armActual2d.getRoot("base", 3, 5)
+            .append(armLigament)
+            .append(new MechanismLigament2d("box-right", 1, 90))
+            .append(new MechanismLigament2d("box-top", 2, 90))
+            .append(new MechanismLigament2d("box-left", 1, 90));
+
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
@@ -458,15 +472,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
 
-        // what angle does the arm make with the pivot when it's at our concept of zero?
-        var armPivotAngleAtArmAngleZero = 45;
         var color = isCalibrated() ? new Color8Bit(0, 255, 0) : new Color8Bit(255, 0, 0);
-        var armActual2d = new Mechanism2d(10, 10, new Color8Bit(255, 255, 255));
-        armActual2d.getRoot("base", 3, 5)
-            .append(new MechanismLigament2d("arm", 5, getArmAngle() - armPivotAngleAtArmAngleZero, 10, color))
-            .append(new MechanismLigament2d("box-right", 1, 90))
-            .append(new MechanismLigament2d("box-top", 2, 90))
-            .append(new MechanismLigament2d("box-left", 1, 90));
+        armLigament.setAngle(getArmAngle() - armPivotAngleAtArmAngleZero);
+        armLigament.setColor(color);
         aKitLog.record("Arm2dStateActual", armActual2d);
     }
 
