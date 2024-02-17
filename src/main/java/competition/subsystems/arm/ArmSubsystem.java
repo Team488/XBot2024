@@ -2,6 +2,7 @@ package competition.subsystems.arm;
 
 import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
+import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -58,12 +59,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double targetExtension;
     private final DoubleProperty armPowerClamp;
 
-    // for rendering the arm in advantage scope
+    PoseSubsystem pose;
     public final Mechanism2d armActual2d;
     public final MechanismLigament2d armLigament;
     // what angle does the arm make with the pivot when it's at our concept of zero?
     public final double armPivotAngleAtArmAngleZero = 45;
-
 
     public enum ArmState {
         EXTENDING,
@@ -89,7 +89,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         XSolenoid.XSolenoidFactory xSolenoidFactory,
-                        ElectricalContract contract) {
+                        ElectricalContract contract, PoseSubsystem pose) {
+        this.pose = pose;
+
         this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
         // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
@@ -487,5 +489,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.refreshDataFrame();
             armAbsoluteEncoder.refreshDataFrame();
         }
+    }
+
+    public double getAngleFromRange() {
+        return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
     }
 }
