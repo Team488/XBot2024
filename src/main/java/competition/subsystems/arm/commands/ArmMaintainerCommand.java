@@ -10,7 +10,7 @@ import xbot.common.math.PIDManager;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
-public class ArmMaintainerCommand extends BaseMaintainerCommand {
+public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     private final ArmSubsystem arm;
     private final PIDManager positionPid;
     // oi used for human input
