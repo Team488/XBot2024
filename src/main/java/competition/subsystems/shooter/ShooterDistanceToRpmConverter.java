@@ -3,6 +3,7 @@ package competition.subsystems.shooter;
 public class ShooterDistanceToRpmConverter {
     //IMPORTANT: BOTH ARRAYS NEED TO BE ORDERED IN INCREASING ORDER, EACH ELEMENT AT EACH INDEX CORRESPONDS TO THE SAME INDEX IN THE OTHER ARRAY
     //THINK OF IT LIKE A COORDINATE PAIR: rpmForDistance[0] has the RPM needed for the distance in distancesFromSpeaker[0]
+    //TODO: Remember to fill out these arrays! (Empty array will prevent shooter from calculating the right distance and shooting, speed will be set to 0)
     double[] distancesFromSpeaker = {};
     //the values inputted here NEED TO BE TESTED ON THE ACTUAL ROBOT SHOOTER
     double[] rpmForDistance = {};
