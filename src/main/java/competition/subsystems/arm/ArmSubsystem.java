@@ -47,6 +47,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public final DoubleProperty armAbsoluteEncoderTicksPerDegree;
     public final DoubleProperty softUpperLimit;
     public final DoubleProperty softLowerLimit;
+    public final DoubleProperty softUpperLimitSpeed;
+    public final DoubleProperty softLowerLimitSpeed;
     public final DoubleProperty speedLimitForNotCalibrated;
     public final DoubleProperty angleTrim;
     boolean hasCalibratedLeft;
@@ -114,6 +116,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
         softUpperLimit = pf.createPersistentProperty(
                 "SoftUpperLimit", armMotorRevolutionLimit.get() * 0.85);
+        softLowerLimitSpeed = pf.createPersistentProperty("SoftLowerLimitSpeed", 0.5);
+        softUpperLimitSpeed = pf.createPersistentProperty("SoftUpperLimitSpeed", 0.5);
 
         speedLimitForNotCalibrated = pf.createPersistentProperty(
                 "SpeedLimitForNotCalibrated", -0.1);
@@ -160,9 +164,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
         if (actualPosition >= softUpperLimit.get()) {
-            power = MathUtils.constrainDouble(power, armPowerMin.get(), 0);
+            power = MathUtils.constrainDouble(power, armPowerMin.get(), softUpperLimitSpeed.get());
         } else if (actualPosition <= softLowerLimit.get()) {
-            power = MathUtils.constrainDouble(power, 0, armPowerMax.get());
+            power = MathUtils.constrainDouble(power, softLowerLimitSpeed.get(), armPowerMax.get());
         }
         return power;
     }
