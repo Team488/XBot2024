@@ -138,6 +138,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     @Override
     public void setTargetValue(Double value) {
         targetRpm = value;
+        log.info("Target RPM: " + value);
     }
 
     @Override
@@ -149,7 +150,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     @Override
     public boolean isCalibrated() {
-        return false;
+        return true;
     }
 
     public void resetWheel() {

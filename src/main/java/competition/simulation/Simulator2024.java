@@ -92,6 +92,19 @@ public class Simulator2024 {
             rightMockMotor.setPosition(rightArmPositionCalculator.getAverage());
         }
 
+        // simulate the arm limit switches being pressed when a certain position is reached
+        if (leftMockMotor.getPosition() < -3) {
+            leftMockMotor.setReverseLimitSwitchStateForTesting(true);
+        } else {
+            leftMockMotor.setReverseLimitSwitchStateForTesting(false);
+        }
+
+        if (rightMockMotor.getPosition() < -3) {
+            rightMockMotor.setReverseLimitSwitchStateForTesting(true);
+        } else {
+            rightMockMotor.setReverseLimitSwitchStateForTesting(false);
+        }
+
         // The shooter wheel should pretty much always be in velocity mode.
         var shooterMockMotor = (MockCANSparkMax)shooter.leader;
         shooterVelocityCalculator.add(shooterMockMotor.getReference());

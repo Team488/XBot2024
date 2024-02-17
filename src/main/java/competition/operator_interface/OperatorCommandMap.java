@@ -46,7 +46,7 @@ public class OperatorCommandMap {
     @Inject
     public void setupFundamentalCommands(
             OperatorInterface oi,
-            IntakeScoocherCommand scoocherIntake,
+            Provider<IntakeScoocherCommand> scoocherIntakeProvider,
             EjectScoocherCommand scoocherEject,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
@@ -57,7 +57,7 @@ public class OperatorCommandMap {
             DriveToNoteAndIntake driveToNoteAndIntakeGroup
     ) {
         // Scooch
-        oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntake);
+        oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
         oi.operatorGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
 
         // Collect
@@ -69,12 +69,10 @@ public class OperatorCommandMap {
         oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
         oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(fireCollectorCommand);
 
-        // Adding armMaintainer command to smartdashboard
-        armMaintainer.includeOnSmartDashboard();
-
         // Arms are taken care of via their maintainer & human overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
-        var scoochNote = scoocherIntake.alongWith(armAngle);
+        var scoochNote = scoocherIntakeProvider.get();
+        scoochNote.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
 
         oi.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(driveToNoteAndIntakeGroup);

@@ -7,17 +7,14 @@ import xbot.common.logic.CalibrationDecider;
 import xbot.common.logic.HumanVsMachineDecider;
 import xbot.common.math.MathUtils;
 import xbot.common.math.PIDManager;
-import xbot.common.properties.DoubleProperty;
-import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
-public class ArmMaintainerCommand extends BaseMaintainerCommand {
+public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     private final ArmSubsystem arm;
     private final PIDManager positionPid;
     // oi used for human input
     private final OperatorInterface oi;
-
 
     @Inject
     public ArmMaintainerCommand(ArmSubsystem arm, PropertyFactory pf,
@@ -28,7 +25,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand {
         this.arm = arm;
         this.oi = oi;
         pf.setPrefix(this);
-        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.66, 0.1, 0);
+        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.01, 0.0, 0);
 
 
     }
@@ -40,7 +37,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand {
 
     @Override
     protected void coastAction() {
-        //Don't think anything is needed here...
+        arm.setPower(0.0);
     }
 
     @Override
