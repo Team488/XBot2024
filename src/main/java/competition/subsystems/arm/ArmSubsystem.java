@@ -116,8 +116,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
         softUpperLimit = pf.createPersistentProperty(
                 "SoftUpperLimit", armMotorRevolutionLimit.get() * 0.85);
-        softLowerLimitSpeed = pf.createPersistentProperty("SoftLowerLimitSpeed", 0.5);
-        softUpperLimitSpeed = pf.createPersistentProperty("SoftUpperLimitSpeed", 0.5);
+        softLowerLimitSpeed = pf.createPersistentProperty("SoftLowerLimitSpeed", -0.05);
+        softUpperLimitSpeed = pf.createPersistentProperty("SoftUpperLimitSpeed", 0.05);
 
         speedLimitForNotCalibrated = pf.createPersistentProperty(
                 "SpeedLimitForNotCalibrated", -0.1);
@@ -171,8 +171,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return power;
     }
 
-    public double constrainPowerIfAtLimit(double power) {
-        switch(getLimitState(armMotorRight)) {
+    public double constrainPowerIfAtLimit(XCANSparkMax motor, double power) {
+        switch(getLimitState(motor)) {
             case BOTH_LIMITS_HIT -> power = 0;
             case UPPER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, armPowerMin.get(), 0);
             case LOWER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, 0, armPowerMax.get());
@@ -273,8 +273,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
   
         // If we are actually at our hard limits, stop the motors
-        leftPower = constrainPowerIfAtLimit(leftPower);
-        rightPower = constrainPowerIfAtLimit(rightPower);
+        leftPower = constrainPowerIfAtLimit(armMotorLeft, leftPower);
+        rightPower = constrainPowerIfAtLimit(armMotorRight, rightPower);
 
         // Respect overall max/min power limits.
         leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
