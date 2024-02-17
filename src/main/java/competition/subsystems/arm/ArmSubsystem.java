@@ -5,6 +5,9 @@ import competition.electrical_contract.ElectricalContract;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
@@ -50,7 +53,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedRight;
     private final DoubleProperty maximumArmDesyncInMm;
 
-    private double targetAngle;
+    private double targetExtension;
     private final DoubleProperty armPowerClamp;
 
 
@@ -374,19 +377,53 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRightRevolutionOffset = -armMotorRight.getPosition();
         }
     }
+   
+    /**
+     * Get the current angle of the arm in degrees based on the extension distance.
+     */
+    public double getArmAngle() {
+        return getArmAngleForExtension(getCurrentValue());
+    }
+
+    public double getArmAngleForExtension(double extension) {
+        // TODO: This is just a placeholder, the relationship will actually be nonlinear
+        var degreesPerMmExtension = 0.01;
+        return extension * degreesPerMmExtension;
+    }
+
+    public double getExtensionForArmAngle(double angle) {
+        // TODO: this is just a placeholder, the relationship will be nonlinear
+        var degreesPerMmExtension = 0.01;
+        return angle / degreesPerMmExtension;
+    }
+
     @Override
     public Double getCurrentValue() {
-        return convertTicksToMm(getLeftArmPosition());
+        return getExtensionDistance();
     }
 
+    public double getExtensionDistance() {
+        return convertTicksToMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset);
+    }
+
+    /** 
+     * This is the extension distance the arm is trying to reach via PID 
+     */
     @Override
     public Double getTargetValue() {
-        return targetAngle;
+        return targetExtension;
     }
 
+    /**
+     * the current target extension distance the arm is trying to reach via PID
+     */
     @Override
-    public void setTargetValue(Double value) {
-         targetAngle = value;
+    public void setTargetValue(Double targetExtension) {
+         this.targetExtension = targetExtension;
+    }
+
+    public void setTargetAngle(Double targetAngle) {
+        targetExtension = getExtensionForArmAngle(targetAngle);
     }
 
     @Override
@@ -421,11 +458,21 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
         aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
 
-        aKitLog.record("Target Angle", targetAngle);
+        aKitLog.record("Target Extension", targetExtension);
+        aKitLog.record("TargetAngle", getArmAngleForExtension(targetExtension));
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
+        var color = isCalibrated() ? new Color8Bit(0, 255, 0) : new Color8Bit(255, 0, 0);
+        var mech2d = new Mechanism2d(10, 10);
+        mech2d.getRoot("base", 3, 5)
+            .append(new MechanismLigament2d("arm", 5, -45 + getArmAngle(), 10, color))
+            .append(new MechanismLigament2d("box-right", 1, 90))
+            .append(new MechanismLigament2d("box-top", 2, 90))
+            .append(new MechanismLigament2d("box-left", 1, 90));
+        aKitLog.record("Arm2dState", mech2d);
     }
+
 
     @Override
     public void refreshDataFrame() {

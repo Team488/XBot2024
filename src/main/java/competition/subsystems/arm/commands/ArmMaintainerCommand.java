@@ -7,8 +7,6 @@ import xbot.common.logic.CalibrationDecider;
 import xbot.common.logic.HumanVsMachineDecider;
 import xbot.common.math.MathUtils;
 import xbot.common.math.PIDManager;
-import xbot.common.properties.DoubleProperty;
-import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
