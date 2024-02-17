@@ -9,6 +9,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
@@ -28,12 +29,12 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     @Inject
-    public RobotContainer(DriveSubsystem drive, PoseSubsystem pose, IntakeUntilNoteCollectedCommand intakeUntilNoteCollectedCommand) {
+    public RobotContainer(DriveSubsystem drive, PoseSubsystem pose, IntakeCollectorCommand IntakeCollectorCommand) {
 
         this.drive = drive;
         this.pose = pose;
 
-        NamedCommands.registerCommand("IntakeUntilNoteCollected", intakeUntilNoteCollectedCommand);
+        NamedCommands.registerCommand("IntakeCollectorCommand", IntakeCollectorCommand);
 
 
         autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
@@ -65,6 +66,9 @@ public class RobotContainer {
     }
     public Command getFast4NoteCloseCommand() {
         return new PathPlannerAuto("Fast4NoteAutoClose");
+    }
+    public Command getMarkerTestAutoCommand() {
+        return new PathPlannerAuto("MarkerTestAuto");
     }
 
 

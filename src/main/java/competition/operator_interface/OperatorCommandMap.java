@@ -7,6 +7,7 @@ import competition.auto.DriveCoupleFeetCommand;
 import competition.auto.Fast4NoteCloseCommand;
 import competition.auto.Fast4NoteFarCommand;
 import competition.auto.FourNoteAutoCommand;
+import competition.auto.MarkerTestAutoCommand;
 import competition.auto.MidNoteCommand;
 import competition.auto.UpdateHolonomicCommand;
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
@@ -51,7 +52,8 @@ public class OperatorCommandMap {
             UpdateHolonomicCommand updateHolonomicCommand,
             MidNoteCommand midNoteCommand,
             Fast4NoteFarCommand fast4NoteFarCommand,
-            Fast4NoteCloseCommand fast4NoteCloseCommand)
+            Fast4NoteCloseCommand fast4NoteCloseCommand,
+            MarkerTestAutoCommand markerTestAutoCommand)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -87,8 +89,8 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
+//                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
 
         // ReconcileArmAlignmentCommand
         slightLeftArmForward.setReconcilePower(0.05);
@@ -99,9 +101,10 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(driveCoupleFeetCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(fourNoteAutoCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(updateHolonomicCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(updateHolonomicCommand);
         midNoteCommand.includeOnSmartDashboard();
         fast4NoteFarCommand.includeOnSmartDashboard();
         fast4NoteCloseCommand.includeOnSmartDashboard();
+        markerTestAutoCommand.includeOnSmartDashboard();
     }
 }

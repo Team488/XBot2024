@@ -7,6 +7,7 @@ import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
 import xbot.common.controls.sensors.XDigitalInput;
+import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
@@ -35,6 +36,9 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                               ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
         this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+
+
+
         this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio());
 
         pf.setPrefix(this);
