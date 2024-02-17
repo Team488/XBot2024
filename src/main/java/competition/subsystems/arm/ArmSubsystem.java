@@ -463,14 +463,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
+
+        // what angle does the arm make with the pivot when it's at our concept of zero?
+        var armPivotAngleAtArmAngleZero = 45;
         var color = isCalibrated() ? new Color8Bit(0, 255, 0) : new Color8Bit(255, 0, 0);
-        var mech2d = new Mechanism2d(10, 10);
-        mech2d.getRoot("base", 3, 5)
-            .append(new MechanismLigament2d("arm", 5, -45 + getArmAngle(), 10, color))
+        var armActual2d = new Mechanism2d(10, 10, new Color8Bit(255, 255, 255));
+        armActual2d.getRoot("base", 3, 5)
+            .append(new MechanismLigament2d("arm", 5, getArmAngle() - armPivotAngleAtArmAngleZero, 10, color))
             .append(new MechanismLigament2d("box-right", 1, 90))
             .append(new MechanismLigament2d("box-top", 2, 90))
             .append(new MechanismLigament2d("box-left", 1, 90));
-        aKitLog.record("Arm2dState", mech2d);
+        aKitLog.record("Arm2dStateActual", armActual2d);
     }
 
 
