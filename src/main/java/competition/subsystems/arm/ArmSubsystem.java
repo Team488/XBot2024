@@ -111,9 +111,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "ArmAbsoluteEncoderTicksPerDegree", 1);
 
         softLowerLimit = pf.createPersistentProperty(
-                "SoftLowerLimit", armMotorRevolutionLimit.get());
+                "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
         softUpperLimit = pf.createPersistentProperty(
-                "SoftUpperLimit", armMotorRevolutionLimit.get());
+                "SoftUpperLimit", armMotorRevolutionLimit.get() * 0.85);
 
         speedLimitForNotCalibrated = pf.createPersistentProperty(
                 "SpeedLimitForNotCalibrated", -0.1);
@@ -256,19 +256,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
 
 
-        // TODO: This logic is currently preventing calibrated arms from going down,
-        // commenting out in the short run:
-        // // If calibrated, but near limits, slow the system down a bit so we
-        // // don't slam into the hard limits.
-        // if (hasCalibratedLeft && hasCalibratedRight)
-        // {
-        //     leftPower = constrainPowerIfNearLimit(
-        //             leftPower,
-        //             getLeftArmPosition());
-        //     rightPower = constrainPowerIfNearLimit(
-        //             rightPower,
-        //             getRightArmPosition());
-        // }
+        // If calibrated, but near limits, slow the system down a bit so we
+        // don't slam into the hard limits.
+        if (hasCalibratedLeft && hasCalibratedRight)
+        {
+            leftPower = constrainPowerIfNearLimit(
+                    leftPower,
+                    getLeftArmPosition());
+            rightPower = constrainPowerIfNearLimit(
+                    rightPower,
+                    getRightArmPosition());
+        }
   
         // If we are actually at our hard limits, stop the motors
         leftPower = constrainPowerIfAtLimit(leftPower);
