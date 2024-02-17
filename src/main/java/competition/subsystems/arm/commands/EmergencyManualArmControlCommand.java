@@ -29,7 +29,7 @@ public class EmergencyManualArmControlCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        arm.setPower(MathUtils.deadband(oi.operatorGamepad.getLeftStickY() * armPowerFactor.get(), 0.15));
+        arm.dangerousManualSetPowerToBothArms(MathUtils.deadband(oi.operatorGamepad.getLeftStickY() * armPowerFactor.get(), 0.15));
     }
 
 }
