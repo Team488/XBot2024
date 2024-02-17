@@ -297,16 +297,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return ticksToMmRatio.get() * ticks;
     }
 
-    // TO-DO
-    public double convertTicksToShooterAngle(double ticks) {
-        return ticks * 1000; // To be modified into ticks to shooter angle formula
-    }
-
-    // TO-DO
-    public double convertShooterAngleToTicks(double angle) {
-        return 0;
-    }
-
     public double getArmAngleFromDistance(double distanceFromSpeaker) {
         // Distance: Inches; Angle: Degrees; Distance = Measured Distance - Calibration Offset
         return (0.0019 * Math.pow(distanceFromSpeaker, 2) + (-0.7106 * distanceFromSpeaker) + 82.844) + angleTrim.get();
@@ -357,10 +347,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
         aKitLog.record("ArmMotorLeftMm", convertTicksToMm(getLeftArmPosition()));
         aKitLog.record("ArmMotorRightMm", convertTicksToMm(getRightArmPosition()));
-
-        aKitLog.record("ArmMotorToShooterAngle", convertTicksToShooterAngle(
-                (getLeftArmPosition() + getRightArmPosition()) / 2));
-
         aKitLog.record("ArmAbsoluteEncoderAngle", getArmAbsoluteAngle());
     }
 
@@ -396,7 +382,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public double getExtensionForArmAngle(double angle) {
         // TODO: this is just a placeholder, the relationship will be nonlinear
         var degreesPerMmExtension = 0.01;
-        return angle / degreesPerMmExtension;
+
+        // unncessarily paranoid avoid divide by 0 check
+        if(degreesPerMmExtension == 0) {
+            return 0;
+        } else {
+            return angle / degreesPerMmExtension;
+        }
     }
 
     @Override
