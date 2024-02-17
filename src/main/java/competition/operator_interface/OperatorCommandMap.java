@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.commandgroups.DriveToNoteAndIntake;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
@@ -52,7 +53,8 @@ public class OperatorCommandMap {
             WarmUpShooterCommand shooterWarmUp,
             FireCollectorCommand fireCollectorCommand,
             SetArmAngleCommand armAngle,
-            ArmMaintainerCommand armMaintainer
+            ArmMaintainerCommand armMaintainer,
+            DriveToNoteAndIntake driveToNoteAndIntakeGroup
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntake);
@@ -74,6 +76,8 @@ public class OperatorCommandMap {
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var scoochNote = scoocherIntake.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
+
+        oi.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(driveToNoteAndIntakeGroup);
     }
     
     // Example for setting up a command to fire when a button is pressed:
