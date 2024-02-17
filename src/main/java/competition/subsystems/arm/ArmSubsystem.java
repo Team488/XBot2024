@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
-import xbot.common.controls.actuators.XSolenoid;
+import xbot.common.controls.actuators.XDoubleSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
 import xbot.common.math.MathUtils;
 import xbot.common.properties.BooleanProperty;
@@ -26,7 +26,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
-    public XSolenoid armBrakeSolenoid;
+    public XDoubleSolenoid armBrakeSolenoid;
     public XSparkAbsoluteEncoder armAbsoluteEncoder;
     public final ElectricalContract contract;
 
@@ -88,9 +88,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
-                        XSolenoid.XSolenoidFactory xSolenoidFactory,
+                        XDoubleSolenoid.XDoubleSolenoidFactory xSolenoidFactory,
                         ElectricalContract contract) {
-        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
+        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoidForward().channel);
+        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoidReverse().channel);
+
         // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
         this.contract = contract;
