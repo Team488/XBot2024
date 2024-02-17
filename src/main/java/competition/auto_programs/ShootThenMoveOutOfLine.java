@@ -20,8 +20,9 @@ public class ShootThenMoveOutOfLine extends SequentialCommandGroup {
                            SwerveSimpleTrajectoryCommand moveOutOfLineCommand,
                            PoseSubsystem pose) {
 
-        // Force set our position first
-        // This is our starting position, to be changed later if needed
+        // Force set our position first.
+        // This is our starting position, to be changed later if needed.
+        // Right now we are assuming that we are staring right in front of the speaker.
         InstantCommand forceSetPosition = new InstantCommand(
                 () -> {
                     pose.setCurrentPoseInMeters(
@@ -34,14 +35,21 @@ public class ShootThenMoveOutOfLine extends SequentialCommandGroup {
         // Fire the note we hold at the start
         this.addCommands(fireNoteCommand);
 
-        // Move straight out of line
-        ArrayList<XbotSwervePoint> points = new ArrayList<>();
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                new Pose2d(2.65, 5.5478, new Rotation2d()), 10));
-        moveOutOfLineCommand.logic.setKeyPoints(points);
+        // Move in the positive x direction, in theory this should get us from our starting point
+        // To outside of the line (for points), and then stop right in front of the note
+        moveOutOfLineCommand.logic.setKeyPointsProvider(this::createPointsToMoveOutOfLine);
         moveOutOfLineCommand.logic.setEnableConstantVelocity(true);
         moveOutOfLineCommand.logic.setConstantVelocity(1);
 
+
         this.addCommands(moveOutOfLineCommand);
+    }
+
+    private ArrayList<XbotSwervePoint> createPointsToMoveOutOfLine() {
+        // Returns a list with a point that is outside of line, in front of a note
+        ArrayList<XbotSwervePoint> points = new ArrayList<>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                new Pose2d(2.65, 5.5478, new Rotation2d()), 10));
+        return points;
     }
 }
