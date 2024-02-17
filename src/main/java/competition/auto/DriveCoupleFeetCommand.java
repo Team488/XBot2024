@@ -24,7 +24,7 @@ public class DriveCoupleFeetCommand extends BaseCommand {
         this.pose = pose;
         addRequirements(driveSubsystem);
         addRequirements(drive);
-        this.autonomousCommand = robotContainer.getAutonomousCommand();
+        this.autonomousCommand = robotContainer.getTestPathCommand();
         autonomousCommand.addRequirements(drive);
         autonomousCommand.addRequirements(driveSubsystem);
 
