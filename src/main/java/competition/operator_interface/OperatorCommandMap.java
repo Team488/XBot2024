@@ -45,7 +45,7 @@ public class OperatorCommandMap {
     @Inject
     public void setupFundamentalCommands(
             OperatorInterface oi,
-            IntakeScoocherCommand scoocherIntake,
+            Provider<IntakeScoocherCommand> scoocherIntakeProvider,
             EjectScoocherCommand scoocherEject,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
@@ -55,7 +55,7 @@ public class OperatorCommandMap {
             ArmMaintainerCommand armMaintainer
     ) {
         // Scooch
-        oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntake);
+        oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
         oi.operatorGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
 
         // Collect
@@ -69,7 +69,8 @@ public class OperatorCommandMap {
 
         // Arms are taken care of via their maintainer & human overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
-        var scoochNote = scoocherIntake.alongWith(armAngle);
+        var scoochNote = scoocherIntakeProvider.get();
+        scoochNote.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
     }
     
