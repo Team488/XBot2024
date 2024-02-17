@@ -367,17 +367,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
 
-    // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
+    // Update the offset of the arm when it touches reverse limit switches for the first time.
+    // Both arms calibrate independently
     public void calibrateArmOffset() {
-        // For now keeping the concept of left/right having independent calibration,
-        // but for simplicity, hitting either limit will calibrate both for now.
-        if ((!hasCalibratedLeft || !hasCalibratedRight)
-                && (getLimitState(armMotorLeft) == LimitState.LOWER_LIMIT_HIT
-                    || getLimitState(armMotorRight) == LimitState.LOWER_LIMIT_HIT))
-        {
+        if (!hasCalibratedLeft && getLimitState(armMotorLeft) == LimitState.LOWER_LIMIT_HIT) {
             hasCalibratedLeft = true;
-            hasCalibratedRight = true;
             armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
+        }
+
+        if (!hasCalibratedRight && getLimitState(armMotorRight) == LimitState.LOWER_LIMIT_HIT) {
+            hasCalibratedRight = true;
             armMotorRightRevolutionOffset = -armMotorRight.getPosition();
         }
     }
