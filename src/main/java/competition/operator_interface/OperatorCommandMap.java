@@ -54,7 +54,7 @@ public class OperatorCommandMap {
             FireCollectorCommand fireCollectorCommand,
             SetArmAngleCommand armAngle,
             ArmMaintainerCommand armMaintainer,
-            DriveToNoteAndIntake driveToNoteAndIntakeGroup
+            Provider<DriveToNoteAndIntake> driveToNoteAndIntakeGroupProvider
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -75,6 +75,8 @@ public class OperatorCommandMap {
         scoochNote.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
 
+        var driveToNoteAndIntakeGroup = driveToNoteAndIntakeGroupProvider.get();
+        driveToNoteAndIntakeGroup.makeCommand(PoseSubsystem.CenterLine1);
         oi.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(driveToNoteAndIntakeGroup);
     }
     

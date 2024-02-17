@@ -19,12 +19,20 @@ import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.sound.midi.Sequence;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.stream.Collector;
 
 public class DriveToNoteAndIntake extends ParallelDeadlineGroup {
-    Pose2d notePosition = PoseSubsystem.CenterLine1;
+    //this is where we are going to drive to
+    Pose2d notePosition;
+    Provider<SwerveSimpleTrajectoryCommand> swerveProvider;
+    DynamicOracle oracle;
+    IntakeUntilNoteCollectedCommand intakeUntilNoteCollected;
+    Provider<WaitForArmToBeAtGoalCommand> waitForArmProvider;
+    Provider<SetArmAngleCommand> setArmAngleProvider;
+
     @Inject
     DriveToNoteAndIntake(
             Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
@@ -37,6 +45,46 @@ public class DriveToNoteAndIntake extends ParallelDeadlineGroup {
         //sets the deadline to waitForNoteCollected
         super(waitForNote);
         setDeadline(waitForNote);
+
+        this.swerveProvider = swerveProvider;
+        this.intakeUntilNoteCollected = intakeUntilNoteCollected;
+        this.waitForArmProvider = waitForArmProvider;
+        this.setArmAngleProvider = setArmAngleProvider;
+        this.oracle = oracle;
+//
+//        SwerveSimpleTrajectoryCommand swerveToNote = swerveProvider.get();
+//        ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
+//
+//        swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+//                notePosition,10));
+        //pretty sure swerveToNote faces the shooter towards the note
+        //so by setting drive to backwards it will face the collector towards the note (Since the collector is on the back)
+//        swerveToNote.logic.setKeyPoints(swervePoints);
+//        swerveToNote.logic.setAimAtGoalDuringFinalLeg(true);
+//        swerveToNote.logic.setDriveBackwards(true);
+//        swerveToNote.logic.setEnableConstantVelocity(true);
+//        swerveToNote.logic.setConstantVelocity(5);
+//        swerveToNote.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+
+//        SetArmAngleCommand extendArm = setArmAngleProvider.get();
+//        extendArm.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
+
+//        var extendThenSwerveToNoteInCorrectOrientation = new SequentialCommandGroup(extendArm,waitForArmProvider.get(),swerveToNote);
+//        //extends arm then drives to note
+//        this.addCommands(extendThenSwerveToNoteInCorrectOrientation);
+//        // runs the intake in parallel
+//        this.addCommands(intakeUntilNoteCollected);
+
+//        SetArmAngleCommand retractArm = setArmAngleProvider.get();
+//        retractArm.setArmPosition(ArmSubsystem.UsefulArmPosition.STARTING_POSITION);
+//
+//        //waits for arm to be in position then intakes and retracts
+//        var retract = new SequentialCommandGroup(retractArm, waitForArmProvider.get());
+//        this.addCommands(retract);
+
+    }
+    public void makeCommand(Pose2d notePosition){
+        this.notePosition = notePosition;
 
         SwerveSimpleTrajectoryCommand swerveToNote = swerveProvider.get();
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
@@ -52,25 +100,14 @@ public class DriveToNoteAndIntake extends ParallelDeadlineGroup {
         swerveToNote.logic.setConstantVelocity(5);
         swerveToNote.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
-//        SetArmAngleCommand extendArm = setArmAngleProvider.get();
-//        extendArm.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
+        //set arm angle is the issue rn, it doesnt have an isFinished so its keeping the commandgroup from moving on,
+        // parallel command group works fine
+        SetArmAngleCommand setArmAngle = setArmAngleProvider.get();
+        setArmAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
-        this.addCommands(swerveToNote);
-//        var extendThenSwerveToNoteInCorrectOrientation = new SequentialCommandGroup(extendArm,waitForArmProvider.get(),swerveToNote);
-//        //extends arm then drives to note
-//        this.addCommands(extendThenSwerveToNoteInCorrectOrientation);
-//        // runs the intake in parallel
-//        this.addCommands(intakeUntilNoteCollected);
+        var extendArmAndDriveOverNote = new SequentialCommandGroup(setArmAngle,swerveToNote);
+        this.addCommands(extendArmAndDriveOverNote);
 
-//        SetArmAngleCommand retractArm = setArmAngleProvider.get();
-//        retractArm.setArmPosition(ArmSubsystem.UsefulArmPosition.STARTING_POSITION);
-//
-//        //waits for arm to be in position then intakes and retracts
-//        var retract = new SequentialCommandGroup(retractArm, waitForArmProvider.get());
-//        this.addCommands(retract);
 
-    }
-    public void setNotePosition(Pose2d notePosition){
-        this.notePosition = notePosition;
     }
 }

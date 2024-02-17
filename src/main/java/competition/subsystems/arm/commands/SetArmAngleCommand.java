@@ -33,4 +33,6 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
     public void execute() {
         // No-op. Set angle for maintainer to move arms to.
     }
+
+
 }
