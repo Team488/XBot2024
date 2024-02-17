@@ -27,4 +27,9 @@ public class UnitTestCompetitionContract extends CompetitionContract {
     public boolean isShooterReady() {
         return true;
     }
+
+    @Override
+    public boolean isScoocherReady() {
+        return true;
+    }
 }

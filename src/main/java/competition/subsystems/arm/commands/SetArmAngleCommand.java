@@ -26,7 +26,7 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
 
     @Override
     public void initialize() {
-        armSubsystem.setTargetValue(targetAngle);
+        armSubsystem.setTargetAngle(targetAngle);
     }
 
     @Override

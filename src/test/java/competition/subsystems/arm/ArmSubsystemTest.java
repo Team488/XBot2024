@@ -96,8 +96,8 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.periodic();
 
         // Check offset, offset is the actual position when you had initially started
-        assertEquals(150, arm.armMotorLeftRevolutionOffset.get(), 0.0001);
-        assertEquals(160, arm.armMotorRightRevolutionOffset.get(), 0.0001);
+        assertEquals(150, arm.getLeftArmOffset(), 0.0001);
+        assertEquals(160, arm.getRightArmOffset(), 0.0001);
         assertTrue(arm.hasCalibratedLeft);
         assertTrue(arm.hasCalibratedRight);
     }
