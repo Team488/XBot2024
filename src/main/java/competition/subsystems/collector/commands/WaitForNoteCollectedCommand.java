@@ -25,6 +25,7 @@ public class WaitForNoteCollectedCommand extends BaseCommand {
 
     @Override
     public boolean isFinished() {
-        return collector.getGamePieceInControl();
+//        return collector.getGamePieceInControl();
+        return false;
     }
 }
