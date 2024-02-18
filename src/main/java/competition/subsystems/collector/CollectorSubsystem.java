@@ -40,6 +40,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         this.contract = electricalContract;
         if (contract.isCollectorReady()) {
             this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+            collectorMotor.setSmartCurrentLimit(40);
         } else {
             this.collectorMotor = null;
         }
@@ -48,10 +49,10 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio());
 
         pf.setPrefix(this);
-        intakePower = pf.createPersistentProperty("intakePower",0.1);
-        ejectPower = pf.createPersistentProperty("ejectPower",-0.1);
+        intakePower = pf.createPersistentProperty("intakePower",0.8);
+        ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
-        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 0.5);
+        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
         this.intakeState = IntakeState.STOPPED;
     }
 
