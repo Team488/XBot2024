@@ -40,7 +40,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private final DoubleProperty armPowerMin;
 
 
-    public final DoubleProperty ticksToMmRatio; // Millimeters
+    public final DoubleProperty extensionMmPerRevolution; // Millimeters
     private double armMotorLeftRevolutionOffset; // # of revolutions
     private double armMotorRightRevolutionOffset;
     public final DoubleProperty armMotorRevolutionLimit;
@@ -104,7 +104,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
         // ticksToMmRatio and armMotorRevLimit needs configuration
-        ticksToMmRatio = pf.createPersistentProperty("TicksToArmMmRatio", 1000);
+        extensionMmPerRevolution = pf.createPersistentProperty("ExtneionMmPerRevolution", 5.715352326);
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
 
         angleTrim = pf.createPersistentProperty("AngleTrim", 0);
@@ -317,7 +317,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     // TO-DO
     public double convertTicksToMm(double ticks) {
-        return ticksToMmRatio.get() * ticks;
+        return extensionMmPerRevolution.get() * ticks;
     }
 
     public double getArmAngleFromDistance(double distanceFromSpeaker) {
