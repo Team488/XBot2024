@@ -188,6 +188,12 @@ public class OperatorCommandMap {
         var decreaseArm = commandProvider.get();
         decreaseArm.setTargetExtension(-20);
         decreaseArm.setRelative(true);
+
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.A).onTrue(decreaseArm);
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.Y).onTrue(increaseArm);
+
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.X).onTrue(homeArm);
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.B).onTrue(highArm);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
