@@ -8,11 +8,12 @@ import xbot.common.command.BaseSetpointCommand;
 public class SetArmExtensionCommand extends BaseSetpointCommand {
 
     private double targetExtension;
-    private final ArmSubsystem armSubsystem;
     private boolean isRelative = false;
+    private final ArmSubsystem armSubsystem;
 
     @Inject
     public SetArmExtensionCommand(ArmSubsystem armSubsystem) {
+        super(armSubsystem);
         this.armSubsystem = armSubsystem;
     }
 
@@ -36,6 +37,11 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
     @Override
     public void execute() {
         // no-op
+    }
+
+    @Override
+    public boolean isFinished() {
+        return true;
     }
     
 }

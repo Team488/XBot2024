@@ -502,4 +502,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public double getAngleFromRange() {
         return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
     }
+
+    public void calibrateArmsManually() {
+        hasCalibratedLeft = true;
+        armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
+        hasCalibratedRight = true;
+        armMotorRightRevolutionOffset = -armMotorRight.getPosition();
+    }
 }

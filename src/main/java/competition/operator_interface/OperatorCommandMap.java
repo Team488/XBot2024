@@ -8,6 +8,7 @@ import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
+import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -174,7 +175,7 @@ public class OperatorCommandMap {
     }
 
     @Inject
-    public void setupArmPIDCommands(OperatorInterface oi, Provider<SetArmExtensionCommand> commandProvider) {
+    public void setupArmPIDCommands(OperatorInterface oi, Provider<SetArmExtensionCommand> commandProvider, CalibrateArmsManuallyCommand calibrateArmsManuallyCommand) {
         var homeArm = commandProvider.get();
         homeArm.setTargetExtension(0);
 
@@ -194,6 +195,8 @@ public class OperatorCommandMap {
 
         oi.operatorGamepadSecond.getXboxButton(XboxButton.X).onTrue(homeArm);
         oi.operatorGamepadSecond.getXboxButton(XboxButton.B).onTrue(highArm);
+
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
