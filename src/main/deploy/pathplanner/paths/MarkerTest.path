@@ -16,15 +16,15 @@
     },
     {
       "anchor": {
-        "x": 2.5050384003901907,
+        "x": 1.388246651137177,
         "y": 7.0
       },
       "prevControl": {
-        "x": 2.5312788002926436,
+        "x": 1.41448705103963,
         "y": 7.0
       },
       "nextControl": {
-        "x": 2.4787980004877377,
+        "x": 1.362006251234724,
         "y": 7.0
       },
       "isLocked": false,
@@ -32,11 +32,11 @@
     },
     {
       "anchor": {
-        "x": 4.130525867889342,
+        "x": 2.323779006532372,
         "y": 7.0
       },
       "prevControl": {
-        "x": 3.130525867889342,
+        "x": 1.323779006532372,
         "y": 7.0
       },
       "nextControl": null,
@@ -48,7 +48,7 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "New Event Marker",
+      "name": "1st Marker",
       "waypointRelativePos": 0.95,
       "command": {
         "type": "sequential",
@@ -64,6 +64,23 @@
               "type": "named",
               "data": {
                 "name": "IntakeCollectorCommand"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2nd Marker",
+      "waypointRelativePos": 2.0,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "StopCollectorCommand"
               }
             }
           ]

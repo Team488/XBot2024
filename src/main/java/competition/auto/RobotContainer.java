@@ -11,6 +11,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
+import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -29,12 +30,15 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     @Inject
-    public RobotContainer(DriveSubsystem drive, PoseSubsystem pose, IntakeCollectorCommand IntakeCollectorCommand) {
+    public RobotContainer(DriveSubsystem drive, PoseSubsystem pose,
+                          IntakeCollectorCommand intakeCollectorCommand,
+                          StopCollectorCommand stopCollectorCommand) {
 
         this.drive = drive;
         this.pose = pose;
 
-        NamedCommands.registerCommand("IntakeCollectorCommand", IntakeCollectorCommand);
+        NamedCommands.registerCommand("IntakeCollectorCommand", intakeCollectorCommand);
+        NamedCommands.registerCommand("StopCollectorCommand", stopCollectorCommand);
 
 
         autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`

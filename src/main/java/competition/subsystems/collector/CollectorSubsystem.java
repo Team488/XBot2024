@@ -1,6 +1,7 @@
 package competition.subsystems.collector;
 
 import competition.electrical_contract.ElectricalContract;
+import competition.electrical_contract.PracticeContract;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
@@ -33,11 +34,9 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     @Inject
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
-                              ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
-        this.contract = electricalContract;
+                              PracticeContract contract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
+        this.contract = contract;
         this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
-
-
 
         this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio());
 
