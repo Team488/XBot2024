@@ -136,14 +136,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight = sparkMaxFactory.createWithoutProperties(
                     contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
+            armMotorLeft.enableVoltageCompensation(12);
+            armMotorRight.enableVoltageCompensation(12);
+
             // Get through-bore encoders
             var armWithEncoder = contract.getArmEncoderIsOnLeftMotor() ? armMotorLeft : armMotorRight;
             armAbsoluteEncoder = armWithEncoder.getAbsoluteEncoder(
                     this.getPrefix() + "ArmEncoder",
                     contract.getArmEncoderInverted());
 
-            armMotorLeft.setSmartCurrentLimit(20);
-            armMotorRight.setSmartCurrentLimit(20);
+            armMotorLeft.setSmartCurrentLimit(40);
+            armMotorRight.setSmartCurrentLimit(40);
 
             // Enable hardware limits
             armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
@@ -208,7 +211,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             // If we have to make any changes to power, do so by a factor proportional to the maximum
             // allowed desync in mm. At 50% of the desync, it would restrict power by 50%.
 
-            double potentialReductionFactor = Math.min(1, Math.abs(distanceLeftAhead) / maximumArmDesyncInMm.get());
+            double potentialReductionFactor = Math.max(0, 1 - Math.abs(distanceLeftAhead) / maximumArmDesyncInMm.get());
             aKitLog.record("PotentialReductionFactor", potentialReductionFactor);
 
             // If left arm is ahead
@@ -261,7 +264,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             rightPower = MathUtils.constrainDouble(rightPower, speedLimitForNotCalibrated.get(), 0);
         }
 
-
         // If calibrated, but near limits, slow the system down a bit so we
         // don't slam into the hard limits.
         if (hasCalibratedLeft && hasCalibratedRight)
@@ -273,7 +275,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                     rightPower,
                     getRightArmPosition());
         }
-  
+
         // If we are actually at our hard limits, stop the motors
         leftPower = constrainPowerIfAtLimit(armMotorLeft, leftPower);
         rightPower = constrainPowerIfAtLimit(armMotorRight, rightPower);
