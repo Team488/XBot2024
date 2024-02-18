@@ -175,8 +175,8 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     public void testGetArmAngleFromDistance() {
         // In case if getArmAngleFromDistance for whatever reason is wayyyyyy off
         // (Will likely fail is the equation is changed)
-        assertEquals(52, arm.getArmAngleFromDistance(50), 5);
-        assertEquals(31, arm.getArmAngleFromDistance(100), 5);
-        assertEquals(20, arm.getArmAngleFromDistance(150), 5);
+        assertEquals(52, arm.getArmAngleForSpeakerShooting(50), 5);
+        assertEquals(31, arm.getArmAngleForSpeakerShooting(100), 5);
+        assertEquals(20, arm.getArmAngleForSpeakerShooting(150), 5);
     }
 }

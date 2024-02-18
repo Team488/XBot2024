@@ -320,7 +320,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return extensionMmPerRevolution.get() * revolutions;
     }
 
-    public double getArmAngleFromDistance(double distanceFromSpeaker) {
+    public double getArmAngleForSpeakerShooting(double distanceFromSpeaker) {
         // Distance: Inches; Angle: Degrees; Distance = Measured Distance - Calibration Offset
         return (0.0019 * Math.pow(distanceFromSpeaker, 2) + (-0.7106 * distanceFromSpeaker) + 82.844) + angleTrim.get();
     }
@@ -393,10 +393,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return getArmAngleForExtension(getCurrentValue());
     }
 
-    public double getArmAngleForExtension(double extension) {
+        public double getArmAngleForExtension(double extension) {
         // TODO: This is just a placeholder, the relationship will actually be nonlinear
         var degreesPerMmExtension = 0.01;
-        return extension * degreesPerMmExtension;
+        return extension * degreesPerMmExtension - armPivotAngleAtArmAngleZero;
     }
 
     public double getExtensionForArmAngle(double angle) {
@@ -472,14 +472,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
         aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
 
-        aKitLog.record("Target Extension", targetExtension);
+        aKitLog.record("CurrentAngle", getArmAngle());
+
+        aKitLog.record("TargetExtension", targetExtension);
         aKitLog.record("TargetAngle", getArmAngleForExtension(targetExtension));
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
 
         var color = isCalibrated() ? new Color8Bit(0, 255, 0) : new Color8Bit(255, 0, 0);
-        armLigament.setAngle(getArmAngle() - armPivotAngleAtArmAngleZero);
+        armLigament.setAngle(-getArmAngle());
         armLigament.setColor(color);
         aKitLog.record("Arm2dStateActual", armActual2d);
     }
@@ -495,6 +497,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getAngleFromRange() {
-        return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
+        return getArmAngleForSpeakerShooting(pose.getDistanceFromSpeaker());
     }
 }

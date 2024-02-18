@@ -17,7 +17,7 @@ public class PrepareToFireAtSpeakerCommandGroup extends ParallelCommandGroup {
                                               PoseSubsystem pose,
                                               ArmSubsystem arm) {
         // Move arm to preset position
-        armAngle.setTargetAngle(arm.getArmAngleFromDistance(pose.getDistanceFromSpeaker()));
+        armAngle.setTargetAngle(arm.getArmAngleForSpeakerShooting(pose.getDistanceFromSpeaker()));
         this.addCommands(armAngle);
         // Set shooter wheels to target RPM
         ShooterDistanceToRpmConverter distToRpm = new ShooterDistanceToRpmConverter();
