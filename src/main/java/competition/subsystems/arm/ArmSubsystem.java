@@ -295,6 +295,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         setPowerToLeftAndRightArms(power, power);
     }
 
+    public void dangerousManualSetPowerToBothArms(double power) {
+        armMotorLeft.set(power);
+        armMotorRight.set(power);
+    }
+
     public void extend() {
         setPower(extendPower.get());
         armState = ArmState.EXTENDING;
