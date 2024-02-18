@@ -9,6 +9,7 @@ import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
+import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
@@ -170,6 +171,23 @@ public class OperatorCommandMap {
                 .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
         oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+    }
+
+    @Inject
+    public void setupArmPIDCommands(OperatorInterface oi, Provider<SetArmExtensionCommand> commandProvider) {
+        var homeArm = commandProvider.get();
+        homeArm.setTargetExtension(0);
+
+        var highArm = commandProvider.get();
+        highArm.setTargetExtension(150);
+
+        var increaseArm = commandProvider.get();
+        increaseArm.setTargetExtension(20);
+        increaseArm.setRelative(true);
+
+        var decreaseArm = commandProvider.get();
+        decreaseArm.setTargetExtension(-20);
+        decreaseArm.setRelative(true);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(

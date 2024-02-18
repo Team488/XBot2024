@@ -442,7 +442,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     public boolean isCalibrated() {
-        return false;
+        return hasCalibratedLeft && hasCalibratedRight;
     }
 
     public double getLeftArmOffset() {
