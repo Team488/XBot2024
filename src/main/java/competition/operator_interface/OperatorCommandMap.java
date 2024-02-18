@@ -21,6 +21,7 @@ import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
+import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -52,7 +53,9 @@ public class OperatorCommandMap {
             WarmUpShooterCommand shooterWarmUp,
             FireCollectorCommand fireCollectorCommand,
             SetArmAngleCommand armAngle,
-            ArmMaintainerCommand armMaintainer
+            ArmMaintainerCommand armMaintainer,
+            WarmUpShooterCommand warmUpShooterSlow,
+            WarmUpShooterCommand warmUpShooterFast
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -72,6 +75,12 @@ public class OperatorCommandMap {
         var scoochNote = scoocherIntakeProvider.get();
         scoochNote.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
+
+        warmUpShooterSlow.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SAFE);
+        warmUpShooterFast.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
+
+        oi.operatorGamepad.getPovIfAvailable(270).whileTrue(warmUpShooterSlow);
+        oi.operatorGamepad.getPovIfAvailable(90).whileTrue(warmUpShooterFast);
     }
     
     // Example for setting up a command to fire when a button is pressed:

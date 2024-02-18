@@ -84,10 +84,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
 
         XCANSparkMaxPIDProperties defaultShooterPidProperties = new XCANSparkMaxPIDProperties(
-                0.0007,
+                0.00015,
+                0.0000005,
                 0.0,
-                0.0,
-                0.0,
+                300.0,
                 0.00019,
                 1,
                 -1
@@ -102,6 +102,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
             leader.setIdleMode(CANSparkBase.IdleMode.kCoast);
             follower.setIdleMode(CANSparkBase.IdleMode.kCoast);
+
+            leader.setSmartCurrentLimit(75);
+            follower.setSmartCurrentLimit(75);
 
             this.leader.setP(defaultShooterPidProperties.p());
             this.leader.setFF(defaultShooterPidProperties.feedForward());

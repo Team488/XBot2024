@@ -16,7 +16,7 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
     @Inject
     public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf,
                                          HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory) {
-        super(wheel, pf, hvmFactory, 0, 0);
+        super(wheel, pf, hvmFactory, 150, 0.5);
         this.oi = oi;
         this.wheel = wheel;
     }
@@ -72,7 +72,7 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
         double current = wheel.getCurrentValue();
         double target = wheel.getTargetValue();
 
-        double shooterError = target - current;
-        return shooterError;
+        // The base maintainer will take the absolute value of anything we return
+        return target - current;
     }
 }
