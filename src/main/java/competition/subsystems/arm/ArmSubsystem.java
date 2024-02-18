@@ -15,7 +15,6 @@ import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
 import xbot.common.math.MathUtils;
-import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -45,7 +44,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double armMotorRightRevolutionOffset;
     public final DoubleProperty armMotorRevolutionLimit;
     public final DoubleProperty armAbsoluteEncoderOffset;
-    public final DoubleProperty armAbsoluteEncoderTicksPerDegree;
+    public final DoubleProperty armAbsoluteEncoderRevolutionsPerArmDegree;
     public final DoubleProperty softUpperLimit;
     public final DoubleProperty softLowerLimit;
     public final DoubleProperty softUpperLimitSpeed;
@@ -103,16 +102,15 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
         armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
 
-        // ticksToMmRatio and armMotorRevLimit needs configuration
-        extensionMmPerRevolution = pf.createPersistentProperty("ExtneionMmPerRevolution", 5.715352326);
+        extensionMmPerRevolution = pf.createPersistentProperty("ExtensionMmPerRevolution", 5.715352326);
         armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
 
         angleTrim = pf.createPersistentProperty("AngleTrim", 0);
 
         armAbsoluteEncoderOffset = pf.createPersistentProperty(
                 "ArmAbsoluteEncoderOffset", 0);
-        armAbsoluteEncoderTicksPerDegree = pf.createPersistentProperty(
-                "ArmAbsoluteEncoderTicksPerDegree", 1);
+        armAbsoluteEncoderRevolutionsPerArmDegree = pf.createPersistentProperty(
+                "AbsoluteEncoderRevolutionPerArmDegree", 1);
 
         softLowerLimit = pf.createPersistentProperty(
                 "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
@@ -198,7 +196,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         // First, if we are calibrated, apply a power factor based on the difference between the two
         // arms to make sure they stay in sync
         if (hasCalibratedLeft && hasCalibratedRight) {
-            double distanceLeftAhead = convertTicksToMm(getLeftArmPosition() - getRightArmPosition());
+            double distanceLeftAhead = convertRevolutionsToExtensionMm(getLeftArmPosition() - getRightArmPosition());
 
             // If the left arm is ahead, and the left arm wants to go up/forward, reduce its power.
             // If the left arm is ahead, and the left arm wants to go down/backward, make no change to power.
@@ -316,8 +314,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     // TO-DO
-    public double convertTicksToMm(double ticks) {
-        return extensionMmPerRevolution.get() * ticks;
+    public double convertRevolutionsToExtensionMm(double revolutions) {
+        return extensionMmPerRevolution.get() * revolutions;
     }
 
     public double getArmAngleFromDistance(double distanceFromSpeaker) {
@@ -362,14 +360,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getArmAbsoluteAngle() {
-        return (armAbsoluteEncoder.getPosition() + armAbsoluteEncoderOffset.get()) / armAbsoluteEncoderTicksPerDegree.get();
+        return (armAbsoluteEncoder.getPosition() + armAbsoluteEncoderOffset.get()) / armAbsoluteEncoderRevolutionsPerArmDegree.get();
     }
 
-    public void armEncoderTicksUpdate() {
-        aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
-        aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
-        aKitLog.record("ArmMotorLeftMm", convertTicksToMm(getLeftArmPosition()));
-        aKitLog.record("ArmMotorRightMm", convertTicksToMm(getRightArmPosition()));
+    public void recordArmEncoderValues() {
+        aKitLog.record("LeftExtensionMm", convertRevolutionsToExtensionMm(getLeftArmPosition()));
+        aKitLog.record("RightExtensionMm", convertRevolutionsToExtensionMm(getRightArmPosition()));
         aKitLog.record("ArmAbsoluteEncoderAngle", getArmAbsoluteAngle());
     }
 
@@ -419,7 +415,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getExtensionDistance() {
-        return convertTicksToMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset);
+        return convertRevolutionsToExtensionMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset);
     }
 
     /** 
@@ -465,7 +461,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public void periodic() {
         if (contract.isArmReady()) {
-            armEncoderTicksUpdate();
+            recordArmEncoderValues();
             calibrateArmOffset();
             armMotorLeft.periodic();
             armMotorRight.periodic();
