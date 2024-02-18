@@ -41,6 +41,12 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Double>
     protected void calibratedMachineControlAction() {
         double speed = wheel.getTargetValue();
 
+
+        if (Math.abs(speed) < 0.001) {
+            wheel.setPower(0.0);
+            return;
+        }
+
         if (wheel.isCalibrated()) {
             wheel.setPidSetpoint(speed);
         }

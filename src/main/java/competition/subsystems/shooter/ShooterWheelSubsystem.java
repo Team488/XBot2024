@@ -100,6 +100,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
                     "ShooterFollower");
             this.follower.follow(this.leader, false);
 
+            leader.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            follower.setIdleMode(CANSparkBase.IdleMode.kCoast);
+
             this.leader.setP(defaultShooterPidProperties.p());
             this.leader.setFF(defaultShooterPidProperties.feedForward());
         }
