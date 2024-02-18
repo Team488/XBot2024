@@ -9,6 +9,7 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
 
     private double targetExtension;
     private boolean isRelative = false;
+    
     private final ArmSubsystem armSubsystem;
 
     @Inject
