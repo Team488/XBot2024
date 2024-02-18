@@ -12,6 +12,7 @@ import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.schoocher.commands.StopScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
+import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import xbot.common.injection.swerve.FrontLeftDrive;
 import xbot.common.injection.swerve.FrontRightDrive;
 import xbot.common.injection.swerve.RearLeftDrive;
@@ -48,7 +49,11 @@ public class SubsystemDefaultCommandMap {
     }
 
     @Inject
-    public void setupShooterWheelSubsystem(ShooterWheelSubsystem shooterWheelSubsystem, ShooterWheelMaintainerCommand command) {
+    public void setupShooterWheelSubsystem(ShooterWheelSubsystem shooterWheelSubsystem,
+                                           ShooterWheelMaintainerCommand command,
+                                           WarmUpShooterRPMCommand setToZero) {
         shooterWheelSubsystem.setDefaultCommand(command);
+        setToZero.setTargetRpm(0.0);
+        shooterWheelSubsystem.getSetpointLock().setDefaultCommand(setToZero);
     }
 }
