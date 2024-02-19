@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import competition.commandgroups.DriveToNoteAndIntake;
+import competition.commandgroups.DriveToNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
@@ -56,7 +56,7 @@ public class OperatorCommandMap {
             FireCollectorCommand fireCollectorCommand,
             SetArmAngleCommand armAngle,
             ArmMaintainerCommand armMaintainer,
-            Provider<DriveToNoteAndIntake> driveToNoteAndIntakeGroupProvider
+            Provider<DriveToNoteAndCollectCommandGroup> driveToNoteAndIntakeGroupProvider
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -78,7 +78,7 @@ public class OperatorCommandMap {
         // TODO: bind scoochNote action to a button in operatorGamepad
 
         var driveToNoteAndIntakeGroup = driveToNoteAndIntakeGroupProvider.get();
-        driveToNoteAndIntakeGroup.makeCommand(PoseSubsystem.CenterLine1);
+        driveToNoteAndIntakeGroup.makeCommandWithNotePosition(PoseSubsystem.CenterLine1);
         oi.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(driveToNoteAndIntakeGroup);
     }
     
