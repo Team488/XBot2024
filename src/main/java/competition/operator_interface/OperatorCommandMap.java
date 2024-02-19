@@ -22,7 +22,9 @@ import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
+import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -54,7 +56,10 @@ public class OperatorCommandMap {
             WarmUpShooterCommand shooterWarmUp,
             FireCollectorCommand fireCollectorCommand,
             SetArmAngleCommand armAngle,
-            ArmMaintainerCommand armMaintainer
+            ArmMaintainerCommand armMaintainer,
+            WarmUpShooterCommand warmUpShooterSlow,
+            WarmUpShooterCommand warmUpShooterFast,
+            WarmUpShooterRPMCommand warmUpShooterDifferentialRPM
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -74,6 +79,15 @@ public class OperatorCommandMap {
         var scoochNote = scoocherIntakeProvider.get();
         scoochNote.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
+
+        warmUpShooterSlow.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SAFE);
+        warmUpShooterFast.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
+
+        warmUpShooterDifferentialRPM.setTargetRpm(new ShooterWheelTargetSpeeds(1000, 2000));
+
+        oi.operatorGamepad.getPovIfAvailable(270).whileTrue(warmUpShooterSlow);
+        oi.operatorGamepad.getPovIfAvailable(90).whileTrue(warmUpShooterFast);
+        oi.operatorGamepad.getPovIfAvailable(0).whileTrue(warmUpShooterDifferentialRPM);
     }
     
     // Example for setting up a command to fire when a button is pressed:
@@ -199,7 +213,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadSecond.getXboxButton(XboxButton.X).onTrue(homeArm);
         oi.operatorGamepadSecond.getXboxButton(XboxButton.B).onTrue(highArm);
 
-        oi.operatorGamepadSecond.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
+        oi.operatorGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(

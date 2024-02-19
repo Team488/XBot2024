@@ -15,6 +15,7 @@ import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
+import xbot.common.controls.sensors.XTimer;
 import xbot.common.math.MathUtils;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
@@ -33,28 +34,30 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public ArmState armState;
 
-    public final DoubleProperty extendPower;
-    public final DoubleProperty retractPower;
+    public double extendPower;
+    public double retractPower;
 
-    private final DoubleProperty powerMax;
-    private final DoubleProperty powerMin;
+    public final DoubleProperty powerMax;
+    public final DoubleProperty powerMin;
 
 
     public final DoubleProperty extensionMmPerRevolution; // Millimeters
     private double armMotorLeftRevolutionOffset; // # of revolutions
     private double armMotorRightRevolutionOffset;
-    public final DoubleProperty upperLimitInMm;
+    public final DoubleProperty upperLegalLimitMm;
     public final DoubleProperty absoluteEncoderOffset;
     public final DoubleProperty absoluteEncoderRevolutionsPerArmDegree;
-    public final DoubleProperty softUpperLimitInMm;
-    public final DoubleProperty softLowerLimitInMm;
-    public final DoubleProperty softUpperLimitSpeed;
-    public final DoubleProperty softLowerLimitSpeed;
-    public final DoubleProperty speedLimitForNotCalibrated;
+    public final DoubleProperty upperSlowZoneThresholdMm;
+    public final DoubleProperty lowerSlowZoneThresholdMm;
+    public final DoubleProperty lowerExtremelySlowZoneThresholdMm;
+    public final DoubleProperty upperSlowZonePowerLimit;
+    public final DoubleProperty lowerSlowZonePowerLimit;
+    public final DoubleProperty lowerExtremelySlowZonePowerLimit;
+    public final DoubleProperty powerLimitForNotCalibrated;
     public final DoubleProperty angleTrim;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
-    private final DoubleProperty maximumExtensionDesyncInMm;
+    private final DoubleProperty maximumExtensionDesyncMm;
 
     private double targetExtension;
     private final DoubleProperty overallPowerClampForTesting;
@@ -64,6 +67,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public final MechanismLigament2d armLigament;
     // what angle does the arm make with the pivot when it's at our concept of zero?
     public final double armPivotAngleAtArmAngleZero = 45;
+
+    private double timeSinceNewTarget = -Double.MAX_VALUE;
+    private final DoubleProperty powerRampDurationSec;
+    private boolean powerRampingEnabled = true;
 
     public enum ArmState {
         EXTENDING,
@@ -97,14 +104,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         pf.setPrefix(this);
         this.contract = contract;
         setArmBrakeSolenoid(false);
-        extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
-        retractPower = pf.createPersistentProperty("RetractPower", 0.1);
+        extendPower = 0.1;
+        retractPower = -0.1;
       
-        powerMax = pf.createPersistentProperty("PowerMax", 0.5);
-        powerMin = pf.createPersistentProperty("PowerMin", -0.3);
+        powerMax = pf.createPersistentProperty("PowerMax", 0.45);
+        powerMin = pf.createPersistentProperty("PowerMin", -0.25);
 
         extensionMmPerRevolution = pf.createPersistentProperty("ExtensionMmPerRevolution", 5.715352326);
-        upperLimitInMm = pf.createPersistentProperty("UpperLimitInMm", 250);
+        upperLegalLimitMm = pf.createPersistentProperty("UpperLegalLimitMm", 238);
 
         angleTrim = pf.createPersistentProperty("AngleTrim", 0);
 
@@ -113,18 +120,24 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         absoluteEncoderRevolutionsPerArmDegree = pf.createPersistentProperty(
                 "AbsoluteEncoderRevolutionPerArmDegree", 1);
 
-        softLowerLimitInMm = pf.createPersistentProperty(
-                "SoftLowerLimit", upperLimitInMm.get() * 0.15);
-        softUpperLimitInMm = pf.createPersistentProperty(
-                "SoftUpperLimit", upperLimitInMm.get() * 0.85);
-        softLowerLimitSpeed = pf.createPersistentProperty("SoftLowerLimitSpeed", -0.05);
-        softUpperLimitSpeed = pf.createPersistentProperty("SoftUpperLimitSpeed", 0.10);
+        upperSlowZoneThresholdMm = pf.createPersistentProperty(
+                "UpperSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.85);
+        lowerSlowZoneThresholdMm = pf.createPersistentProperty(
+                "LowerSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.15);
+        lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
+                "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
 
-        speedLimitForNotCalibrated = pf.createPersistentProperty(
-                "SpeedLimitForNotCalibrated", -0.1);
+        upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
+        lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
+        lowerExtremelySlowZonePowerLimit = pf.createPersistentProperty("LowerExtremelySlowZonePowerLimit", -0.02);
 
-        overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.3);
-        maximumExtensionDesyncInMm = pf.createPersistentProperty("MaximumExtensionDesyncInMm", 5);
+        powerLimitForNotCalibrated = pf.createPersistentProperty(
+                "PowerLimitForNotCalibrated", -0.02);
+
+        overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.45);
+        maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 0.5);
+
+        powerRampDurationSec = pf.createPersistentProperty("PowerRampDurationSec", 0.5);
 
         hasCalibratedLeft = false;
         hasCalibratedRight = false;
@@ -149,9 +162,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
             // Enable hardware limits
             armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
-            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
+            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, false);
             armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
-            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
+            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, false);
 
             armMotorLeft.setIdleMode(CANSparkBase.IdleMode.kBrake);
             armMotorRight.setIdleMode(CANSparkBase.IdleMode.kBrake);
@@ -170,10 +183,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
-        if (actualPosition >= softUpperLimitInMm.get()) {
-            power = MathUtils.constrainDouble(power, powerMin.get(), softUpperLimitSpeed.get());
-        } else if (actualPosition <= softLowerLimitInMm.get()) {
-            power = MathUtils.constrainDouble(power, softLowerLimitSpeed.get(), powerMax.get());
+        if (actualPosition >= upperLegalLimitMm.get()) {
+            power = MathUtils.constrainDouble(power, powerMin.get(), 0);
+        } else if (actualPosition >= upperSlowZoneThresholdMm.get()) {
+            power = MathUtils.constrainDouble(power, powerMin.get(), upperSlowZonePowerLimit.get());
+        } else if (actualPosition <= lowerSlowZoneThresholdMm.get() && actualPosition > lowerExtremelySlowZoneThresholdMm.get()) {
+            power = MathUtils.constrainDouble(power, lowerSlowZonePowerLimit.get(), powerMax.get());
+        } else if (actualPosition <= lowerExtremelySlowZoneThresholdMm.get()) {
+            power = MathUtils.constrainDouble(power, lowerExtremelySlowZonePowerLimit.get(), powerMax.get());
         }
         return power;
     }
@@ -213,7 +230,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             // If we have to make any changes to power, do so by a factor proportional to the maximum
             // allowed desync in mm. At 50% of the desync, it would restrict power by 50%.
 
-            double potentialReductionFactor = Math.max(0, 1 - Math.abs(distanceLeftAhead) / maximumExtensionDesyncInMm.get());
+            double potentialReductionFactor = Math.max(0, 1 - Math.abs(distanceLeftAhead) / maximumExtensionDesyncMm.get());
             aKitLog.record("PotentialReductionFactor", potentialReductionFactor);
 
             // If left arm is ahead
@@ -249,7 +266,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         // Next, a sanity check; if we have been grossly misconfigured to where the
         // max/min powers are out of bounds (e.g. a max smaller than min), freeze the arm entirely.
-        if (powerMax.get() < 0 || powerMin.get() > 0 || speedLimitForNotCalibrated.get() > 0) {
+        if (powerMax.get() < 0 || powerMin.get() > 0 || powerLimitForNotCalibrated.get() > 0) {
             armMotorLeft.set(0);
             armMotorRight.set(0);
             if (!unsafeMinOrMax) {
@@ -262,8 +279,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         // If not calibrated, motor can only go down at slow rate since we don't know where we are.
         if (!(hasCalibratedLeft && hasCalibratedRight)) {
-            leftPower = MathUtils.constrainDouble(leftPower, speedLimitForNotCalibrated.get(), 0);
-            rightPower = MathUtils.constrainDouble(rightPower, speedLimitForNotCalibrated.get(), 0);
+            leftPower = MathUtils.constrainDouble(leftPower, powerLimitForNotCalibrated.get(), 0);
+            rightPower = MathUtils.constrainDouble(rightPower, powerLimitForNotCalibrated.get(), 0);
         }
 
         // If calibrated, but near limits, slow the system down a bit so we
@@ -286,6 +303,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         leftPower = MathUtils.constrainDouble(leftPower, powerMin.get(), powerMax.get());
         rightPower = MathUtils.constrainDouble(rightPower, powerMin.get(), powerMax.get());
 
+        // Try to ramp power - a smoother start will definitely help reduce high current shock loads,
+        // and may reduce instability if both sides can get up to "cruise speed" together
+        if (powerRampingEnabled && powerRampDurationSec.get() > 0) {
+            double timeSince = XTimer.getFPGATimestamp() - timeSinceNewTarget;
+            if (timeSince < powerRampDurationSec.get()) {
+                double rampFactor = timeSince / powerRampDurationSec.get();
+                leftPower *= rampFactor;
+                rightPower *= rampFactor;
+            }
+        }
+
         if (contract.isArmReady()) {
             armMotorLeft.set(leftPower);
             armMotorRight.set(rightPower);
@@ -294,10 +322,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     //brake solenoid
     public void setArmBrakeSolenoid(boolean on){armBrakeSolenoid.setOn(on);}
 
+    double previousPower;
+
     @Override
     public void setPower(Double power) {
+
+        if (previousPower == 0 && power != 0) {
+            initializeRampingPowerTarget();
+        }
+
         aKitLog.record("RequestedArmPower", power);
         setPowerToLeftAndRightArms(power, power);
+        previousPower = power;
     }
 
     public void dangerousManualSetPowerToBothArms(double power) {
@@ -306,12 +342,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void extend() {
-        setPower(extendPower.get());
+        setPower(extendPower);
         armState = ArmState.EXTENDING;
     }
 
     public void retract() {
-        setPower(retractPower.get());
+        setPower(retractPower);
         armState = ArmState.RETRACTING;
     }
 
@@ -466,6 +502,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         overallPowerClampForTesting.set(Math.abs(clampPower));
     }
 
+    public void initializeRampingPowerTarget() {
+        timeSinceNewTarget = XTimer.getFPGATimestamp();
+    }
+
+    public void setRampingPowerEnabled(boolean enabled) {
+        powerRampingEnabled = enabled;
+    }
+
     public void periodic() {
         if (contract.isArmReady()) {
             recordArmEncoderValues();
@@ -503,7 +547,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
     }
 
-    public void calibrateArmsManually() {
+    public void markArmsAsCalibratedAgainstLowerPhyscalLimit() {
         hasCalibratedLeft = true;
         armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
         hasCalibratedRight = true;

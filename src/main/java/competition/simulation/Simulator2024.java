@@ -106,7 +106,7 @@ public class Simulator2024 {
         }
 
         // The shooter wheel should pretty much always be in velocity mode.
-        var shooterMockMotor = (MockCANSparkMax)shooter.leader;
+        var shooterMockMotor = (MockCANSparkMax)shooter.upperWheelMotor;
         shooterVelocityCalculator.add(shooterMockMotor.getReference());
         if (shooterMockMotor.getControlType() == CANSparkBase.ControlType.kVelocity) {
             shooterMockMotor.setVelocity(shooterVelocityCalculator.getAverage());
