@@ -106,11 +106,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         extendPower = 0.1;
         retractPower = -0.1;
       
-        powerMax = pf.createPersistentProperty("PowerMax", 0.5);
-        powerMin = pf.createPersistentProperty("PowerMin", -0.3);
+        powerMax = pf.createPersistentProperty("PowerMax", 0.45);
+        powerMin = pf.createPersistentProperty("PowerMin", -0.25);
 
         extensionMmPerRevolution = pf.createPersistentProperty("ExtensionMmPerRevolution", 5.715352326);
-        upperLimitInMm = pf.createPersistentProperty("UpperLimitInMm", 250);
+        upperLimitInMm = pf.createPersistentProperty("UpperLimitInMm", 238);
 
         angleTrim = pf.createPersistentProperty("AngleTrim", 0);
 
@@ -133,8 +133,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         speedLimitForNotCalibrated = pf.createPersistentProperty(
                 "SpeedLimitForNotCalibrated", -0.02);
 
-        overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.3);
-        maximumExtensionDesyncInMm = pf.createPersistentProperty("MaximumExtensionDesyncInMm", 5);
+        overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.45);
+        maximumExtensionDesyncInMm = pf.createPersistentProperty("MaximumExtensionDesyncInMm", 0.5);
 
         powerRampDuration = pf.createPersistentProperty("PowerRampDuration", 0.5);
 
