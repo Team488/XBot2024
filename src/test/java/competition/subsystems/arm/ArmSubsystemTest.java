@@ -47,10 +47,10 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.hasCalibratedLeft = true;
         arm.hasCalibratedRight = true;
 
-        assertNotEquals(arm.extendPower.get(), 0, 0.0001);
+        assertNotEquals(arm.extendPower, 0, 0.0001);
         checkMotorPower(0);
         arm.extend();
-        checkMotorPower(arm.extendPower.get());
+        checkMotorPower(arm.extendPower);
     }
 
 
@@ -59,10 +59,10 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.hasCalibratedLeft = true;
         arm.hasCalibratedRight = true;
 
-        assertNotEquals(arm.retractPower.get(), 0, 0.0001); // Check if retract power == 0
+        assertNotEquals(arm.retractPower, 0, 0.0001); // Check if retract power == 0
         checkMotorPower(0); // Make sure motor not moving
         arm.retract();
-        checkMotorPower(arm.retractPower.get());
+        checkMotorPower(arm.retractPower);
     }
 
 

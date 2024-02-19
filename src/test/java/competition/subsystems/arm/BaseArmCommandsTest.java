@@ -47,12 +47,12 @@ public class BaseArmCommandsTest extends BaseCompetitionTest {
         // Extend
         extend.initialize();
         extend.execute();
-        checkMotorPower(arm.extendPower.get());
+        checkMotorPower(arm.extendPower);
 
         // Retract
         retract.initialize();
         retract.execute();
-        checkMotorPower(arm.retractPower.get());
+        checkMotorPower(arm.retractPower);
 
         // Stop
         stop.initialize();

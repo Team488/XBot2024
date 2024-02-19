@@ -61,8 +61,9 @@ public class NeoTrellisGamepadSubsystem extends BaseSubsystem implements DataFra
 
     @Override
     public void refreshDataFrame() {
-        aKitLog.record("ButtonColors",
-                buttonColors.stream().map(Color8Bit::toHexString).toArray(String[]::new));
+        // Temporarily commenting out, as we are running into issues with too many properties on NetworkTables
+        //aKitLog.record("ButtonColors",
+        //        buttonColors.stream().map(Color8Bit::toHexString).toArray(String[]::new));
     }
 
     /**

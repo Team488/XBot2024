@@ -33,8 +33,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public ArmState armState;
 
-    public final DoubleProperty extendPower;
-    public final DoubleProperty retractPower;
+    public double extendPower;
+    public double retractPower;
 
     private final DoubleProperty powerMax;
     private final DoubleProperty powerMin;
@@ -97,8 +97,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         pf.setPrefix(this);
         this.contract = contract;
         setArmBrakeSolenoid(false);
-        extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
-        retractPower = pf.createPersistentProperty("RetractPower", 0.1);
+        extendPower = 0.1;
+        retractPower = -0.1;
       
         powerMax = pf.createPersistentProperty("PowerMax", 0.5);
         powerMin = pf.createPersistentProperty("PowerMin", -0.3);
@@ -306,12 +306,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void extend() {
-        setPower(extendPower.get());
+        setPower(extendPower);
         armState = ArmState.EXTENDING;
     }
 
     public void retract() {
-        setPower(retractPower.get());
+        setPower(retractPower);
         armState = ArmState.RETRACTING;
     }
 

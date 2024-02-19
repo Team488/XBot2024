@@ -1,8 +1,6 @@
 package competition.subsystems.shooter;
 
 import com.revrobotics.CANSparkBase;
-import edu.wpi.first.wpilibj.DriverStation;
-import org.littletonrobotics.junction.Logger;
 
 import xbot.common.advantage.DataFrameRefreshable;
 import competition.subsystems.pose.PoseSubsystem;
@@ -18,7 +16,7 @@ import javax.inject.Singleton;
 
 
 @Singleton
-public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
+public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTargetSpeeds> implements DataFrameRefreshable {
     public enum TargetRPM {
         SAFE,
         NEARSHOT,
@@ -32,7 +30,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
 
     // IMPORTANT PROPERTIES
-    private double targetRpm;
+    private ShooterWheelTargetSpeeds targetRpms = new ShooterWheelTargetSpeeds(0.0);
     private double trimRpm;
     private final DoubleProperty safeRpm;
     private final DoubleProperty nearShotRpm;
@@ -50,8 +48,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
 
     //DEFINING MOTORS
-    public XCANSparkMax leader;
-    public XCANSparkMax follower;
+    public XCANSparkMax upperWheelMotor;
+    public XCANSparkMax lowerWheelMotor;
 
     // DEFINING CONTRACT
     final ElectricalContract contract;
@@ -94,20 +92,16 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         );
 
         if (contract.isShooterReady()) {
-            this.leader = sparkMaxFactory.create(contract.getShooterMotorLeader(), this.getPrefix(),
+            this.upperWheelMotor = sparkMaxFactory.create(contract.getShooterMotorLeader(), this.getPrefix(),
                     "ShooterMaster", "ShooterWheel", defaultShooterPidProperties);
-            this.follower = sparkMaxFactory.createWithoutProperties(contract.getShooterMotorFollower(), this.getPrefix(),
-                    "ShooterFollower");
-            this.follower.follow(this.leader, false);
+            this.lowerWheelMotor = sparkMaxFactory.create(contract.getShooterMotorFollower(), this.getPrefix(),
+                    "ShooterFollower", "ShooterWheel", defaultShooterPidProperties);
 
-            leader.setIdleMode(CANSparkBase.IdleMode.kCoast);
-            follower.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            upperWheelMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            lowerWheelMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
 
-            leader.setSmartCurrentLimit(75);
-            follower.setSmartCurrentLimit(75);
-
-            this.leader.setP(defaultShooterPidProperties.p());
-            this.leader.setFF(defaultShooterPidProperties.feedForward());
+            upperWheelMotor.setSmartCurrentLimit(75);
+            lowerWheelMotor.setSmartCurrentLimit(75);
         }
     }
 
@@ -138,30 +132,38 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     }
 
     @Override
-    public Double getCurrentValue() {
+    public ShooterWheelTargetSpeeds getCurrentValue() {
         //We want the actual current value from the motor not from the code
         if (contract.isShooterReady()) {
-            return leader.getVelocity();
+            return new ShooterWheelTargetSpeeds(upperWheelMotor.getVelocity(), lowerWheelMotor.getVelocity());
         }
         // DON'T RETURN NULL, OR ROBOT COULD POTENTIALLY CRASH, 0.0 IS SAFER
-        return 0.0;
+        return new ShooterWheelTargetSpeeds();
     }
 
     @Override
-    public Double getTargetValue() {
-        return targetRpm + getTrimRPM();
+    public ShooterWheelTargetSpeeds getTargetValue() {
+        // Include the trim RPM when reporting out the target RPM
+        return new ShooterWheelTargetSpeeds(
+                targetRpms.upperWheelsTargetRPM + getTrimRPM(),
+                targetRpms.lowerWheelsTargetRPM + getTrimRPM());
     }
 
     @Override
-    public void setTargetValue(Double value) {
-        targetRpm = value;
+    public void setTargetValue(ShooterWheelTargetSpeeds value) {
+        targetRpms = value;
         log.info("Target RPM: " + value);
     }
 
+    public void setTargetValue(double value) {
+        setTargetValue(new ShooterWheelTargetSpeeds(value));
+    }
+
     @Override
-    public void setPower(Double power) {
+    public void setPower(ShooterWheelTargetSpeeds power) {
         if (contract.isShooterReady()) {
-            leader.set(power);
+            upperWheelMotor.set(power.upperWheelsTargetRPM);
+            lowerWheelMotor.set(power.upperWheelsTargetRPM);
         }
     }
 
@@ -171,13 +173,13 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
     }
 
     public void resetWheel() {
-        setPower(0.0);
-        setTargetValue(0.0);
+        setPower(new ShooterWheelTargetSpeeds(0.0));
+        setTargetValue(new ShooterWheelTargetSpeeds(0.0));
         resetPID();
     }
 
     public void stopWheel() {
-        setPower(0.0);
+        setPower(new ShooterWheelTargetSpeeds(0.0));
     }
 
 
@@ -196,25 +198,26 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     public void resetPID() {
         if (contract.isShooterReady()) {
-            leader.setIAccum(0);
+            upperWheelMotor.setIAccum(0);
         }
     }
 
     //WAY TO SET THE ACTUAL PID
-    public void setPidSetpoint(double speed) {
+    public void setPidSetpoints(ShooterWheelTargetSpeeds speeds) {
         if (contract.isShooterReady()) {
-            leader.setReference(speed, CANSparkBase.ControlType.kVelocity);
+            upperWheelMotor.setReference(speeds.upperWheelsTargetRPM, CANSparkBase.ControlType.kVelocity);
+            lowerWheelMotor.setReference(speeds.lowerWheelsTargetRPM, CANSparkBase.ControlType.kVelocity);
         }
     }
 
     public void configurePID() {
         if (contract.isShooterReady()) {
-            leader.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
+            upperWheelMotor.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
         }
     }
     public void periodic() {
-        leader.periodic();
-        follower.periodic();
+        upperWheelMotor.periodic();
+        lowerWheelMotor.periodic();
 
         aKitLog.record("TargetRPM", getTargetValue());
         aKitLog.record("CurrentRPM", getCurrentValue());
@@ -223,13 +226,13 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
 
     public void refreshDataFrame() {
         if (contract.isShooterReady()) {
-            leader.refreshDataFrame();
-            follower.refreshDataFrame();
+            upperWheelMotor.refreshDataFrame();
+            lowerWheelMotor.refreshDataFrame();
         }
     }
     
     //returns the RPM based on the distance from the speaker
-    public double getSpeedForRange(){
+    public ShooterWheelTargetSpeeds getSpeedForRange(){
         return converter.getRPMForDistance(pose.getDistanceFromSpeaker());
     }
 }

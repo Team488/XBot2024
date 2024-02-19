@@ -30,7 +30,7 @@ public class WarmUpShooterCommandTest extends BaseCompetitionTest {
         warmUpShooterCommand.execute();
 
         double safeRPM = 500;
-        assertEquals(Optional.ofNullable(shooter.getTargetValue()), Optional.of(safeRPM));
+        assertEquals(Optional.of(safeRPM), Optional.ofNullable(shooter.getTargetValue().upperWheelsTargetRPM));
 
     }
 }
