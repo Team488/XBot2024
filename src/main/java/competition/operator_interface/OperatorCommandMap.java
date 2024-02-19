@@ -213,7 +213,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadSecond.getXboxButton(XboxButton.X).onTrue(homeArm);
         oi.operatorGamepadSecond.getXboxButton(XboxButton.B).onTrue(highArm);
 
-        oi.operatorGamepadSecond.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
+        oi.operatorGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(

@@ -3,8 +3,10 @@ package competition.subsystems.arm.commands;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import xbot.common.command.BaseMaintainerCommand;
+import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.CalibrationDecider;
 import xbot.common.logic.HumanVsMachineDecider;
+import xbot.common.logic.TimeStableValidator;
 import xbot.common.math.MathUtils;
 import xbot.common.math.PIDManager;
 import xbot.common.properties.PropertyFactory;
@@ -15,6 +17,12 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     private final PIDManager positionPid;
     // oi used for human input
     private final OperatorInterface oi;
+
+    boolean startedCalibration = false;
+    boolean givenUpOnCalibration = false;
+    double calibrationStartTime = 0;
+    double calibrationMaxDuration = 5;
+    TimeStableValidator calibrationValidator;
 
     @Inject
     public ArmMaintainerCommand(ArmSubsystem arm, PropertyFactory pf,
@@ -27,7 +35,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         pf.setPrefix(this);
         positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.0125, 0.0, 0);
 
-
+        calibrationValidator = new TimeStableValidator(() -> 0.5);
     }
     @Override
     public void initialize() {
@@ -42,8 +50,62 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     @Override
     protected void calibratedMachineControlAction() {
-        double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
-        arm.setPower(power);
+        // The arms can draw huge currents when trying to move small values, so if we are on target
+        // then we need to kill power. In the future, we could potentially engage the brake here.
+        if (isMaintainerAtGoal()) {
+            arm.setPower(0.0);
+        } else {
+            double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
+            arm.setPower(power);
+        }
+    }
+
+
+
+    @Override
+    protected void uncalibratedMachineControlAction() {
+        aKitLog.record("Started Calibration", startedCalibration);
+        aKitLog.record("Given Up On Calibration", givenUpOnCalibration);
+
+        // Try to auto-calibrate.
+        if (!startedCalibration) {
+            calibrationStartTime = XTimer.getFPGATimestamp();
+            startedCalibration = true;
+        }
+
+        if (calibrationStartTime + calibrationMaxDuration < XTimer.getFPGATimestamp()) {
+            givenUpOnCalibration = true;
+        }
+
+        if (!givenUpOnCalibration) {
+            // Set some tiny small power to get the arm moving down
+            arm.setPower(arm.softTerminalLowerLimitSpeed.get());
+
+            // Are we above 5A usage?
+            boolean stalledCurrent = arm.armMotorLeft.getOutputCurrent() > 5
+                    && arm.armMotorRight.getOutputCurrent() > 5;
+
+            aKitLog.record("StalledCurrent", stalledCurrent);
+
+            // Are the arms still?
+            boolean stillArms = arm.armMotorLeft.getVelocity() < 0.1
+                    && arm.armMotorRight.getVelocity() < 0.1;
+
+            aKitLog.record("StillArms", stillArms);
+
+            boolean stableAtBottom = calibrationValidator.checkStable(stalledCurrent && stillArms);
+
+            if (stableAtBottom) {
+                arm.calibrateArmsHere();
+                // If nobody is currently commanding a setpoint, this will clear the setpoint
+                // so the arms don't move from the 0 position they just calibrated to.
+                // If there is an active setpoint, it will override this quite quickly (example; autonomous trying
+                // to move the arm to a position but has to wait for calibration).
+                arm.setTargetValue(0.0);
+            }
+        } else {
+            humanControlAction();
+        }
     }
 
     @Override

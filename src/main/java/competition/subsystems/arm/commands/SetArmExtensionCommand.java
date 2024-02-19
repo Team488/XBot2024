@@ -33,6 +33,7 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
         } else {
             armSubsystem.setTargetValue(targetExtension);
         }
+        armSubsystem.initializeRampingPowerTarget();
     }
 
     @Override
