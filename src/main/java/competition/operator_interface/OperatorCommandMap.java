@@ -9,7 +9,9 @@ import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
+import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
+import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
@@ -176,6 +178,34 @@ public class OperatorCommandMap {
                 .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
         oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+    }
+
+    @Inject
+    public void setupArmPIDCommands(
+            OperatorInterface oi,
+            Provider<SetArmExtensionCommand> commandProvider,
+            CalibrateArmsManuallyCommand calibrateArmsManuallyCommand) {
+        var homeArm = commandProvider.get();
+        homeArm.setTargetExtension(0);
+
+        var highArm = commandProvider.get();
+        highArm.setTargetExtension(150);
+
+        var increaseArm = commandProvider.get();
+        increaseArm.setTargetExtension(20);
+        increaseArm.setRelative(true);
+
+        var decreaseArm = commandProvider.get();
+        decreaseArm.setTargetExtension(-20);
+        decreaseArm.setRelative(true);
+
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.A).onTrue(decreaseArm);
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.Y).onTrue(increaseArm);
+
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.X).onTrue(homeArm);
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.B).onTrue(highArm);
+
+        oi.operatorGamepadSecond.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(

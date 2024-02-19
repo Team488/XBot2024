@@ -25,7 +25,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         this.arm = arm;
         this.oi = oi;
         pf.setPrefix(this);
-        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.01, 0.0, 0);
+        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.0125, 0.0, 0);
 
 
     }
@@ -56,7 +56,10 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     @Override
     protected Double getHumanInput() {
-        return MathUtils.deadband(oi.operatorGamepad.getLeftVector().y, oi.getOperatorGamepadTypicalDeadband());
+        return MathUtils.deadband(
+                oi.operatorGamepad.getLeftVector().y,
+                oi.getOperatorGamepadTypicalDeadband(),
+                (x) -> x);
     }
 
     @Override

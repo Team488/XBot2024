@@ -9,6 +9,7 @@ import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -74,23 +75,28 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         // THIS IS HOW MUCH RPM WE CAN TOLERATE (needs testing and is UNIVERSAL)
         acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
 
-
-        // MOTOR RELATED, COULD BE USED LATER
-//        XCANSparkMaxPIDProperties wheelDefaultProps = new XCANSparkMaxPIDProperties();
-//        wheelDefaultProps.p = 0.00008;
-//        wheelDefaultProps.i = 0;
-//        wheelDefaultProps.d = 0;
-//        wheelDefaultProps.feedForward = 0.000185;
-//        wheelDefaultProps.iZone = 200;
-//        wheelDefaultProps.maxOutput = 1;
-//        wheelDefaultProps.minOutput = -1;
+        XCANSparkMaxPIDProperties defaultShooterPidProperties = new XCANSparkMaxPIDProperties(
+                0.0007,
+                0.0,
+                0.0,
+                0.0,
+                0.00019,
+                1,
+                -1
+        );
 
         if (contract.isShooterReady()) {
             this.leader = sparkMaxFactory.create(contract.getShooterMotorLeader(), this.getPrefix(),
-                    "ShooterMaster", null);
-            this.follower = sparkMaxFactory.create(contract.getShooterMotorFollower(), this.getPrefix(),
-                    "ShooterFollower", null);
-            this.follower.follow(this.leader, true);
+                    "ShooterMaster", "ShooterWheel", defaultShooterPidProperties);
+            this.follower = sparkMaxFactory.createWithoutProperties(contract.getShooterMotorFollower(), this.getPrefix(),
+                    "ShooterFollower");
+            this.follower.follow(this.leader, false);
+
+            leader.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            follower.setIdleMode(CANSparkBase.IdleMode.kCoast);
+
+            this.leader.setP(defaultShooterPidProperties.p());
+            this.leader.setFF(defaultShooterPidProperties.feedForward());
         }
     }
 
@@ -196,6 +202,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<Double> impleme
         }
     }
     public void periodic() {
+        leader.periodic();
+        follower.periodic();
+
         aKitLog.record("TargetRPM", getTargetValue());
         aKitLog.record("CurrentRPM", getCurrentValue());
         aKitLog.record("TrimRPM", getTrimRPM());
