@@ -17,7 +17,7 @@ public class CalibrateArmsManuallyCommand extends BaseCommand {
 
     @Override
     public void initialize() {
-        armSubsystem.calibrateArmsHere();
+        armSubsystem.markArmsAsCalibratedAgainstLowerPhyscalLimit();
     }
 
     @Override

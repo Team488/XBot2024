@@ -19,6 +19,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         super.setUp();
         arm = getInjectorComponent().armSubsystem();
         arm.setClampLimit(1.0);
+        arm.setRampingPowerEnabled(false);
     }
 
     private void checkMotorPower(double leftPower, double rightPower) {
@@ -46,7 +47,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         // Assuming arm motors has already calibrated
         arm.hasCalibratedLeft = true;
         arm.hasCalibratedRight = true;
-        arm.calibrateArmsHere();
+        arm.markArmsAsCalibratedAgainstLowerPhyscalLimit();
 
         ((MockCANSparkMax)arm.armMotorLeft).setPosition(20);
         ((MockCANSparkMax)arm.armMotorRight).setPosition(20);
@@ -62,7 +63,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     public void testRetract() {
         arm.hasCalibratedLeft = true;
         arm.hasCalibratedRight = true;
-        arm.calibrateArmsHere();
+        arm.markArmsAsCalibratedAgainstLowerPhyscalLimit();
 
         ((MockCANSparkMax)arm.armMotorLeft).setPosition(20);
         ((MockCANSparkMax)arm.armMotorRight).setPosition(20);
@@ -126,7 +127,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
         // Attempt to move backward but should only be moving at -0.1
         arm.setPower(-0.3);
-        checkMotorPower(arm.softTerminalLowerLimitSpeed.get());
+        checkMotorPower(arm.lowerExtremelySlowZonePowerLimit.get());
 
         // Reverse limit hit (Usually you only get here for calibration)
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);

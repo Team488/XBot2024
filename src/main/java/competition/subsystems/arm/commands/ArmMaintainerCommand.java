@@ -23,6 +23,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     double calibrationStartTime = 0;
     double calibrationMaxDuration = 5;
     TimeStableValidator calibrationValidator;
+    final double calibrationStallDurationSec = 0.5;
 
     @Inject
     public ArmMaintainerCommand(ArmSubsystem arm, PropertyFactory pf,
@@ -35,7 +36,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         pf.setPrefix(this);
         positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.0125, 0.0, 0);
 
-        calibrationValidator = new TimeStableValidator(() -> 0.5);
+        calibrationValidator = new TimeStableValidator(() -> calibrationStallDurationSec);
     }
     @Override
     public void initialize() {
@@ -79,7 +80,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
         if (!givenUpOnCalibration) {
             // Set some tiny small power to get the arm moving down
-            arm.setPower(arm.softTerminalLowerLimitSpeed.get());
+            arm.setPower(arm.lowerExtremelySlowZonePowerLimit.get());
 
             // Are we above 5A usage?
             boolean stalledCurrent = arm.armMotorLeft.getOutputCurrent() > 5
@@ -96,12 +97,12 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
             boolean stableAtBottom = calibrationValidator.checkStable(stalledCurrent && stillArms);
 
             if (stableAtBottom) {
-                arm.calibrateArmsHere();
+                arm.markArmsAsCalibratedAgainstLowerPhyscalLimit();
                 // If nobody is currently commanding a setpoint, this will clear the setpoint
                 // so the arms don't move from the 0 position they just calibrated to.
                 // If there is an active setpoint, it will override this quite quickly (example; autonomous trying
                 // to move the arm to a position but has to wait for calibration).
-                arm.setTargetValue(0.0);
+                arm.setTargetValue(arm.getCurrentValue());
             }
         } else {
             humanControlAction();
