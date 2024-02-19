@@ -34,5 +34,9 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
         // No-op. Set angle for maintainer to move arms to.
     }
 
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 
 }
