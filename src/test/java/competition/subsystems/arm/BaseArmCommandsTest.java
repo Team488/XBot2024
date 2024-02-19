@@ -52,7 +52,7 @@ public class BaseArmCommandsTest extends BaseCompetitionTest {
         // Retract
         retract.initialize();
         retract.execute();
-        checkMotorPower(arm.retractPower);
+        checkMotorPower(arm.softTerminalLowerLimitSpeed.get());
 
         // Stop
         stop.initialize();

@@ -37,8 +37,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public double extendPower;
     public double retractPower;
 
-    private final DoubleProperty powerMax;
-    private final DoubleProperty powerMin;
+    public final DoubleProperty powerMax;
+    public final DoubleProperty powerMin;
 
 
     public final DoubleProperty extensionMmPerRevolution; // Millimeters

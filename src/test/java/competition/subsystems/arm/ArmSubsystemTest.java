@@ -39,13 +39,17 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.armMotorLeft.setPosition(position);
         arm.armMotorRight.setPosition(position);
     }
-  
+
 
     @Test
     public void testExtend() {
         // Assuming arm motors has already calibrated
         arm.hasCalibratedLeft = true;
         arm.hasCalibratedRight = true;
+        arm.calibrateArmsHere();
+
+        ((MockCANSparkMax)arm.armMotorLeft).setPosition(20);
+        ((MockCANSparkMax)arm.armMotorRight).setPosition(20);
 
         assertNotEquals(arm.extendPower, 0, 0.0001);
         checkMotorPower(0);
@@ -58,6 +62,10 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     public void testRetract() {
         arm.hasCalibratedLeft = true;
         arm.hasCalibratedRight = true;
+        arm.calibrateArmsHere();
+
+        ((MockCANSparkMax)arm.armMotorLeft).setPosition(20);
+        ((MockCANSparkMax)arm.armMotorRight).setPosition(20);
 
         assertNotEquals(arm.retractPower, 0, 0.0001); // Check if retract power == 0
         checkMotorPower(0); // Make sure motor not moving
@@ -118,7 +126,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
         // Attempt to move backward but should only be moving at -0.1
         arm.setPower(-0.3);
-        checkMotorPower(-0.1);
+        checkMotorPower(arm.softTerminalLowerLimitSpeed.get());
 
         // Reverse limit hit (Usually you only get here for calibration)
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
@@ -153,8 +161,8 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         arm.setPower(0.3);
         checkMotorPower(0);
 
-        arm.setPower(-0.3);
-        checkMotorPower(-0.3);
+        arm.setPower(arm.powerMin.get());
+        checkMotorPower(arm.powerMin.get());
 
         // Test LimitState: BOTH_LIMITS_HIT (Activates when there is issues...)
         ((MockCANSparkMax)arm.armMotorLeft).setReverseLimitSwitchStateForTesting(true);
