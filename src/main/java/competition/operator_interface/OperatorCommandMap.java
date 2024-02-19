@@ -175,7 +175,10 @@ public class OperatorCommandMap {
     }
 
     @Inject
-    public void setupArmPIDCommands(OperatorInterface oi, Provider<SetArmExtensionCommand> commandProvider, CalibrateArmsManuallyCommand calibrateArmsManuallyCommand) {
+    public void setupArmPIDCommands(
+            OperatorInterface oi,
+            Provider<SetArmExtensionCommand> commandProvider,
+            CalibrateArmsManuallyCommand calibrateArmsManuallyCommand) {
         var homeArm = commandProvider.get();
         homeArm.setTargetExtension(0);
 
