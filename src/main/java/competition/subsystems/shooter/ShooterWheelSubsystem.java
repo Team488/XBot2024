@@ -8,6 +8,7 @@ import xbot.common.command.BaseSetpointSubsystem;
 import competition.electrical_contract.ElectricalContract;
 import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
+import xbot.common.math.DoubleInterpolator;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -18,7 +19,7 @@ import javax.inject.Singleton;
 @Singleton
 public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTargetSpeeds> implements DataFrameRefreshable {
     public enum TargetRPM {
-        SAFE,
+        SUBWOOFER,
         NEARSHOT,
         DISTANCESHOT,
         AMP_SHOT
@@ -27,6 +28,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     //need pose for real time calculations
     PoseSubsystem pose;
     ShooterDistanceToRpmConverter converter;
+
+    DoubleInterpolator upperWheelDistanceToRpmInterpolator;
+    DoubleInterpolator lowerWheelDistanceToRpmInterpolator;
 
 
     // IMPORTANT PROPERTIES
@@ -40,12 +44,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
     private final DoubleProperty acceptableToleranceRPM;
-
-
-
-
-
-
 
     //DEFINING MOTORS
     public XCANSparkMax upperWheelMotor;
@@ -103,11 +101,18 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             upperWheelMotor.setSmartCurrentLimit(75);
             lowerWheelMotor.setSmartCurrentLimit(75);
         }
+
+        var distanceArray =      new double[]{0,    36,   49.5, 63,   80,   111,  136};
+        var upperWheelRPMArray = new double[]{4000, 4000, 4000, 4000, 4000, 4000, 4500};
+        var lowerWheelRPMArray = new double[]{4000, 4000, 4000, 4000, 4000, 4000, 4500};
+
+        upperWheelDistanceToRpmInterpolator = new DoubleInterpolator(distanceArray, upperWheelRPMArray);
+        lowerWheelDistanceToRpmInterpolator = new DoubleInterpolator(distanceArray, lowerWheelRPMArray);
     }
 
     public void setTargetRPM(TargetRPM target) {
         switch (target) {
-            case SAFE -> setTargetValue(safeRpm.get());
+            case SUBWOOFER -> setTargetValue(safeRpm.get());
             case NEARSHOT -> setTargetValue(nearShotRpm.get());
             case DISTANCESHOT -> setTargetValue(distanceShotRpm.get());
             case AMP_SHOT -> setTargetValue(ampShotRpm.get());
@@ -215,6 +220,16 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             upperWheelMotor.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
         }
     }
+
+    //returns the RPM based on the distance from the speaker
+    public ShooterWheelTargetSpeeds getSpeedForRange(){
+        double distanceFromSpeaker = pose.getDistanceFromSpeaker();
+        return new ShooterWheelTargetSpeeds(
+                upperWheelDistanceToRpmInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker),
+                lowerWheelDistanceToRpmInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker)
+        );
+    }
+
     public void periodic() {
         upperWheelMotor.periodic();
         lowerWheelMotor.periodic();
@@ -229,11 +244,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             upperWheelMotor.refreshDataFrame();
             lowerWheelMotor.refreshDataFrame();
         }
-    }
-    
-    //returns the RPM based on the distance from the speaker
-    public ShooterWheelTargetSpeeds getSpeedForRange(){
-        return converter.getRPMForDistance(pose.getDistanceFromSpeaker());
     }
 }
 

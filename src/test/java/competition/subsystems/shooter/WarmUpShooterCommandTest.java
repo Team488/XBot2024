@@ -24,7 +24,7 @@ public class WarmUpShooterCommandTest extends BaseCompetitionTest {
 
     @Test
     public void testSetTargetRPM() {
-        Supplier<ShooterWheelSubsystem.TargetRPM> safeRPMSupplier = ()->ShooterWheelSubsystem.TargetRPM.SAFE;
+        Supplier<ShooterWheelSubsystem.TargetRPM> safeRPMSupplier = ()->ShooterWheelSubsystem.TargetRPM.SUBWOOFER;
         warmUpShooterCommand.setTargetRpm(safeRPMSupplier);
         warmUpShooterCommand.initialize();
         warmUpShooterCommand.execute();

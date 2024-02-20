@@ -30,7 +30,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                                 HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory,
                                 PIDManager.PIDManagerFactory pidf,
                                 CalibrationDecider.CalibrationDeciderFactory calf, OperatorInterface oi){
-        super(arm, pf, hvmFactory, 1, .001);
+        super(arm, pf, hvmFactory, 1, 0.5);
         this.arm = arm;
         this.oi = oi;
         pf.setPrefix(this);
@@ -120,7 +120,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     @Override
     protected Double getHumanInput() {
         return MathUtils.deadband(
-                oi.operatorGamepad.getLeftVector().y,
+                oi.operatorFundamentalsGamepad.getLeftVector().y,
                 oi.getOperatorGamepadTypicalDeadband(),
                 (x) -> x);
     }
