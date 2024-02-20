@@ -123,7 +123,9 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     @Override
     protected void humanControlAction() {
         // Disable the brake before letting the human take over.
-        arm.setBrakeEnabled(false);
+        if (dynamicBrakingEnabled) {
+            arm.setBrakeEnabled(false);
+        }
         super.humanControlAction();
     }
 
