@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XDoubleSolenoid;
 import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
 import xbot.common.controls.sensors.XTimer;
@@ -29,7 +30,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
-    public XSolenoid armBrakeSolenoid;
+    public XDoubleSolenoid armBrakeSolenoid;
     public XSparkAbsoluteEncoder armAbsoluteEncoder;
     public final ElectricalContract contract;
 
@@ -98,15 +99,20 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
-                        XSolenoid.XSolenoidFactory xSolenoidFactory,
+                        XDoubleSolenoid.XDoubleSolenoidFactory doubleSolenoidFactory,
+                        XSolenoid.XSolenoidFactory solenoidFactory,
                         ElectricalContract contract, PoseSubsystem pose) {
+
         this.pose = pose;
 
-        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
+        armBrakeSolenoid = doubleSolenoidFactory.create(
+                solenoidFactory.create(contract.getBrakeSolenoidForward().channel),
+                solenoidFactory.create(contract.getBrakeSolenoidReverse().channel));
+
         // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
         this.contract = contract;
-        setArmBrakeSolenoid(false);
+        setBrakeEnabled(false);
         extendPower = 0.1;
         retractPower = -0.1;
       
@@ -327,7 +333,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         }
     }
     //brake solenoid
-    public void setArmBrakeSolenoid(boolean on){armBrakeSolenoid.setOn(on);}
+    public void setBrakeEnabled(boolean enabled) {
+        if (enabled) {
+            armBrakeSolenoid.setForward();
+        } else {
+            armBrakeSolenoid.setReverse();
+        }
+    }
 
     double previousPower;
 
