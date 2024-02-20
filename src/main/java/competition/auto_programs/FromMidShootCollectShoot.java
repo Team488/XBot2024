@@ -38,7 +38,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         this.autoSelector = autoSelector;
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                PoseSubsystem.SubwooferCentralScoringLocation);
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Shoot the pre-loaded note from the subwoofer
