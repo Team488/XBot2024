@@ -24,12 +24,12 @@ public class WarmUpShooterRPMCommandTest extends BaseCompetitionTest {
 
     @Test
     public void testSetTargetRPM() {
-        Supplier<Double> randomRPM = ()->(Double)100.0;
+        Supplier<ShooterWheelTargetSpeeds> randomRPM = ()-> new ShooterWheelTargetSpeeds(100.0);
         warmUpShooterRPMCommand.setTargetRpm(randomRPM);
         warmUpShooterRPMCommand.initialize();
         warmUpShooterRPMCommand.execute();
 
-        assertEquals(Optional.ofNullable(shooter.getTargetValue()), Optional.of(100.0));
+        assertEquals(Optional.of(100.0), Optional.ofNullable(shooter.getTargetValue().lowerWheelsTargetRPM));
 
     }
 }

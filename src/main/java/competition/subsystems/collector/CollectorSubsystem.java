@@ -1,5 +1,6 @@
 package competition.subsystems.collector;
 
+import com.revrobotics.CANSparkBase;
 import competition.electrical_contract.ElectricalContract;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -40,18 +41,20 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         this.contract = electricalContract;
         if (contract.isCollectorReady()) {
             this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+            collectorMotor.setSmartCurrentLimit(40);
+            collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
         } else {
             this.collectorMotor = null;
         }
 
-        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio());
-        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio());
+        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio(), this.getPrefix());
+        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
-        intakePower = pf.createPersistentProperty("intakePower",0.1);
-        ejectPower = pf.createPersistentProperty("ejectPower",-0.1);
+        intakePower = pf.createPersistentProperty("intakePower",0.8);
+        ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
-        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 0.5);
+        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
         this.intakeState = IntakeState.STOPPED;
     }
 
