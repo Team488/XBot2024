@@ -22,6 +22,7 @@ public class FireWhenReadyCommand extends BaseCommand {
     @Inject
     public FireWhenReadyCommand(ShooterWheelSubsystem wheel, ArmSubsystem arm, CollectorSubsystem collector,
                                 PropertyFactory pf) {
+        addRequirements(collector);
         this.wheel = wheel;
         this.arm = arm;
         this.collector = collector;
@@ -57,6 +58,12 @@ public class FireWhenReadyCommand extends BaseCommand {
 
     @Override
     public boolean isFinished() {
-        return hasFired && XTimer.getFPGATimestamp() + waitTimeAfterFiring.get() >= timeWhenFired;
+        return hasFired && timeWhenFired + waitTimeAfterFiring.get() <= XTimer.getFPGATimestamp();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        log.info("Ending");
+        super.end(interrupted);
     }
 }

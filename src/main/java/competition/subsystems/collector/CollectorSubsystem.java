@@ -1,5 +1,6 @@
 package competition.subsystems.collector;
 
+import com.revrobotics.CANSparkBase;
 import competition.electrical_contract.ElectricalContract;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -41,6 +42,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         if (contract.isCollectorReady()) {
             this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
             collectorMotor.setSmartCurrentLimit(40);
+            collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
         } else {
             this.collectorMotor = null;
         }

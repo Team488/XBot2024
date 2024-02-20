@@ -16,6 +16,7 @@ import xbot.common.controls.actuators.XCANSparkMax;
 import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
 import xbot.common.controls.sensors.XTimer;
+import xbot.common.math.DoubleInterpolator;
 import xbot.common.math.MathUtils;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
@@ -88,10 +89,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public enum UsefulArmPosition {
         STARTING_POSITION,
         COLLECTING_FROM_GROUND,
-        FIRING_FROM_SPEAKER_FRONT,
-        FIRING_IN_AMP,
+        FIRING_FROM_SUBWOOFER,
+        FIRING_FROM_AMP,
         SCOOCH_NOTE
     }
+
+    private DoubleInterpolator speakerDistanceToExtensionInterpolator;
 
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
@@ -166,8 +169,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
             armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, false);
 
-            armMotorLeft.setIdleMode(CANSparkBase.IdleMode.kBrake);
-            armMotorRight.setIdleMode(CANSparkBase.IdleMode.kBrake);
+            armMotorLeft.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            armMotorRight.setIdleMode(CANSparkBase.IdleMode.kCoast);
         }
 
         this.armState = ArmState.STOPPED;
@@ -180,6 +183,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             .append(new MechanismLigament2d("box-top", 2, 90))
             .append(new MechanismLigament2d("box-left", 1, 90));
 
+        speakerDistanceToExtensionInterpolator =
+                new DoubleInterpolator(
+                        new double[]{0, 36, 49.5, 63, 80, 111, 136},
+                        new double[]{0, 0,  20.0, 26, 41, 57,  64});
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
@@ -374,12 +381,32 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             // THESE ARE ALL PLACEHOLDER VALUES!!!
             case STARTING_POSITION -> angle = 40;
             case COLLECTING_FROM_GROUND -> angle = 0;
-            case FIRING_FROM_SPEAKER_FRONT -> angle = 30;
-            case FIRING_IN_AMP -> angle = 80;
+            case FIRING_FROM_SUBWOOFER -> angle = 30;
+            case FIRING_FROM_AMP -> angle = 80;
             case SCOOCH_NOTE -> angle = 60; // placeholder value, safe angle to let note through while still low
             default -> angle = 40;
         }
         return angle;
+    }
+
+    public double getUsefulArmPositionExtensionInMm(UsefulArmPosition usefulArmPosition) {
+        double extension = 0;
+        switch (usefulArmPosition) {
+            case STARTING_POSITION:
+            case COLLECTING_FROM_GROUND:
+            case FIRING_FROM_SUBWOOFER:
+                extension = 0;
+                break;
+            case FIRING_FROM_AMP:
+                extension = upperLegalLimitMm.get();
+                break;
+            case SCOOCH_NOTE:
+                extension = 15;
+                break;
+            default:
+                return 0;
+        }
+        return extension;
     }
 
 
@@ -510,6 +537,21 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         powerRampingEnabled = enabled;
     }
 
+    public double getAngleFromRange() {
+        return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
+    }
+
+    public void markArmsAsCalibratedAgainstLowerPhyscalLimit() {
+        hasCalibratedLeft = true;
+        armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
+        hasCalibratedRight = true;
+        armMotorRightRevolutionOffset = -armMotorRight.getPosition();
+    }
+
+    public double getRecommendedExtension(double distanceFromSpeaker) {
+        return speakerDistanceToExtensionInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker);
+    }
+
     public void periodic() {
         if (contract.isArmReady()) {
             recordArmEncoderValues();
@@ -541,16 +583,5 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.refreshDataFrame();
             armAbsoluteEncoder.refreshDataFrame();
         }
-    }
-
-    public double getAngleFromRange() {
-        return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
-    }
-
-    public void markArmsAsCalibratedAgainstLowerPhyscalLimit() {
-        hasCalibratedLeft = true;
-        armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
-        hasCalibratedRight = true;
-        armMotorRightRevolutionOffset = -armMotorRight.getPosition();
     }
 }

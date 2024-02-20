@@ -14,7 +14,7 @@ public class PrepareToFireAtAmpCommandGroup extends ParallelCommandGroup {
     public PrepareToFireAtAmpCommandGroup(SetArmAngleCommand armAngle,
                                           WarmUpShooterCommand shooter) {
         // Move arm to preset position
-        armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.FIRING_IN_AMP);
+        armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP);
         this.addCommands(armAngle);
         // Set shooter wheels to target RPM
         shooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
