@@ -3,11 +3,14 @@ package competition.subsystems.arm.commands;
 import competition.subsystems.arm.ArmSubsystem;
 import xbot.common.command.BaseSetpointCommand;
 
-public class DefaultToCurrentPositionCommand extends BaseSetpointCommand {
+import javax.inject.Inject;
+
+public class SetArmTargetToCurrentPositionCommand extends BaseSetpointCommand {
 
     ArmSubsystem arm;
 
-    public DefaultToCurrentPositionCommand(ArmSubsystem arm) {
+    @Inject
+    public SetArmTargetToCurrentPositionCommand(ArmSubsystem arm) {
         super(arm);
         this.arm = arm;
     }

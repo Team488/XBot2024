@@ -5,8 +5,7 @@ import javax.inject.Singleton;
 
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
-import competition.subsystems.arm.commands.DefaultToCurrentPositionCommand;
-import competition.subsystems.arm.commands.StopArmCommand;
+import competition.subsystems.arm.commands.SetArmTargetToCurrentPositionCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.schoocher.ScoocherSubsystem;
@@ -15,11 +14,6 @@ import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
-import xbot.common.injection.swerve.FrontLeftDrive;
-import xbot.common.injection.swerve.FrontRightDrive;
-import xbot.common.injection.swerve.RearLeftDrive;
-import xbot.common.injection.swerve.RearRightDrive;
-import xbot.common.injection.swerve.SwerveComponent;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.SwerveDriveWithJoysticksCommand;
 
@@ -40,9 +34,9 @@ public class SubsystemDefaultCommandMap {
     @Inject
     public void setupArmSubsystem(ArmSubsystem armSubsystem,
                                   ArmMaintainerCommand command,
-                                  DefaultToCurrentPositionCommand defaultToCurrentPositionCommand) {
+                                  SetArmTargetToCurrentPositionCommand setArmTargetToCurrentPositionCommand) {
         armSubsystem.setDefaultCommand(command);
-        armSubsystem.getSetpointLock().setDefaultCommand(defaultToCurrentPositionCommand);
+        armSubsystem.getSetpointLock().setDefaultCommand(setArmTargetToCurrentPositionCommand);
     }
     @Inject
     public void setupScoocherSubsystem(ScoocherSubsystem scoocherSubsystem, StopScoocherCommand command){
