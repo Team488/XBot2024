@@ -1,6 +1,7 @@
 {
   "NTProvider": {
     "types": {
+      "/AdvantageKit/RealOutputs/ArmSubsystem/Arm2dStateActual": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Scheduler": "Scheduler"
     }

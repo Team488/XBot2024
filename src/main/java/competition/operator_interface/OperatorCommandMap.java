@@ -18,6 +18,7 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -114,7 +115,8 @@ public class OperatorCommandMap {
             Provider<SwerveSimpleTrajectoryCommand> swerveCommandProvider,
             SetRobotHeadingCommand resetHeading,
             DynamicOracle oracle,
-            DriveSubsystem drive
+            DriveSubsystem drive,
+            DriveToGivenNoteCommand driveToGivenNoteCommand
             )
     {
         double typicalVelocity = 2.5;
@@ -122,7 +124,7 @@ public class OperatorCommandMap {
         resetHeading.setHeadingToApply(0);
         var teleportRobot = pose.createSetPositionCommand(new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0)));
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
 
         var noviceMode = new InstantCommand(() -> drive.setNoviceMode(true));
@@ -175,6 +177,9 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
+
+        driveToGivenNoteCommand.setNote(PoseSubsystem.CenterLine5);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToGivenNoteCommand);
 
     }
 
