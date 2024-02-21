@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
 
     DynamicOracle oracle;
-    Pose2d note;
+    DriveSubsystem drive;
 
     @Inject
     public DriveToGivenNoteCommand(DriveSubsystem drive, DynamicOracle oracle,
@@ -24,6 +24,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
                                    HeadingModule.HeadingModuleFactory headingModuleFactory) {
         super(drive, pose, pf, headingModuleFactory);
         this.oracle = oracle;
+        this.drive = drive;
     }
 
     @Override
@@ -31,7 +32,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                note,10));
+                drive.getTargetNote(),10));
         // when driving to a note, the robot must face backwards, as the robot's intake is on the back
         this.logic.setKeyPoints(swervePoints);
         this.logic.setAimAtGoalDuringFinalLeg(true);
@@ -53,7 +54,4 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         return super.isFinished();
     }
 
-    public void setNote(Pose2d note) {
-        this.note = note;
-    }
 }

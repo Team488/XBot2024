@@ -17,17 +17,15 @@ public class CollectSequenceCommandGroup extends ParallelDeadlineGroup {
 
     @Inject
     public CollectSequenceCommandGroup(IntakeUntilNoteCollectedCommand intakeUntilNoteCollectedCommand,
-                                       WaitForNoteCollectedCommand waitForNoteCollectedCommand,
                                        Provider<SetArmAngleCommand> setArmAngleProvider,
                                        Provider<WarmUpShooterCommand> warmUpShooterCommandProvider) {
-        super(waitForNoteCollectedCommand);
+        super(intakeUntilNoteCollectedCommand);
 
-        // when intaking, shooter should always be stopped
         var stopShooter = warmUpShooterCommandProvider.get();
         stopShooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.STOP);
         var armToIntakingPosition = setArmAngleProvider.get();
         armToIntakingPosition.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
-        this.addCommands(stopShooter.alongWith(armToIntakingPosition).alongWith(intakeUntilNoteCollectedCommand));
+        this.addCommands(stopShooter, armToIntakingPosition, intakeUntilNoteCollectedCommand);
     }
 }

@@ -5,6 +5,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.auto_programs.FromMidShootCollectShoot;
+import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
@@ -18,7 +19,6 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -116,7 +116,7 @@ public class OperatorCommandMap {
             SetRobotHeadingCommand resetHeading,
             DynamicOracle oracle,
             DriveSubsystem drive,
-            DriveToGivenNoteCommand driveToGivenNoteCommand
+            DriveToGivenNoteAndCollectCommandGroup driveToGivenNoteAndCollectCommandGroup
             )
     {
         double typicalVelocity = 2.5;
@@ -178,8 +178,8 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
 
-        driveToGivenNoteCommand.setNote(PoseSubsystem.CenterLine5);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToGivenNoteCommand);
+        drive.setTargetNote(PoseSubsystem.CenterLine3);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToGivenNoteAndCollectCommandGroup);
 
     }
 
