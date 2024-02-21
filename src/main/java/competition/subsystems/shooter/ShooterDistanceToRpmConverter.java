@@ -3,6 +3,7 @@ package competition.subsystems.shooter;
 public class ShooterDistanceToRpmConverter {
     //IMPORTANT: BOTH ARRAYS NEED TO BE ORDERED IN INCREASING ORDER, EACH ELEMENT AT EACH INDEX CORRESPONDS TO THE SAME INDEX IN THE OTHER ARRAY
     //THINK OF IT LIKE A COORDINATE PAIR: rpmForDistance[0] has the RPM needed for the distance in distancesFromSpeaker[0]
+    //TODO: Remember to fill out these arrays! (Empty array will prevent shooter from calculating the right distance and shooting, speed will be set to 0)
     double[] distancesFromSpeaker = {};
     //the values inputted here NEED TO BE TESTED ON THE ACTUAL ROBOT SHOOTER
     double[] rpmForDistance = {};
@@ -26,29 +27,29 @@ public class ShooterDistanceToRpmConverter {
 
 
     //estimates the RPM we need to fire at our distance based on prerecorded data
-    public double getRPMForDistance(double distanceFromSpeaker) {
+    public ShooterWheelTargetSpeeds getRPMForDistance(double distanceFromSpeaker) {
         double secantLineSlope;
         double yIntercept;
 
         for (int i = 0; i < distancesFromSpeaker.length - 1; i++) {
             //logic to find where currentPosition lies in the array
             if (distancesFromSpeaker[i] == distanceFromSpeaker){
-                return rpmForDistance[i];
+                return new ShooterWheelTargetSpeeds(rpmForDistance[i]);
             }
             //bandage case
             if(distanceFromSpeaker == distancesFromSpeaker[distancesFromSpeaker.length-1]){
-                return rpmForDistance[distancesFromSpeaker.length - 1];
+                return new ShooterWheelTargetSpeeds(rpmForDistance[distancesFromSpeaker.length - 1]);
             }
             else if (distancesFromSpeaker[i] < distanceFromSpeaker && distanceFromSpeaker < distancesFromSpeaker[i + 1]) {
                 //secant line calculator
                 secantLineSlope =
                         (rpmForDistance[i + 1] - rpmForDistance[i]) / (distancesFromSpeaker[i + 1] - distancesFromSpeaker[i]);
                 yIntercept = getYIntercept(secantLineSlope,distancesFromSpeaker[i],rpmForDistance[i]);
-                return secantLineSlope * distanceFromSpeaker + yIntercept;
+                return new ShooterWheelTargetSpeeds(secantLineSlope * distanceFromSpeaker + yIntercept);
             }
         }
         //returns ZERO if our current distance is further than the greatest range tested on the robot
-        return 0;
+        return new ShooterWheelTargetSpeeds(0);
     }
 
     public double[] getRpmForDistanceArray() {

@@ -10,7 +10,10 @@ import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
+import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
+import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
+import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
@@ -22,8 +25,11 @@ import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
+import competition.subsystems.shooter.commands.ContinuouslyWarmUpForSpeakerCommand;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
+import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -44,7 +50,6 @@ public class OperatorCommandMap {
     @Inject
     public OperatorCommandMap() {}
 
-
     @Inject
     public void setupFundamentalCommands(
             OperatorInterface oi,
@@ -53,26 +58,47 @@ public class OperatorCommandMap {
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
             SetArmAngleCommand armAngle,
-            PrepareToFireAtSpeakerCommandGroup prepareToFireAtSpeakerCommandGroup
+            PrepareToFireAtSpeakerCommandGroup prepareToFireAtSpeakerCommandGroup,
+            WarmUpShooterCommand shooterWarmUpSafe,
+            WarmUpShooterCommand shooterWarmUpNear,
+            WarmUpShooterCommand shooterWarmUpFar,
+            WarmUpShooterCommand shooterWarmUpAmp,
+            FireCollectorCommand fireCollectorCommand,
+            ArmMaintainerCommand armMaintainer,
+            WarmUpShooterRPMCommand warmUpShooterDifferentialRPM
     ) {
         // Scooch
-        oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
-        oi.operatorGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
 
         // Collect
-        oi.operatorGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake);
-        oi.operatorGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
 
         // Warms up shooter
-        oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSpeakerCommandGroup);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSpeakerCommandGroup);
 
+        // Fire
+        shooterWarmUpSafe.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        shooterWarmUpNear.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
+        shooterWarmUpFar.setTargetRpm(ShooterWheelSubsystem.TargetRPM.DISTANCESHOT);
+        shooterWarmUpAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
 
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpSafe);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUpNear);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpFar);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Back).whileTrue(shooterWarmUpAmp);
+
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.B).whileTrue(fireCollectorCommand);
 
         // Arms are taken care of via their maintainer & han overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var scoochNote = scoocherIntakeProvider.get();
         scoochNote.alongWith(armAngle);
         // TODO: bind scoochNote action to a button in operatorGamepad
+
+        warmUpShooterDifferentialRPM.setTargetRpm(new ShooterWheelTargetSpeeds(1000, 2000));
+        //oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(warmUpShooterDifferentialRPM);
     }
     
     // Example for setting up a command to fire when a button is pressed:
@@ -185,6 +211,103 @@ public class OperatorCommandMap {
 //                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
 //        oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
 //                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+    }
+
+    @Inject
+    public void setupArmPIDCommands(
+            OperatorInterface oi,
+            Provider<SetArmExtensionCommand> commandProvider,
+            CalibrateArmsManuallyCommand calibrateArmsManuallyCommand) {
+        var homeArm = commandProvider.get();
+        homeArm.setTargetExtension(0);
+
+        var highArm = commandProvider.get();
+        highArm.setTargetExtension(150);
+
+        var increaseArmLarge = commandProvider.get();
+        increaseArmLarge.setTargetExtension(20);
+        increaseArmLarge.setRelative(true);
+
+        var increaseArmSmall = commandProvider.get();
+        increaseArmSmall.setTargetExtension(2);
+        increaseArmSmall.setRelative(true);
+
+        var decreaseArmLarge = commandProvider.get();
+        decreaseArmLarge.setTargetExtension(-20);
+        decreaseArmLarge.setRelative(true);
+
+        var decreaseArmSmall = commandProvider.get();
+        decreaseArmSmall.setTargetExtension(-2);
+        decreaseArmSmall.setRelative(true);
+
+        oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(increaseArmLarge);
+        oi.operatorFundamentalsGamepad.getPovIfAvailable(180).whileTrue(decreaseArmLarge);
+        oi.operatorFundamentalsGamepad.getPovIfAvailable(90).whileTrue(increaseArmSmall);
+        oi.operatorFundamentalsGamepad.getPovIfAvailable(270).whileTrue(decreaseArmSmall);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
+    }
+
+    @Inject
+    public void setupAdvancedOperatorCommands(
+            OperatorInterface oi,
+            ArmSubsystem arm,
+            Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
+            IntakeCollectorCommand intakeCollector,
+            EjectCollectorCommand ejectCollector,
+            IntakeScoocherCommand intakeScoocher,
+            EjectScoocherCommand ejectScoocher,
+            Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
+            ContinuouslyPointArmAtSpeakerCommand continuouslyPointArmAtSpeaker,
+            ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeaker,
+            FireWhenReadyCommand fireWhenReady
+    ) {
+        //Useful arm positions
+        var armToCollection = setArmExtensionCommandProvider.get();
+        armToCollection.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
+                ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND));
+
+        var armToScooch = setArmExtensionCommandProvider.get();
+        armToScooch.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
+                ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE));
+
+        var armToSubwoofer = setArmExtensionCommandProvider.get();
+        armToSubwoofer.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
+                ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER));
+
+        var armToAmp = setArmExtensionCommandProvider.get();
+        armToAmp.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
+                ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP));
+
+        // Useful wheel speeds
+        var warmUpShooterSubwoofer = warmUpShooterCommandProvider.get();
+        warmUpShooterSubwoofer.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+
+        var warmUpShooterAmp = warmUpShooterCommandProvider.get();
+        warmUpShooterAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
+
+        // Combine into useful actions
+        // Note manipulation:
+        var collectNote = intakeCollector.alongWith(armToCollection);
+        var scoochNote = intakeScoocher.alongWith(armToScooch);
+
+        // Preparing to score:
+        var prepareToFireAtSubwoofer = warmUpShooterSubwoofer.alongWith(armToSubwoofer);
+        var prepareToFireAtAmp = warmUpShooterAmp.alongWith(armToAmp);
+        var continuouslyPrepareToFireAtSpeaker =
+                continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
+
+        // Bind to buttons
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNote);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
+
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftBumper).whileTrue(scoochNote);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(ejectScoocher);
+
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSubwoofer);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtAmp);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
+
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
