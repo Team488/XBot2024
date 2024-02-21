@@ -73,6 +73,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double timeSinceNewTarget = -Double.MAX_VALUE;
     private final DoubleProperty powerRampDurationSec;
     private boolean powerRampingEnabled = true;
+    private boolean dynamicBrakingEnabled = false;
 
     public enum ArmState {
         EXTENDING,
@@ -333,6 +334,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             rightPower = 0;
         }
 
+        // Engage brake if no power commanded
+        if (leftPower == 0 && rightPower == 0) {
+            setBrakeEnabled(true);
+        } else {
+            // Disengage brake if any power commanded.
+            setBrakeEnabled(false);
+        }
+
         if (contract.isArmReady()) {
             armMotorLeft.set(leftPower);
             armMotorRight.set(rightPower);
@@ -369,6 +378,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void dangerousManualSetPowerToBothArms(double power) {
+        setBrakeEnabled(false);
         armMotorLeft.set(power);
         armMotorRight.set(power);
     }
