@@ -25,11 +25,11 @@ public class FireWhenReadyCommand extends BaseCommand {
         this.wheel = wheel;
         this.arm = arm;
         this.collector = collector;
+        pf.setPrefix(this);
 
         this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
         this.hasFired = false;
 
-        pf.setPrefix(this);
     }
 
     @Override

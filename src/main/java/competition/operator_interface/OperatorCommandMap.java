@@ -4,6 +4,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.auto_programs.ShootThenMoveOutOfLine;
+import competition.commandgroups.FireNoteCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
@@ -20,6 +22,7 @@ import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -49,10 +52,8 @@ public class OperatorCommandMap {
             EjectScoocherCommand scoocherEject,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
-            WarmUpShooterCommand shooterWarmUp,
-            FireCollectorCommand fireCollectorCommand,
             SetArmAngleCommand armAngle,
-            ArmMaintainerCommand armMaintainer
+            PrepareToFireAtSpeakerCommandGroup prepareToFireAtSpeakerCommandGroup
     ) {
         // Scooch
         oi.operatorGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -62,12 +63,12 @@ public class OperatorCommandMap {
         oi.operatorGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake);
         oi.operatorGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
 
-        // Fire
-        shooterWarmUp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
-        oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUp);
-        oi.operatorGamepad.getXboxButton(XboxButton.A).whileTrue(fireCollectorCommand);
+        // Warms up shooter
+        oi.operatorGamepad.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSpeakerCommandGroup);
 
-        // Arms are taken care of via their maintainer & human overrides.
+
+
+        // Arms are taken care of via their maintainer & han overrides.
         armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var scoochNote = scoocherIntakeProvider.get();
         scoochNote.alongWith(armAngle);
@@ -82,7 +83,9 @@ public class OperatorCommandMap {
             Provider<SwerveSimpleTrajectoryCommand> swerveCommandProvider,
             SetRobotHeadingCommand resetHeading,
             DynamicOracle oracle,
-            DriveSubsystem drive
+            DriveSubsystem drive,
+            FireWhenReadyCommand fireWhenReady,
+            FireCollectorCommand fireCollector
             )
     {
         double typicalVelocity = 2.5;
@@ -90,7 +93,7 @@ public class OperatorCommandMap {
         resetHeading.setHeadingToApply(0);
         var teleportRobot = pose.createSetPositionCommand(new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0)));
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
 
         var noviceMode = new InstantCommand(() -> drive.setNoviceMode(true));
@@ -98,6 +101,17 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftStick).onTrue(noviceMode);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightStick).onTrue(expertMode);
+
+        // Launch note from collector to the already warmed up shooterwheel
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady);
+
+
+        /*Used only when we want to manually shoot. For example, if the sensors are broken in game and we want to shoot
+        anyway.
+        */
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
+
+
 
         // Where are some cool places we may want to go..
         // 1) Where there are Notes!
@@ -166,10 +180,11 @@ public class OperatorCommandMap {
         oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
         oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
-        oi.driverGamepad.getXboxButton(XboxButton.LeftBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-        oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
+
+//        oi.driverGamepad.getXboxButton(XboxButton.LeftBumper)
+//                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
+//        oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
+//                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
