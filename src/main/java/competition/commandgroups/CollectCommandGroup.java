@@ -7,17 +7,21 @@ import competition.subsystems.collector.commands.WaitForNoteCollectedCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 public class CollectCommandGroup extends ParallelDeadlineGroup {
 
     @Inject
     public CollectCommandGroup(WaitForNoteCollectedCommand waitForNote,
-                               SetArmAngleCommand setArmAngle,
-                               IntakeUntilNoteCollectedCommand intakeUntilNoteCollectedCommand) {
+                               IntakeUntilNoteCollectedCommand intakeUntilNoteCollectedCommand,
+                               Provider<SetArmAngleCommand> setArmAngleProvider) {
         super(waitForNote);
 
         // move arm to collecting position
-        setArmAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
-        this.addCommands(setArmAngle.alongWith(intakeUntilNoteCollectedCommand));
+        var extendToGround = setArmAngleProvider.get();
+        var reset = setArmAngleProvider.get();
+        extendToGround.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
+        reset.setArmPosition(ArmSubsystem.UsefulArmPosition.STARTING_POSITION);
+        this.addCommands(extendToGround.alongWith(intakeUntilNoteCollectedCommand).andThen(reset));
     }
 }
