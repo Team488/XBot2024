@@ -3,7 +3,6 @@ package competition.subsystems.drive.commands;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
-import edu.wpi.first.math.geometry.Pose2d;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
@@ -32,7 +31,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                drive.getTargetNote(),10));
+                drive.getTargetNote(), 10));
         // when driving to a note, the robot must face backwards, as the robot's intake is on the back
         this.logic.setKeyPoints(swervePoints);
         this.logic.setAimAtGoalDuringFinalLeg(true);
