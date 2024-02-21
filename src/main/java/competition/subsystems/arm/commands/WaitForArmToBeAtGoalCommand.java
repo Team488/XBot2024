@@ -21,7 +21,7 @@ public class WaitForArmToBeAtGoalCommand extends BaseWaitForMaintainerCommand {
     }
     @Override
     public void initialize() {
-        this.startTime = XTimer.getFPGATimestamp();
+        super.initialize();
     }
 
     @Override
