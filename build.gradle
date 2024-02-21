@@ -2,7 +2,7 @@ import edu.wpi.first.gradlerio.deploy.roborio.RoboRIO
 
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2024.2.1"
+    id "edu.wpi.first.GradleRIO" version "2024.3.1"
     id 'checkstyle'
     id 'jacoco'
     id 'org.hidetake.ssh' version "2.9.0"
@@ -58,6 +58,8 @@ repositories {
         url "https://mvnrepository.com/artifact/com.google.dagger/dagger"
         url "https://mvnrepository.com/artifact/com.google.dagger/dagger-compiler"
     }
+
+    maven { url "https://3015rangerrobotics.github.io/pathplannerlib/repo"}
 
     // If the password below ever changes (or install in general changes),
     // See https://github.com/Mechanical-Advantage/AdvantageKit/blob/main/docs/INSTALLATION.md

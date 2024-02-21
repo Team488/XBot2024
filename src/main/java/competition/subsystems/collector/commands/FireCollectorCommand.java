@@ -4,13 +4,13 @@ import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
 
 import javax.inject.Inject;
-
-public class IntakeUntilNoteCollectedCommand extends BaseCommand {
+public class FireCollectorCommand extends BaseCommand{
     CollectorSubsystem collector;
     @Inject
-    public IntakeUntilNoteCollectedCommand(CollectorSubsystem collector) {
+    public FireCollectorCommand(CollectorSubsystem collector){
         this.collector = collector;
         addRequirements(collector);
+
     }
     @Override
     public void initialize() {
@@ -19,10 +19,7 @@ public class IntakeUntilNoteCollectedCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        collector.intake();
+        collector.fire();
     }
-    @Override
-    public boolean isFinished() {
-        return collector.getGamePieceReady();
-    }
+
 }

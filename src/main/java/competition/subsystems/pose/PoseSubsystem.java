@@ -30,6 +30,7 @@ import javax.inject.Singleton;
 
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 
 @Singleton
@@ -52,15 +53,18 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final BooleanProperty allianceAwareFieldProp;
     private final BooleanProperty useVisionForPoseProp;
     private final Latch useVisionToUpdateGyroLatch;
+
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
     public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
-    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5534, new Rotation2d());
+    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
     public static Pose2d CenterLine1 = new Pose2d(8.2956, 7.4584, new Rotation2d());
     public static Pose2d CenterLine2 = new Pose2d(8.2956, 5.7820, new Rotation2d());
     public static Pose2d CenterLine3 = new Pose2d(8.2956, 4.1056, new Rotation2d());
     public static Pose2d CenterLine4 = new Pose2d(8.2956, 2.4292, new Rotation2d());
     public static Pose2d CenterLine5 = new Pose2d(8.2956, 0.7528, new Rotation2d());
+
+    public static Pose2d NearbySource = new Pose2d(14, 1.2, Rotation2d.fromDegrees(0));
 
     public static double closeColumnWidth = 0.254;
     public static double farColumnWidths = 0.3469;
@@ -71,6 +75,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static double SubwooferWidth = 0.95;
     public static double SubwooferHeight = 1.1;
     public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.57);
+
+    public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
+    public static Pose2d SubwooferCentralScoringLocation = new Pose2d(1.41, 5.54, Rotation2d.fromDegrees(0));
 
     private DoubleProperty matchTime;
 
@@ -214,6 +221,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
         return Commands.runOnce(() -> setCurrentPosition(pose));
     }
 
+    public Command createSetPositionCommand(Supplier<Pose2d> poseSupplier) {
+        return Commands.runOnce(() -> setCurrentPosition(poseSupplier.get()));
+    }
+
     private void improveFusedOdometryUsingPhotonLib(Pose2d recentPosition) {
         var photonEstimatedPoses = vision.getPhotonVisionEstimatedPoses(recentPosition);
 
@@ -330,11 +341,21 @@ public class PoseSubsystem extends BasePoseSubsystem {
         return matchTime;
     }
 
+    public double getDistanceFromSpeaker(){
+        double distanceFromSpeakerInMeters;
+
+        distanceFromSpeakerInMeters = getCurrentPose2d().getTranslation().getDistance(
+                PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+        return distanceFromSpeakerInMeters;
+    }
+
     @Override
     public void periodic() {
         super.periodic();
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
     }
-
 }
+
+
+

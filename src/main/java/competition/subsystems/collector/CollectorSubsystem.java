@@ -1,5 +1,6 @@
 package competition.subsystems.collector;
 
+import com.revrobotics.CANSparkBase;
 import competition.electrical_contract.ElectricalContract;
 import competition.electrical_contract.PracticeContract;
 import org.littletonrobotics.junction.Logger;
@@ -22,28 +23,40 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public final DoubleProperty intakePower;
     public final DoubleProperty ejectPower;
     private IntakeState intakeState;
-    private final XDigitalInput noteSensor;
+    private final XDigitalInput inControlNoteSensor;
+    private final XDigitalInput readyToFireNoteSensor;
     private final ElectricalContract contract;
+    private final DoubleProperty firePower;
+    private final DoubleProperty intakePowerInControlMultiplier;
 
 
     public enum IntakeState {
         INTAKING,
         EJECTING,
-        STOPPED
+        STOPPED,
+        FIRING
     }
 
     @Inject
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
-                              PracticeContract contract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
-        this.contract = contract;
-        this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+                              ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
+        this.contract = electricalContract;
+        if (contract.isCollectorReady()) {
+            this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+            collectorMotor.setSmartCurrentLimit(40);
+            collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
+        } else {
+            this.collectorMotor = null;
+        }
 
-        this.noteSensor = xDigitalInputFactory.create(contract.getNoteSensorDio());
+        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio(), this.getPrefix());
+        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
-        intakePower = pf.createPersistentProperty("intakePower",0.1);
-        ejectPower = pf.createPersistentProperty("ejectPower",0.1);
-
+        intakePower = pf.createPersistentProperty("intakePower",0.8);
+        ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
+        firePower = pf.createPersistentProperty("firePower", 1.0);
+        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
         this.intakeState = IntakeState.STOPPED;
     }
 
@@ -51,30 +64,59 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return intakeState;
     }
     public void intake(){
-        collectorMotor.set(intakePower.get());
+        double power = intakePower.get();
+        if (getGamePieceInControl()) {
+            power *= intakePowerInControlMultiplier.get();
+        }
+        setPower(power);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
-        collectorMotor.set(ejectPower.get());
+        setPower(ejectPower.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
-        collectorMotor.set(0);
+        setPower(0);
         intakeState = IntakeState.STOPPED;
     }
+    public void fire(){
+        setPower(firePower.get());
+        intakeState = IntakeState.FIRING;
+    }
 
-    public boolean getGamePieceCollected() {
-        return noteSensor.get();
+    public void setPower(double power) {
+        if (contract.isCollectorReady()) {
+            collectorMotor.set(power);
+        }
+    }
+
+    public boolean getGamePieceInControl() {
+        if (contract.isCollectorReady()) {
+            return inControlNoteSensor.get();
+        }
+        return false;
+    }
+
+    public boolean getGamePieceReady() {
+        if (contract.isCollectorReady()) {
+            return readyToFireNoteSensor.get();
+        }
+        return false;
     }
 
     @Override
     public void periodic() {
-        aKitLog.record("HasGamePiece", getGamePieceCollected());
+        if (contract.isCollectorReady()) {
+            aKitLog.record("HasGamePiece", getGamePieceReady());
+        }
     }
 
     @Override
     public void refreshDataFrame() {
-        collectorMotor.refreshDataFrame();
-        noteSensor.refreshDataFrame();
+        if (contract.isCollectorReady()) {
+            collectorMotor.refreshDataFrame();
+            inControlNoteSensor.refreshDataFrame();
+            readyToFireNoteSensor.refreshDataFrame();
+        }
     }
 }

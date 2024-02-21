@@ -17,7 +17,7 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public boolean isShooterReady() {
-        return false;
+        return true;
     }
 
     @Override
@@ -30,15 +30,15 @@ public class CompetitionContract extends ElectricalContract {
         return true;
     }
 
-    private String getDriveControllerName(SwerveInstance swerveInstance) {
+    protected String getDriveControllerName(SwerveInstance swerveInstance) {
         return "DriveSubsystem/" + swerveInstance.label() + "/Drive";
     }
 
-    private String getSteeringControllerName(SwerveInstance swerveInstance) {
+    protected String getSteeringControllerName(SwerveInstance swerveInstance) {
         return "DriveSubsystem/" + swerveInstance.label() + "/Steering";
     }
 
-    private String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
+    protected String getSteeringEncoderControllerName(SwerveInstance swerveInstance) {
         return "DriveSubsystem/" + swerveInstance.label() + "/SteeringEncoder";
     }
 
@@ -46,13 +46,13 @@ public class CompetitionContract extends ElectricalContract {
     public DeviceInfo getDriveMotor(SwerveInstance swerveInstance) {
         return switch (swerveInstance.label()) {
             case "FrontLeftDrive" ->
-                    new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 39, false, simulationScalingValue);
             case "FrontRightDrive" ->
-                    new DeviceInfo(getDriveControllerName(swerveInstance), 29, false, simulationScalingValue);
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
             case "RearLeftDrive" ->
-                    new DeviceInfo(getDriveControllerName(swerveInstance), 38, false, simulationScalingValue);
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 20, false, simulationScalingValue);
             case "RearRightDrive" ->
-                    new DeviceInfo(getDriveControllerName(swerveInstance), 21, false, simulationScalingValue);
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 29, false, simulationScalingValue);
             default -> null;
         };
     }
@@ -63,13 +63,13 @@ public class CompetitionContract extends ElectricalContract {
 
         return switch (swerveInstance.label()) {
             case "FrontLeftDrive" ->
-                    new DeviceInfo(getSteeringControllerName(swerveInstance), 30, false, simulationScalingValue);
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 38, false, simulationScalingValue);
             case "FrontRightDrive" ->
-                    new DeviceInfo(getSteeringControllerName(swerveInstance), 28, false, simulationScalingValue);
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 30, false, simulationScalingValue);
             case "RearLeftDrive" ->
-                    new DeviceInfo(getSteeringControllerName(swerveInstance), 39, false, simulationScalingValue);
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 21, false, simulationScalingValue);
             case "RearRightDrive" ->
-                    new DeviceInfo(getSteeringControllerName(swerveInstance), 20, false, simulationScalingValue);
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 28, false, simulationScalingValue);
             default -> null;
         };
     }
@@ -80,13 +80,13 @@ public class CompetitionContract extends ElectricalContract {
 
         return switch (swerveInstance.label()) {
             case "FrontLeftDrive" ->
-                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 51, false, simulationScalingValue);
-            case "FrontRightDrive" ->
-                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 52, false, simulationScalingValue);
-            case "RearLeftDrive" ->
-                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 53, false, simulationScalingValue);
-            case "RearRightDrive" ->
                     new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 54, false, simulationScalingValue);
+            case "FrontRightDrive" ->
+                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 53, false, simulationScalingValue);
+            case "RearLeftDrive" ->
+                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 52, false, simulationScalingValue);
+            case "RearRightDrive" ->
+                    new DeviceInfo(getSteeringEncoderControllerName(swerveInstance), 51, false, simulationScalingValue);
             default -> null;
         };
     }
@@ -103,25 +103,29 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     public DeviceInfo getCollectorMotor() {
-        return new DeviceInfo("CollectorMotor", 25, true);
+        return new DeviceInfo("CollectorMotor", 37, false);
     }
 
     @Override
     public DeviceInfo getShooterMotorLeader() {
-        return null;
+        return new DeviceInfo("ShooterLeader", 23, false);
     }
 
     @Override
     public DeviceInfo getShooterMotorFollower() {
-        return null;
+        return new DeviceInfo("ShooterFollower", 36, false);
     }
 
     @Override
     public boolean isCollectorReady() {
         return true;
     }
+
+    public boolean isScoocherReady() {
+        return true;
+    }
     public DeviceInfo getScoocherMotor(){
-        return new DeviceInfo("ScoocherMotor", 14);
+        return new DeviceInfo("ScoocherMotor", 33);
     }
 
     public DeviceInfo getCollectorSolenoid() {
@@ -159,25 +163,43 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getNoteSensorDio() {
-        return new DeviceInfo("NoteSensor", 13);
+    public DeviceInfo getInControlNoteSensorDio() {
+        return new DeviceInfo("InControlNoteSensor", 13);
+    }
+    @Override
+    public DeviceInfo getReadyToFireNoteSensorDio() {
+        return new DeviceInfo("ReadyToFireNoteSensor", 12);
     }
 
     // ArmSubsystem
 
     @Override
     public boolean isArmReady() {
-        return false;
+        return true;
     }
 
     @Override
     public DeviceInfo getArmMotorLeft() {
-        return new DeviceInfo("ArmMotorLeft", 10, true);
+        return new DeviceInfo("ArmMotorLeft", 32, true);
     }
 
     @Override
     public DeviceInfo getArmMotorRight() {
-        return new DeviceInfo("ArmMotorRight", 11, true);
+        return new DeviceInfo("ArmMotorRight", 27, true);
+    }
+
+    @Override
+    public DeviceInfo getBrakeSolenoidForward(){return new DeviceInfo("ForwardBrake", 1, false);}
+    public DeviceInfo getBrakeSolenoidReverse(){return new DeviceInfo("ReverseBrake", 2, false);}
+
+    @Override
+    public boolean getArmEncoderInverted() {
+        return false;
+    }
+
+    @Override
+    public boolean getArmEncoderIsOnLeftMotor() {
+        return true;
     }
 }
 

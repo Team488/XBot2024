@@ -1,5 +1,7 @@
 package competition.injection.components;
 
+import competition.simulation.Simulator2024;
+import competition.subsystems.NeoTrellisGamepadSubsystem;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ExtendArmCommand;
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
@@ -40,9 +42,13 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract StopArmCommand stopArmCommand();
     public abstract ReconcileArmAlignmentCommand reconcileArmAlignmentCommand();
 
+    public abstract NeoTrellisGamepadSubsystem neoTrellisGamepadSubsystem();
+
     public abstract ScoocherSubsystem scoocherSubsystem();
 
     public abstract CollectorSubsystem collectorSubsystem();
 
     public abstract ShooterWheelSubsystem shooterSubsystem();
+
+    public abstract Simulator2024 simulator2024();
 }

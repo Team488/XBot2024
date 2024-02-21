@@ -15,32 +15,42 @@ public class ScoocherSubsystem extends BaseSubsystem implements DataFrameRefresh
 
     public final ElectricalContract contract;
     public DoubleProperty sendingPower;
-    public final XCANSparkMax scoocherMotor;
+    public XCANSparkMax scoocherMotor;
 
     @Inject
     public ScoocherSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                              ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
         this.contract = electricalContract;
-        this.scoocherMotor = sparkMaxFactory.createWithoutProperties(contract.getScoocherMotor(), getPrefix(), "Scoocher");
 
+        if (contract.isScoocherReady()) {
+            this.scoocherMotor = sparkMaxFactory.createWithoutProperties(contract.getScoocherMotor(), getPrefix(), "Scoocher");
+        }
         pf.setPrefix(this);
-        sendingPower = pf.createPersistentProperty("sendingPower", 0.1);
+        sendingPower = pf.createPersistentProperty("sendingPower", 0.75);
+    }
+
+    private void setPower(double power) {
+        if (contract.isScoocherReady()) {
+            scoocherMotor.set(power);
+        }
     }
 
     public void intakeNote() {
-        scoocherMotor.set(sendingPower.get());
+        setPower(sendingPower.get());
     }
     public void ejectNote(){
-        scoocherMotor.set(-sendingPower.get());
+        setPower(-sendingPower.get());
     }
 
     public void stop() {
-        scoocherMotor.set(0);
+        setPower(0);
     }
 
     @Override
     public void refreshDataFrame() {
-        scoocherMotor.refreshDataFrame();
+        if (contract.isScoocherReady()) {
+            scoocherMotor.refreshDataFrame();
+        }
     }
 }
 

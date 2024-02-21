@@ -33,7 +33,7 @@ public class OperatorCommandMap {
 
     @Inject
     public OperatorCommandMap() {}
-    
+
     // Example for setting up a command to fire when a button is pressed:
     @Inject
     public void setupMyCommands(
@@ -61,43 +61,6 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(pose.createSetPositionCommand(
                 new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0))));
 
-        ArrayList<XbotSwervePoint> points = new ArrayList<>();
-        points.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.6, 5.65), Rotation2d.fromDegrees(0), 10));
-        swerveTest.logic.setKeyPoints(points);
-        swerveTest.logic.setEnableConstantVelocity(true);
-        swerveTest.logic.setConstantVelocity(1);
-
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(swerveTest);
-
-        ArrayList<XbotSwervePoint> columnPoints = new ArrayList<>();
-        columnPoints.add(XbotSwervePoint.createXbotSwervePoint(
-                new Translation2d(4.9, 5.4), Rotation2d.fromDegrees(0), 10));
-        avoidColumnTest.logic.setKeyPoints(columnPoints);
-        avoidColumnTest.logic.setEnableConstantVelocity(true);
-        avoidColumnTest.logic.setConstantVelocity(1);
-        avoidColumnTest.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(avoidColumnTest);
-
-
-        oracleSwerve.logic.setEnableConstantVelocity(true);
-        oracleSwerve.logic.setConstantVelocity(2.8);
-        oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper)
-                .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
-//                .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
-
-        // ReconcileArmAlignmentCommand
-        slightLeftArmForward.setReconcilePower(0.05);
-        slightLeftArmBackward.setReconcilePower(-0.05);
-
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(slightLeftArmForward);
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(slightLeftArmBackward);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(driveCoupleFeetCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(fourNoteAutoCommand);
