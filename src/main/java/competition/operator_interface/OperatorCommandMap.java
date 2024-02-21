@@ -4,12 +4,14 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.auto_programs.FromMidShootCollectShoot;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
+import competition.subsystems.arm.commands.ManipulateArmBrakeCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -63,7 +65,9 @@ public class OperatorCommandMap {
             FireCollectorCommand fireCollectorCommand,
             SetArmAngleCommand armAngle,
             ArmMaintainerCommand armMaintainer,
-            WarmUpShooterRPMCommand warmUpShooterDifferentialRPM
+            WarmUpShooterRPMCommand warmUpShooterDifferentialRPM,
+            ManipulateArmBrakeCommand engageBrake,
+            ManipulateArmBrakeCommand disengageBrake
     ) {
         // Scooch
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -94,6 +98,12 @@ public class OperatorCommandMap {
 
         warmUpShooterDifferentialRPM.setTargetRpm(new ShooterWheelTargetSpeeds(1000, 2000));
         //oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(warmUpShooterDifferentialRPM);
+
+        engageBrake.setBrakeMode(true);
+        disengageBrake.setBrakeMode(false);
+
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightJoystickYAxisPositive).onTrue(engageBrake);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(disengageBrake);
     }
     
     // Example for setting up a command to fire when a button is pressed:
@@ -289,6 +299,12 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
 
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady);
+    }
+
+    @Inject
+    public void setupAutonomous(OperatorInterface oi,
+                                FromMidShootCollectShoot fromMidShootCollectShoot) {
+        oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(fromMidShootCollectShoot);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
