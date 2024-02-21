@@ -31,9 +31,8 @@ public class DriveToNoteAndCollectCommandGroup extends ParallelDeadlineGroup {
     public void makeCommandWithNotePosition(Pose2d notePosition) {
         this.notePosition = notePosition;
 
-        SwerveSimpleTrajectoryCommand swerveToNote = swerveProvider.get();
+        var swerveToNote = swerveProvider.get();
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
-
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 notePosition,10));
         // when driving to a note, the robot must face backwards, as the robot's intake is on the back
@@ -41,7 +40,7 @@ public class DriveToNoteAndCollectCommandGroup extends ParallelDeadlineGroup {
         swerveToNote.logic.setAimAtGoalDuringFinalLeg(true);
         swerveToNote.logic.setDriveBackwards(true);
         swerveToNote.logic.setEnableConstantVelocity(true);
-        swerveToNote.logic.setConstantVelocity(5);
+        swerveToNote.logic.setConstantVelocity(1);
         swerveToNote.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
 
