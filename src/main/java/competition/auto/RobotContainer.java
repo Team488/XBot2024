@@ -32,14 +32,24 @@ public class RobotContainer {
     @Inject
     public RobotContainer(DriveSubsystem drive, PoseSubsystem pose,
                           IntakeCollectorCommand intakeCollectorCommand,
-                          StopCollectorCommand stopCollectorCommand) {
+                          StopCollectorCommand stopCollectorCommand,
+                          IntakeUntilNoteCollectedCommand intakeUntilNoteCollectedCommand) {
 
         this.drive = drive;
         this.pose = pose;
 
+        //testing on 2023
         NamedCommands.registerCommand("IntakeCollectorCommand", intakeCollectorCommand);
         NamedCommands.registerCommand("StopCollectorCommand", stopCollectorCommand);
 
+
+        //TODO: 2024
+        //fire while moving to note
+
+        //intake note
+        NamedCommands.registerCommand("IntakeUntilNoteCollectedCommand", intakeUntilNoteCollectedCommand);
+
+        //shooting from spike (subwoofer RPM prob)
 
         autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
         SmartDashboard.putData("Auto Mode", autoChooser);

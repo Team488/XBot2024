@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.130525867889342,
-        "y": 7.0
+        "x": 1.382399573915957,
+        "y": 6.4902557155541665
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.5345027317609947,
-        "y": 7.0
+        "x": 1.9788014504803937,
+        "y": 6.700750495518085
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5050384003901907,
-        "y": 7.0
+        "x": 2.68045071702679,
+        "y": 6.922939429924444
       },
       "prevControl": {
-        "x": 3.178754626366743,
-        "y": 7.0
+        "x": 2.317931929311152,
+        "y": 6.747527113287845
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,38 +32,54 @@
   "constraintZones": [],
   "eventMarkers": [
     {
-      "name": "New Event Marker",
-      "waypointRelativePos": 0.5,
+      "name": "intake",
+      "waypointRelativePos": 0.6,
       "command": {
         "type": "sequential",
         "data": {
           "commands": [
             {
-              "type": "wait",
+              "type": "named",
               "data": {
-                "waitTime": 5.0
+                "name": "IntakeUntilNoteCollected"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "ShootFromSpike"
               }
             }
           ]
         }
       }
+    },
+    {
+      "name": "shootpreload",
+      "waypointRelativePos": 0.2,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": []
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 0.75,
-    "maxAcceleration": 0.75,
+    "maxVelocity": 1.0,
+    "maxAcceleration": 1.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
-    "rotateFast": false
+    "rotation": 22.619864948040444,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 0.0,
     "velocity": 0
   },
   "useDefaultConstraints": false
