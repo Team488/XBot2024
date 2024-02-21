@@ -1,5 +1,9 @@
 # Created by https://www.gitignore.io/api/c++,java,linux,macos,gradle,windows,visualstudiocode
 
+simgui.json
+simgui-ds.json
+simgui-window.json
+
 ### C++ ###
 # Prerequisites
 *.d
