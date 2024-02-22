@@ -21,10 +21,8 @@ public class CollectCommandGroup extends ParallelDeadlineGroup {
 
         // move arm to collecting position
         var extendToGround = setArmAngleProvider.get();
-        var reset = setArmAngleProvider.get();
         extendToGround.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
-        reset.setArmPosition(ArmSubsystem.UsefulArmPosition.STARTING_POSITION);
 
-        this.addCommands(extendToGround.andThen(waitForArm).alongWith(intakeUntilNoteCollectedCommand).andThen(reset));
+        this.addCommands(extendToGround.alongWith(waitForArm).andThen(intakeUntilNoteCollectedCommand));
     }
 }

@@ -11,11 +11,11 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
 
-public class DriveToNoteAndCollectCommandGroup extends ParallelDeadlineGroup {
+public class DriveToNoteAndCollectCommandGroup extends ParallelDeadlineGroup{
     Pose2d notePosition;
-    Provider<SwerveSimpleTrajectoryCommand> swerveProvider;
-    DynamicOracle oracle;
-    CollectCommandGroup collect;
+    final Provider<SwerveSimpleTrajectoryCommand> swerveProvider;
+    final DynamicOracle oracle;
+    final CollectCommandGroup collect;
 
     @Inject
     DriveToNoteAndCollectCommandGroup(Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
@@ -28,7 +28,7 @@ public class DriveToNoteAndCollectCommandGroup extends ParallelDeadlineGroup {
         this.collect = collect;
     }
 
-    public void makeCommandWithNotePosition(Pose2d notePosition) {
+    public void setNotePosition(Pose2d notePosition) {
         this.notePosition = notePosition;
 
         var swerveToNote = swerveProvider.get();

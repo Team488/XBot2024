@@ -78,7 +78,7 @@ public class OperatorCommandMap {
         // TODO: bind scoochNote action to a button in operatorGamepad
 
         var driveToNoteAndIntakeGroup = driveToNoteAndIntakeGroupProvider.get();
-        driveToNoteAndIntakeGroup.makeCommandWithNotePosition(PoseSubsystem.SpikeMiddle);
+        driveToNoteAndIntakeGroup.setNotePosition(PoseSubsystem.SpikeMiddle);
         oi.driverGamepad.getXboxButton(XboxButton.Y).whileTrue(driveToNoteAndIntakeGroup);
     }
     

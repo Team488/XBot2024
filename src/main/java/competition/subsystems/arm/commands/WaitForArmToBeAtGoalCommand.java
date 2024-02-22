@@ -12,25 +12,9 @@ import javax.inject.Provider;
 
 public class WaitForArmToBeAtGoalCommand extends BaseWaitForMaintainerCommand {
     final ArmSubsystem arm;
-    private DoubleProperty timeoutProperty;
-    private double startTime;
     @Inject
     public WaitForArmToBeAtGoalCommand(ArmSubsystem arm,PropertyFactory pf){
         super(arm,pf,1);
         this.arm = arm;
-    }
-    @Override
-    public void initialize() {
-        super.initialize();
-    }
-
-    @Override
-    public void execute() {
-        //nothing to do
-    }
-
-    @Override
-    public boolean isFinished() {
-        return super.isFinished();
     }
 }
