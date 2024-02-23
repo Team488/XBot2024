@@ -22,12 +22,14 @@ import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.XbotSwervePoint;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
 
 
 //we gonna get opps pulling this out mid competition😶‍🌫️🥶😰😰
 public class TwoNoteGriefAuto extends SequentialCommandGroup {
+    @Inject
     public TwoNoteGriefAuto(Provider<FireNoteCommandGroup> fireNoteProvider,
                             Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
                             Provider<SetArmAngleCommand> setArmAngleProvider,
