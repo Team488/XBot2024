@@ -170,8 +170,28 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     public void testGetArmAngleFromDistance() {
         // In case if getArmAngleFromDistance for whatever reason is wayyyyyy off
         // (Will likely fail is the equation is changed)
-        assertEquals(52, arm.getArmAngleFromDistance(50), 5);
-        assertEquals(31, arm.getArmAngleFromDistance(100), 5);
-        assertEquals(20, arm.getArmAngleFromDistance(150), 5);
+        assertEquals(54.7, arm.getArmAngleFromDistance(1.0), .5);
+        assertEquals(54.7, arm.getArmAngleFromDistance(1.15), .5);
+        assertEquals(44.76, arm.getArmAngleFromDistance(1.6), .5);
+        assertEquals(37.17, arm.getArmAngleFromDistance(2.032), .5);
+        assertEquals(27.3, arm.getArmAngleFromDistance(2.8194), .5);
+        assertEquals(12.23, arm.getArmAngleFromDistance(6.09), .5);
+    }
+    @Test
+    public void testGetArmAngleForExtension() {
+        assertEquals(54.7, arm.getArmAngleForExtension(0.0), .5);
+        assertEquals(33.54, arm.getArmAngleForExtension(50.8), .5);
+        assertEquals(15.14, arm.getArmAngleForExtension(101.6), .5);
+        assertEquals(6.11, arm.getArmAngleForExtension(127.0), .5);
+        assertEquals(-13.25, arm.getArmAngleForExtension(177.8), .5);
+        assertEquals(-43.33, arm.getArmAngleForExtension(241.3), .5);
+
+    }
+    @Test
+    public void testGetArmExtensionForAngle() {
+        assertEquals(0.0, arm.getArmExtensionForAngle(54.7), .5);
+        assertEquals(126.7, arm.getArmExtensionForAngle(6.03), .5);
+        assertEquals(240.8, arm.getArmExtensionForAngle(-43.6), .5);
+
     }
 }
