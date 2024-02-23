@@ -66,6 +66,9 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         if (getGamePieceInControl()) {
             power *= intakePowerInControlMultiplier.get();
         }
+        if (getGamePieceReady()) {
+            power = 0;
+        }
         setPower(power);
         intakeState = IntakeState.INTAKING;
     }
@@ -105,7 +108,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     @Override
     public void periodic() {
         if (contract.isCollectorReady()) {
-            aKitLog.record("HasGamePiece", getGamePieceReady());
+            aKitLog.record("GamePieceReady", getGamePieceReady());
+            aKitLog.record("GamePieceInControl", getGamePieceInControl());
         }
     }
 
