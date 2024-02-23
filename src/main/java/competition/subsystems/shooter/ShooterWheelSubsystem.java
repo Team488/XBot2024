@@ -233,8 +233,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     }
 
     public void periodic() {
-        upperWheelMotor.periodic();
-        lowerWheelMotor.periodic();
+        if (contract.isShooterReady()) {
+            upperWheelMotor.periodic();
+            lowerWheelMotor.periodic();
+        }
 
         aKitLog.record("TargetRPM", getTargetValue());
         aKitLog.record("CurrentRPM", getCurrentValue());
