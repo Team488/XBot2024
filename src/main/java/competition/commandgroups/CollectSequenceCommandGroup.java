@@ -20,6 +20,6 @@ public class CollectSequenceCommandGroup extends ParallelDeadlineGroup {
         stopShooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.STOP);
         armToIntakingPosition.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
-        this.addCommands(stopShooter, armToIntakingPosition, intakeUntilNoteCollectedCommand);
+        this.addCommands(stopShooter, armToIntakingPosition);
     }
 }

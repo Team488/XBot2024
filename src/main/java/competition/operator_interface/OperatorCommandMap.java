@@ -20,6 +20,7 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -118,7 +119,7 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-            CollectSequenceCommandGroup collectSequenceCommandGroup
+            Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider
             )
     {
         double typicalVelocity = 2.5;
@@ -181,8 +182,12 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
 
         var driveToCenterLine1AndCollectCommandGroup = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        drive.setTargetNote(PoseSubsystem.CenterLine1);
+        drive.setTargetNote(PoseSubsystem.CenterLine2);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToCenterLine1AndCollectCommandGroup);
+
+        var driveToCentralSubwooferCommand = driveToCentralSubwooferCommandProvider.get();
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
+
 
     }
 
