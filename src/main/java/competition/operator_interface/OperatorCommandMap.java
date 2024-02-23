@@ -38,6 +38,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
+import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.XbotSwervePoint;
@@ -182,7 +183,7 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
 
         var driveToCenterLine1AndCollectCommandGroup = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        drive.setTargetNote(PoseSubsystem.CenterLine2);
+        drive.setTargetNote(BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SpikeTop));
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToCenterLine1AndCollectCommandGroup);
 
         var driveToCentralSubwooferCommand = driveToCentralSubwooferCommandProvider.get();
