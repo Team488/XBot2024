@@ -19,6 +19,7 @@ import javax.inject.Singleton;
 @Singleton
 public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTargetSpeeds> implements DataFrameRefreshable {
     public enum TargetRPM {
+        STOP,
         SUBWOOFER,
         NEARSHOT,
         DISTANCESHOT,
@@ -112,6 +113,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
     public void setTargetRPM(TargetRPM target) {
         switch (target) {
+            case STOP -> setTargetValue(0.0);
             case SUBWOOFER -> setTargetValue(safeRpm.get());
             case NEARSHOT -> setTargetValue(nearShotRpm.get());
             case DISTANCESHOT -> setTargetValue(distanceShotRpm.get());

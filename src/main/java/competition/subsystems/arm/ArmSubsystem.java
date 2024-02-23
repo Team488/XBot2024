@@ -327,18 +327,31 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             }
         }
 
+        // finally, if the brake is engaged, just stop the motors.
+        if (getBrakeEngaged()) {
+            leftPower = 0;
+            rightPower = 0;
+        }
+
         if (contract.isArmReady()) {
             armMotorLeft.set(leftPower);
             armMotorRight.set(rightPower);
         }
     }
+
+    boolean brakeEngaged = false;
     //brake solenoid
     public void setBrakeEnabled(boolean enabled) {
+        brakeEngaged = enabled;
         if (enabled) {
             armBrakeSolenoid.setForward();
         } else {
             armBrakeSolenoid.setReverse();
         }
+    }
+
+    public boolean getBrakeEngaged() {
+        return brakeEngaged;
     }
 
     double previousPower;
