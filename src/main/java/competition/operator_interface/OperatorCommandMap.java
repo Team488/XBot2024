@@ -5,6 +5,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.auto_programs.FromMidShootCollectShoot;
+import competition.auto_programs.FromMidShootThenShootNearestThree;
 import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
@@ -120,7 +121,8 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-            Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider
+            Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
+            FromMidShootThenShootNearestThree fromMidShootThenShootNearestThree
             )
     {
         double typicalVelocity = 2.5;
@@ -182,14 +184,15 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
 
-        drive.setTargetNote(PoseSubsystem.SpikeTop);
-        var driveToGivenNoteAndCollectCommandGroup = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToGivenNoteAndCollectCommandGroup);
-
-        var driveToCentralSubwooferCommand = driveToCentralSubwooferCommandProvider.get();
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
-
-
+        // testing
+//        drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+//        var driveToGivenNoteAndCollectCommandGroup = driveToGivenNoteAndCollectCommandGroupProvider.get();
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToGivenNoteAndCollectCommandGroup);
+////
+////        var driveToCentralSubwooferCommand = driveToCentralSubwooferCommandProvider.get();
+////        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
+//
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(fromMidShootThenShootNearestThree);
     }
 
     @Inject

@@ -31,7 +31,8 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
     public void initialize() {
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
-        swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(drive.getTargetNote(), 10));
+        swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                drive.getTargetNote(), 10));
         // when driving to a note, the robot must face backwards, as the robot's intake is on the back
         this.logic.setKeyPoints(swervePoints);
         this.logic.setAimAtGoalDuringFinalLeg(true);

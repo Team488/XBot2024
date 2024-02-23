@@ -5,17 +5,19 @@ import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
 
 public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
 
-
+    @Inject
     public FromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
                                              Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                              Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
@@ -29,17 +31,46 @@ public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire note into the speaker from starting position
-        var fireNoteIntoSpeakerFromStartingPosition = fireNoteCommandGroupProvider.get();
-        this.addCommands(fireNoteIntoSpeakerFromStartingPosition);
+        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(fireFirstNoteCommand));
+
+        // Drive to top spike note and collect
+        drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
+
+        // Drive back to subwoofer
+        var driveBackToCentralSubwooferFirst = driveToCentralSubwooferCommandProvider.get();
+        this.addCommands(Commands.deadline(driveBackToCentralSubwooferFirst));
+
+        // Fire Note into the speaker
+        var fireSecondNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(fireSecondNoteCommand));
 
         // Drive to top spike note and collect
         drive.setTargetNote(PoseSubsystem.SpikeTop);
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(driveToTopSpikeNoteAndCollect);
+        this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
 
         // Drive back to subwoofer
-        var driveBackToCentralSubwoofer = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(driveBackToCentralSubwoofer);
+        var driveBackToCentralSubwooferSecond = driveToCentralSubwooferCommandProvider.get();
+        this.addCommands(Commands.deadline(driveBackToCentralSubwooferSecond));
 
+        // Fire Note into the speaker
+        var fireThirdNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(fireThirdNoteCommand));
+
+        // Drive to bottom spike note and collect
+        drive.setTargetNote(PoseSubsystem.SpikeBottom);
+        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(driveToBottomSpikeNoteAndCollect);
+
+        // Drive back to subwoofer
+        var driveBackToCentralSubwooferThird = driveToCentralSubwooferCommandProvider.get();
+        this.addCommands(Commands.deadline(driveBackToCentralSubwooferThird));
+
+        // Fire Note into the speaker
+        var fireFourthNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(fireFourthNoteCommand));
     }
 }
