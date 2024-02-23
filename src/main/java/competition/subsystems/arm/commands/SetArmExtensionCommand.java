@@ -28,11 +28,14 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
 
     @Override
     public void initialize() {
+        log.info("Initializing");
+        double targetValue = targetExtension;
         if(isRelative) {
-            armSubsystem.setTargetValue(armSubsystem.getCurrentValue() + targetExtension);
-        } else {
-            armSubsystem.setTargetValue(targetExtension);
+            targetValue = armSubsystem.getCurrentValue() + targetExtension;
         }
+        log.info("Setting arm target extension to " + targetValue);
+        armSubsystem.setTargetValue(targetValue);
+        armSubsystem.initializeRampingPowerTarget();
     }
 
     @Override

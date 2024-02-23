@@ -2,13 +2,19 @@ package competition.simulation;
 
 import com.revrobotics.CANSparkBase;
 import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import org.littletonrobotics.junction.Logger;
 import xbot.common.controls.actuators.mock_adapters.MockCANSparkMax;
+import xbot.common.controls.sensors.XTimer;
 import xbot.common.math.MovingAverageForDouble;
 import xbot.common.math.MovingAverageForTranslation2d;
 
@@ -31,17 +37,22 @@ public class Simulator2024 {
     private final DriveSubsystem drive;
     private final ArmSubsystem arm;
     private final ShooterWheelSubsystem shooter;
+    private final CollectorSubsystem collector;
 
     @Inject
     public Simulator2024(PoseSubsystem pose, DriveSubsystem drive,
-                         ArmSubsystem arm, ShooterWheelSubsystem shooter) {
+                         ArmSubsystem arm, ShooterWheelSubsystem shooter,
+                         CollectorSubsystem collector) {
         this.pose = pose;
         this.drive = drive;
         this.arm = arm;
         this.shooter = shooter;
+        this.collector = collector;
     }
 
 
+
+    int loop = 0;
 
     public void update() {
         double robotTopSpeedInMetersPerSecond = 3.0;
@@ -106,10 +117,64 @@ public class Simulator2024 {
         }
 
         // The shooter wheel should pretty much always be in velocity mode.
-        var shooterMockMotor = (MockCANSparkMax)shooter.leader;
-        shooterVelocityCalculator.add(shooterMockMotor.getReference());
-        if (shooterMockMotor.getControlType() == CANSparkBase.ControlType.kVelocity) {
-            shooterMockMotor.setVelocity(shooterVelocityCalculator.getAverage());
+        var shooterUpperMockMotor = (MockCANSparkMax)shooter.upperWheelMotor;
+        var shooterLowerMockMotor = (MockCANSparkMax)shooter.lowerWheelMotor;
+
+        if (shooterUpperMockMotor.getControlType() == CANSparkBase.ControlType.kVelocity) {
+            shooterVelocityCalculator.add(shooterUpperMockMotor.getReference());
+        } else {
+            shooterVelocityCalculator.add(0.0);
+        }
+
+        shooterUpperMockMotor.setVelocity(shooterVelocityCalculator.getAverage());
+        shooterLowerMockMotor.setVelocity(shooterVelocityCalculator.getAverage());
+
+        double currentCollectorPower = collector.collectorMotor.getAppliedOutput();
+        if (currentCollectorPower == 1
+            && lastCollectorPower == 0) {
+            initializeNewFiredNote();
+        }
+        lastCollectorPower = currentCollectorPower;
+        interpolateNotePosition();
+    }
+
+    double timeNoteFired = 0;
+    Translation3d noteStartPoint;
+    Translation3d noteFinishPoint;
+    double lastCollectorPower = 0;
+
+    private void initializeNewFiredNote() {
+        timeNoteFired = XTimer.getFPGATimestamp();
+
+        // get current position and angle
+        var currentPose = pose.getCurrentPose2d();
+        // create a translation3d representing note start point.
+        noteStartPoint = new Translation3d(
+                currentPose.getTranslation().getX()
+                        + Math.cos(currentPose.getRotation().getRadians() + Math.PI) * 0.33,
+                currentPose.getTranslation().getY()
+                        + Math.sin(currentPose.getRotation().getRadians() + Math.PI) * 0.33,
+                0.33
+        );
+
+        // create a translation3d representing note finish point.
+        noteFinishPoint = new Translation3d(
+                currentPose.getTranslation().getX()
+                        + Math.cos(currentPose.getRotation().getRadians() + Math.PI) * 3,
+                currentPose.getTranslation().getY()
+                        + Math.sin(currentPose.getRotation().getRadians() + Math.PI) * 3,
+                3
+        );
+    }
+
+    /**
+     * Interpolates the position of the note based on the time since it was fired.
+     */
+    private void interpolateNotePosition() {
+        double timeSinceNoteFired = XTimer.getFPGATimestamp() - timeNoteFired;
+        if (noteStartPoint != null && noteFinishPoint != null) {
+            var interpolatedPosition = noteStartPoint.interpolate(noteFinishPoint, timeSinceNoteFired);
+            Logger.recordOutput("VirtualNote", new Pose3d(interpolatedPosition, new Rotation3d()));
         }
     }
 }
