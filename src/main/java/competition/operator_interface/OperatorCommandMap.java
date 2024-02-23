@@ -13,6 +13,8 @@ import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
+import competition.subsystems.arm.commands.DisengageBrakeCommand;
+import competition.subsystems.arm.commands.EngageBrakeCommand;
 import competition.subsystems.arm.commands.ManipulateArmBrakeCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
@@ -67,8 +69,8 @@ public class OperatorCommandMap {
             WarmUpShooterCommand shooterWarmUpAmp,
             FireCollectorCommand fireCollectorCommand,
             WarmUpShooterRPMCommand warmUpShooterDifferentialRPM,
-            ManipulateArmBrakeCommand engageBrake,
-            ManipulateArmBrakeCommand disengageBrake
+            EngageBrakeCommand engageBrake,
+            DisengageBrakeCommand disengageBrake
     ) {
         // Scooch
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -317,7 +319,7 @@ public class OperatorCommandMap {
     }
 
     @Inject
-    public void setupAutonomous(OperatorInterface oi,
+    public void setupAutonomousForTesting(OperatorInterface oi,
                                 FromMidShootCollectShoot fromMidShootCollectShoot) {
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(fromMidShootCollectShoot);
     }
