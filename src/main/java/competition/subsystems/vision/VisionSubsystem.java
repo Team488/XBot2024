@@ -110,40 +110,51 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         }
 
         //Cam mounted 1" forward of center, 17" up, 12.5" right.
-        Transform3d robotToCam = new Transform3d(new Translation3d(
-                1.395 / PoseSubsystem.INCHES_IN_A_METER,
-                -11.712 / PoseSubsystem.INCHES_IN_A_METER,
-                16.421 / PoseSubsystem.INCHES_IN_A_METER),
-                new Rotation3d(0, 0, Math.toRadians(7.595)));
-        Transform3d robotToRearCam = new Transform3d(new Translation3d(
-                -1.395 / PoseSubsystem.INCHES_IN_A_METER,
-                11.712 / PoseSubsystem.INCHES_IN_A_METER,
-                16.421 / PoseSubsystem.INCHES_IN_A_METER),
-                new Rotation3d(0, 0, Math.toRadians(180 + 7.595)));
+        Transform3d robotToFrontRightCam = new Transform3d(new Translation3d(
+                13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                -13.09 / PoseSubsystem.INCHES_IN_A_METER,
+                10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                new Rotation3d(0, 30.5, Math.toRadians(-14)));
+        Transform3d robotToFrontLeftCam = new Transform3d(new Translation3d(
+                13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                13.09/ PoseSubsystem.INCHES_IN_A_METER,
+                10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                new Rotation3d(0, 30.5, Math.toRadians(14)));
+        Transform3d robotToRearRightCam = new Transform3d(new Translation3d(
+                -13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                -13.09 / PoseSubsystem.INCHES_IN_A_METER,
+                10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                new Rotation3d(0, 30.5, Math.toRadians(180 + 14)));
+        Transform3d robotToRearLeftCam = new Transform3d(new Translation3d(
+                -13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                13.09 / PoseSubsystem.INCHES_IN_A_METER,
+                10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                new Rotation3d(0, 30.5, Math.toRadians(180 - 14)));
+
 
         frontLeftPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 frontLeftAprilCamera,
-                robotToCam
+                robotToFrontLeftCam
         );
         frontRightPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 frontRightAprilCamera,
-                robotToRearCam
+                robotToFrontRightCam
         );
         rearLeftPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 rearLeftAprilCamera,
-                robotToCam
+                robotToRearLeftCam
         );
         rearRightPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 rearRightAprilCamera,
-                robotToRearCam
+                robotToRearRightCam
         );
     }
 
