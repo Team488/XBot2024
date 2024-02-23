@@ -14,7 +14,6 @@ public class FireWhenReadyCommand extends BaseCommand {
     final ShooterWheelSubsystem wheel;
     final ArmSubsystem arm;
     final CollectorSubsystem collector;
-
     DoubleProperty waitTimeAfterFiring;
     boolean hasFired;
     double timeWhenFired;
@@ -27,10 +26,10 @@ public class FireWhenReadyCommand extends BaseCommand {
         this.arm = arm;
         this.collector = collector;
         pf.setPrefix(this);
+
+        this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
         this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 1.5);
         this.hasFired = false;
-
-        pf.setPrefix(this);
     }
 
     @Override
