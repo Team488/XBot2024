@@ -155,18 +155,23 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             Optional<EstimatedRobotPose> rearRightEstimatedPose = Optional.empty();
 
             if (frontLeftAprilCameraWorking) {
-                frontLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", frontLeftPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
+                frontLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", frontLeftPhotonPoseEstimator,
+                        previousEstimatedRobotPose, frontReliablePoseIsStable);
             }
             if (frontRightAprilCameraWorking) {
-                frontRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", frontRightPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+                frontRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", frontRightPhotonPoseEstimator,
+                        previousEstimatedRobotPose, rearReliablePoseIsStable);
             }
             if (rearLeftAprilCameraWorking) {
-                rearLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", rearLeftPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
+                rearLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", rearLeftPhotonPoseEstimator,
+                        previousEstimatedRobotPose, frontReliablePoseIsStable);
             }
             if (rearRightAprilCameraWorking) {
-                rearRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearRightPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+                rearRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearRightPhotonPoseEstimator,
+                        previousEstimatedRobotPose, rearReliablePoseIsStable);
             }
-            return new Optional[] {frontLeftEstimatedPose, frontRightEstimatedPose, rearLeftEstimatedPose, rearRightEstimatedPose};
+            return new Optional[] {frontLeftEstimatedPose, frontRightEstimatedPose,
+                    rearLeftEstimatedPose, rearRightEstimatedPose};
         } else {
             return new Optional[] {Optional.empty()};
         }
