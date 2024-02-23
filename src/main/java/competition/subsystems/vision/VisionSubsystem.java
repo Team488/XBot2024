@@ -114,22 +114,22 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 -13.09 / PoseSubsystem.INCHES_IN_A_METER,
                 10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                new Rotation3d(0, 30.5, Math.toRadians(-14)));
+                new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(-14)));
         Transform3d robotToFrontLeftCam = new Transform3d(new Translation3d(
                 13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 13.09/ PoseSubsystem.INCHES_IN_A_METER,
                 10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                new Rotation3d(0, 30.5, Math.toRadians(14)));
+                new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(14)));
         Transform3d robotToRearRightCam = new Transform3d(new Translation3d(
                 -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 -13.09 / PoseSubsystem.INCHES_IN_A_METER,
                 10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                new Rotation3d(0, 30.5, Math.toRadians(180 + 14)));
+                new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 + 14)));
         Transform3d robotToRearLeftCam = new Transform3d(new Translation3d(
                 -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 13.09 / PoseSubsystem.INCHES_IN_A_METER,
                 10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                new Rotation3d(0, 30.5, Math.toRadians(180 - 14)));
+                new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 - 14)));
 
 
         frontLeftPhotonPoseEstimator = new PhotonPoseEstimator(
