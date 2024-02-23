@@ -93,14 +93,14 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     public boolean getGamePieceInControl() {
         if (contract.isCollectorReady()) {
-            return !inControlNoteSensor.get();
+            return inControlNoteSensor.get();
         }
         return false;
     }
 
     public boolean getGamePieceReady() {
         if (contract.isCollectorReady()) {
-            return !readyToFireNoteSensor.get();
+            return readyToFireNoteSensor.get();
         }
         return false;
     }
