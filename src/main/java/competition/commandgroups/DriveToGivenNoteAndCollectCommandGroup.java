@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 public class DriveToGivenNoteAndCollectCommandGroup extends ParallelDeadlineGroup {
 
+
     @Inject
     public DriveToGivenNoteAndCollectCommandGroup(DriveToGivenNoteCommand driveToGivenNoteCommand,
                                                   CollectSequenceCommandGroup collectSequenceCommandGroup,

@@ -6,7 +6,6 @@ import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;

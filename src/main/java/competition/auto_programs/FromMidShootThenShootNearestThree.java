@@ -6,9 +6,9 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -34,8 +34,12 @@ public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
         var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireFirstNoteCommand));
 
-        // Drive to top spike note and collect
-        drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+        // Drive to middle spike note and collect
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+                })
+        );
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
 
@@ -48,7 +52,11 @@ public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
         this.addCommands(Commands.deadline(fireSecondNoteCommand));
 
         // Drive to top spike note and collect
-        drive.setTargetNote(PoseSubsystem.SpikeTop);
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.SpikeTop);
+                })
+        );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
 
@@ -61,7 +69,11 @@ public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
         this.addCommands(Commands.deadline(fireThirdNoteCommand));
 
         // Drive to bottom spike note and collect
-        drive.setTargetNote(PoseSubsystem.SpikeBottom);
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.SpikeBottom);
+                })
+        );
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(driveToBottomSpikeNoteAndCollect);
 
@@ -73,4 +85,5 @@ public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
         var fireFourthNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireFourthNoteCommand));
     }
+
 }
