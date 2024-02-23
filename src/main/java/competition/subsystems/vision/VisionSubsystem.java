@@ -268,9 +268,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     public void periodic() {
         loopCounter++;
 
+        boolean anyFrontCameraBroken = !frontLeftAprilCameraWorking || !frontRightAprilCameraWorking;
+        boolean anyRearCameraBroken = !rearLeftAprilCameraWorking || !rearRightAprilCameraWorking;
         // If one of the cameras is not working, see if they have self healed every 5 seconds
-        if (loopCounter % (50 * 5) == 0 && (!frontLeftAprilCameraWorking || !frontRightAprilCameraWorking
-                || !rearLeftAprilCameraWorking || !rearRightAprilCameraWorking)) {
+        if (loopCounter % (50 * 5) == 0 && (anyFrontCameraBroken || anyRearCameraBroken)) {
             log.info("Before check, Forward April camera working: " + frontLeftAprilCameraWorking
                     + ", Rear April camera working: " + frontRightAprilCameraWorking
                     + ", Left Rear April camera working: " + rearLeftAprilCameraWorking
