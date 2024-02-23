@@ -96,10 +96,6 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
     }
 
     private void queueMessageToAutoSelector(String message) {
-        this.addCommands(
-            new InstantCommand(() -> {
-                autoSelector.setAutonomousState(message);
-            })
-        );
+        this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
     }
 }

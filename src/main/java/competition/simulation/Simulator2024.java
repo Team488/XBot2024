@@ -135,7 +135,7 @@ public class Simulator2024 {
             initializeNewFiredNote();
         }
         lastCollectorPower = currentCollectorPower;
-        moveNote();
+        interpolateNotePosition();
     }
 
     double timeNoteFired = 0;
@@ -167,7 +167,10 @@ public class Simulator2024 {
         );
     }
 
-    private void moveNote() {
+    /**
+     * Interpolates the position of the note based on the time since it was fired.
+     */
+    private void interpolateNotePosition() {
         double timeSinceNoteFired = XTimer.getFPGATimestamp() - timeNoteFired;
         if (noteStartPoint != null && noteFinishPoint != null) {
             var interpolatedPosition = noteStartPoint.interpolate(noteFinishPoint, timeSinceNoteFired);
