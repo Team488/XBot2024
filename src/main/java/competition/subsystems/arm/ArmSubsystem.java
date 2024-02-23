@@ -328,18 +328,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             }
         }
 
-        // finally, if the brake is engaged, just stop the motors.
-        if (getBrakeEngaged()) {
-            leftPower = 0;
-            rightPower = 0;
-        }
-
         // Engage brake if no power commanded
         if (leftPower == 0 && rightPower == 0) {
             setBrakeEnabled(true);
         } else {
             // Disengage brake if any power commanded.
             setBrakeEnabled(false);
+        }
+
+        // finally, if the brake is engaged, just stop the motors.
+        if (getBrakeEngaged()) {
+            leftPower = 0;
+            rightPower = 0;
         }
 
         if (contract.isArmReady()) {

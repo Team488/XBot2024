@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -38,14 +37,16 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     public static final String TARGET_POSE = "forwardAprilCamera/targetPose";
     public static final String LATENCY_MILLIS = "forwardAprilCamera/latencyMillis";
 
-    final PhotonCameraExtended forwardAprilCamera;
-    final PhotonCameraExtended rearAprilCamera;
+    final PhotonCameraExtended frontLeftAprilCamera;
+    final PhotonCameraExtended frontRightAprilCamera;
+    final PhotonCameraExtended rearLeftAprilCamera;
+    final PhotonCameraExtended rearRightAprilCamera;
 
-    boolean forwardAprilCameraWorking = true;
-    boolean rearAprilCameraWorking = true;
 
-    //final XPhotonCamera akitForwardAprilCamera;
-    //final PhotonCameraExtended akitRearAprilCamera;
+    boolean frontLeftAprilCameraWorking = true;
+    boolean frontRightAprilCameraWorking = true;
+    boolean rearLeftAprilCameraWorking = true;
+    boolean rearRightAprilCameraWorking = true;
 
     final RobotAssertionManager assertionManager;
     final BooleanProperty isInverted;
@@ -59,8 +60,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     NetworkTable visionTable;
     AprilTagFieldLayout aprilTagFieldLayout;
     XbotPhotonPoseEstimator customPhotonPoseEstimator;
-    PhotonPoseEstimator frontPhotonPoseEstimator;
-    PhotonPoseEstimator rearPhotonPoseEstimator;
+    PhotonPoseEstimator frontLeftPhotonPoseEstimator;
+    PhotonPoseEstimator frontRightPhotonPoseEstimator;
+    PhotonPoseEstimator rearLeftPhotonPoseEstimator;
+    PhotonPoseEstimator rearRightPhotonPoseEstimator;
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
 
@@ -86,13 +89,17 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         // we need to handle cases like not having the AprilTag data loaded.
 
         PhotonCameraExtended.setVersionCheckEnabled(false);
-        forwardAprilCamera = new PhotonCameraExtended("forwardAprilCamera");
-        rearAprilCamera = new PhotonCameraExtended("rearAprilCamera");
+        frontLeftAprilCamera = new PhotonCameraExtended("photonvisionfrontleft");
+        frontRightAprilCamera = new PhotonCameraExtended("photonvisionfrontright");
+        rearLeftAprilCamera = new PhotonCameraExtended("photonvisionrearleft");
+        rearRightAprilCamera = new PhotonCameraExtended("photonvisionrearright");
 
         // Check to see if we have incorrect versions. If so, then we need to not use that camera as the underlying libraries
         // could be unstable, leading to robot crashes or anomalous behavior.
-        forwardAprilCameraWorking = isCameraWorking(forwardAprilCamera);
-        rearAprilCameraWorking = isCameraWorking(rearAprilCamera);
+        frontLeftAprilCameraWorking = isCameraWorking(frontLeftAprilCamera);
+        frontRightAprilCameraWorking = isCameraWorking(frontRightAprilCamera);
+        rearLeftAprilCameraWorking = isCameraWorking(rearLeftAprilCamera);
+        rearRightAprilCameraWorking = isCameraWorking(rearRightAprilCamera);
 
         try {
             aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
@@ -114,32 +121,52 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 16.421 / PoseSubsystem.INCHES_IN_A_METER),
                 new Rotation3d(0, 0, Math.toRadians(180 + 7.595)));
 
-        frontPhotonPoseEstimator = new PhotonPoseEstimator(
+        frontLeftPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-                forwardAprilCamera,
+                frontLeftAprilCamera,
                 robotToCam
         );
-        rearPhotonPoseEstimator = new PhotonPoseEstimator(
+        frontRightPhotonPoseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-                rearAprilCamera,
+                frontRightAprilCamera,
+                robotToRearCam
+        );
+        rearLeftPhotonPoseEstimator = new PhotonPoseEstimator(
+                aprilTagFieldLayout,
+                PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+                rearLeftAprilCamera,
+                robotToCam
+        );
+        rearRightPhotonPoseEstimator = new PhotonPoseEstimator(
+                aprilTagFieldLayout,
+                PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+                rearRightAprilCamera,
                 robotToRearCam
         );
     }
 
     public Optional<EstimatedRobotPose>[] getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
         if (aprilTagsLoaded) {
-            Optional<EstimatedRobotPose> frontEstimatedPose = Optional.empty();
-            Optional<EstimatedRobotPose> rearEstimatedPose = Optional.empty();
+            Optional<EstimatedRobotPose> frontLeftEstimatedPose = Optional.empty();
+            Optional<EstimatedRobotPose> frontRightEstimatedPose = Optional.empty();
+            Optional<EstimatedRobotPose> rearLeftEstimatedPose = Optional.empty();
+            Optional<EstimatedRobotPose> rearRightEstimatedPose = Optional.empty();
 
-            if (forwardAprilCameraWorking) {
-                frontEstimatedPose = getPhotonVisionEstimatedPose("Front", frontPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
+            if (frontLeftAprilCameraWorking) {
+                frontLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", frontLeftPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
             }
-            if (rearAprilCameraWorking) {
-                rearEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+            if (frontRightAprilCameraWorking) {
+                frontRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", frontRightPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
             }
-            return new Optional[] {frontEstimatedPose, rearEstimatedPose};
+            if (rearLeftAprilCameraWorking) {
+                rearLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", rearLeftPhotonPoseEstimator, previousEstimatedRobotPose, frontReliablePoseIsStable);
+            }
+            if (rearRightAprilCameraWorking) {
+                rearRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearRightPhotonPoseEstimator, previousEstimatedRobotPose, rearReliablePoseIsStable);
+            }
+            return new Optional[] {frontLeftEstimatedPose, frontRightEstimatedPose, rearLeftEstimatedPose, rearRightEstimatedPose};
         } else {
             return new Optional[] {Optional.empty()};
         }
@@ -202,11 +229,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             return false;
         }
 
-        if (logCounter++ % 20 == 0) {
-            //log.info(String.format("Estimated pose %s from tags %s. Previous pose was %s.",
-            //        estimatedPose.estimatedPose.toPose2d(), getStringFromList(allTagIds), previousEstimatedPose));
-        }
-
         // How far away is the camera from the target?
         double cameraDistance =
                 estimatedPose.targetsUsed.get(0).getBestCameraToTarget().getTranslation().getNorm();
@@ -242,28 +264,43 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         loopCounter++;
 
         // If one of the cameras is not working, see if they have self healed every 5 seconds
-        if (loopCounter % (50 * 5) == 0 && (!forwardAprilCameraWorking || !rearAprilCameraWorking)) {
-            log.info("Before check, Forward April camera working: " + forwardAprilCameraWorking
-                    + ", Rear April camera working: " + rearAprilCameraWorking);
+        if (loopCounter % (50 * 5) == 0 && (!frontLeftAprilCameraWorking || !frontRightAprilCameraWorking
+                || !rearLeftAprilCameraWorking || !rearRightAprilCameraWorking)) {
+            log.info("Before check, Forward April camera working: " + frontLeftAprilCameraWorking
+                    + ", Rear April camera working: " + frontRightAprilCameraWorking
+                    + ", Left Rear April camera working: " + rearLeftAprilCameraWorking
+                    + ", Right Rear April camera working: " + rearRightAprilCameraWorking);
             log.info("Checking if cameras have self healed");
-            forwardAprilCameraWorking = isCameraWorking(forwardAprilCamera);
-            rearAprilCameraWorking = isCameraWorking(rearAprilCamera);
-            log.info("After check, Forward April camera working: " + forwardAprilCameraWorking
-                    + ", Rear April camera working: " + rearAprilCameraWorking);
+            frontLeftAprilCameraWorking = isCameraWorking(frontLeftAprilCamera);
+            frontRightAprilCameraWorking = isCameraWorking(frontRightAprilCamera);
+            rearLeftAprilCameraWorking = isCameraWorking(rearLeftAprilCamera);
+            rearRightAprilCameraWorking = isCameraWorking(rearRightAprilCamera);
+            log.info("After check, Forward April camera working: " + frontLeftAprilCameraWorking
+                    + ", Rear April camera working: " + frontRightAprilCameraWorking
+                    + ", Left Rear April camera working: " + rearLeftAprilCameraWorking
+                    + ", Right Rear April camera working: " + rearRightAprilCameraWorking);
         }
 
-        aKitLog.record("ForwardAprilCameraWorking", forwardAprilCameraWorking);
-        aKitLog.record("RearAprilCameraWorking", rearAprilCameraWorking);
+        aKitLog.record("ForwardAprilCameraWorking", frontLeftAprilCameraWorking);
+        aKitLog.record("RearAprilCameraWorking", frontRightAprilCameraWorking);
+        aKitLog.record("LeftRearAprilCameraWorking", rearLeftAprilCameraWorking);
+        aKitLog.record("RightRearAprilCameraWorking", rearRightAprilCameraWorking);
     }
 
     @Override
     public void refreshDataFrame() {
         if (aprilTagsLoaded) {
-            if (forwardAprilCameraWorking) {
-                forwardAprilCamera.refreshDataFrame();
+            if (frontLeftAprilCameraWorking) {
+                frontLeftAprilCamera.refreshDataFrame();
             }
-            if (rearAprilCameraWorking) {
-                rearAprilCamera.refreshDataFrame();
+            if (frontRightAprilCameraWorking) {
+                frontRightAprilCamera.refreshDataFrame();
+            }
+            if (rearLeftAprilCameraWorking) {
+                rearLeftAprilCamera.refreshDataFrame();
+            }
+            if (rearRightAprilCameraWorking) {
+                rearRightAprilCamera.refreshDataFrame();
             }
         }
     }
