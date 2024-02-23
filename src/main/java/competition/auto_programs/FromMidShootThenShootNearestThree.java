@@ -33,14 +33,13 @@ public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
         this.addCommands(fireNoteIntoSpeakerFromStartingPosition);
 
         // Drive to top spike note and collect
-        drive.setTargetNote(BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SpikeTop));
+        drive.setTargetNote(PoseSubsystem.SpikeTop);
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(driveToTopSpikeNoteAndCollect);
 
         // Drive back to subwoofer
         var driveBackToCentralSubwoofer = driveToCentralSubwooferCommandProvider.get();
         this.addCommands(driveBackToCentralSubwoofer);
-
 
     }
 }

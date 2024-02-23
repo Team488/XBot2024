@@ -182,9 +182,9 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
 
-        var driveToCenterLine1AndCollectCommandGroup = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        drive.setTargetNote(BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SpikeTop));
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToCenterLine1AndCollectCommandGroup);
+        drive.setTargetNote(PoseSubsystem.SpikeTop);
+        var driveToGivenNoteAndCollectCommandGroup = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToGivenNoteAndCollectCommandGroup);
 
         var driveToCentralSubwooferCommand = driveToCentralSubwooferCommandProvider.get();
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
