@@ -3,12 +3,6 @@ package competition.electrical_contract;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import competition.subsystems.pose.PoseSubsystem;
-import xbot.common.injection.electrical_contract.CANTalonInfo;
-import xbot.common.injection.electrical_contract.DeviceInfo;
-import xbot.common.injection.swerve.SwerveInstance;
-import xbot.common.math.XYPair;
 
 import javax.inject.Inject;
 

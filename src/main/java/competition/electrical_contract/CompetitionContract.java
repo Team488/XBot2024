@@ -1,11 +1,14 @@
 package competition.electrical_contract;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import competition.subsystems.pose.PoseSubsystem;
-import xbot.common.injection.electrical_contract.CANTalonInfo;
+import competition.subsystems.vision.CameraInfo;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
+
 import javax.inject.Inject;
 
 public class CompetitionContract extends ElectricalContract {
@@ -200,6 +203,40 @@ public class CompetitionContract extends ElectricalContract {
     @Override
     public boolean getArmEncoderIsOnLeftMotor() {
         return true;
+    }
+
+    @Override
+    public CameraInfo[] getCameraInfo() {
+        return new CameraInfo[] {
+            new CameraInfo("Apriltag_FrontLeft_Camera",
+                    "FrontLeft",
+                    new Transform3d(new Translation3d(
+                            13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                            13.09 / PoseSubsystem.INCHES_IN_A_METER,
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
+                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(14)))),
+            new CameraInfo("Apriltag_FrontRight_Camera",
+                    "FrontRight",
+                    new Transform3d(new Translation3d(
+                            13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                            -13.09 / PoseSubsystem.INCHES_IN_A_METER,
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
+                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(-14)))),
+            new CameraInfo("Apriltag_RearLeft_Camera",
+                    "RearLeft",
+                    new Transform3d(new Translation3d(
+                            -13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                            13.09 / PoseSubsystem.INCHES_IN_A_METER,
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
+                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 - 14)))),
+            new CameraInfo("Apriltag_RearRight_Camera",
+                    "RearRight",
+                    new Transform3d(new Translation3d(
+                            -13.48 / PoseSubsystem.INCHES_IN_A_METER,
+                            -13.09 / PoseSubsystem.INCHES_IN_A_METER,
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
+                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 + 14))))
+        };
     }
 }
 
