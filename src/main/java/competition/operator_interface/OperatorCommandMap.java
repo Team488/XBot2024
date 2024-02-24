@@ -125,7 +125,8 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             FireWhenReadyCommand fireWhenReady,
-            FireCollectorCommand fireCollector
+            FireCollectorCommand fireCollector,
+            SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree
             )
     {
         double typicalVelocity = 2.5;
@@ -198,6 +199,8 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(subwooferShotFromMidShootThenShootNearestThree);
     }
 
     @Inject
