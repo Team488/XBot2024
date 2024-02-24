@@ -32,8 +32,7 @@ import java.util.ArrayList;
 public class TwoNoteGriefAuto extends SequentialCommandGroup {
     DynamicOracle oracle;
     @Inject
-    public TwoNoteGriefAuto(Provider<FireNoteCommandGroup> fireNoteProvider,
-                            Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
+    public TwoNoteGriefAuto(Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
                             Provider<SetArmAngleCommand> setArmAngleProvider,
                             Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
                             Provider<FireWhenReadyCommand> fireWhenReadyCommandProvider,
@@ -45,12 +44,12 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
                             DynamicOracle oracle){
         this.oracle = oracle;
 
+        //starts us in front of the subwoofer, to score
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
-//        var fireFirstNote = fireNoteProvider.get();
-//        this.addCommands(Commands.deadline(fireFirstNote));
+        //fires the note we are holding at the start
         var warmUpForFirstSubwooferShot = warmUpShooterCommandProvider.get();
         warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
         var fireFirstShot = fireWhenReadyCommandProvider.get();
@@ -58,19 +57,23 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         this.addCommands(Commands.deadline(fireFirstShot,
                 warmUpForFirstSubwooferShot));
 
+        //gets arm into scooching position and sets up swerve pathing to mess up center notes
         var setArmToScooch = setArmAngleProvider.get();
         setArmToScooch.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
+
         var swerveToEdge = swerveProvider.get();
         setUpLogic(swerveToEdge,1);
-
         var swerveToOtherEdgeWhileStrafing = swerveProvider.get();
         setUpLogic(swerveToOtherEdgeWhileStrafing,2);
 
-        this.addCommands(swerveToEdge);
-        this.addCommands(Commands.deadline(swerveToOtherEdgeWhileStrafing,scoochIntake,setArmToScooch));
+        //drives along center notes while scooching them
+        this.addCommands(swerveToEdge.alongWith(setArmToScooch));
+        this.addCommands(Commands.deadline(swerveToOtherEdgeWhileStrafing,scoochIntake));
 
+        //collects Centerline 5 note
         var swerveLastNote = swerveProvider.get();
         setUpLogic(swerveLastNote,3);
+        swerveLastNote.logic.setAimAtGoalDuringFinalLeg(true);
         swerveLastNote.logic.setDriveBackwards(true);
 
         var setArmToCollect = setArmAngleProvider.get();
@@ -82,6 +85,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         var moveNoteAwayFromShooterWheels =
                 eject.withTimeout(0.1).andThen(stopCollector.withTimeout(0.05));
 
+        //drives back to the subwoofer and scores
         var driveToSubwoofer = swerveProvider.get();
         setUpLogic(driveToSubwoofer,488);
 
@@ -94,6 +98,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         this.addCommands(fireSecondShot);
 
     }
+    //sets up basic logic when given a swerve command
     private void setUpLogic(SwerveSimpleTrajectoryCommand swerve,double key){
         //swerve.logic.setAimAtGoalDuringFinalLeg(true);
         //swerve.logic.setDriveBackwards(true);
@@ -105,25 +110,24 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
     //a key to make this function return different points based on what you need
     private ArrayList<XbotSwervePoint> getPoints(double key){
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
-        //drive through center line notes
+        //drives to the first centerline note with an angle ready to collect
         if (key == 1) {
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.509,7.7), Rotation2d.fromDegrees(240), 10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,7.7), Rotation2d.fromDegrees(240), 10));
             return points;
         }
-        //drive through Centerline5 note
+        //drives through 4 centerline notes
         if(key == 2){
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.509,0.6), Rotation2d.fromDegrees(240),10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,2.388), Rotation2d.fromDegrees(240),10));
             return points;
         }
+        //drives back to subwoofer
         if(key == 3){
             points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.296,0.6),new Rotation2d(),10));
             return points;
         }
-        //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(2.9,3.8),new Rotation2d(),10));
         //any other key just sets it to this
         var target = BasePoseSubsystem.convertBlueToRedIfNeeded(new Translation2d(15.2,5.553));
-        //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(14.224,2.429),Rotation2d.fromDegrees(0),10));
-        points.add(new XbotSwervePoint(target,Rotation2d.fromDegrees(180), 10));
+        points.add(new XbotSwervePoint(target,Rotation2d.fromDegrees(0), 10));
         return points;
     }
 }
