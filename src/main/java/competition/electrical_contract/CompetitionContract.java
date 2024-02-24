@@ -208,33 +208,33 @@ public class CompetitionContract extends ElectricalContract {
     @Override
     public CameraInfo[] getCameraInfo() {
         return new CameraInfo[] {
-            new CameraInfo("photonvisionfrontleft",
+            new CameraInfo("Apriltag_FrontLeft_Camera",
                     "FrontLeft",
                     new Transform3d(new Translation3d(
                             13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
                             new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(-14)))),
-            new CameraInfo("photonvisionfrontright",
+            new CameraInfo("Apriltag_FrontRight_Camera",
                     "FrontRight",
                     new Transform3d(new Translation3d(
                             13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
                             new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(14)))),
-            new CameraInfo("photonvisionrearleft",
+            new CameraInfo("Apriltag_RearLeft_Camera",
                     "RearLeft",
                     new Transform3d(new Translation3d(
                             -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
                             new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 + 14)))),
-            new CameraInfo("photonvisionrearright",
+            new CameraInfo("Apriltag_RearRight_Camera",
                     "RearRight",
                     new Transform3d(new Translation3d(
                             -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
                             new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 - 14))))
         };
     }
