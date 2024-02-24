@@ -68,14 +68,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         this.pose = pose;
         this.converter = new DoubleInterpolator();
 
-
         // WE WON'T BE NEEDING THESE AS CURRENTLY WE ARE USING A UNIVERSAL ERROR TOLERANCE "acceptableToleranceRPM"
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
         longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
 
         // NEEDS TUNING TO FIND CORRECT VALUE
         iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
-
 
         // THIS IS HOW MUCH RPM WE CAN TOLERATE (needs testing and is UNIVERSAL)
         acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
@@ -159,7 +157,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     @Override
     public void setTargetValue(ShooterWheelTargetSpeeds value) {
         targetRpms = value;
-        log.info("Target RPMs: " + value.upperWheelsTargetRPM + ", " + value.lowerWheelsTargetRPM);
     }
 
     public void setTargetValue(double value) {
