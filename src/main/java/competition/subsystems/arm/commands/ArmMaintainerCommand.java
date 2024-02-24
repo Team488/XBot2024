@@ -25,8 +25,6 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     TimeStableValidator calibrationValidator;
     final double calibrationStallDurationSec = 0.5;
 
-    private boolean dynamicBrakingEnabled = false;
-
     @Inject
     public ArmMaintainerCommand(ArmSubsystem arm, PropertyFactory pf,
                                 HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory,
@@ -56,15 +54,8 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         // The arms can draw huge currents when trying to move small values, so if we are on target
         // then we need to kill power.
         if (isMaintainerAtGoal()) {
-            if (dynamicBrakingEnabled) {
-                // Engage the brake so we don't backdrive away from this point
-                // (vibrations from the shooter can cause that)
-                arm.setBrakeEnabled(true);
-            }
             arm.setPower(0.0);
         } else {
-            // If we need to move, disengage the brake
-            arm.setBrakeEnabled(false);
             double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
             arm.setPower(power);
         }
@@ -76,8 +67,6 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     protected void uncalibratedMachineControlAction() {
         aKitLog.record("Started Calibration", startedCalibration);
         aKitLog.record("Given Up On Calibration", givenUpOnCalibration);
-
-        arm.setBrakeEnabled(false);
 
         // Try to auto-calibrate.
         if (!startedCalibration) {
@@ -121,15 +110,6 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     }
 
     @Override
-    protected void humanControlAction() {
-        // Disable the brake before letting the human take over.
-        if (dynamicBrakingEnabled) {
-            arm.setBrakeEnabled(false);
-        }
-        super.humanControlAction();
-    }
-
-    @Override
     protected double getErrorMagnitude() {
             double current = arm.getCurrentValue();
             double target = arm.getTargetValue();
@@ -139,10 +119,17 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     @Override
     protected Double getHumanInput() {
-        return MathUtils.deadband(
+        double fundamentalInput = MathUtils.deadband(
                 oi.operatorFundamentalsGamepad.getLeftVector().y,
                 oi.getOperatorGamepadTypicalDeadband(),
                 (x) -> x);
+
+        double advancedInput = MathUtils.deadband(
+                oi.operatorGamepadAdvanced.getLeftVector().y,
+                oi.getOperatorGamepadTypicalDeadband(),
+                (x) -> x);
+
+        return fundamentalInput + advancedInput;
     }
 
     @Override
