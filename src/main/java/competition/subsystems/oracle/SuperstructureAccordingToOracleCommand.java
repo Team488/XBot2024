@@ -50,6 +50,11 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
                 tryToScore = true;
 
             }
+            default -> {
+                collector.stop();
+                arm.setTargetValue(0.0);
+                tryToScore = false;
+            }
         }
 
         if (tryToScore) {
