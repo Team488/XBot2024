@@ -125,7 +125,7 @@ public class OperatorCommandMap {
     {
         double typicalVelocity = 2.5;
         // Manipulate heading and position for easy testing
-        resetHeading.setHeadingToApply(0);
+        resetHeading.setHeadingToApply(180);
         var teleportRobot = pose.createSetPositionCommand(PoseSubsystem.SubwooferCentralScoringLocation);
         operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(teleportRobot);
 
