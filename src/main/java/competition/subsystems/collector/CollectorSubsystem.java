@@ -2,13 +2,14 @@ package competition.subsystems.collector;
 
 import com.revrobotics.CANSparkBase;
 import competition.electrical_contract.ElectricalContract;
-import org.littletonrobotics.junction.Logger;
+import competition.subsystems.oracle.NoteCollectionInfoSource;
+import competition.subsystems.oracle.NoteFiringInfoSource;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
-import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
 import xbot.common.controls.sensors.XDigitalInput;
-import xbot.common.properties.BooleanProperty;
+import xbot.common.controls.sensors.XTimer;
+import xbot.common.logic.TimeStableValidator;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -16,16 +17,19 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefreshable {
+public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefreshable, NoteCollectionInfoSource, NoteFiringInfoSource {
     public final XCANSparkMax collectorMotor;
     public final DoubleProperty intakePower;
     public final DoubleProperty ejectPower;
     private IntakeState intakeState;
-    private final XDigitalInput inControlNoteSensor;
-    private final XDigitalInput readyToFireNoteSensor;
+    public final XDigitalInput inControlNoteSensor;
+    public final XDigitalInput readyToFireNoteSensor;
     private final ElectricalContract contract;
     private final DoubleProperty firePower;
     private final DoubleProperty intakePowerInControlMultiplier;
+    private final TimeStableValidator noteInControlValidator;
+    double lastFiredTime = -Double.MAX_VALUE;
+    final DoubleProperty waitTimeAfterFiring;
 
 
     public enum IntakeState {
@@ -55,7 +59,10 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
         intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
+        this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
         this.intakeState = IntakeState.STOPPED;
+
+        noteInControlValidator = new TimeStableValidator(() -> 0.1); // Checks for having the note over 0.1 seconds
     }
 
     public IntakeState getIntakeState(){
@@ -65,6 +72,9 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         double power = intakePower.get();
         if (getGamePieceInControl()) {
             power *= intakePowerInControlMultiplier.get();
+        }
+        if (getGamePieceReady()) {
+            power = 0;
         }
         setPower(power);
         intakeState = IntakeState.INTAKING;
@@ -77,9 +87,20 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         setPower(0);
         intakeState = IntakeState.STOPPED;
     }
+
     public void fire(){
         setPower(firePower.get());
+        if (intakeState != IntakeState.FIRING) {
+            lastFiredTime = XTimer.getFPGATimestamp();
+        }
         intakeState = IntakeState.FIRING;
+    }
+
+    public double getSecondsSinceFiringBegan() {
+        if (intakeState != IntakeState.FIRING) {
+            return 0;
+        }
+        return XTimer.getFPGATimestamp() - lastFiredTime;
     }
 
     public void setPower(double power) {
@@ -102,11 +123,28 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return false;
     }
 
+
+    @Override
+    public boolean confidentlyHasControlOfNote() {
+        return noteInControlValidator.peekStable();
+    }
+
+    @Override
+    public boolean confidentlyHasFiredNote() {
+        return getSecondsSinceFiringBegan() > waitTimeAfterFiring.get();
+    }
+
     @Override
     public void periodic() {
         if (contract.isCollectorReady()) {
-            aKitLog.record("HasGamePiece", getGamePieceReady());
+            noteInControlValidator.checkStable(getGamePieceInControl() || getGamePieceReady());
+
+            aKitLog.record("GamePieceReady", getGamePieceReady());
+            aKitLog.record("GamePieceInControl", getGamePieceInControl());
+            aKitLog.record("ConfidentlyHasControlOfNote", confidentlyHasControlOfNote());
+            aKitLog.record("ConfidentlyHasFiredNote", confidentlyHasFiredNote());
         }
+
     }
 
     @Override

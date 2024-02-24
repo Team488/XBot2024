@@ -28,7 +28,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
     //need pose for real time calculations
     PoseSubsystem pose;
-    ShooterDistanceToRpmConverter converter;
+    DoubleInterpolator converter;
 
     DoubleInterpolator upperWheelDistanceToRpmInterpolator;
     DoubleInterpolator lowerWheelDistanceToRpmInterpolator;
@@ -66,7 +66,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         ampShotRpm = pf.createPersistentProperty("AmpShotRpm", 2000);
 
         this.pose = pose;
-        this.converter = new ShooterDistanceToRpmConverter();
+        this.converter = new DoubleInterpolator();
 
 
         // WE WON'T BE NEEDING THESE AS CURRENTLY WE ARE USING A UNIVERSAL ERROR TOLERANCE "acceptableToleranceRPM"
@@ -159,7 +159,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     @Override
     public void setTargetValue(ShooterWheelTargetSpeeds value) {
         targetRpms = value;
-        log.info("Target RPM: " + value);
+        log.info("Target RPMs: " + value.upperWheelsTargetRPM + ", " + value.lowerWheelsTargetRPM);
     }
 
     public void setTargetValue(double value) {
@@ -233,8 +233,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     }
 
     public void periodic() {
-        upperWheelMotor.periodic();
-        lowerWheelMotor.periodic();
+        if (contract.isShooterReady()) {
+            upperWheelMotor.periodic();
+            lowerWheelMotor.periodic();
+        }
 
         aKitLog.record("TargetRPM", getTargetValue());
         aKitLog.record("CurrentRPM", getCurrentValue());

@@ -68,7 +68,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         this.addCommands(Commands.deadline(driveToMiddleSpike,
                 intake, stopShooter));
 
-        // Return to subwoofer, and also (eject for 0.1 seconds, warm up shooter)
+        // Return to subwoofer, warm up shooter)
         queueMessageToAutoSelector("Return to subwoofer");
         var driveToSubwoofer = swerveProvider.get();
         driveToSubwoofer.logic.setEnableConstantVelocity(true);
@@ -80,13 +80,11 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
             return points;
         });
 
-        var moveNoteAwayFromShooterWheels =
-                eject.withTimeout(0.1).andThen(stopCollector.withTimeout(0.05));
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
         warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
 
         this.addCommands(Commands.deadline(driveToSubwoofer,
-                moveNoteAwayFromShooterWheels.andThen(warmUpForSecondSubwooferShot)));
+                warmUpForSecondSubwooferShot));
 
         // Fire note
         queueMessageToAutoSelector("Fire second note");
@@ -96,10 +94,6 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
     }
 
     private void queueMessageToAutoSelector(String message) {
-        this.addCommands(
-            new InstantCommand(() -> {
-                autoSelector.setAutonomousState(message);
-            })
-        );
+        this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
     }
 }
