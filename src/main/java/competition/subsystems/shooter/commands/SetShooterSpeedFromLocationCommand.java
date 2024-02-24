@@ -14,13 +14,12 @@ public class SetShooterSpeedFromLocationCommand extends BaseSetpointCommand {
     public SetShooterSpeedFromLocationCommand(ShooterWheelSubsystem shooter){
         super(shooter);
         this.shooter = shooter;
-
     }
 
     @Override
     public void initialize() {
+        log.info("Initializing");
         shooter.setTargetValue(shooter.getSpeedForRange());
-
     }
 
     @Override
