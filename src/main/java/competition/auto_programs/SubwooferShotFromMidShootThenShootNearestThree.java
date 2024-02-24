@@ -46,7 +46,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferFirst = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(Commands.deadline(driveBackToCentralSubwooferFirst));
+        this.addCommands(driveBackToCentralSubwooferFirst);
 
         // Fire second note into the speaker
         var fireSecondNoteCommand = fireFromSubwooferCommandGroup.get();
@@ -63,7 +63,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferSecond = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(Commands.deadline(driveBackToCentralSubwooferSecond));
+        this.addCommands(driveBackToCentralSubwooferSecond);
 
         // Fire Note into the speaker
         var fireThirdNoteCommand = fireFromSubwooferCommandGroup.get();
@@ -80,7 +80,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferThird = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(Commands.deadline(driveBackToCentralSubwooferThird));
+        this.addCommands(driveBackToCentralSubwooferThird);
 
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireFromSubwooferCommandGroup.get();

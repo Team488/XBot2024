@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.ShootThenMoveOutOfLine;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
@@ -126,6 +127,7 @@ public class OperatorCommandMap {
             Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
             Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
             SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree,
+            DistanceShotFromMidShootThenShootNearestThree distanceShotFromMidShootThenShootNearestThree,
             FireWhenReadyCommand fireWhenReady,
             FireCollectorCommand fireCollector
             )
@@ -210,6 +212,7 @@ public class OperatorCommandMap {
 ////        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
 //
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(subwooferShotFromMidShootThenShootNearestThree);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(distanceShotFromMidShootThenShootNearestThree);
     }
 
     @Inject
