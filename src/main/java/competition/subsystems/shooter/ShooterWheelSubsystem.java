@@ -159,6 +159,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     @Override
     public void setTargetValue(ShooterWheelTargetSpeeds value) {
         targetRpms = value;
+        log.info("Target RPMs: " + value.upperWheelsTargetRPM + ", " + value.lowerWheelsTargetRPM);
     }
 
     public void setTargetValue(double value) {
