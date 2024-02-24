@@ -1,6 +1,6 @@
 package competition.electrical_contract;
 
-import xbot.common.injection.electrical_contract.CANTalonInfo;
+import competition.subsystems.vision.CameraInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.electrical_contract.XSwerveDriveElectricalContract;
 import xbot.common.injection.swerve.SwerveInstance;
@@ -61,6 +61,8 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
 
     public abstract DeviceInfo getShooterMotorFollower();
 
+    // Vision
+    public abstract CameraInfo[] getCameraInfo();
 }
 
 
