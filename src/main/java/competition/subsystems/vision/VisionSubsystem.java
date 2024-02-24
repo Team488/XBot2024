@@ -1,5 +1,6 @@
 package competition.subsystems.vision;
 
+import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -48,7 +49,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     long logCounter = 0;
 
     @Inject
-    public VisionSubsystem(PropertyFactory pf, RobotAssertionManager assertionManager) {
+    public VisionSubsystem(PropertyFactory pf, ElectricalContract electricalContract, RobotAssertionManager assertionManager) {
         this.assertionManager = assertionManager;
         visionTable = NetworkTableInstance.getDefault().getTable(VISION_TABLE);
 
@@ -77,50 +78,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         aprilTagCameras = new ArrayList<AprilTagCamera>();
         if (aprilTagsLoaded) {
             PhotonCameraExtended.setVersionCheckEnabled(false);
-            aprilTagCameras.add(
-                    new AprilTagCamera("photonvisionfrontleft",
-                            "FrontLeft",
-                            waitForStablePoseTime::get,
-                            new Transform3d(new Translation3d(
-                                    13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                                    -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                                    10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                                    new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(-14))),
-                            aprilTagFieldLayout)
-            );
-            aprilTagCameras.add(
-                    new AprilTagCamera("photonvisionfrontright",
-                            "FrontRight",
-                            waitForStablePoseTime::get,
-                            new Transform3d(new Translation3d(
-                                    13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                                    13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                                    10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                                    new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(14))),
-                            aprilTagFieldLayout)
-            );
-            aprilTagCameras.add(
-                    new AprilTagCamera("photonvisionrearleft",
-                            "RearLeft",
-                            waitForStablePoseTime::get,
-                            new Transform3d(new Translation3d(
-                                    -13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                                    -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                                    10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                                    new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 + 14))),
-                            aprilTagFieldLayout)
-            );
-            aprilTagCameras.add(
-                    new AprilTagCamera("photonvisionrearright",
-                            "RearRight",
-                            waitForStablePoseTime::get,
-                            new Transform3d(new Translation3d(
-                                    -13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                                    13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                                    10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                                    new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 - 14))),
-                            aprilTagFieldLayout)
-            );
+            for (var cameraInfo : electricalContract.getCameraInfo()) {
+                aprilTagCameras.add(new AprilTagCamera(cameraInfo, waitForStablePoseTime::get, aprilTagFieldLayout));
+            }
         }
     }
 

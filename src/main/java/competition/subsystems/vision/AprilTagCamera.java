@@ -1,7 +1,6 @@
 package competition.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
 import xbot.common.logic.TimeStableValidator;
@@ -17,17 +16,15 @@ public class AprilTagCamera {
 
     private final TimeStableValidator isStable;
 
-    public AprilTagCamera(String cameraName,
-                          String friendlyName,
+    public AprilTagCamera(CameraInfo cameraInfo,
                           Supplier<Double> poseStableTime,
-                          Transform3d cameraPosition,
                           AprilTagFieldLayout fieldLayout) {
-        this.camera = new PhotonCameraExtended(cameraName);
-        this.friendlyName = friendlyName;
+        this.camera = new PhotonCameraExtended(cameraInfo.networkTablesName());
+        this.friendlyName = cameraInfo.friendlyName();
         this.poseEstimator = new PhotonPoseEstimator(fieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 this.camera,
-                cameraPosition);
+                cameraInfo.position());
         this.isStable = new TimeStableValidator(poseStableTime);
     }
 
