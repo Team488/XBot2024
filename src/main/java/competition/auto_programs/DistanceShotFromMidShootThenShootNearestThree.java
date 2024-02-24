@@ -13,16 +13,16 @@ import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-public class FromMidShootThenShootNearestThree extends SequentialCommandGroup {
+public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
 
     @Inject
-    public FromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
-                                             Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                             Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
-                                             Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                             PoseSubsystem pose, DriveSubsystem drive) {
+    public DistanceShotFromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
+                                                          Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
+                                                          Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
+                                                          Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
+                                                          PoseSubsystem pose, DriveSubsystem drive) {
         this.autoSelector = autoSelector;
 
         // Force our location

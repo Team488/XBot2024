@@ -5,8 +5,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.auto_programs.FromMidShootCollectShoot;
-import competition.auto_programs.FromMidShootThenShootNearestThree;
-import competition.commandgroups.CollectSequenceCommandGroup;
+import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
@@ -39,7 +38,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.XbotSwervePoint;
@@ -122,7 +120,7 @@ public class OperatorCommandMap {
             DriveSubsystem drive,
             Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
             Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-            FromMidShootThenShootNearestThree fromMidShootThenShootNearestThree
+            SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree
             )
     {
         double typicalVelocity = 2.5;
@@ -130,7 +128,7 @@ public class OperatorCommandMap {
         resetHeading.setHeadingToApply(0);
         var teleportRobot = pose.createSetPositionCommand(new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0)));
 
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
 
         var noviceMode = new InstantCommand(() -> drive.setNoviceMode(true));
@@ -192,7 +190,7 @@ public class OperatorCommandMap {
 ////        var driveToCentralSubwooferCommand = driveToCentralSubwooferCommandProvider.get();
 ////        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
 //
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(fromMidShootThenShootNearestThree);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(subwooferShotFromMidShootThenShootNearestThree);
     }
 
     @Inject
