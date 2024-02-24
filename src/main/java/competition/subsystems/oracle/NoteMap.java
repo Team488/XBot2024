@@ -1,7 +1,10 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Singleton;
@@ -74,5 +77,25 @@ public class NoteMap {
 
     public Note getClosestNote(Translation2d point, Note.NoteAvailability... availabilities) {
         return getClosestNote(point, Double.MAX_VALUE, availabilities);
+    }
+
+    public Pose3d[] getAllKnownNotes() {
+        Pose3d[] notes = new Pose3d[this.internalNoteMap.size()];
+        int i = 0;
+        for (Note note : this.internalNoteMap.values()) {
+
+            double noteZ = 0.025;
+            if (note.getAvailability() != Note.NoteAvailability.Available) {
+                noteZ = -3.0;
+            }
+
+            notes[i] = new Pose3d(new Translation3d(
+                    note.getLocation().getX(),
+                    note.getLocation().getY(),
+                    noteZ),
+                    new Rotation3d(0,0,0));
+            i++;
+        }
+        return notes;
     }
 }
