@@ -20,8 +20,8 @@ public class OperatorInterface {
 
     // ONE GAMEPAD IS FOR COMPETITION, SECOND GAMEPAD IS USED DURING PRACTICE
     public XXboxController driverGamepad;
-    public XXboxController operatorGamepad;
-    public XXboxController operatorGamepadSecond;
+    public XXboxController operatorFundamentalsGamepad;
+    public XXboxController operatorGamepadAdvanced;
 
     public XXboxController autoGamepad;
     public XJoystick neoTrellis;
@@ -41,13 +41,13 @@ public class OperatorInterface {
         driverGamepad.setLeftInversion(false, true);
         driverGamepad.setRightInversion(true, true);
 
-        operatorGamepad = controllerFactory.create(1);
-        operatorGamepad.setLeftInversion(false, true);
-        operatorGamepad.setRightInversion(false, true);
+        operatorFundamentalsGamepad = controllerFactory.create(1);
+        operatorFundamentalsGamepad.setLeftInversion(false, true);
+        operatorFundamentalsGamepad.setRightInversion(false, true);
 
-        operatorGamepadSecond = controllerFactory.create(4);
-        operatorGamepadSecond.setLeftInversion(false, true);
-        operatorGamepadSecond.setRightInversion(false, true);
+        operatorGamepadAdvanced = controllerFactory.create(4);
+        operatorGamepadAdvanced.setLeftInversion(false, true);
+        operatorGamepadAdvanced.setRightInversion(false, true);
 
         autoGamepad = controllerFactory.create(3);
 

@@ -1,17 +1,24 @@
 package competition.subsystems.arm;
 
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
+import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XDoubleSolenoid;
 import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
+import xbot.common.controls.sensors.XTimer;
+import xbot.common.math.DoubleInterpolator;
 import xbot.common.math.MathUtils;
-import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -23,35 +30,50 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public XCANSparkMax armMotorLeft;
     public XCANSparkMax armMotorRight;
-    public XSolenoid armBrakeSolenoid;
+    public XDoubleSolenoid armBrakeSolenoid;
     public XSparkAbsoluteEncoder armAbsoluteEncoder;
     public final ElectricalContract contract;
 
     public ArmState armState;
 
-    public DoubleProperty extendPower;
-    public DoubleProperty retractPower;
+    public double extendPower;
+    public double retractPower;
 
-    private DoubleProperty armPowerMax;
-    private DoubleProperty armPowerMin;
+    public final DoubleProperty powerMax;
+    public final DoubleProperty powerMin;
 
 
-    public DoubleProperty ticksToMmRatio; // Millimeters
-    public DoubleProperty armMotorLeftRevolutionOffset; // # of revolutions
-    public DoubleProperty armMotorRightRevolutionOffset;
-    public DoubleProperty armMotorRevolutionLimit;
-    public DoubleProperty armAbsoluteEncoderOffset;
-    public DoubleProperty armAbsoluteEncoderTicksPerDegree;
-    public DoubleProperty softUpperLimit;
-    public DoubleProperty softLowerLimit;
-    public DoubleProperty speedLimitForNotCalibrated;
-    public DoubleProperty angleTrim;
+    public final DoubleProperty extensionMmPerRevolution; // Millimeters
+    private double armMotorLeftRevolutionOffset; // # of revolutions
+    private double armMotorRightRevolutionOffset;
+    public final DoubleProperty upperLegalLimitMm;
+    public final DoubleProperty absoluteEncoderOffset;
+    public final DoubleProperty absoluteEncoderRevolutionsPerArmDegree;
+    public final DoubleProperty upperSlowZoneThresholdMm;
+    public final DoubleProperty lowerSlowZoneThresholdMm;
+    public final DoubleProperty lowerExtremelySlowZoneThresholdMm;
+    public final DoubleProperty upperSlowZonePowerLimit;
+    public final DoubleProperty lowerSlowZonePowerLimit;
+    public final DoubleProperty lowerExtremelySlowZonePowerLimit;
+    public final DoubleProperty powerLimitForNotCalibrated;
+    public final DoubleProperty angleTrim;
     boolean hasCalibratedLeft;
     boolean hasCalibratedRight;
+    private final DoubleProperty maximumExtensionDesyncMm;
 
-    private double targetAngle;
+    private double targetExtension;
+    private final DoubleProperty overallPowerClampForTesting;
 
+    PoseSubsystem pose;
+    public final Mechanism2d armActual2d;
+    public final MechanismLigament2d armLigament;
+    // what angle does the arm make with the pivot when it's at our concept of zero?
+    public final double armPivotAngleAtArmAngleZero = 45;
 
+    private double timeSinceNewTarget = -Double.MAX_VALUE;
+    private final DoubleProperty powerRampDurationSec;
+    private boolean powerRampingEnabled = true;
+    private boolean dynamicBrakingEnabled = false;
 
     public enum ArmState {
         EXTENDING,
@@ -69,49 +91,63 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public enum UsefulArmPosition {
         STARTING_POSITION,
         COLLECTING_FROM_GROUND,
-        FIRING_FROM_SPEAKER_FRONT,
-        FIRING_IN_AMP,
+        FIRING_FROM_SUBWOOFER,
+        FIRING_FROM_AMP,
         SCOOCH_NOTE
     }
 
+    private DoubleInterpolator speakerDistanceToExtensionInterpolator;
+
     @Inject
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
-                        XSolenoid.XSolenoidFactory xSolenoidFactory,
-                        ElectricalContract contract) {
-        this.armBrakeSolenoid = xSolenoidFactory.create(contract.getBrakeSolenoid().channel);
+                        XDoubleSolenoid.XDoubleSolenoidFactory doubleSolenoidFactory,
+                        XSolenoid.XSolenoidFactory solenoidFactory,
+                        ElectricalContract contract, PoseSubsystem pose) {
+
+        this.pose = pose;
+
+        armBrakeSolenoid = doubleSolenoidFactory.create(
+                solenoidFactory.create(contract.getBrakeSolenoidForward().channel),
+                solenoidFactory.create(contract.getBrakeSolenoidReverse().channel));
+
         // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
         this.contract = contract;
-        setArmBrakeSolenoid(false);
-        extendPower = pf.createPersistentProperty("ExtendPower", 0.1);
-        retractPower = pf.createPersistentProperty("RetractPower", 0.1);
+        setBrakeEnabled(false);
+        extendPower = 0.1;
+        retractPower = -0.1;
       
-        armPowerMax = pf.createPersistentProperty("ArmPowerMax", 0.5);
-        armPowerMin = pf.createPersistentProperty("ArmPowerMin", -0.5);
+        powerMax = pf.createPersistentProperty("PowerMax", 0.45);
+        powerMin = pf.createPersistentProperty("PowerMin", -0.25);
 
-        // ticksToMmRatio and armMotorRevLimit needs configuration
-        ticksToMmRatio = pf.createPersistentProperty("TicksToArmMmRatio", 1000);
-        armMotorRevolutionLimit = pf.createPersistentProperty("ArmMotorPositionLimit", 15000);
+        extensionMmPerRevolution = pf.createPersistentProperty("ExtensionMmPerRevolution", 5.715352326);
+        upperLegalLimitMm = pf.createPersistentProperty("UpperLegalLimitMm", 238);
 
         angleTrim = pf.createPersistentProperty("AngleTrim", 0);
 
-        armMotorLeftRevolutionOffset = pf.createPersistentProperty(
-                "ArmMotorLeftRevolutionOffset", 0);
-        armMotorRightRevolutionOffset = pf.createPersistentProperty(
-                "ArmMotorRightRevolutionOffset", 0);
+        absoluteEncoderOffset = pf.createPersistentProperty(
+                "AbsoluteEncoderOffset", 0);
+        absoluteEncoderRevolutionsPerArmDegree = pf.createPersistentProperty(
+                "AbsoluteEncoderRevolutionPerArmDegree", 1);
 
-        armAbsoluteEncoderOffset = pf.createPersistentProperty(
-                "ArmAbsoluteEncoderOffset", 0);
-        armAbsoluteEncoderTicksPerDegree = pf.createPersistentProperty(
-                "ArmAbsoluteEncoderTicksPerDegree", 1);
+        upperSlowZoneThresholdMm = pf.createPersistentProperty(
+                "UpperSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.85);
+        lowerSlowZoneThresholdMm = pf.createPersistentProperty(
+                "LowerSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.15);
+        lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
+                "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
 
-        softLowerLimit = pf.createPersistentProperty(
-                "SoftLowerLimit", armMotorRevolutionLimit.get() * 0.15);
-        softUpperLimit = pf.createPersistentProperty(
-                "SoftUpperLimit", armMotorRevolutionLimit.get() * 0.85);
+        upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
+        lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
+        lowerExtremelySlowZonePowerLimit = pf.createPersistentProperty("LowerExtremelySlowZonePowerLimit", -0.02);
 
-        speedLimitForNotCalibrated = pf.createPersistentProperty(
-                "SpeedLimitForNotCalibrated", -0.1);
+        powerLimitForNotCalibrated = pf.createPersistentProperty(
+                "PowerLimitForNotCalibrated", -0.02);
+
+        overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.45);
+        maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 0.5);
+
+        powerRampDurationSec = pf.createPersistentProperty("PowerRampDurationSec", 0.5);
 
         hasCalibratedLeft = false;
         hasCalibratedRight = false;
@@ -122,94 +158,238 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight = sparkMaxFactory.createWithoutProperties(
                     contract.getArmMotorRight(), this.getPrefix(), "ArmMotorRight");
 
+            armMotorLeft.enableVoltageCompensation(12);
+            armMotorRight.enableVoltageCompensation(12);
+
             // Get through-bore encoders
             var armWithEncoder = contract.getArmEncoderIsOnLeftMotor() ? armMotorLeft : armMotorRight;
             armAbsoluteEncoder = armWithEncoder.getAbsoluteEncoder(
                     this.getPrefix() + "ArmEncoder",
                     contract.getArmEncoderInverted());
 
+            armMotorLeft.setSmartCurrentLimit(60);
+            armMotorRight.setSmartCurrentLimit(60);
+
             // Enable hardware limits
-            armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
-            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
-            armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
-            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyClosed, true);
+            armMotorLeft.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
+            armMotorLeft.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, false);
+            armMotorRight.setForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, true);
+            armMotorRight.setReverseLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen, false);
+
+            armMotorLeft.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            armMotorRight.setIdleMode(CANSparkBase.IdleMode.kCoast);
         }
 
         this.armState = ArmState.STOPPED;
+
+        armActual2d = new Mechanism2d(10, 10, new Color8Bit(255, 255, 255));
+        armLigament = new MechanismLigament2d("arm", 5, getArmAngle() - armPivotAngleAtArmAngleZero, 10, new Color8Bit(255, 0, 0)); 
+        armActual2d.getRoot("base", 3, 5)
+            .append(armLigament)
+            .append(new MechanismLigament2d("box-right", 1, 90))
+            .append(new MechanismLigament2d("box-top", 2, 90))
+            .append(new MechanismLigament2d("box-left", 1, 90));
+
+        speakerDistanceToExtensionInterpolator =
+                new DoubleInterpolator(
+                        new double[]{0, 36, 49.5, 63, 80, 111, 136},
+                        new double[]{0, 0,  20.0, 26, 41, 57,  64});
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
-        if (actualPosition >= softUpperLimit.get()) {
-            power = MathUtils.constrainDouble(power, armPowerMin.get(), 0);
-        } else if (actualPosition <= softLowerLimit.get()) {
-            power = MathUtils.constrainDouble(power, 0, armPowerMax.get());
+        if (actualPosition >= upperLegalLimitMm.get()) {
+            power = MathUtils.constrainDouble(power, powerMin.get(), 0);
+        } else if (actualPosition >= upperSlowZoneThresholdMm.get()) {
+            power = MathUtils.constrainDouble(power, powerMin.get(), upperSlowZonePowerLimit.get());
+        } else if (actualPosition <= lowerSlowZoneThresholdMm.get() && actualPosition > lowerExtremelySlowZoneThresholdMm.get()) {
+            power = MathUtils.constrainDouble(power, lowerSlowZonePowerLimit.get(), powerMax.get());
+        } else if (actualPosition <= lowerExtremelySlowZoneThresholdMm.get()) {
+            power = MathUtils.constrainDouble(power, lowerExtremelySlowZonePowerLimit.get(), powerMax.get());
         }
         return power;
     }
 
-    public double constrainPowerIfAtLimit(double power) {
-        switch(getLimitState(armMotorRight)) {
+    public double constrainPowerIfAtLimit(XCANSparkMax motor, double power) {
+        switch(getLimitState(motor)) {
             case BOTH_LIMITS_HIT -> power = 0;
-            case UPPER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, armPowerMin.get(), 0);
-            case LOWER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, 0, armPowerMax.get());
+            case UPPER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, powerMin.get(), 0);
+            case LOWER_LIMIT_HIT -> power = MathUtils.constrainDouble(power, 0, powerMax.get());
             default -> {}
         }
         return power;
     }
 
+    boolean unsafeMinOrMax = false;
+
+    private double getLeftArmPositionInRevolutions() {
+        return armMotorLeft.getPosition() + armMotorLeftRevolutionOffset;
+    }
+
+    private double getRightArmPositionInRevolutions() {
+        return armMotorRight.getPosition() + armMotorRightRevolutionOffset;
+    }
   
     public void setPowerToLeftAndRightArms(double leftPower, double rightPower) {
-        // Check if armPowerMin/armPowerMax are safe values
-        if (armPowerMax.get() < 0 || armPowerMin.get() > 0 || speedLimitForNotCalibrated.get() > 0) {
+
+        // First, if we are calibrated, apply a power factor based on the difference between the two
+        // arms to make sure they stay in sync
+        if (hasCalibratedLeft && hasCalibratedRight) {
+            double distanceLeftAhead = convertRevolutionsToExtensionMm(getLeftArmPositionInRevolutions() - getRightArmPositionInRevolutions());
+            aKitLog.record("DistanceLeftAhead", distanceLeftAhead);
+            // If the left arm is ahead, and the left arm wants to go up/forward, reduce its power.
+            // If the left arm is ahead, and the left arm wants to go down/backward, make no change to power.
+            // If the right arm is ahead, and the right arm wants to go up/forward, reduce its power.
+            // If the right arm is ahead, and the right arm wants to go down/backward, make no change to power.
+
+            // If we have to make any changes to power, do so by a factor proportional to the maximum
+            // allowed desync in mm. At 50% of the desync, it would restrict power by 50%.
+
+            double potentialReductionFactor = Math.max(0, 1 - Math.abs(distanceLeftAhead) / maximumExtensionDesyncMm.get());
+            aKitLog.record("PotentialReductionFactor", potentialReductionFactor);
+
+            // If left arm is ahead
+            if (distanceLeftAhead> 0) {
+                // and left arm wants to go more ahead, slow down (or stop)
+                if (leftPower > 0) {
+                    leftPower *= potentialReductionFactor;
+                }
+                // and right arm wants to get further behind, slow down (or stop)
+                if (rightPower < 0) {
+                    rightPower *= potentialReductionFactor;
+                }
+            }
+            // If right arm is ahead
+            else if (distanceLeftAhead < 0) {
+                // and right arm wants to go more ahead, slow down (or stop)
+                if (rightPower > 0) {
+                    rightPower *= potentialReductionFactor;
+                }
+                // and left arm wants to get further behind, slow down (or stop)
+                if (leftPower < 0) {
+                    leftPower *= potentialReductionFactor;
+                }
+            }
+        }
+
+        // Next, completely flatten the power within a known range.
+        // Primarily used for validating the arm behavior with very small power values.
+        double clampLimit = Math.abs(overallPowerClampForTesting.get());
+
+        leftPower = MathUtils.constrainDouble(leftPower, -clampLimit, clampLimit);
+        rightPower = MathUtils.constrainDouble(rightPower, -clampLimit, clampLimit);
+
+        // Next, a sanity check; if we have been grossly misconfigured to where the
+        // max/min powers are out of bounds (e.g. a max smaller than min), freeze the arm entirely.
+        if (powerMax.get() < 0 || powerMin.get() > 0 || powerLimitForNotCalibrated.get() > 0) {
             armMotorLeft.set(0);
             armMotorRight.set(0);
-            log.error("armPowerMax or armPowerMin or speedLimitForNotCalibrated values out of bound!");
+            if (!unsafeMinOrMax) {
+                log.error("armPowerMax or armPowerMin or speedLimitForNotCalibrated values out of bound!");
+                unsafeMinOrMax = true;
+            }
             return;
         }
+        unsafeMinOrMax = false;
 
-        // If not calibrated, motor can only go down at slow rate
+        // If not calibrated, motor can only go down at slow rate since we don't know where we are.
         if (!(hasCalibratedLeft && hasCalibratedRight)) {
-            leftPower = MathUtils.constrainDouble(leftPower, speedLimitForNotCalibrated.get(), 0);
-            rightPower = MathUtils.constrainDouble(rightPower, speedLimitForNotCalibrated.get(), 0);
+            leftPower = MathUtils.constrainDouble(leftPower, powerLimitForNotCalibrated.get(), 0);
+            rightPower = MathUtils.constrainDouble(rightPower, powerLimitForNotCalibrated.get(), 0);
+        }
 
-        } else {
-            // If calibrated, restrict movement to area
+        // If calibrated, but near limits, slow the system down a bit so we
+        // don't slam into the hard limits.
+        if (hasCalibratedLeft && hasCalibratedRight)
+        {
             leftPower = constrainPowerIfNearLimit(
                     leftPower,
-                    armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+                    convertRevolutionsToExtensionMm(getLeftArmPositionInRevolutions()));
             rightPower = constrainPowerIfNearLimit(
                     rightPower,
-                    armMotorRight.getPosition() + armMotorRightRevolutionOffset.get());
+                    convertRevolutionsToExtensionMm(getRightArmPositionInRevolutions()));
         }
-  
-        // Arm at limit hit power restrictions
-        leftPower = constrainPowerIfAtLimit(leftPower);
-        rightPower = constrainPowerIfAtLimit(rightPower);
 
-        // Put power within limit range (if not already)
-        leftPower = MathUtils.constrainDouble(leftPower, armPowerMin.get(), armPowerMax.get());
-        rightPower = MathUtils.constrainDouble(rightPower, armPowerMin.get(), armPowerMax.get());
+        // If we are actually at our hard limits, stop the motors
+        leftPower = constrainPowerIfAtLimit(armMotorLeft, leftPower);
+        rightPower = constrainPowerIfAtLimit(armMotorRight, rightPower);
+
+        // Respect overall max/min power limits.
+        leftPower = MathUtils.constrainDouble(leftPower, powerMin.get(), powerMax.get());
+        rightPower = MathUtils.constrainDouble(rightPower, powerMin.get(), powerMax.get());
+
+        // Try to ramp power - a smoother start will definitely help reduce high current shock loads,
+        // and may reduce instability if both sides can get up to "cruise speed" together
+        if (powerRampingEnabled && powerRampDurationSec.get() > 0) {
+            double timeSince = XTimer.getFPGATimestamp() - timeSinceNewTarget;
+            if (timeSince < powerRampDurationSec.get()) {
+                double rampFactor = timeSince / powerRampDurationSec.get();
+                leftPower *= rampFactor;
+                rightPower *= rampFactor;
+            }
+        }
+
+        // Engage brake if no power commanded
+        if (leftPower == 0 && rightPower == 0) {
+            setBrakeEnabled(true);
+        } else {
+            // Disengage brake if any power commanded.
+            setBrakeEnabled(false);
+        }
+
+        // finally, if the brake is engaged, just stop the motors.
+        if (getBrakeEngaged()) {
+            leftPower = 0;
+            rightPower = 0;
+        }
 
         if (contract.isArmReady()) {
             armMotorLeft.set(leftPower);
             armMotorRight.set(rightPower);
         }
     }
+
+    boolean brakeEngaged = false;
     //brake solenoid
-    public void setArmBrakeSolenoid(boolean on){armBrakeSolenoid.setOn(on);}
+    public void setBrakeEnabled(boolean enabled) {
+        brakeEngaged = enabled;
+        if (enabled) {
+            armBrakeSolenoid.setForward();
+        } else {
+            armBrakeSolenoid.setReverse();
+        }
+    }
+
+    public boolean getBrakeEngaged() {
+        return brakeEngaged;
+    }
+
+    double previousPower;
 
     @Override
     public void setPower(Double power) {
+
+        if (previousPower == 0 && power != 0) {
+            initializeRampingPowerTarget();
+        }
+
+        aKitLog.record("RequestedArmPower", power);
         setPowerToLeftAndRightArms(power, power);
+        previousPower = power;
+    }
+
+    public void dangerousManualSetPowerToBothArms(double power) {
+        setBrakeEnabled(false);
+        armMotorLeft.set(power);
+        armMotorRight.set(power);
     }
 
     public void extend() {
-        setPower(extendPower.get());
+        setPower(extendPower);
         armState = ArmState.EXTENDING;
     }
 
     public void retract() {
-        setPower(retractPower.get());
+        setPower(retractPower);
         armState = ArmState.RETRACTING;
     }
 
@@ -219,18 +399,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     // TO-DO
-    public double convertTicksToMm(double ticks) {
-        return ticksToMmRatio.get() * ticks;
-    }
-
-    // TO-DO
-    public double convertTicksToShooterAngle(double ticks) {
-        return ticks * 1000; // To be modified into ticks to shooter angle formula
-    }
-
-    // TO-DO
-    public double convertShooterAngleToTicks(double angle) {
-        return 0;
+    public double convertRevolutionsToExtensionMm(double revolutions) {
+        return extensionMmPerRevolution.get() * revolutions;
     }
 
     public double getArmAngleFromDistance(double distanceFromSpeaker) {
@@ -276,12 +446,32 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             // THESE ARE ALL PLACEHOLDER VALUES!!!
             case STARTING_POSITION -> angle = 40;
             case COLLECTING_FROM_GROUND -> angle = 0;
-            case FIRING_FROM_SPEAKER_FRONT -> angle = 30;
-            case FIRING_IN_AMP -> angle = 80;
+            case FIRING_FROM_SUBWOOFER -> angle = 30;
+            case FIRING_FROM_AMP -> angle = 80;
             case SCOOCH_NOTE -> angle = 60; // placeholder value, safe angle to let note through while still low
             default -> angle = 40;
         }
         return angle;
+    }
+
+    public double getUsefulArmPositionExtensionInMm(UsefulArmPosition usefulArmPosition) {
+        double extension = 0;
+        switch (usefulArmPosition) {
+            case STARTING_POSITION:
+            case COLLECTING_FROM_GROUND:
+            case FIRING_FROM_SUBWOOFER:
+                extension = 0;
+                break;
+            case FIRING_FROM_AMP:
+                extension = upperLegalLimitMm.get();
+                break;
+            case SCOOCH_NOTE:
+                extension = 15;
+                break;
+            default:
+                return 0;
+        }
+        return extension;
     }
 
 
@@ -290,8 +480,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         boolean lowerHit = false;
 
         if (contract.isArmReady()) {
-            upperHit = motor.getForwardLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
-            lowerHit = motor.getReverseLimitSwitchPressed(SparkLimitSwitch.Type.kNormallyOpen);
+            upperHit = motor.getForwardLimitSwitchPressed();
+            lowerHit = motor.getReverseLimitSwitchPressed();
         }
 
         if (upperHit && lowerHit) {
@@ -305,76 +495,151 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getArmAbsoluteAngle() {
-        return (armAbsoluteEncoder.getPosition() + armAbsoluteEncoderOffset.get()) / armAbsoluteEncoderTicksPerDegree.get();
+        return (armAbsoluteEncoder.getPosition() + absoluteEncoderOffset.get()) / absoluteEncoderRevolutionsPerArmDegree.get();
     }
 
-    public void armEncoderTicksUpdate() {
-        aKitLog.record("ArmMotorLeftTicks", armMotorLeft.getPosition());
-        aKitLog.record("ArmMotorRightTicks", armMotorRight.getPosition());
-        aKitLog.record("ArmMotorLeftMm", convertTicksToMm(
-                armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get()));
-        aKitLog.record("ArmMotorRightMm", convertTicksToMm(
-                armMotorRight.getPosition() + armMotorRightRevolutionOffset.get()));
-
-        aKitLog.record("ArmMotorToShooterAngle", convertTicksToShooterAngle(
-                (armMotorLeft.getPosition() + armMotorRight.getPosition() + armMotorLeftRevolutionOffset.get()
-                        + armMotorRightRevolutionOffset.get()) / 2));
-
+    public void recordArmEncoderValues() {
+        aKitLog.record("LeftExtensionMm", convertRevolutionsToExtensionMm(getLeftArmPositionInRevolutions()));
+        aKitLog.record("RightExtensionMm", convertRevolutionsToExtensionMm(getRightArmPositionInRevolutions()));
         aKitLog.record("ArmAbsoluteEncoderAngle", getArmAbsoluteAngle());
     }
 
 
-    // Update the offset of the arm when it touches either forward/reverse limit switches for the first time.
+    // Update the offset of the arm when it touches reverse limit switches for the first time.
+    // Both arms calibrate independently
     public void calibrateArmOffset() {
-        LimitState leftArmLimitState = getLimitState(armMotorLeft);
-        LimitState rightArmLimitState = getLimitState(armMotorRight);
-
-        if (!hasCalibratedLeft && leftArmLimitState == LimitState.LOWER_LIMIT_HIT) {
+        if (!hasCalibratedLeft && getLimitState(armMotorLeft) == LimitState.LOWER_LIMIT_HIT) {
             hasCalibratedLeft = true;
-            armMotorLeftRevolutionOffset.set(-armMotorLeft.getPosition());
+            armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
         }
 
-        if (!hasCalibratedRight && rightArmLimitState == LimitState.LOWER_LIMIT_HIT) {
+        if (!hasCalibratedRight && getLimitState(armMotorRight) == LimitState.LOWER_LIMIT_HIT) {
             hasCalibratedRight = true;
-            armMotorRightRevolutionOffset.set(-armMotorRight.getPosition());
+            armMotorRightRevolutionOffset = -armMotorRight.getPosition();
         }
-
-        aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
-        aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
     }
+   
+    /**
+     * Get the current angle of the arm in degrees based on the extension distance.
+     */
+    public double getArmAngle() {
+        return getArmAngleForExtension(getCurrentValue());
+    }
+
+    public double getArmAngleForExtension(double extension) {
+        // TODO: This is just a placeholder, the relationship will actually be nonlinear
+        var degreesPerMmExtension = 0.01;
+        return extension * degreesPerMmExtension;
+    }
+
+    public double getExtensionForArmAngle(double angle) {
+        // TODO: this is just a placeholder, the relationship will be nonlinear
+        var degreesPerMmExtension = 0.01;
+
+        // unncessarily paranoid avoid divide by 0 check
+        if(degreesPerMmExtension == 0) {
+            return 0;
+        } else {
+            return angle / degreesPerMmExtension;
+        }
+    }
+
     @Override
     public Double getCurrentValue() {
-        return convertTicksToMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset.get());
+        return getExtensionDistance();
     }
 
+    public double getExtensionDistance() {
+        return convertRevolutionsToExtensionMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset);
+    }
+
+    /** 
+     * This is the extension distance the arm is trying to reach via PID 
+     */
     @Override
     public Double getTargetValue() {
-        return targetAngle;
+        return targetExtension;
     }
 
+    /**
+     * the current target extension distance the arm is trying to reach via PID
+     */
     @Override
-    public void setTargetValue(Double value) {
-         targetAngle = value;
+    public void setTargetValue(Double targetExtension) {
+         this.targetExtension = targetExtension;
+    }
+
+    public void setTargetAngle(Double targetAngle) {
+        targetExtension = getExtensionForArmAngle(targetAngle);
     }
 
     @Override
     public boolean isCalibrated() {
-        return false;
+        return hasCalibratedLeft && hasCalibratedRight;
+    }
+
+    public double getLeftArmOffset() {
+        return armMotorLeftRevolutionOffset;
+    }
+
+    public double getRightArmOffset() {
+        return armMotorRightRevolutionOffset;
+    }
+
+    /**
+     * Do not call this from competition code.
+     * @param clampPower maximum power under any circumstance
+     */
+    public void setClampLimit(double clampPower) {
+        overallPowerClampForTesting.set(Math.abs(clampPower));
+    }
+
+    public void initializeRampingPowerTarget() {
+        timeSinceNewTarget = XTimer.getFPGATimestamp();
+    }
+
+    public void setRampingPowerEnabled(boolean enabled) {
+        powerRampingEnabled = enabled;
+    }
+
+    public double getAngleFromRange() {
+        return getArmAngleFromDistance(pose.getDistanceFromSpeaker());
+    }
+
+    public void markArmsAsCalibratedAgainstLowerPhyscalLimit() {
+        hasCalibratedLeft = true;
+        armMotorLeftRevolutionOffset = -armMotorLeft.getPosition();
+        hasCalibratedRight = true;
+        armMotorRightRevolutionOffset = -armMotorRight.getPosition();
+    }
+
+    public double getRecommendedExtension(double distanceFromSpeaker) {
+        return speakerDistanceToExtensionInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker);
     }
 
     public void periodic() {
         if (contract.isArmReady()) {
-            armEncoderTicksUpdate();
+            recordArmEncoderValues();
             calibrateArmOffset();
             armMotorLeft.periodic();
             armMotorRight.periodic();
         }
 
-        aKitLog.record("Target Angle", targetAngle);
+        aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
+        aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
+
+        aKitLog.record("Target Extension", targetExtension);
+        aKitLog.record("TargetAngle", getArmAngleForExtension(targetExtension));
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
+
+        var color = isCalibrated() ? new Color8Bit(0, 255, 0) : new Color8Bit(255, 0, 0);
+        armLigament.setAngle(getArmAngle() - armPivotAngleAtArmAngleZero);
+        armLigament.setColor(color);
+        aKitLog.record("Arm2dStateActual", armActual2d);
     }
+
 
     @Override
     public void refreshDataFrame() {

@@ -1,7 +1,6 @@
 package competition.subsystems.arm;
 
 import competition.BaseCompetitionTest;
-import competition.operator_interface.OperatorCommandMap;
 import competition.subsystems.arm.commands.ExtendArmCommand;
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.arm.commands.RetractArmCommand;
@@ -28,6 +27,8 @@ public class BaseArmCommandsTest extends BaseCompetitionTest {
         retract = getInjectorComponent().retractArmCommand();
         stop = getInjectorComponent().stopArmCommand();
         reconcile = getInjectorComponent().reconcileArmAlignmentCommand();
+        arm.setClampLimit(1.0);
+        arm.setRampingPowerEnabled(false);
     }
 
     private void checkMotorPower(double power) {
@@ -46,12 +47,12 @@ public class BaseArmCommandsTest extends BaseCompetitionTest {
         // Extend
         extend.initialize();
         extend.execute();
-        checkMotorPower(arm.extendPower.get());
+        checkMotorPower(arm.extendPower);
 
         // Retract
         retract.initialize();
         retract.execute();
-        checkMotorPower(arm.retractPower.get());
+        checkMotorPower(arm.lowerExtremelySlowZonePowerLimit.get());
 
         // Stop
         stop.initialize();
