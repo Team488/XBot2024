@@ -4,11 +4,10 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import xbot.common.command.BaseCommand;
-import xbot.common.math.WrappedRotation2d;
 
 import javax.inject.Inject;
 
-public class MidNoteCommand extends BaseCommand {
+public class MomRightAutoCommand extends BaseCommand {
     PathPlannerDriveSubsystem drive;
     Command autonomousCommand;
     RobotContainer robotContainer;
@@ -16,15 +15,15 @@ public class MidNoteCommand extends BaseCommand {
     PoseSubsystem pose;
 
     @Inject
-    public MidNoteCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
-                                  DriveSubsystem driveSubsystem, PoseSubsystem pose) {
+    public MomRightAutoCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
+                                 DriveSubsystem driveSubsystem, PoseSubsystem pose) {
         this.robotContainer = robotContainer;
         this.drive = drive;
         this.driveSubsystem = driveSubsystem;
         this.pose = pose;
         addRequirements(driveSubsystem);
         addRequirements(drive);
-        this.autonomousCommand = robotContainer.getMidNoteCommand();
+        this.autonomousCommand = robotContainer.getMomentumRight();
         autonomousCommand.addRequirements(drive);
         autonomousCommand.addRequirements(driveSubsystem);
 

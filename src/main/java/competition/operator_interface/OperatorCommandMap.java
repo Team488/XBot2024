@@ -9,6 +9,8 @@ import competition.auto.Fast4NoteFarCommand;
 import competition.auto.FourNoteAutoCommand;
 import competition.auto.MarkerTestAutoCommand;
 import competition.auto.MidNoteCommand;
+import competition.auto.MidNoteCommandGroup;
+import competition.auto.MomRightAutoCommand;
 import competition.auto.UpdateHolonomicCommand;
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
@@ -49,11 +51,11 @@ public class OperatorCommandMap {
             ReconcileArmAlignmentCommand slightLeftArmBackward,
             DriveCoupleFeetCommand driveCoupleFeetCommand,
             FourNoteAutoCommand fourNoteAutoCommand,
-            UpdateHolonomicCommand updateHolonomicCommand,
-            MidNoteCommand midNoteCommand,
             Fast4NoteFarCommand fast4NoteFarCommand,
             Fast4NoteCloseCommand fast4NoteCloseCommand,
-            MarkerTestAutoCommand markerTestAutoCommand)
+            MarkerTestAutoCommand markerTestAutoCommand,
+            MomRightAutoCommand momRightAutoCommand,
+            MidNoteCommandGroup midNoteCommandGroup)
     {
         resetHeading.setHeadingToApply(0);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(resetHeading);
@@ -63,9 +65,7 @@ public class OperatorCommandMap {
 
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(driveCoupleFeetCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(fourNoteAutoCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(updateHolonomicCommand);
-        midNoteCommand.includeOnSmartDashboard();
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(midNoteCommandGroup);
         fast4NoteFarCommand.includeOnSmartDashboard();
         fast4NoteCloseCommand.includeOnSmartDashboard();
         markerTestAutoCommand.includeOnSmartDashboard();

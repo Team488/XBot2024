@@ -8,36 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7275269251393195,
-        "y": 4.385307915914978
+        "x": 1.6396709716496354,
+        "y": 4.092954054853979
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.5,
-        "y": 4.126492109141929
+        "x": 2.5401208637175103,
+        "y": 4.1046482092964185
       },
       "prevControl": {
-        "x": 2.5117690520281326,
-        "y": 4.225892421902668
-      },
-      "nextControl": {
-        "x": 2.4882309479718674,
-        "y": 4.02709179638119
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.4313719284817554,
-        "y": 3.8168165797453404
-      },
-      "prevControl": {
-        "x": 2.425920331205802,
-        "y": 3.9249507741702043
+        "x": 2.3229703297013424,
+        "y": 4.233283908163258
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,19 +30,19 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1,
-      "rotationDegrees": -0.6214587192804604,
+      "waypointRelativePos": 0.95,
+      "rotationDegrees": 180.0,
       "rotateFast": false
     }
   ],
   "constraintZones": [
     {
       "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0.65,
-      "maxWaypointRelativePos": 0.95,
+      "minWaypointRelativePos": 0.5,
+      "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 1.5,
-        "maxAcceleration": 1.5,
+        "maxVelocity": 0.5,
+        "maxAcceleration": 0.5,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0
       }
@@ -66,21 +50,21 @@
   ],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 1.0,
+    "maxAcceleration": 1.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -37.99873244250464,
+    "rotation": 150.46293435366064,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "Simple2Note",
   "previewStartingState": {
-    "rotation": -59.03624346792652,
+    "rotation": 120.06858282186244,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

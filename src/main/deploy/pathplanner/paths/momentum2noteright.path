@@ -29,24 +29,119 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [],
-  "eventMarkers": [],
+  "constraintZones": [
+    {
+      "name": "New Constraints Zone",
+      "minWaypointRelativePos": 0.2,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 0.5,
+        "maxAcceleration": 0.5,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0
+      }
+    }
+  ],
+  "eventMarkers": [
+    {
+      "name": "Preload",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "WarmUpPreloaded"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "PointArmPreLoaded"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ShootPreload",
+      "waypointRelativePos": 0.25,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "FirePreloaded"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SecondNoteSequence",
+      "waypointRelativePos": 0.5,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "IntakeSecondNote"
+              }
+            },
+            {
+              "type": "parallel",
+              "data": {
+                "commands": [
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "WarmUpSpike"
+                    }
+                  },
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "PointArmSpike"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "StopIntooter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 1.0,
+    "maxAcceleration": 1.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -26.565051177078047,
+    "rotation": 155.94970147039487,
     "rotateFast": true
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0.0,
+    "rotation": 177.12619038379452,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

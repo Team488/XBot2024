@@ -9,16 +9,20 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import competition.commandgroups.FireNoteCommandGroup;
+import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.shooter.commands.ContinuouslyWarmUpForSpeakerCommand;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 @Singleton
@@ -33,7 +37,12 @@ public class RobotContainer {
     public RobotContainer(DriveSubsystem drive, PoseSubsystem pose,
                           IntakeCollectorCommand intakeCollectorCommand,
                           StopCollectorCommand stopCollectorCommand,
-                          IntakeUntilNoteCollectedCommand intakeUntilNoteCollectedCommand) {
+                          Provider<IntakeUntilNoteCollectedCommand> intakeUntilNoteCollectedCommandProvider,
+                          Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
+                          Provider<ContinuouslyWarmUpForSpeakerCommand> continuouslyWarmUpForSpeakerCommandProvider,
+                          Provider<ContinuouslyPointArmAtSpeakerCommand> continuouslyPointArmAtSpeakerCommandProvider,
+                          Provider<StopIntooterCommandGroup> stopIntooterCommandGroupProvider,
+                          Provider<PrepareEverywhereCommandGroup> prepareEverywhereCommandGroupProvider) {
 
         this.drive = drive;
         this.pose = pose;
@@ -45,11 +54,32 @@ public class RobotContainer {
 
         //TODO: 2024
         //fire while moving to note
+        var warmUpPreload = continuouslyWarmUpForSpeakerCommandProvider.get();
+        var pointArmPreload = continuouslyPointArmAtSpeakerCommandProvider.get();
+        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
+
+        NamedCommands.registerCommand("WarmUpPreloaded", warmUpPreload);
+        NamedCommands.registerCommand("PointArmPreloaded", pointArmPreload);
+        NamedCommands.registerCommand("FirePreloaded", fireFirstNoteCommand);
 
         //intake note
-        NamedCommands.registerCommand("IntakeUntilNoteCollectedCommand", intakeUntilNoteCollectedCommand);
+        var intakeSecondNote = intakeUntilNoteCollectedCommandProvider.get();
+        NamedCommands.registerCommand("IntakeSecondNote", intakeSecondNote);
 
         //shooting from spike (subwoofer RPM prob)
+        var warmUpSpike = continuouslyWarmUpForSpeakerCommandProvider.get();
+        var pointArmSpike = continuouslyPointArmAtSpeakerCommandProvider.get();
+        var fireSecondNoteCommand = fireNoteCommandGroupProvider.get();
+
+        NamedCommands.registerCommand("WarmUpSpike", warmUpSpike);
+        NamedCommands.registerCommand("PointArmSpike", pointArmSpike);
+        NamedCommands.registerCommand("FireSecondNote", fireSecondNoteCommand);
+        //stop shooter lower arm
+        var stopIntooterCommand = stopIntooterCommandGroupProvider.get();
+        NamedCommands.registerCommand("StopIntooter", stopIntooterCommand);
+
+        var prepareArmMidNote = prepareEverywhereCommandGroupProvider.get();
+        NamedCommands.registerCommand("PrepareEverywhere", prepareArmMidNote);
 
         autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -84,6 +114,8 @@ public class RobotContainer {
     public Command getMarkerTestAutoCommand() {
         return new PathPlannerAuto("MarkerTestAuto");
     }
-
+    public Command getMomentumRight() {
+        return new PathPlannerAuto("momRight");
+    }
 
 }
