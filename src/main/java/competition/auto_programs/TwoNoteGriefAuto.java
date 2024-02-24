@@ -68,9 +68,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         var swerveLastNote = swerveProvider.get();
         setUpLogic(swerveLastNote,2);
-        swerveLastNote.logic.setAimAtIntermediateNonFinalLegs(true);
         swerveLastNote.logic.setDriveBackwards(true);
-
 
         var setArmToCollect = setArmAngleProvider.get();
         setArmToCollect.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
@@ -81,16 +79,16 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         var moveNoteAwayFromShooterWheels =
                 eject.withTimeout(0.1).andThen(stopCollector.withTimeout(0.05));
 
-//        var driveToSubwoofer = swerveProvider.get();
-//        setUpLogic(driveToSubwoofer,488);
+        var driveToSubwoofer = swerveProvider.get();
+        setUpLogic(driveToSubwoofer,488);
 
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
         warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
         var fireSecondShot = fireWhenReadyCommandProvider.get();
 
-//        this.addCommands(Commands.deadline(driveToSubwoofer,
-//                moveNoteAwayFromShooterWheels.andThen(warmUpForSecondSubwooferShot)));
-//        this.addCommands(fireSecondShot);
+        this.addCommands(Commands.deadline(driveToSubwoofer,
+                moveNoteAwayFromShooterWheels.andThen(warmUpForSecondSubwooferShot)));
+        this.addCommands(fireSecondShot);
 
     }
     private void setUpLogic(SwerveSimpleTrajectoryCommand swerve,double key){
@@ -116,13 +114,12 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         //drive through Centerline5 note
         if(key == 2){
             points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.296,0.6),new Rotation2d(),10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SubwooferCentralScoringLocation.getTranslation(),Rotation2d.fromDegrees(180),10));
             return points;
         }
         //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(2.9,3.8),new Rotation2d(),10));
         //any other key just sets it to this
-//        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation);
-//        points.add(new XbotSwervePoint(target, 10));
+        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(new Translation2d(15.623,5.553));
+        points.add(new XbotSwervePoint(target,new Rotation2d(), 10));
         return points;
     }
 }
