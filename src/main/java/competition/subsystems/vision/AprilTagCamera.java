@@ -3,6 +3,7 @@ package competition.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
+import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.logic.TimeStableValidator;
 
 import java.util.function.Supplier;

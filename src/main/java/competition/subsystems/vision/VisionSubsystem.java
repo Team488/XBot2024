@@ -9,6 +9,7 @@ import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.injection.electrical_contract.XCameraElectricalContract;
 import xbot.common.logging.RobotAssertionManager;
 import xbot.common.logic.TimeStableValidator;
 import xbot.common.properties.BooleanProperty;
@@ -40,7 +41,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     long logCounter = 0;
 
     @Inject
-    public VisionSubsystem(PropertyFactory pf, ElectricalContract electricalContract, RobotAssertionManager assertionManager) {
+    public VisionSubsystem(PropertyFactory pf, XCameraElectricalContract electricalContract, RobotAssertionManager assertionManager) {
         this.assertionManager = assertionManager;
 
         pf.setPrefix(this);
@@ -178,24 +179,24 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         // If one of the cameras is not working, see if they have self healed every 5 seconds
         if (loopCounter % (50 * 5) == 0 && (anyCameraBroken)) {
             log.info("Checking if cameras have self healed");
-            for (AprilTagCamera state : aprilTagCameras) {
-                if (!state.isCameraWorking()) {
-                    log.info("Camera " + state.getName() + " is still not working");
+            for (AprilTagCamera camera : aprilTagCameras) {
+                if (!camera.isCameraWorking()) {
+                    log.info("Camera " + camera.getName() + " is still not working");
                 }
             }
         }
 
-        for (AprilTagCamera state : aprilTagCameras) {
-            aKitLog.record(state.getName() + "CameraWorking", state.isCameraWorking());
+        for (AprilTagCamera camera : aprilTagCameras) {
+            aKitLog.record(camera.getName() + "CameraWorking", camera.isCameraWorking());
         }
     }
 
     @Override
     public void refreshDataFrame() {
         if (aprilTagsLoaded) {
-            for (AprilTagCamera state : aprilTagCameras) {
-                if (state.isCameraWorking()) {
-                    state.getCamera().refreshDataFrame();
+            for (AprilTagCamera camera : aprilTagCameras) {
+                if (camera.isCameraWorking()) {
+                    camera.getCamera().refreshDataFrame();
                 }
             }
         }
