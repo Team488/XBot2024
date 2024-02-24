@@ -8,12 +8,14 @@ import javax.inject.Inject;
 public class SetArmAngleCommand extends BaseSetpointCommand {
 
     ArmSubsystem armSubsystem;
+    ArmMaintainerCommand armMaintainerCommand;
 
     private double targetAngle;
 
     @Inject
-    public SetArmAngleCommand(ArmSubsystem armSubsystem) {
+    public SetArmAngleCommand(ArmSubsystem armSubsystem, ArmMaintainerCommand armMaintainerCommand) {
         this.armSubsystem = armSubsystem;
+        this.armMaintainerCommand = armMaintainerCommand;
     }
 
     public void setTargetAngle(double targetAngle) {
@@ -32,5 +34,7 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
     @Override
     public void execute() {
         // No-op. Set angle for maintainer to move arms to.
+        armMaintainerCommand.calibratedMachineControlAction();
+        armSubsystem.armState = ArmSubsystem.ArmState.HANGING;
     }
 }
