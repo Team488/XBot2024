@@ -55,8 +55,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty errorThreshold;
     final DoubleProperty singleTagStableDistance;
     final DoubleProperty multiTagStableDistance;
-    final TimeStableValidator frontReliablePoseIsStable;
-    final TimeStableValidator rearReliablePoseIsStable;
+    final TimeStableValidator frontLeftReliablePoseIsStable;
+    final TimeStableValidator frontRightReliablePoseIsStable;
+    final TimeStableValidator rearLeftReliablePoseIsStable;
+    final TimeStableValidator rearRightReliablePoseIsStable;
     NetworkTable visionTable;
     AprilTagFieldLayout aprilTagFieldLayout;
     XbotPhotonPoseEstimator customPhotonPoseEstimator;
@@ -81,18 +83,20 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
         errorThreshold = pf.createPersistentProperty("Error threshold",200);
-        frontReliablePoseIsStable = new TimeStableValidator(() -> waitForStablePoseTime.get());
-        rearReliablePoseIsStable = new TimeStableValidator(() -> waitForStablePoseTime.get());
+        frontLeftReliablePoseIsStable = new TimeStableValidator(() -> waitForStablePoseTime.get());
+        frontRightReliablePoseIsStable = new TimeStableValidator(() -> waitForStablePoseTime.get());
+        rearLeftReliablePoseIsStable = new TimeStableValidator(() -> waitForStablePoseTime.get());
+        rearRightReliablePoseIsStable = new TimeStableValidator(() -> waitForStablePoseTime.get());
 
         // TODO: Add resiliency to this subsystem, so that if the camera is not connected, it doesn't cause a pile
         // of errors. Some sort of VisionReady in the ElectricalContract may also make sense. Similarly,
         // we need to handle cases like not having the AprilTag data loaded.
 
         PhotonCameraExtended.setVersionCheckEnabled(false);
-        frontLeftAprilCamera = new PhotonCameraExtended("photonvisionfrontleft");
-        frontRightAprilCamera = new PhotonCameraExtended("photonvisionfrontright");
-        rearLeftAprilCamera = new PhotonCameraExtended("photonvisionrearleft");
-        rearRightAprilCamera = new PhotonCameraExtended("photonvisionrearright");
+        frontLeftAprilCamera = new PhotonCameraExtended("Apriltag_FrontLeft_Camera");
+        frontRightAprilCamera = new PhotonCameraExtended("Apriltag_FrontRight_Camera");
+        rearLeftAprilCamera = new PhotonCameraExtended("Apriltag_RearLeft_Camera");
+        rearRightAprilCamera = new PhotonCameraExtended("Apriltag_RearRight_Camera");
 
         // Check to see if we have incorrect versions. If so, then we need to not use that camera as the underlying libraries
         // could be unstable, leading to robot crashes or anomalous behavior.
@@ -113,22 +117,25 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         Transform3d robotToFrontRightCam = new Transform3d(new Translation3d(
                 13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                9.25 / PoseSubsystem.INCHES_IN_A_METER),
                 new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(-14)));
-        Transform3d robotToFrontLeftCam = new Transform3d(new Translation3d(
+        /*Transform3d robotToFrontLeftCam = new Transform3d(new Translation3d(
                 13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 13.09/ PoseSubsystem.INCHES_IN_A_METER,
-                10.18 / PoseSubsystem.INCHES_IN_A_METER),
-                new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(14)));
+                9.25 / PoseSubsystem.INCHES_IN_A_METER),
+                new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(14)));*/
+        Transform3d robotToFrontLeftCam = new Transform3d(new Translation3d(
+                0,0,0),
+                new Rotation3d(0,0,0));
         Transform3d robotToRearRightCam = new Transform3d(new Translation3d(
                 -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                9.25 / PoseSubsystem.INCHES_IN_A_METER),
                 new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 + 14)));
         Transform3d robotToRearLeftCam = new Transform3d(new Translation3d(
                 -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                 13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                10.18 / PoseSubsystem.INCHES_IN_A_METER),
+                9.25 / PoseSubsystem.INCHES_IN_A_METER),
                 new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 - 14)));
 
 
@@ -166,20 +173,20 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             Optional<EstimatedRobotPose> rearRightEstimatedPose = Optional.empty();
 
             if (frontLeftAprilCameraWorking) {
-                frontLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", frontLeftPhotonPoseEstimator,
-                        previousEstimatedRobotPose, frontReliablePoseIsStable);
+                frontLeftEstimatedPose = getPhotonVisionEstimatedPose("FrontLeft", frontLeftPhotonPoseEstimator,
+                        previousEstimatedRobotPose, frontLeftReliablePoseIsStable);
             }
             if (frontRightAprilCameraWorking) {
-                frontRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", frontRightPhotonPoseEstimator,
-                        previousEstimatedRobotPose, rearReliablePoseIsStable);
+                frontRightEstimatedPose = getPhotonVisionEstimatedPose("FrontRight", frontRightPhotonPoseEstimator,
+                        previousEstimatedRobotPose, frontRightReliablePoseIsStable);
             }
             if (rearLeftAprilCameraWorking) {
-                rearLeftEstimatedPose = getPhotonVisionEstimatedPose("Front", rearLeftPhotonPoseEstimator,
-                        previousEstimatedRobotPose, frontReliablePoseIsStable);
+                rearLeftEstimatedPose = getPhotonVisionEstimatedPose("RearLeft", rearLeftPhotonPoseEstimator,
+                        previousEstimatedRobotPose, rearLeftReliablePoseIsStable);
             }
             if (rearRightAprilCameraWorking) {
-                rearRightEstimatedPose = getPhotonVisionEstimatedPose("Rear", rearRightPhotonPoseEstimator,
-                        previousEstimatedRobotPose, rearReliablePoseIsStable);
+                rearRightEstimatedPose = getPhotonVisionEstimatedPose("RearRight", rearRightPhotonPoseEstimator,
+                        previousEstimatedRobotPose, rearRightReliablePoseIsStable);
             }
             return new Optional[] {frontLeftEstimatedPose, frontRightEstimatedPose,
                     rearLeftEstimatedPose, rearRightEstimatedPose};
