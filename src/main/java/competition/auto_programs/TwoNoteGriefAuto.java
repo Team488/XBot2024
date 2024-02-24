@@ -62,12 +62,15 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         setArmToScooch.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var swerveToEdge = swerveProvider.get();
         setUpLogic(swerveToEdge,1);
-        swerveToEdge.logic.setAimAtIntermediateNonFinalLegs(true);
 
-        this.addCommands(Commands.deadline(swerveToEdge,scoochIntake,setArmToScooch));
+        var swerveToOtherEdgeWhileStrafing = swerveProvider.get();
+        setUpLogic(swerveToOtherEdgeWhileStrafing,2);
+
+        this.addCommands(swerveToEdge);
+        this.addCommands(Commands.deadline(swerveToOtherEdgeWhileStrafing,scoochIntake,setArmToScooch));
 
         var swerveLastNote = swerveProvider.get();
-        setUpLogic(swerveLastNote,2);
+        setUpLogic(swerveLastNote,3);
         swerveLastNote.logic.setDriveBackwards(true);
 
         var setArmToCollect = setArmAngleProvider.get();
@@ -92,7 +95,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
     }
     private void setUpLogic(SwerveSimpleTrajectoryCommand swerve,double key){
-        swerve.logic.setAimAtGoalDuringFinalLeg(true);
+        //swerve.logic.setAimAtGoalDuringFinalLeg(true);
         //swerve.logic.setDriveBackwards(true);
         swerve.logic.setEnableConstantVelocity(true);
         swerve.logic.setConstantVelocity(4.5);
@@ -105,17 +108,20 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         //drive through center line notes
         if (key == 1) {
             points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.509,7.7), Rotation2d.fromDegrees(240), 10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.509,0.6), Rotation2d.fromDegrees(240),10));
             return points;
         }
         //drive through Centerline5 note
         if(key == 2){
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.509,0.6), Rotation2d.fromDegrees(240),10));
+            return points;
+        }
+        if(key == 3){
             points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.296,0.6),new Rotation2d(),10));
             return points;
         }
         //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(2.9,3.8),new Rotation2d(),10));
         //any other key just sets it to this
-        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(new Translation2d(14.7,5.553));
+        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(new Translation2d(15.2,5.553));
         //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(14.224,2.429),Rotation2d.fromDegrees(0),10));
         points.add(new XbotSwervePoint(target,Rotation2d.fromDegrees(180), 10));
         return points;
