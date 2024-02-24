@@ -1,5 +1,6 @@
 package competition.subsystems.drive;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -20,6 +21,8 @@ import javax.inject.Singleton;
 public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFrameRefreshable {
     private static final Logger log = LogManager.getLogger(DriveSubsystem.class);
 
+    private Pose2d targetNote;
+
     @Inject
     public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
                           @FrontLeftDrive SwerveComponent frontLeftSwerve, @FrontRightDrive SwerveComponent frontRightSwerve,
@@ -37,4 +40,13 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     protected PIDDefaults getHeadingPIDDefaults() {
         return super.getHeadingPIDDefaults();
     }
+
+    public void setTargetNote(Pose2d targetNote) {
+        this.targetNote = targetNote;
+    }
+
+    public Pose2d getTargetNote() {
+        return targetNote;
+    }
+
 }
