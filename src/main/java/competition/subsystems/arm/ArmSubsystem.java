@@ -8,12 +8,14 @@ import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XCompressor;
 import xbot.common.controls.actuators.XDoubleSolenoid;
 import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
@@ -65,7 +67,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double targetExtension;
     private final DoubleProperty overallPowerClampForTesting;
 
-    PoseSubsystem pose;
+    final PoseSubsystem pose;
     public final Mechanism2d armActual2d;
     public final MechanismLigament2d armLigament;
     // what angle does the arm make with the pivot when it's at our concept of zero?
@@ -75,6 +77,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private final DoubleProperty powerRampDurationSec;
     private boolean powerRampingEnabled = true;
     private boolean dynamicBrakingEnabled = false;
+    private final XCompressor compressor;
+    private int totalLoops = 0;
+    private int loopsWhereCompressorRunning = 0;
+
 
     public enum ArmState {
         EXTENDING,
@@ -104,9 +110,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                         XDoubleSolenoid.XDoubleSolenoidFactory doubleSolenoidFactory,
                         XSolenoid.XSolenoidFactory solenoidFactory,
                         ElectricalContract contract, PoseSubsystem pose,
-                        DriveSubsystem drive) {
+                        DriveSubsystem drive, XCompressor.XCompressorFactory compressorFactory) {
 
         this.pose = pose;
+        this.compressor = compressorFactory.create();
 
         armBrakeSolenoid = doubleSolenoidFactory.create(
                 solenoidFactory.create(contract.getBrakeSolenoidForward().channel),
@@ -195,9 +202,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             .append(new MechanismLigament2d("box-top", 2, 90))
             .append(new MechanismLigament2d("box-left", 1, 90));
 
+
+        double[] rangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
+        double[] rangesInMeters = new double[7];
+        //PoseSubsystem.INCHES_IN_A_METER
+        // Convert the rangesInInches array to meters
+        for (int i = 0; i < rangesInInches.length; i++) {
+            rangesInMeters[i] = rangesInInches[i] / PoseSubsystem.INCHES_IN_A_METER;
+        }
+
         speakerDistanceToExtensionInterpolator =
                 new DoubleInterpolator(
-                        new double[]{0, 36, 49.5, 63, 80, 111, 136},
+                        rangesInMeters,
                         new double[]{0, 0,  20.0, 26, 41, 57,  64});
     }
 
@@ -621,6 +637,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return speakerDistanceToExtensionInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker);
     }
 
+    public double getRecommendedExtensionForSpeaker() {
+        return getRecommendedExtension(pose.getDistanceFromSpeaker());
+    }
+
     public void periodic() {
         if (contract.isArmReady()) {
             recordArmEncoderValues();
@@ -642,6 +662,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armLigament.setAngle(getArmAngle() - armPivotAngleAtArmAngleZero);
         armLigament.setColor(color);
         aKitLog.record("Arm2dStateActual", armActual2d);
+
+        if (DriverStation.isEnabled()) {
+            totalLoops++;
+            if (!compressor.isAtTargetPressure()) {
+                loopsWhereCompressorRunning++;
+            }
+        }
+        if (totalLoops > 0) {
+            aKitLog.record("CompressorRunningPercentage", (loopsWhereCompressorRunning * 100) / totalLoops);
+        }
     }
 
 
