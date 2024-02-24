@@ -124,10 +124,6 @@ public class OperatorCommandMap {
             SetRobotHeadingCommand resetHeading,
             DynamicOracle oracle,
             DriveSubsystem drive,
-            Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-            Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-            SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree,
-            DistanceShotFromMidShootThenShootNearestThree distanceShotFromMidShootThenShootNearestThree,
             FireWhenReadyCommand fireWhenReady,
             FireCollectorCommand fireCollector
             )
@@ -202,17 +198,6 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
-
-        // testing
-//        drive.setTargetNote(PoseSubsystem.SpikeMiddle);
-//        var driveToGivenNoteAndCollectCommandGroup = driveToGivenNoteAndCollectCommandGroupProvider.get();
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToGivenNoteAndCollectCommandGroup);
-////
-////        var driveToCentralSubwooferCommand = driveToCentralSubwooferCommandProvider.get();
-////        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
-//
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(subwooferShotFromMidShootThenShootNearestThree);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(distanceShotFromMidShootThenShootNearestThree);
     }
 
     @Inject
