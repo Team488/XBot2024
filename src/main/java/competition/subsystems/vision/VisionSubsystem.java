@@ -29,8 +29,6 @@ import java.util.Optional;
 @Singleton
 public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
-    public static final String VISION_TABLE = "photonvision";
-
     final RobotAssertionManager assertionManager;
     final BooleanProperty isInverted;
     final DoubleProperty yawOffset;
@@ -38,7 +36,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty errorThreshold;
     final DoubleProperty singleTagStableDistance;
     final DoubleProperty multiTagStableDistance;
-    NetworkTable visionTable;
     AprilTagFieldLayout aprilTagFieldLayout;
     final ArrayList<AprilTagCamera> aprilTagCameras;
     boolean aprilTagsLoaded = false;
@@ -47,7 +44,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     @Inject
     public VisionSubsystem(PropertyFactory pf, ElectricalContract electricalContract, RobotAssertionManager assertionManager) {
         this.assertionManager = assertionManager;
-        visionTable = NetworkTableInstance.getDefault().getTable(VISION_TABLE);
 
         pf.setPrefix(this);
         isInverted = pf.createPersistentProperty("Yaw inverted", true);
@@ -171,10 +167,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     private String getStringFromList(List<Integer> list) {
         return String.join(", ", list.stream().mapToInt(id -> id).mapToObj(id -> Integer.toString(id)).toArray(String[]::new));
-    }
-
-    private boolean isCameraWorking(PhotonCameraExtended camera) {
-        return camera.doesLibraryVersionMatchCoprocessorVersion();
     }
 
     int loopCounter = 0;
