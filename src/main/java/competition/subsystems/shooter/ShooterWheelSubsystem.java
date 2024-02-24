@@ -28,7 +28,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
     //need pose for real time calculations
     PoseSubsystem pose;
-    ShooterDistanceToRpmConverter converter;
+    DoubleInterpolator converter;
 
     DoubleInterpolator upperWheelDistanceToRpmInterpolator;
     DoubleInterpolator lowerWheelDistanceToRpmInterpolator;
@@ -66,7 +66,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         ampShotRpm = pf.createPersistentProperty("AmpShotRpm", 2000);
 
         this.pose = pose;
-        this.converter = new ShooterDistanceToRpmConverter();
+        this.converter = new DoubleInterpolator();
 
 
         // WE WON'T BE NEEDING THESE AS CURRENTLY WE ARE USING A UNIVERSAL ERROR TOLERANCE "acceptableToleranceRPM"
