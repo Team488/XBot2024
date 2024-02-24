@@ -1,5 +1,7 @@
 package competition.subsystems.collector.commands;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
+import competition.subsystems.arm.commands.WaitForArmToBeAtGoalCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
 
