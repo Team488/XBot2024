@@ -1,5 +1,6 @@
 package competition.subsystems.collector.commands;
 
+import competition.operator_interface.OperatorInterface;
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
 
@@ -7,9 +8,12 @@ import javax.inject.Inject;
 
 public class IntakeUntilNoteCollectedCommand extends BaseCommand {
     CollectorSubsystem collector;
+    final OperatorInterface oi;
+    double intensity = 0.1;
     @Inject
-    public IntakeUntilNoteCollectedCommand(CollectorSubsystem collector) {
+    public IntakeUntilNoteCollectedCommand(CollectorSubsystem collector, OperatorInterface oi) {
         this.collector = collector;
+        this.oi = oi;
         addRequirements(collector);
     }
     @Override
@@ -23,6 +27,11 @@ public class IntakeUntilNoteCollectedCommand extends BaseCommand {
     }
     @Override
     public boolean isFinished() {
-        return collector.getGamePieceReady();
+        if (collector.getGamePieceReady()) {
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
+            return true;
+        }
+        return false;
     }
 }
