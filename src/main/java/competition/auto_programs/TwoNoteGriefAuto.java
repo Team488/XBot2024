@@ -6,9 +6,11 @@ import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.collector.commands.StopCollectorCommand;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,85 +29,100 @@ import javax.inject.Provider;
 import java.util.ArrayList;
 
 
-//we gonna get opps pulling this out mid competition😶‍🌫️🥶😰😰
 public class TwoNoteGriefAuto extends SequentialCommandGroup {
+    DynamicOracle oracle;
     @Inject
     public TwoNoteGriefAuto(Provider<FireNoteCommandGroup> fireNoteProvider,
                             Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
                             Provider<SetArmAngleCommand> setArmAngleProvider,
                             Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
-                            IntakeScoocherCommand scoochCheese,
+                            Provider<FireWhenReadyCommand> fireWhenReadyCommandProvider,
+                            IntakeScoocherCommand scoochIntake,
                             IntakeUntilNoteCollectedCommand intakeUntilCollected,
                             EjectCollectorCommand eject,
                             StopCollectorCommand stopCollector,
-                            PoseSubsystem pose){
-        InstantCommand forceSetPosition = new InstantCommand(
-                () -> {
-                    pose.setCurrentPoseInMeters(
-                            BasePoseSubsystem.convertBlueToRedIfNeeded(new Pose2d(3.785, 6.2, new Rotation2d()))
-                    );
-                }
-        );
-        //sets our position near the top right of our wing
-        this.addCommands(forceSetPosition);
-        this.addCommands(fireNoteProvider.get());
+                            PoseSubsystem pose,
+                            DynamicOracle oracle){
+        this.oracle = oracle;
+
+        var startInFrontOfSpeaker = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
+        this.addCommands(startInFrontOfSpeaker);
+
+//        var fireFirstNote = fireNoteProvider.get();
+//        this.addCommands(Commands.deadline(fireFirstNote));
+        var warmUpForFirstSubwooferShot = warmUpShooterCommandProvider.get();
+        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        var fireFirstShot = fireWhenReadyCommandProvider.get();
+
+        this.addCommands(Commands.deadline(fireFirstShot,
+                warmUpForFirstSubwooferShot));
 
         var setArmToScooch = setArmAngleProvider.get();
         setArmToScooch.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
         var swerveToEdge = swerveProvider.get();
         setUpLogic(swerveToEdge,1);
+        swerveToEdge.logic.setAimAtIntermediateNonFinalLegs(true);
 
-        //THEY CAN MAKE A TEN NOTE AUTO AND ILL STILL DISABLE THEIR SHII 😂😪😴😛
-        var antiJackInTheBot = new ParallelCommandGroup(swerveToEdge, setArmToScooch, scoochCheese);
-        this.addCommands(antiJackInTheBot);
-        //🤫🧏‍♂
+        this.addCommands(Commands.deadline(swerveToEdge,scoochIntake,setArmToScooch));
 
         var swerveLastNote = swerveProvider.get();
         setUpLogic(swerveLastNote,2);
+        swerveLastNote.logic.setAimAtIntermediateNonFinalLegs(true);
         swerveLastNote.logic.setDriveBackwards(true);
+
+
         var setArmToCollect = setArmAngleProvider.get();
         setArmToCollect.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
-        this.addCommands(setArmToCollect.andThen(Commands.deadline(intakeUntilCollected,swerveLastNote)
-                .andThen(eject.withTimeout(0.1))
-                .andThen(stopCollector.withTimeout(0.05))));
+        //swap the swerve and the intake later this is just for simulator
+        this.addCommands(setArmToCollect.alongWith(Commands.deadline(swerveLastNote,intakeUntilCollected)));
 
-        var driveToSubwoofer = swerveProvider.get();
-        setUpLogic(driveToSubwoofer,488);
+        var moveNoteAwayFromShooterWheels =
+                eject.withTimeout(0.1).andThen(stopCollector.withTimeout(0.05));
+
+//        var driveToSubwoofer = swerveProvider.get();
+//        setUpLogic(driveToSubwoofer,488);
 
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
         warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        var fireSecondShot = fireWhenReadyCommandProvider.get();
 
-        this.addCommands(Commands.deadline(driveToSubwoofer,warmUpForSecondSubwooferShot).andThen(fireNoteProvider.get()));
+//        this.addCommands(Commands.deadline(driveToSubwoofer,
+//                moveNoteAwayFromShooterWheels.andThen(warmUpForSecondSubwooferShot)));
+//        this.addCommands(fireSecondShot);
+
     }
     private void setUpLogic(SwerveSimpleTrajectoryCommand swerve,double key){
         swerve.logic.setAimAtGoalDuringFinalLeg(true);
         //swerve.logic.setDriveBackwards(true);
         swerve.logic.setEnableConstantVelocity(true);
-        swerve.logic.setConstantVelocity(1);
+        swerve.logic.setConstantVelocity(4.5);
         swerve.logic.setKeyPoints(getPoints(key));
+        swerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
     }
     //a key to make this function return different points based on what you need
     private ArrayList<XbotSwervePoint> getPoints(double key){
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         //drive through center line notes
         if (key == 1) {
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine1, 10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine2, 10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine3, 10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine4, 10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine1.getTranslation(), Rotation2d.fromDegrees(240), 10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine2.getTranslation(), Rotation2d.fromDegrees(240),10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine3.getTranslation(), Rotation2d.fromDegrees(240),10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine4.getTranslation(), Rotation2d.fromDegrees(240),10));
             //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine5,10));
             return points;
         }
         //drive through Centerline5 note
         if(key == 2){
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.296,0.5),new Rotation2d(),10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.296,0.6),new Rotation2d(),10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SubwooferCentralScoringLocation.getTranslation(),Rotation2d.fromDegrees(180),10));
             return points;
         }
         //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(2.9,3.8),new Rotation2d(),10));
         //any other key just sets it to this
-        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation);
-        points.add(new XbotSwervePoint(target.getTranslation(), target.getRotation(), 10));
+//        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation);
+//        points.add(new XbotSwervePoint(target, 10));
         return points;
     }
 }

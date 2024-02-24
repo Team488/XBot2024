@@ -5,6 +5,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.auto_programs.ShootThenMoveOutOfLine;
+import competition.auto_programs.TwoNoteGriefAuto;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
@@ -119,7 +120,8 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             FireWhenReadyCommand fireWhenReady,
-            FireCollectorCommand fireCollector
+            FireCollectorCommand fireCollector,
+            TwoNoteGriefAuto heheheha
             )
     {
         double typicalVelocity = 2.5;
@@ -144,6 +146,7 @@ public class OperatorCommandMap {
         anyway.
         */
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(heheheha);
 
 
 
