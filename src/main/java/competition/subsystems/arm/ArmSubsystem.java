@@ -65,7 +65,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double targetExtension;
     private final DoubleProperty overallPowerClampForTesting;
 
-    PoseSubsystem pose;
+    final PoseSubsystem pose;
     public final Mechanism2d armActual2d;
     public final MechanismLigament2d armLigament;
     // what angle does the arm make with the pivot when it's at our concept of zero?
@@ -195,9 +195,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             .append(new MechanismLigament2d("box-top", 2, 90))
             .append(new MechanismLigament2d("box-left", 1, 90));
 
+
+        double[] rangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
+        double[] rangesInMeters = new double[7];
+        //PoseSubsystem.INCHES_IN_A_METER
+        // Convert the rangesInInches array to meters
+        for (int i = 0; i < rangesInInches.length; i++) {
+            rangesInMeters[i] = rangesInInches[i] / PoseSubsystem.INCHES_IN_A_METER;
+        }
+
         speakerDistanceToExtensionInterpolator =
                 new DoubleInterpolator(
-                        new double[]{0, 36, 49.5, 63, 80, 111, 136},
+                        rangesInMeters,
                         new double[]{0, 0,  20.0, 26, 41, 57,  64});
     }
 
@@ -619,6 +628,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public double getRecommendedExtension(double distanceFromSpeaker) {
         return speakerDistanceToExtensionInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker);
+    }
+
+    public double getRecommendedExtensionForSpeaker() {
+        return getRecommendedExtension(pose.getDistanceFromSpeaker());
     }
 
     public void periodic() {

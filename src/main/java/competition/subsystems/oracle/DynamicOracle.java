@@ -25,10 +25,8 @@ public class DynamicOracle extends BaseSubsystem {
 
     public enum ScoringSubGoals {
         IngestNote,
-        ControlNote,
-        PrepareToScore,
-        EarnestlyLaunchNote,
-        NoteExitedRobot
+        MoveToScoringRange,
+        EarnestlyLaunchNote
     }
 
     NoteCollectionInfoSource noteCollectionInfoSource;
@@ -37,6 +35,7 @@ public class DynamicOracle extends BaseSubsystem {
     LowResField field;
 
     HighLevelGoal currentHighLevelGoal;
+    ScoringSubGoals currentScoringSubGoal;
     boolean firstRunInNewGoal;
 
     PoseSubsystem pose;
@@ -52,6 +51,7 @@ public class DynamicOracle extends BaseSubsystem {
         this.pose = pose;
 
         this.currentHighLevelGoal = HighLevelGoal.CollectNote;
+        this.currentScoringSubGoal = ScoringSubGoals.IngestNote;
         firstRunInNewGoal = true;
         setupLowResField();
 
@@ -164,13 +164,16 @@ public class DynamicOracle extends BaseSubsystem {
                 if (firstRunInNewGoal || reevaluationRequested) {
                     setTargetNote(null);
                     setTerminatingPoint(activeScoringPosition);
-
+                    currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
                     setSpecialAimTarget(new Pose2d(0, 5.5, Rotation2d.fromDegrees(0)));
                     // Choose a good speaker scoring location
                     // Publish a route from current position to that location
                     firstRunInNewGoal = false;
                     reevaluationRequested = false;
                 }
+
+                determineScoringSubgoal();
+
                 // If we've launched our note, time to get another one
                 if (noteFiringInfoSource.confidentlyHasFiredNote()) {
                     currentHighLevelGoal = HighLevelGoal.CollectNote;
@@ -198,6 +201,8 @@ public class DynamicOracle extends BaseSubsystem {
                     reevaluationRequested = false;
                 }
 
+                currentScoringSubGoal = ScoringSubGoals.IngestNote;
+
                 if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
                     Note nearestNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(), 1.0);
@@ -215,16 +220,12 @@ public class DynamicOracle extends BaseSubsystem {
                 break;
         }
 
-        // If we're getting close to our firing point, warm up the shooter
-        if (getEstimatedSecondsUntilScoringRequired() < 2) {
-            // Warm up the shooter
-        }
-
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
         aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
         aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+        aKitLog.record("Current SubGoal", currentScoringSubGoal);
 
         // Let's show some major obstacles
         field.getObstacles().forEach(obstacle -> {
@@ -283,5 +284,40 @@ public class DynamicOracle extends BaseSubsystem {
 
     private double getEstimatedSecondsUntilScoringRequired() {
         return 0;
+    }
+
+    public NoteMap getNoteMap() {
+        return noteMap;
+    }
+
+    public ScoringSubGoals getScoringSubgoal() {
+        return currentScoringSubGoal;
+    }
+
+    private void determineScoringSubgoal() {
+        double acceptableRangeBeforeScoring = 0;
+        if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
+            acceptableRangeBeforeScoring = 1;
+        } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
+            // in the future we'll do something more like "get near amp, then drive into the wall for a few moments
+            // before scoring"
+            acceptableRangeBeforeScoring = 0.05;
+        }
+
+        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoring)) {
+            currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
+        } else {
+            currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
+        }
+    }
+
+    public boolean isTerminatingPointWithinDistance(double distance) {
+        return pose.getCurrentPose2d().getTranslation().getDistance(
+                getTerminatingPoint().getTerminatingPose().getTranslation())
+                < distance;
+    }
+
+    public void resetNoteMap() {
+        noteMap = new NoteMap();
     }
 }
