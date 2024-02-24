@@ -22,6 +22,7 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -125,7 +126,8 @@ public class OperatorCommandMap {
         double typicalVelocity = 2.5;
         // Manipulate heading and position for easy testing
         resetHeading.setHeadingToApply(0);
-        var teleportRobot = pose.createSetPositionCommand(new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0)));
+        var teleportRobot = pose.createSetPositionCommand(PoseSubsystem.SubwooferCentralScoringLocation);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(teleportRobot);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
@@ -206,19 +208,17 @@ public class OperatorCommandMap {
 
     @Inject
     public void setupOracleCommands(OperatorInterface oi,
-                                    SwerveAccordingToOracleCommand oracleSwerve,
+                                    SwerveAccordingToOracleCommand driveAccoringToOracle,
+                                    SuperstructureAccordingToOracleCommand superstructureAccordingToOracle,
                                     ManualRobotKnowledgeSubsystem knowledgeSubsystem,
                                     DynamicOracle oracle) {
-        oracleSwerve.logic.setEnableConstantVelocity(true);
-        oracleSwerve.logic.setConstantVelocity(2.8);
-        oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        driveAccoringToOracle.logic.setEnableConstantVelocity(true);
+        driveAccoringToOracle.logic.setConstantVelocity(2.8);
+        driveAccoringToOracle.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
-        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
+        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(driveAccoringToOracle.alongWith(superstructureAccordingToOracle));
+        oi.driverGamepad.getPovIfAvailable(0).onTrue(new InstantCommand(() -> oracle.resetNoteMap()));
 
-        //oi.driverGamepad.getXboxButton(XboxButton.LeftBumper)
-        //        .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-        //oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
-        //        .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
     }
 
     @Inject
