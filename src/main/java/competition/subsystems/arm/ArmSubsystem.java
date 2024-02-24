@@ -3,6 +3,7 @@ package competition.subsystems.arm;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
+import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -102,7 +103,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         XDoubleSolenoid.XDoubleSolenoidFactory doubleSolenoidFactory,
                         XSolenoid.XSolenoidFactory solenoidFactory,
-                        ElectricalContract contract, PoseSubsystem pose) {
+                        ElectricalContract contract, PoseSubsystem pose,
+                        DriveSubsystem drive) {
 
         this.pose = pose;
 
@@ -161,11 +163,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorLeft.enableVoltageCompensation(12);
             armMotorRight.enableVoltageCompensation(12);
 
-            // Get through-bore encoders
-            var armWithEncoder = contract.getArmEncoderIsOnLeftMotor() ? armMotorLeft : armMotorRight;
-            armAbsoluteEncoder = armWithEncoder.getAbsoluteEncoder(
-                    this.getPrefix() + "ArmEncoder",
-                    contract.getArmEncoderInverted());
+            // Get through-bore encoder -
+            // this is plugged in to the front left drive motor controller
+            if (contract.isDriveReady()) {
+                armAbsoluteEncoder = drive.getFrontLeftSwerveModuleSubsystem()
+                        .getDriveSubsystem().getSparkMax().getAbsoluteEncoder(
+                                this.getPrefix() + "ArmEncoder",
+                                contract.getArmEncoderInverted());
+            }
 
             armMotorLeft.setSmartCurrentLimit(60);
             armMotorRight.setSmartCurrentLimit(60);
@@ -379,8 +384,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public void dangerousManualSetPowerToBothArms(double power) {
         setBrakeEnabled(false);
-        armMotorLeft.set(power);
-        armMotorRight.set(power);
+        if (contract.isArmReady()) {
+            armMotorLeft.set(power);
+            armMotorRight.set(power);
+        }
     }
 
     public void extend() {
@@ -540,7 +547,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     public Double getCurrentValue() {
-        return getExtensionDistance();
+        if (contract.isArmReady()) {
+            return getExtensionDistance();
+        }
+        return 0.0;
     }
 
     public double getExtensionDistance() {
