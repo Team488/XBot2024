@@ -1,10 +1,12 @@
 package competition.subsystems.shooter.commands;
 
 import competition.operator_interface.OperatorInterface;
+import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import xbot.common.command.BaseMaintainerCommand;
 import xbot.common.logic.HumanVsMachineDecider;
+import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
@@ -13,13 +15,21 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Shooter
 
     final ShooterWheelSubsystem wheel;
     final OperatorInterface oi;
+    final ArmSubsystem arm;
+
+    final DoubleProperty subwooferRpmErrorTolerance;
+    final DoubleProperty ampRpmErrorTolerance;
 
     @Inject
     public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf,
-                                         HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory) {
+                                         HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory, ArmSubsystem arm) {
         super(wheel, pf, hvmFactory, 150, 0.5);
         this.oi = oi;
         this.wheel = wheel;
+        this.arm = arm;
+
+        subwooferRpmErrorTolerance = pf.createPersistentProperty("Subwoofer RPM Error Tolerance", 1000);
+        ampRpmErrorTolerance = pf.createPersistentProperty("Amp RPM Error Tolerance", 1000);
     }
 
     @Override
@@ -76,5 +86,22 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Shooter
         // Take the average of the two errors for now.
         return ((targets.upperWheelsTargetRPM - currents.upperWheelsTargetRPM)
                 + (targets.lowerWheelsTargetRPM - currents.lowerWheelsTargetRPM)) / 2;
+    }
+
+    @Override
+    public boolean getErrorWithinTolerance() {
+        // If the arm is up really high, we are scoring in the amp and can have a big error tolerance.
+
+        if (arm.getExtensionDistance() > 125) {
+            return Math.abs(getErrorMagnitude()) < ampRpmErrorTolerance.get();
+        }
+
+        // If the arm is at its minimum, we are scoring from Subwoofer and can have a large-ish error tolerance.
+        if (arm.getExtensionDistance() < 10) {
+            return Math.abs(getErrorMagnitude()) < subwooferRpmErrorTolerance.get();
+        }
+
+        // Other shots likely require more precision.
+        return super.getErrorWithinTolerance();
     }
 }

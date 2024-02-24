@@ -10,6 +10,7 @@ import competition.subsystems.arm.commands.StopArmCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
 import xbot.common.injection.swerve.SwerveComponentHolder;
 import competition.operator_interface.OperatorCommandMap;
 import competition.operator_interface.OperatorInterface;
@@ -51,4 +52,5 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract ShooterWheelSubsystem shooterSubsystem();
 
     public abstract Simulator2024 simulator2024();
+    public abstract ShooterWheelMaintainerCommand shooterWheelMaintainerCommand();
 }
