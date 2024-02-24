@@ -16,5 +16,10 @@ public class DriveToGivenNoteAndCollectCommandGroup extends ParallelDeadlineGrou
         super(waitForNoteCollectedCommand);
 
         this.addCommands(driveToGivenNoteCommand, collectSequenceCommandGroup);
+
+        // use this for testing in simulator
+//        super(driveToGivenNoteCommand);
+//
+//        this.addCommands(collectSequenceCommandGroup);
     }
 }
