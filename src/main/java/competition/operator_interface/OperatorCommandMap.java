@@ -126,7 +126,8 @@ public class OperatorCommandMap {
         double typicalVelocity = 2.5;
         // Manipulate heading and position for easy testing
         resetHeading.setHeadingToApply(0);
-        var teleportRobot = pose.createSetPositionCommand(new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0)));
+        var teleportRobot = pose.createSetPositionCommand(PoseSubsystem.SubwooferCentralScoringLocation);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(teleportRobot);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
