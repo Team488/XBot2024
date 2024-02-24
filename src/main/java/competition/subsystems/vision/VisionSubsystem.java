@@ -39,6 +39,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
 
+    final PhotonCameraExtended rearLeftNoteCamera;
+
     @Inject
     public VisionSubsystem(PropertyFactory pf, ElectricalContract electricalContract, RobotAssertionManager assertionManager) {
         this.assertionManager = assertionManager;
@@ -72,6 +74,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 aprilTagCameras.add(new AprilTagCamera(cameraInfo, waitForStablePoseTime::get, aprilTagFieldLayout));
             }
         }
+
+        rearLeftNoteCamera = new PhotonCameraExtended("GamePiece_RearLeft_Camera");
     }
 
     public List<Optional<EstimatedRobotPose>> getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
