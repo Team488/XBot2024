@@ -526,12 +526,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return getArmAngleForExtension(getCurrentValue());
     }
 
-    public double getArmAngleForExtension(double extension) {
-        // TODO: This is just a placeholder, the relationship will actually be nonlinear
-        var degreesPerMmExtension = 0.01;
-        return extension * degreesPerMmExtension;
-    }
-
     public double getExtensionForArmAngle(double angle) {
         // TODO: this is just a placeholder, the relationship will be nonlinear
         var degreesPerMmExtension = 0.01;
