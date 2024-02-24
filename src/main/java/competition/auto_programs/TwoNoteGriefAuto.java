@@ -100,8 +100,6 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
     }
     //sets up basic logic when given a swerve command
     private void setUpLogic(SwerveSimpleTrajectoryCommand swerve,double key){
-        //swerve.logic.setAimAtGoalDuringFinalLeg(true);
-        //swerve.logic.setDriveBackwards(true);
         swerve.logic.setEnableConstantVelocity(true);
         swerve.logic.setConstantVelocity(4.5);
         swerve.logic.setKeyPoints(getPoints(key));
@@ -112,12 +110,12 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         //drives to the first centerline note with an angle ready to collect
         if (key == 1) {
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,7.7), Rotation2d.fromDegrees(240), 10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,7.95), Rotation2d.fromDegrees(235), 10));
             return points;
         }
         //drives through 4 centerline notes
         if(key == 2){
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,2.388), Rotation2d.fromDegrees(240),10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,2.388), Rotation2d.fromDegrees(235),10));
             return points;
         }
         //drives back to subwoofer
