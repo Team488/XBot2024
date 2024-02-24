@@ -416,6 +416,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armState = ArmState.RETRACTING;
     }
 
+    public void hang() {
+        armState = ArmState.HANGING;
+    }
+
     public void stop() {
         setPower(0.0);
         armState = ArmState.STOPPED;

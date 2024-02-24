@@ -56,8 +56,13 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         if (isMaintainerAtGoal()) {
             arm.setPower(0.0);
         } else {
-            double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
-            arm.setPower(power);
+            if (arm.armState == ArmSubsystem.ArmState.HANGING) {
+                double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
+
+                //"multiplier" is used because we need higher power for hanging
+                double multiplier = 1.2;
+                arm.setPower(power * multiplier);
+            }
         }
     }
 

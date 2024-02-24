@@ -34,7 +34,5 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
     @Override
     public void execute() {
         // No-op. Set angle for maintainer to move arms to.
-        armMaintainerCommand.calibratedMachineControlAction();
-        armSubsystem.armState = ArmSubsystem.ArmState.HANGING;
     }
 }
