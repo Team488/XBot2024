@@ -104,11 +104,8 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         //drive through center line notes
         if (key == 1) {
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine1.getTranslation(), Rotation2d.fromDegrees(240), 10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine2.getTranslation(), Rotation2d.fromDegrees(240),10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine3.getTranslation(), Rotation2d.fromDegrees(240),10));
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine4.getTranslation(), Rotation2d.fromDegrees(240),10));
-            //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine5,10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.509,7.7), Rotation2d.fromDegrees(240), 10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.509,0.6), Rotation2d.fromDegrees(240),10));
             return points;
         }
         //drive through Centerline5 note
@@ -118,8 +115,9 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         }
         //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(2.9,3.8),new Rotation2d(),10));
         //any other key just sets it to this
-        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(new Translation2d(15.623,5.553));
-        points.add(new XbotSwervePoint(target,new Rotation2d(), 10));
+        var target = BasePoseSubsystem.convertBlueToRedIfNeeded(new Translation2d(14.7,5.553));
+        //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(14.224,2.429),Rotation2d.fromDegrees(0),10));
+        points.add(new XbotSwervePoint(target,Rotation2d.fromDegrees(180), 10));
         return points;
     }
 }
