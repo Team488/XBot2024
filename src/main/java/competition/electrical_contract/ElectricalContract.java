@@ -1,7 +1,6 @@
 package competition.electrical_contract;
 
 import competition.subsystems.vision.CameraInfo;
-import xbot.common.injection.electrical_contract.CANTalonInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.electrical_contract.XSwerveDriveElectricalContract;
 import xbot.common.injection.swerve.SwerveInstance;

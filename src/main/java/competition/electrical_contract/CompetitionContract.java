@@ -1,16 +1,14 @@
 package competition.electrical_contract;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import competition.subsystems.pose.PoseSubsystem;
-import competition.subsystems.vision.AprilTagCamera;
 import competition.subsystems.vision.CameraInfo;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import xbot.common.injection.electrical_contract.CANTalonInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
+
 import javax.inject.Inject;
 
 public class CompetitionContract extends ElectricalContract {
