@@ -15,27 +15,19 @@ public class FireWhenReadyCommand extends BaseCommand {
     final ArmSubsystem arm;
     final CollectorSubsystem collector;
 
-    DoubleProperty waitTimeAfterFiring;
-    boolean hasFired;
-    double timeWhenFired;
-
     @Inject
     public FireWhenReadyCommand(ShooterWheelSubsystem wheel, ArmSubsystem arm, CollectorSubsystem collector,
                                 PropertyFactory pf) {
+        addRequirements(collector);
         this.wheel = wheel;
         this.arm = arm;
         this.collector = collector;
-
-        this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
-        this.hasFired = false;
-
         pf.setPrefix(this);
     }
 
     @Override
     public void initialize() {
         log.info("Initializing...");
-        this.hasFired = false;
     }
 
     @Override
@@ -45,18 +37,19 @@ public class FireWhenReadyCommand extends BaseCommand {
 
         RUNS 50 TIMES A SECOND
         */
-        if (hasFired || (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal())) {
+        if (collector.getIntakeState() == CollectorSubsystem.IntakeState.FIRING || (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal())) {
             collector.fire();
-
-            if (!hasFired) {
-                hasFired = true;
-                timeWhenFired = XTimer.getFPGATimestamp();
-            }
         }
     }
 
     @Override
     public boolean isFinished() {
-        return hasFired && XTimer.getFPGATimestamp() + waitTimeAfterFiring.get() >= timeWhenFired;
+        return collector.confidentlyHasFiredNote();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        log.info("Ending");
+        super.end(interrupted);
     }
 }

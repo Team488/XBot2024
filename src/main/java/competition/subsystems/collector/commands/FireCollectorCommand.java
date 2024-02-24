@@ -10,7 +10,6 @@ public class FireCollectorCommand extends BaseCommand{
     public FireCollectorCommand(CollectorSubsystem collector){
         this.collector = collector;
         addRequirements(collector);
-
     }
     @Override
     public void initialize() {

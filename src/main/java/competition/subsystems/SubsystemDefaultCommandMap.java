@@ -5,18 +5,15 @@ import javax.inject.Singleton;
 
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
-import competition.subsystems.arm.commands.StopArmCommand;
+import competition.subsystems.arm.commands.SetArmTargetToCurrentPositionCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.schoocher.commands.StopScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
-import xbot.common.injection.swerve.FrontLeftDrive;
-import xbot.common.injection.swerve.FrontRightDrive;
-import xbot.common.injection.swerve.RearLeftDrive;
-import xbot.common.injection.swerve.RearRightDrive;
-import xbot.common.injection.swerve.SwerveComponent;
+import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.SwerveDriveWithJoysticksCommand;
 
@@ -35,8 +32,11 @@ public class SubsystemDefaultCommandMap {
     }
 
     @Inject
-    public void setupArmSubsystem(ArmSubsystem armSubsystem, ArmMaintainerCommand command) {
+    public void setupArmSubsystem(ArmSubsystem armSubsystem,
+                                  ArmMaintainerCommand command,
+                                  SetArmTargetToCurrentPositionCommand setArmTargetToCurrentPositionCommand) {
         armSubsystem.setDefaultCommand(command);
+        armSubsystem.getSetpointLock().setDefaultCommand(setArmTargetToCurrentPositionCommand);
     }
     @Inject
     public void setupScoocherSubsystem(ScoocherSubsystem scoocherSubsystem, StopScoocherCommand command){
@@ -48,7 +48,11 @@ public class SubsystemDefaultCommandMap {
     }
 
     @Inject
-    public void setupShooterWheelSubsystem(ShooterWheelSubsystem shooterWheelSubsystem, ShooterWheelMaintainerCommand command) {
+    public void setupShooterWheelSubsystem(ShooterWheelSubsystem shooterWheelSubsystem,
+                                           ShooterWheelMaintainerCommand command,
+                                           WarmUpShooterRPMCommand setToZero) {
         shooterWheelSubsystem.setDefaultCommand(command);
+        setToZero.setTargetRpm(new ShooterWheelTargetSpeeds(0.0, 0.0));
+        shooterWheelSubsystem.getSetpointLock().setDefaultCommand(setToZero);
     }
 }

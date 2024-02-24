@@ -17,7 +17,7 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public boolean isShooterReady() {
-        return false;
+        return true;
     }
 
     @Override
@@ -103,29 +103,29 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     public DeviceInfo getCollectorMotor() {
-        return new DeviceInfo("CollectorMotor", 25, true);
+        return new DeviceInfo("CollectorMotor", 37, false);
     }
 
     @Override
     public DeviceInfo getShooterMotorLeader() {
-        return new DeviceInfo("ShooterLeader", 50, false);
+        return new DeviceInfo("ShooterLeader", 23, false);
     }
 
     @Override
     public DeviceInfo getShooterMotorFollower() {
-        return new DeviceInfo("ShooterFollower", 49, false);
+        return new DeviceInfo("ShooterFollower", 36, false);
     }
 
     @Override
     public boolean isCollectorReady() {
-        return false;
+        return true;
     }
 
     public boolean isScoocherReady() {
-        return false;
+        return true;
     }
     public DeviceInfo getScoocherMotor(){
-        return new DeviceInfo("ScoocherMotor", 14);
+        return new DeviceInfo("ScoocherMotor", 33);
     }
 
     public DeviceInfo getCollectorSolenoid() {
@@ -164,11 +164,11 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public DeviceInfo getInControlNoteSensorDio() {
-        return new DeviceInfo("InControlNoteSensor", 13);
+        return new DeviceInfo("InControlNoteSensor", 8, true);
     }
     @Override
     public DeviceInfo getReadyToFireNoteSensorDio() {
-        return new DeviceInfo("ReadyToFireNoteSensor", 12);
+        return new DeviceInfo("ReadyToFireNoteSensor", 9, true);
     }
 
     // ArmSubsystem
@@ -189,7 +189,8 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getBrakeSolenoid(){return new DeviceInfo("BrakeSolenoid", 1, false);}
+    public DeviceInfo getBrakeSolenoidForward(){return new DeviceInfo("ForwardBrake", 14, false);}
+    public DeviceInfo getBrakeSolenoidReverse(){return new DeviceInfo("ReverseBrake", 15, false);}
 
     @Override
     public boolean getArmEncoderInverted() {
