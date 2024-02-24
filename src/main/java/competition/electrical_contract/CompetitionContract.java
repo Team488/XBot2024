@@ -164,11 +164,11 @@ public class CompetitionContract extends ElectricalContract {
 
     @Override
     public DeviceInfo getInControlNoteSensorDio() {
-        return new DeviceInfo("InControlNoteSensor", 13);
+        return new DeviceInfo("InControlNoteSensor", 8, true);
     }
     @Override
     public DeviceInfo getReadyToFireNoteSensorDio() {
-        return new DeviceInfo("ReadyToFireNoteSensor", 12);
+        return new DeviceInfo("ReadyToFireNoteSensor", 9, true);
     }
 
     // ArmSubsystem
@@ -189,7 +189,8 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getBrakeSolenoid(){return new DeviceInfo("BrakeSolenoid", 1, false);}
+    public DeviceInfo getBrakeSolenoidForward(){return new DeviceInfo("ForwardBrake", 14, false);}
+    public DeviceInfo getBrakeSolenoidReverse(){return new DeviceInfo("ReverseBrake", 15, false);}
 
     @Override
     public boolean getArmEncoderInverted() {

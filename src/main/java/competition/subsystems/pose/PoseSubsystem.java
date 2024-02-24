@@ -30,6 +30,7 @@ import javax.inject.Singleton;
 
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 
 @Singleton
@@ -218,6 +219,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public Command createSetPositionCommand(Pose2d pose) {
         return Commands.runOnce(() -> setCurrentPosition(pose));
+    }
+
+    public Command createSetPositionCommand(Supplier<Pose2d> poseSupplier) {
+        return Commands.runOnce(() -> setCurrentPosition(poseSupplier.get()));
     }
 
     private void improveFusedOdometryUsingPhotonLib(Pose2d recentPosition) {
