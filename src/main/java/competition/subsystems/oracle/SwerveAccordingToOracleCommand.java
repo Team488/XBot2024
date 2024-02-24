@@ -70,7 +70,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         if (oracle.getHighLevelGoal() == DynamicOracle.HighLevelGoal.CollectNote) {
             // Since we're going to grab a note, point the front end of our robot towards the goal,
             // since our collector is on the front side.
-            logic.setDriveBackwards(false);
+            logic.setDriveBackwards(true);
             logic.setEnableSpecialAimTarget(false);
 
             // When approaching the note, make sure to aim straight at the note for the best chance of collection.
@@ -79,7 +79,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         } else {
             // We are doing some kind of score operation. We want to point the back of our robot towards the goal,
             // since our shooter is on the back side of the robot.
-            logic.setDriveBackwards(true);
+            logic.setDriveBackwards(false);
             // This "special aim" mode instructs the robot to aim at a point that isn't the goal point. For example,
             // we could aim directly at the Speaker aperture regardless of where the robot is, causing the robot to
             // "track" the speaker as it moves towards a nice firing point.
