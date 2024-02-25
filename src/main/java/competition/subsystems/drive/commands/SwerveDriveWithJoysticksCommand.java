@@ -5,9 +5,12 @@ import javax.inject.Inject;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseCommand;
+import xbot.common.controls.sensors.XXboxController;
 import xbot.common.logic.HumanVsMachineDecider;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineDeciderFactory;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineMode;
@@ -196,7 +199,20 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
             }
             suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
             decider.reset();
-        } else {
+        }
+        else if (oi.driverGamepad.getXboxButton(XXboxController.XboxButton.A).getAsBoolean()) {
+            //if driver button A is pressed
+
+            desiredHeading = getRotationIntentPointAtSpeaker(pose.getCurrentPose2d());
+
+            if (pose.getHeadingResetRecently()) {
+                drive.setDesiredHeading(pose.getCurrentHeading().getDegrees());
+            } else {
+                drive.setDesiredHeading(desiredHeading);
+            }
+            suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
+
+        }else {
             // If the joystick isn't deflected enough, we use the last known heading or human input.
             HumanVsMachineMode recommendedMode = decider.getRecommendedMode(humanRotatePowerFromTriggers);
 
@@ -321,6 +337,25 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
                 oi.getDriverGamepadTypicalDeadband(),
                 (a) -> MathUtils.exponentAndRetainSign(a, (int) input_exponent.get()));
 
+    }
+
+    private double getRotationIntentPointAtSpeaker(Pose2d currentPose) {
+        XYPair speakerPosition = new XYPair(-0.0381, 5.547868);
+        double angle;
+
+        if (currentPose.getY() > speakerPosition.y) {
+            angle = (90 + (180 - Math.toDegrees(Math.atan(Math.abs((currentPose.getX() - speakerPosition.x))
+                    / Math.abs((currentPose.getY() - speakerPosition.y))))));
+        }
+        else if (currentPose.getY() < speakerPosition.y){
+            angle = (90 + Math.toDegrees(Math.atan(Math.abs((currentPose.getX() - speakerPosition.x))
+                    / Math.abs((currentPose.getY() - speakerPosition.y)))));
+        }
+        else{
+            angle = 180;
+        }
+
+        return angle;
     }
 
     private double scaleHumanRotationInput(double humanInputPower) {
