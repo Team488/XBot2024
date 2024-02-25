@@ -1,6 +1,5 @@
 package competition.subsystems.vision;
 
-import competition.electrical_contract.ElectricalContract;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -174,6 +173,22 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     int loopCounter = 0;
 
+    public double getNoteYaw() {
+        var targets = rearLeftNoteCamera.getLatestResult().getTargets();
+        if (targets.size() == 0) {
+            return 0;
+        }
+        return rearLeftNoteCamera.getLatestResult().getTargets().get(0).getYaw();
+    }
+
+    public double getNoteArea() {
+        var targets = rearLeftNoteCamera.getLatestResult().getTargets();
+        if (targets.size() == 0) {
+            return -1;
+        }
+        return rearLeftNoteCamera.getLatestResult().getTargets().get(0).getArea();
+    }
+
     @Override
     public void periodic() {
         loopCounter++;
@@ -204,5 +219,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 }
             }
         }
+        rearLeftNoteCamera.refreshDataFrame();
     }
 }

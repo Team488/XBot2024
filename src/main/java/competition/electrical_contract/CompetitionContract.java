@@ -1,10 +1,10 @@
 package competition.electrical_contract;
 
 import competition.subsystems.pose.PoseSubsystem;
-import competition.subsystems.vision.CameraInfo;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
