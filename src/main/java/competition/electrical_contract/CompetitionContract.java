@@ -171,7 +171,7 @@ public class CompetitionContract extends ElectricalContract {
     }
     @Override
     public DeviceInfo getReadyToFireNoteSensorDio() {
-        return new DeviceInfo("ReadyToFireNoteSensor", 9, true);
+        return new DeviceInfo("ReadyToFireNoteSensor", 5, true);
     }
 
     // ArmSubsystem
