@@ -297,7 +297,7 @@ public class DynamicOracle extends BaseSubsystem {
     private void determineScoringSubgoal() {
         double acceptableRangeBeforeScoring = 0;
         if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
-            acceptableRangeBeforeScoring = 1;
+            acceptableRangeBeforeScoring = 2;
         } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
             // in the future we'll do something more like "get near amp, then drive into the wall for a few moments
             // before scoring"

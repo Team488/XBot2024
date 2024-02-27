@@ -1,6 +1,5 @@
 package competition.subsystems.vision;
 
-import competition.electrical_contract.ElectricalContract;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -40,6 +39,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
 
+    final PhotonCameraExtended rearLeftNoteCamera;
+
     @Inject
     public VisionSubsystem(PropertyFactory pf, XCameraElectricalContract electricalContract, RobotAssertionManager assertionManager) {
         this.assertionManager = assertionManager;
@@ -73,6 +74,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 aprilTagCameras.add(new AprilTagCamera(cameraInfo, waitForStablePoseTime::get, aprilTagFieldLayout));
             }
         }
+
+        rearLeftNoteCamera = new PhotonCameraExtended("GamePiece_RearLeft_Camera");
     }
 
     public List<Optional<EstimatedRobotPose>> getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
@@ -170,6 +173,22 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     int loopCounter = 0;
 
+    public double getNoteYaw() {
+        var targets = rearLeftNoteCamera.getLatestResult().getTargets();
+        if (targets.size() == 0) {
+            return 0;
+        }
+        return rearLeftNoteCamera.getLatestResult().getTargets().get(0).getYaw();
+    }
+
+    public double getNoteArea() {
+        var targets = rearLeftNoteCamera.getLatestResult().getTargets();
+        if (targets.size() == 0) {
+            return -1;
+        }
+        return rearLeftNoteCamera.getLatestResult().getTargets().get(0).getArea();
+    }
+
     @Override
     public void periodic() {
         loopCounter++;
@@ -200,5 +219,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 }
             }
         }
+        rearLeftNoteCamera.refreshDataFrame();
     }
 }
