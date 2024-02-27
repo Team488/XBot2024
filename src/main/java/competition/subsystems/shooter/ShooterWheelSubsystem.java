@@ -231,8 +231,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
     @Override
     protected boolean areTwoTargetsEquivalent(ShooterWheelTargetSpeeds target1, ShooterWheelTargetSpeeds target2) {
-        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.upperWheelsTargetRPM, target2.upperWheelsTargetRPM) &&
-                BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.lowerWheelsTargetRPM, target2.lowerWheelsTargetRPM);
+        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.upperWheelsTargetRPM, target2.upperWheelsTargetRPM)
+                && BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.lowerWheelsTargetRPM, target2.lowerWheelsTargetRPM);
     }
 
     public void periodic() {
