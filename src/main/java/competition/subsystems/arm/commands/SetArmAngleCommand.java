@@ -13,6 +13,7 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
 
     @Inject
     public SetArmAngleCommand(ArmSubsystem armSubsystem) {
+        super(armSubsystem);
         this.armSubsystem = armSubsystem;
     }
 
