@@ -16,11 +16,6 @@ public class NoteCamera implements SimpleCamera{
         return this.friendlyName;
     }
 
-    public boolean isCameraWorking() {
-        return this.camera.doesLibraryVersionMatchCoprocessorVersion()
-                && this.camera.isConnected();
-    }
-
     public PhotonCameraExtended getCamera() {
         return this.camera;
     }
