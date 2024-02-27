@@ -36,10 +36,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty multiTagStableDistance;
     AprilTagFieldLayout aprilTagFieldLayout;
     final ArrayList<AprilTagCamera> aprilTagCameras;
+    final ArrayList<NoteCamera> noteCameras;
+    final ArrayList<SimpleCamera> allPhotonVisionBasedCameras;
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
 
-    final PhotonCameraExtended rearLeftNoteCamera;
 
     @Inject
     public VisionSubsystem(PropertyFactory pf, XCameraElectricalContract electricalContract, RobotAssertionManager assertionManager) {
@@ -70,12 +71,19 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         aprilTagCameras = new ArrayList<AprilTagCamera>();
         if (aprilTagsLoaded) {
             PhotonCameraExtended.setVersionCheckEnabled(false);
-            for (var cameraInfo : electricalContract.getCameraInfo()) {
+            for (var cameraInfo : electricalContract.getAprilTagCameraInfo()) {
                 aprilTagCameras.add(new AprilTagCamera(cameraInfo, waitForStablePoseTime::get, aprilTagFieldLayout));
             }
         }
 
-        rearLeftNoteCamera = new PhotonCameraExtended("GamePiece_RearLeft_Camera");
+        noteCameras = new ArrayList<NoteCamera>();
+        for (var cameraInfo : electricalContract.getNoteCameraInfo()) {
+            noteCameras.add(new NoteCamera(cameraInfo));
+        }
+
+        allPhotonVisionBasedCameras = new ArrayList<SimpleCamera>();
+        allPhotonVisionBasedCameras.addAll(aprilTagCameras);
+        allPhotonVisionBasedCameras.addAll(noteCameras);
     }
 
     public List<Optional<EstimatedRobotPose>> getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
@@ -173,52 +181,58 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     int loopCounter = 0;
 
-    public double getNoteYaw() {
-        var targets = rearLeftNoteCamera.getLatestResult().getTargets();
+    public double getNoteYaw(NoteCamera camera) {
+        var targets = camera.getCamera().getLatestResult().getTargets();
         if (targets.size() == 0) {
             return 0;
         }
-        return rearLeftNoteCamera.getLatestResult().getTargets().get(0).getYaw();
+        return camera.getCamera().getLatestResult().getTargets().get(0).getYaw();
     }
 
-    public double getNoteArea() {
-        var targets = rearLeftNoteCamera.getLatestResult().getTargets();
+    public double getNoteArea(NoteCamera camera) {
+        var targets = camera.getCamera().getLatestResult().getTargets();
         if (targets.size() == 0) {
             return -1;
         }
-        return rearLeftNoteCamera.getLatestResult().getTargets().get(0).getArea();
+        return camera.getCamera().getLatestResult().getTargets().get(0).getArea();
     }
 
     @Override
     public void periodic() {
         loopCounter++;
 
-        var anyCameraBroken = aprilTagCameras.stream().anyMatch(state -> !state.isCameraWorking());
+        var anyCameraBroken = allPhotonVisionBasedCameras.stream().anyMatch(state -> !state.isCameraWorking());
 
         // If one of the cameras is not working, see if they have self healed every 5 seconds
         if (loopCounter % (50 * 5) == 0 && (anyCameraBroken)) {
             log.info("Checking if cameras have self healed");
-            for (AprilTagCamera camera : aprilTagCameras) {
+            for (SimpleCamera camera : aprilTagCameras) {
                 if (!camera.isCameraWorking()) {
                     log.info("Camera " + camera.getName() + " is still not working");
                 }
             }
         }
 
-        for (AprilTagCamera camera : aprilTagCameras) {
+        for (SimpleCamera camera : allPhotonVisionBasedCameras) {
             aKitLog.record(camera.getName() + "CameraWorking", camera.isCameraWorking());
+        }
+
+        for (NoteCamera camera : noteCameras) {
+            if (camera.isCameraWorking()) {
+                aKitLog.record(camera.getName() + "NoteYaw", getNoteYaw(camera));
+                aKitLog.record(camera.getName() + "NoteArea", getNoteArea(camera));
+            }
         }
     }
 
     @Override
     public void refreshDataFrame() {
         if (aprilTagsLoaded) {
-            for (AprilTagCamera camera : aprilTagCameras) {
+            for (SimpleCamera camera : allPhotonVisionBasedCameras) {
                 if (camera.isCameraWorking()) {
                     camera.getCamera().refreshDataFrame();
                 }
             }
         }
-        rearLeftNoteCamera.refreshDataFrame();
     }
 }

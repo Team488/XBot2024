@@ -8,7 +8,7 @@ import xbot.common.logic.TimeStableValidator;
 
 import java.util.function.Supplier;
 
-public class AprilTagCamera {
+public class AprilTagCamera implements SimpleCamera {
     private final PhotonPoseEstimator poseEstimator;
 
     private final PhotonCameraExtended camera;
@@ -34,7 +34,8 @@ public class AprilTagCamera {
     }
 
     public boolean isCameraWorking() {
-        return this.camera.doesLibraryVersionMatchCoprocessorVersion();
+        return this.camera.doesLibraryVersionMatchCoprocessorVersion()
+                && this.camera.isConnected();
     }
 
     public PhotonCameraExtended getCamera() {

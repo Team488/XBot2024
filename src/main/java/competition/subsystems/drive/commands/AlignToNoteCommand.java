@@ -35,8 +35,8 @@ public class AlignToNoteCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        double yaw = vision.getNoteYaw();
-        double area = vision.getNoteArea();
+        double yaw = 0;//vision.getNoteYaw();
+        double area = 14;//vision.getNoteArea();
         double desiredNoteSize = 14;
 
         var headingGoal = pose.getCurrentHeading().minus(Rotation2d.fromDegrees(yaw));
