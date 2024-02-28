@@ -31,12 +31,13 @@ import javax.inject.Provider;
 import java.util.ArrayList;
 
 //am i cookin with this?? 🤫🧏‍♂️🤑
-//this auto scores the note we are holding, then goes to the center and steals the notes to our side via both the scoocher and the collector
+//this auto starts in front of the subwoofer
+//scores the note we are holding, then goes to the center and steals the notes to our side via both the scoocher and the collector
 //at the end, it grabs the last centerline note and scores it at the subwoofer.
 public class TwoNoteGriefAuto extends SequentialCommandGroup {
     final DynamicOracle oracle;
     final AutonomousCommandSelector autoSelector;
-    private enum keyPointsForSwerve{
+    private enum KeyPointsForSwerve{
         CENTERLINE1,
         CENTERLINE4,
         LASTNOTE,
@@ -74,11 +75,11 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         setArmToScooch.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
 
         var swerveToEdge = swerveProvider.get();
-        setUpLogic(swerveToEdge,keyPointsForSwerve.CENTERLINE1);
+        setUpLogic(swerveToEdge,KeyPointsForSwerve.CENTERLINE1);
         swerveToEdge.logic.setAimAtGoalDuringFinalLeg(true);
         var swerveToOtherEdgeWhileStrafing = swerveProvider.get();
 
-        setUpLogic(swerveToOtherEdgeWhileStrafing,keyPointsForSwerve.CENTERLINE4);
+        setUpLogic(swerveToOtherEdgeWhileStrafing,KeyPointsForSwerve.CENTERLINE4);
 
         //scooches first note, then reverse scooches the rest
         this.addCommands(Commands.deadline(swerveToEdge,scoochIntake,setArmToScooch));
@@ -86,7 +87,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         //sets arm and collects Centerline 5 note
         var swerveLastNote = swerveProvider.get();
-        setUpLogic(swerveLastNote,keyPointsForSwerve.LASTNOTE);
+        setUpLogic(swerveLastNote,KeyPointsForSwerve.LASTNOTE);
         swerveLastNote.logic.setAimAtGoalDuringFinalLeg(true);
         swerveLastNote.logic.setDriveBackwards(true);
 
@@ -98,7 +99,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         //drives back to the subwoofer and scores
         var driveToSubwoofer = swerveProvider.get();
-        setUpLogic(driveToSubwoofer,keyPointsForSwerve.BACKTOSUBWOOFER);
+        setUpLogic(driveToSubwoofer,KeyPointsForSwerve.BACKTOSUBWOOFER);
 
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
         warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
@@ -109,24 +110,26 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
     }
     //sets up basic logic when given a swerve command
-    private void setUpLogic(SwerveSimpleTrajectoryCommand swerve,keyPointsForSwerve point){
+    private void setUpLogic(SwerveSimpleTrajectoryCommand swerve,KeyPointsForSwerve point){
         swerve.logic.setEnableConstantVelocity(true);
         swerve.logic.setConstantVelocity(4.5);
         swerve.logic.setKeyPoints(getPoints(point));
         swerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
     }
     //a key to make this function return different points based on what you need
-    private ArrayList<XbotSwervePoint> getPoints(keyPointsForSwerve point){
+    private ArrayList<XbotSwervePoint> getPoints(KeyPointsForSwerve point){
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         switch (point){
             //drives to the first centerline note with an angle ready to collect
             case CENTERLINE1 -> points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine1, 10));
             //drives through middle 3 notes on the way to the fourth note
-            case CENTERLINE4 -> points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,2.388), Rotation2d.fromDegrees(65),10));
+            case CENTERLINE4 ->
+                    points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,2.388), Rotation2d.fromDegrees(65),10));
             case LASTNOTE -> points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.296,0.6),new Rotation2d(),10));
             //the case below doesnt convert to red so I just manually added the red point for now, change it to the comment if fixed
             //case BACKTOSUBWOOFER -> points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SubwooferCentralScoringLocation,10));
             case BACKTOSUBWOOFER -> points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(15.2,5.553),new Rotation2d(),10));
+            default -> autoSelector.createAutonomousStateMessageCommand("Ayo you typed something wrong");
         }
         return points;
     }
