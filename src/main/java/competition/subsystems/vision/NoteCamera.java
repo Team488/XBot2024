@@ -2,14 +2,12 @@ package competition.subsystems.vision;
 
 import org.photonvision.PhotonCameraExtended;
 import xbot.common.injection.electrical_contract.CameraInfo;
+import xbot.common.subsystems.vision.SimpleCamera;
 
-public class NoteCamera implements SimpleCamera{
-    private final PhotonCameraExtended camera;
-    private final String friendlyName;
+public class NoteCamera extends SimpleCamera {
 
     public NoteCamera(CameraInfo cameraInfo) {
-        this.camera = new PhotonCameraExtended(cameraInfo.networkTablesName());
-        this.friendlyName = cameraInfo.friendlyName();
+        super(cameraInfo);
     }
 
     public String getName() {
