@@ -205,37 +205,43 @@ public class CompetitionContract extends ElectricalContract {
         return true;
     }
 
+    private static double aprilCameraXDisplacement = 13.48 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraYDisplacement = 13.09 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraZDisplacement = 9.25 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraPitch = Math.toRadians(-30.5);
+    private static double aprilCameraYaw = Math.toRadians(14);
+
     @Override
     public CameraInfo[] getAprilTagCameraInfo() {
         return new CameraInfo[] {
             new CameraInfo("Apriltag_FrontLeft_Camera",
                     "AprilTagFrontLeft",
                     new Transform3d(new Translation3d(
-                            13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                            13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(14)))),
+                            aprilCameraXDisplacement,
+                            aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, aprilCameraYaw))),
             new CameraInfo("Apriltag_FrontRight_Camera",
                     "AprilTagFrontRight",
                     new Transform3d(new Translation3d(
-                            13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                            -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(-14)))),
+                            aprilCameraXDisplacement,
+                            -aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, -aprilCameraYaw))),
             new CameraInfo("Apriltag_RearLeft_Camera",
                     "AprilTagRearLeft",
                     new Transform3d(new Translation3d(
-                            -13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                            13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(180 - 14)))),
+                            -aprilCameraXDisplacement,
+                            aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, Math.toRadians(180) - aprilCameraYaw))),
             new CameraInfo("Apriltag_RearRight_Camera",
                     "AprilTagRearRight",
                     new Transform3d(new Translation3d(
-                            -13.48 / PoseSubsystem.INCHES_IN_A_METER,
-                            -13.09 / PoseSubsystem.INCHES_IN_A_METER,
-                            9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(180 + 14))))
+                            -aprilCameraXDisplacement,
+                            -aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, Math.toRadians(180) + aprilCameraYaw)))
         };
     }
 
