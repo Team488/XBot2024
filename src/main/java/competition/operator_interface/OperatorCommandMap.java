@@ -5,7 +5,6 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import competition.auto_programs.ShootThenMoveOutOfLine;
-import competition.auto_programs.TwoNoteGriefAuto;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
