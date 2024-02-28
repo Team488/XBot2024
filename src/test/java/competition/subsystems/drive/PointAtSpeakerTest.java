@@ -13,13 +13,11 @@ public class PointAtSpeakerTest extends BaseCompetitionTest {
 
     @Test
     public void blueAllianceTest() {
-
         Pose2d straight = new Pose2d(4.5, 5.5, new Rotation2d(60));
         assertEquals(180, getRotationIntentPointAtSpeaker(straight), 1);
 
         Pose2d angledAbove = new Pose2d(3.5, 7, new Rotation2d(60));
-//        assertEquals(-157, getRotationIntentPointAtSpeaker(angledAbove), 20);
-        assertEquals(202, getRotationIntentPointAtSpeaker(angledAbove), 10);
+        assertEquals(203, getRotationIntentPointAtSpeaker(angledAbove), 10);
 
         Pose2d angledBelow = new Pose2d(3.2, 2.5, new Rotation2d(60));
         assertEquals(130, getRotationIntentPointAtSpeaker(angledBelow), 10);
@@ -31,7 +29,6 @@ public class PointAtSpeakerTest extends BaseCompetitionTest {
         assertEquals(0, getRotationIntentPointAtSpeakerRedSide(straight), 10);
 
         Pose2d angledAbove = new Pose2d(12, 7, new Rotation2d(60));
-//        assertEquals(-20, getRotationIntentPointAtSpeakerRedSide(angledAbove), 20);
         assertEquals(340, getRotationIntentPointAtSpeakerRedSide(angledAbove), 10);
 
         Pose2d angledBelow = new Pose2d(13, 2.5, new Rotation2d(60));

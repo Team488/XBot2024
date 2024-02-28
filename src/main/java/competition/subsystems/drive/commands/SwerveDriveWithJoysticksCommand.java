@@ -207,8 +207,6 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
             decider.reset();
         }
         else if (pointAtSpeakerButton.getAsBoolean()) {
-            //if driver button A is pressed
-
             desiredHeading = getRotationIntentPointAtSpeaker(pose.getCurrentPose2d());
 
             drive.setDesiredHeading(desiredHeading);
