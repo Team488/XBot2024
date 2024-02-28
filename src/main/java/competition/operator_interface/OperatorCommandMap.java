@@ -26,6 +26,7 @@ import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
+import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
@@ -127,8 +128,9 @@ public class OperatorCommandMap {
             DriveSubsystem drive,
             FireWhenReadyCommand fireWhenReady,
             FireCollectorCommand fireCollector,
-            SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree,
-            AlignToNoteCommand alignToNoteCommand
+            AlignToNoteCommand alignToNoteCommand,
+            DriveToCentralSubwooferCommand driveToCentralSubwooferCommand,
+            DriveToAmpCommand driveToAmpCommand
             )
     {
         double typicalVelocity = 2.5;
@@ -204,7 +206,8 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
 
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(subwooferShotFromMidShootThenShootNearestThree);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToAmpCommand);
     }
 
     @Inject

@@ -13,15 +13,15 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 
 
-public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryCommand {
+public class DriveToAmpCommand extends SwerveSimpleTrajectoryCommand {
 
     DynamicOracle oracle;
     DriveSubsystem drive;
 
     @Inject
-    public DriveToCentralSubwooferCommand(DriveSubsystem drive, DynamicOracle oracle,
-                                   PoseSubsystem pose, PropertyFactory pf,
-                                   HeadingModule.HeadingModuleFactory headingModuleFactory) {
+    public DriveToAmpCommand(DriveSubsystem drive, DynamicOracle oracle,
+                                          PoseSubsystem pose, PropertyFactory pf,
+                                          HeadingModule.HeadingModuleFactory headingModuleFactory) {
         super(drive, pose, pf, headingModuleFactory);
         this.oracle = oracle;
         this.drive = drive;
@@ -32,7 +32,7 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.AmpScoringLocation.getTranslation(), Rotation2d.fromDegrees(270), 10));
+                PoseSubsystem.SubwooferCentralScoringLocation.getTranslation(), Rotation2d.fromDegrees(180), 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
