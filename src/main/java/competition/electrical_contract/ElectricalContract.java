@@ -1,12 +1,14 @@
 package competition.electrical_contract;
 
-import competition.subsystems.vision.CameraInfo;
+import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
+import xbot.common.injection.electrical_contract.XCameraElectricalContract;
 import xbot.common.injection.electrical_contract.XSwerveDriveElectricalContract;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
 
-public abstract class ElectricalContract implements XSwerveDriveElectricalContract {
+public abstract class ElectricalContract
+        implements XCameraElectricalContract, XSwerveDriveElectricalContract {
     public abstract boolean isShooterReady();
 
     public abstract boolean isDriveReady();
@@ -62,7 +64,9 @@ public abstract class ElectricalContract implements XSwerveDriveElectricalContra
     public abstract DeviceInfo getShooterMotorFollower();
 
     // Vision
-    public abstract CameraInfo[] getCameraInfo();
+    public abstract CameraInfo[] getAprilTagCameraInfo();
+
+    public abstract CameraInfo[] getNoteCameraInfo();
 }
 
 

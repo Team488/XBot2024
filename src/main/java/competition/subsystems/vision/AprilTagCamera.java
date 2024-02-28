@@ -3,11 +3,12 @@ package competition.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
+import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.logic.TimeStableValidator;
 
 import java.util.function.Supplier;
 
-public class AprilTagCamera {
+public class AprilTagCamera implements SimpleCamera {
     private final PhotonPoseEstimator poseEstimator;
 
     private final PhotonCameraExtended camera;
@@ -30,10 +31,6 @@ public class AprilTagCamera {
 
     public String getName() {
         return this.friendlyName;
-    }
-
-    public boolean isCameraWorking() {
-        return this.camera.doesLibraryVersionMatchCoprocessorVersion();
     }
 
     public PhotonCameraExtended getCamera() {
