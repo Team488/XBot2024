@@ -18,6 +18,8 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     // oi used for human input
     private final OperatorInterface oi;
 
+    boolean keySwitchEnabled = false;
+    boolean keySwitchActivated = false;
     boolean startedCalibration = false;
     boolean givenUpOnCalibration = false;
     double calibrationStartTime = 0;
@@ -69,10 +71,9 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         aKitLog.record("Given Up On Calibration", givenUpOnCalibration);
 
         // Try to auto-calibrate.
-        if (!startedCalibration) {
-            calibrationStartTime = XTimer.getFPGATimestamp();
-            startedCalibration = true;
-        }
+        if (keySwitchEnabled && keySwitchActivated) {
+        } else {
+            humanControlAction();}
 
         if (calibrationStartTime + calibrationMaxDuration < XTimer.getFPGATimestamp()) {
             givenUpOnCalibration = true;
@@ -107,6 +108,11 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         } else {
             humanControlAction();
         }
+
+    }
+    public void updateKeySwitch(boolean enabled, boolean activated) {
+        this.keySwitchEnabled = enabled;
+        this.keySwitchActivated = activated;
     }
 
     @Override
@@ -116,7 +122,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
             double armError = Math.abs(target - current);
             return armError;
     }
-
+    
     @Override
     protected Double getHumanInput() {
         double fundamentalInput = MathUtils.deadband(
