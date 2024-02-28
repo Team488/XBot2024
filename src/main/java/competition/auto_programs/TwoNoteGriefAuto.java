@@ -8,6 +8,7 @@ import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand
 import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
@@ -37,6 +38,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
                             Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
                             Provider<FireWhenReadyCommand> fireWhenReadyCommandProvider,
                             IntakeScoocherCommand scoochIntake,
+                            EjectScoocherCommand scoochEject,
                             IntakeUntilNoteCollectedCommand intakeUntilCollected,
                             EjectCollectorCommand eject,
                             StopCollectorCommand stopCollector,
@@ -63,14 +65,16 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         var swerveToEdge = swerveProvider.get();
         setUpLogic(swerveToEdge,1);
+        swerveToEdge.logic.setAimAtGoalDuringFinalLeg(true);
         var swerveToOtherEdgeWhileStrafing = swerveProvider.get();
+
         setUpLogic(swerveToOtherEdgeWhileStrafing,2);
 
-        //drives along center notes while scooching them
-        this.addCommands(swerveToEdge.alongWith(setArmToScooch));
-        this.addCommands(Commands.deadline(swerveToOtherEdgeWhileStrafing,scoochIntake));
+        //scooches first note, then reverse scooches the rest
+        this.addCommands(Commands.deadline(swerveToEdge,scoochIntake,setArmToScooch));
+        this.addCommands(Commands.deadline(swerveToOtherEdgeWhileStrafing,scoochEject));
 
-        //collects Centerline 5 note
+        //sets arm and collects Centerline 5 note
         var swerveLastNote = swerveProvider.get();
         setUpLogic(swerveLastNote,3);
         swerveLastNote.logic.setAimAtGoalDuringFinalLeg(true);
@@ -110,12 +114,13 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         //drives to the first centerline note with an angle ready to collect
         if (key == 1) {
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,7.95), Rotation2d.fromDegrees(235), 10));
+            //points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,7.95), Rotation2d.fromDegrees(235), 10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine1, 10));
             return points;
         }
         //drives through 4 centerline notes
         if(key == 2){
-            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,2.388), Rotation2d.fromDegrees(235),10));
+            points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new Translation2d(8.45,2.388), Rotation2d.fromDegrees(65),10));
             return points;
         }
         //drives back to subwoofer
