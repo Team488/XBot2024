@@ -64,9 +64,7 @@ public abstract class ElectricalContract
     public abstract DeviceInfo getShooterMotorFollower();
 
     // Vision
-    public abstract CameraInfo[] getAprilTagCameraInfo();
-
-    public abstract CameraInfo[] getNoteCameraInfo();
+    public abstract CameraInfo[] getCameraInfo();
 }
 
 

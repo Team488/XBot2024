@@ -295,16 +295,16 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     private void determineScoringSubgoal() {
-        double acceptableRangeBeforeScoring = 0;
+        double acceptableRangeBeforeScoringMeters = 0;
         if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
-            acceptableRangeBeforeScoring = 2;
+            acceptableRangeBeforeScoringMeters = 2;
         } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
             // in the future we'll do something more like "get near amp, then drive into the wall for a few moments
             // before scoring"
-            acceptableRangeBeforeScoring = 0.05;
+            acceptableRangeBeforeScoringMeters = 0.05;
         }
 
-        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoring)) {
+        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters)) {
             currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         } else {
             currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
