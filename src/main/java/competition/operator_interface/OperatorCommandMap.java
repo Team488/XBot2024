@@ -120,8 +120,7 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             FireWhenReadyCommand fireWhenReady,
-            FireCollectorCommand fireCollector,
-            TwoNoteGriefAuto heheheha
+            FireCollectorCommand fireCollector
             )
     {
         double typicalVelocity = 2.5;
@@ -146,7 +145,6 @@ public class OperatorCommandMap {
         anyway.
         */
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(heheheha);
 
 
 
