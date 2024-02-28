@@ -1,5 +1,7 @@
-package competition.auto;
+package competition.auto.useless;
 
+import competition.auto.PathPlannerDriveSubsystem;
+import competition.auto.RobotContainer;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;

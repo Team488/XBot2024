@@ -62,21 +62,23 @@ public class RobotContainer {
         NamedCommands.registerCommand("PointArmPreloaded", pointArmPreload);
         NamedCommands.registerCommand("FirePreloaded", fireFirstNoteCommand);
 
-        //intake note
+        //INTAKING NOTES
+        var intakeFirstNote = intakeUntilNoteCollectedCommandProvider.get();
+        NamedCommands.registerCommand("IntakeFirstNote", intakeFirstNote);
         var intakeSecondNote = intakeUntilNoteCollectedCommandProvider.get();
         NamedCommands.registerCommand("IntakeSecondNote", intakeSecondNote);
+        var intakeThirdNote = intakeUntilNoteCollectedCommandProvider.get();
+        NamedCommands.registerCommand("IntakeSecondNote", intakeThirdNote);
 
-        //shooting from spike (subwoofer RPM prob)
-        var warmUpSpike = continuouslyWarmUpForSpeakerCommandProvider.get();
-        var pointArmSpike = continuouslyPointArmAtSpeakerCommandProvider.get();
-        var fireSecondNoteCommand = fireNoteCommandGroupProvider.get();
+        //FIRING EVERYWHERE
+        var prepareArm1 = prepareEverywhereCommandGroupProvider.get();
+        NamedCommands.registerCommand("PrepareEverywhere1", prepareArm1);
+        var prepareArm2 = prepareEverywhereCommandGroupProvider.get();
+        NamedCommands.registerCommand("PrepareEverywhere2", prepareArm2);
+        var prepareArm3 = prepareEverywhereCommandGroupProvider.get();
+        NamedCommands.registerCommand("PrepareEverywhere3", prepareArm3);
 
-        NamedCommands.registerCommand("WarmUpSpike", warmUpSpike);
-        NamedCommands.registerCommand("PointArmSpike", pointArmSpike);
-        NamedCommands.registerCommand("FireSecondNote", fireSecondNoteCommand);
-        //stop shooter lower arm
-        var stopIntooterCommand = stopIntooterCommandGroupProvider.get();
-        NamedCommands.registerCommand("StopIntooter", stopIntooterCommand);
+
 
         var prepareArmMidNote = prepareEverywhereCommandGroupProvider.get();
         NamedCommands.registerCommand("PrepareEverywhere", prepareArmMidNote);

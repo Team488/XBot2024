@@ -33,7 +33,7 @@ public class Fast4NoteFarCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
-        pose.setCurrentPosition(1.36, 5.50, new WrappedRotation2d(0));
+//        pose.setCurrentPosition(1.36, 5.50, new WrappedRotation2d(0));
         autonomousCommand.schedule();
     }
 
