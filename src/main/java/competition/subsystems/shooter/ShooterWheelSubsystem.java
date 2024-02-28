@@ -28,7 +28,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
     //need pose for real time calculations
     PoseSubsystem pose;
-    ShooterDistanceToRpmConverter converter;
+    DoubleInterpolator converter;
 
     DoubleInterpolator upperWheelDistanceToRpmInterpolator;
     DoubleInterpolator lowerWheelDistanceToRpmInterpolator;
@@ -66,8 +66,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         ampShotRpm = pf.createPersistentProperty("AmpShotRpm", 2000);
 
         this.pose = pose;
-        this.converter = new ShooterDistanceToRpmConverter();
-
+        this.converter = new DoubleInterpolator();
 
         // WE WON'T BE NEEDING THESE AS CURRENTLY WE ARE USING A UNIVERSAL ERROR TOLERANCE "acceptableToleranceRPM"
         shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
@@ -75,7 +74,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
         // NEEDS TUNING TO FIND CORRECT VALUE
         iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
-
 
         // THIS IS HOW MUCH RPM WE CAN TOLERATE (needs testing and is UNIVERSAL)
         acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
@@ -99,8 +97,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             upperWheelMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
             lowerWheelMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
 
-            upperWheelMotor.setSmartCurrentLimit(75);
-            lowerWheelMotor.setSmartCurrentLimit(75);
+            upperWheelMotor.setSmartCurrentLimit(60);
+            lowerWheelMotor.setSmartCurrentLimit(60);
         }
 
         var distanceArray =      new double[]{0,    36,   49.5, 63,   80,   111,  136};
@@ -159,7 +157,6 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     @Override
     public void setTargetValue(ShooterWheelTargetSpeeds value) {
         targetRpms = value;
-        log.info("Target RPM: " + value);
     }
 
     public void setTargetValue(double value) {
@@ -232,9 +229,17 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         );
     }
 
+    @Override
+    protected boolean areTwoTargetsEquivalent(ShooterWheelTargetSpeeds target1, ShooterWheelTargetSpeeds target2) {
+        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.upperWheelsTargetRPM, target2.upperWheelsTargetRPM)
+                && BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.lowerWheelsTargetRPM, target2.lowerWheelsTargetRPM);
+    }
+
     public void periodic() {
-        upperWheelMotor.periodic();
-        lowerWheelMotor.periodic();
+        if (contract.isShooterReady()) {
+            upperWheelMotor.periodic();
+            lowerWheelMotor.periodic();
+        }
 
         aKitLog.record("TargetRPM", getTargetValue());
         aKitLog.record("CurrentRPM", getCurrentValue());
