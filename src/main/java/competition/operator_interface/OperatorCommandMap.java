@@ -4,9 +4,12 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.ShootThenMoveOutOfLine;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
+import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
+import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
@@ -22,6 +25,9 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.drive.commands.AlignToNoteCommand;
+import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
@@ -77,7 +83,8 @@ public class OperatorCommandMap {
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
 
         // Collect
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake);
+        var rumbleModeFalse = new InstantCommand(() -> oi.operatorFundamentalsGamepad.getRumbleManager().stopGamepadRumble());
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake).onFalse(rumbleModeFalse);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
 
         // Fire
@@ -119,13 +126,15 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             FireWhenReadyCommand fireWhenReady,
-            FireCollectorCommand fireCollector
+            FireCollectorCommand fireCollector,
+            AlignToNoteCommand alignToNoteCommand
             )
     {
         double typicalVelocity = 2.5;
         // Manipulate heading and position for easy testing
-        resetHeading.setHeadingToApply(0);
-        var teleportRobot = pose.createSetPositionCommand(new Pose2d(2.6, 5.65, Rotation2d.fromDegrees(0)));
+        resetHeading.setHeadingToApply(180);
+        var teleportRobot = pose.createSetPositionCommand(PoseSubsystem.SubwooferCentralScoringLocation);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(teleportRobot);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
@@ -144,6 +153,8 @@ public class OperatorCommandMap {
         anyway.
         */
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
 
 
@@ -191,7 +202,6 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
-
     }
 
     @Inject
@@ -206,19 +216,17 @@ public class OperatorCommandMap {
 
     @Inject
     public void setupOracleCommands(OperatorInterface oi,
-                                    SwerveAccordingToOracleCommand oracleSwerve,
+                                    SwerveAccordingToOracleCommand driveAccoringToOracle,
+                                    SuperstructureAccordingToOracleCommand superstructureAccordingToOracle,
                                     ManualRobotKnowledgeSubsystem knowledgeSubsystem,
                                     DynamicOracle oracle) {
-        oracleSwerve.logic.setEnableConstantVelocity(true);
-        oracleSwerve.logic.setConstantVelocity(2.8);
-        oracleSwerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        driveAccoringToOracle.logic.setEnableConstantVelocity(true);
+        driveAccoringToOracle.logic.setConstantVelocity(2.8);
+        driveAccoringToOracle.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
-        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(oracleSwerve);
+        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(driveAccoringToOracle.alongWith(superstructureAccordingToOracle));
+        oi.driverGamepad.getPovIfAvailable(0).onTrue(new InstantCommand(() -> oracle.resetNoteMap()));
 
-        //oi.driverGamepad.getXboxButton(XboxButton.LeftBumper)
-        //        .whileTrue(knowledgeSubsystem.createSetNoteCollectedCommand());
-        //oi.driverGamepad.getXboxButton(XboxButton.RightBumper)
-        //        .whileTrue(knowledgeSubsystem.createSetNoteShotCommand());
     }
 
     @Inject
@@ -315,7 +323,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtAmp);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
 
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
     }
 
     @Inject

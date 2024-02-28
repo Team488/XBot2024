@@ -3,16 +3,19 @@ package competition.subsystems.arm;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
+import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XCompressor;
 import xbot.common.controls.actuators.XDoubleSolenoid;
 import xbot.common.controls.actuators.XSolenoid;
 import xbot.common.controls.sensors.XSparkAbsoluteEncoder;
@@ -64,7 +67,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double targetExtension;
     private final DoubleProperty overallPowerClampForTesting;
 
-    PoseSubsystem pose;
+    final PoseSubsystem pose;
     public final Mechanism2d armActual2d;
     public final MechanismLigament2d armLigament;
     // what angle does the arm make with the pivot when it's at our concept of zero?
@@ -74,6 +77,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private final DoubleProperty powerRampDurationSec;
     private boolean powerRampingEnabled = true;
     private boolean dynamicBrakingEnabled = false;
+    private final XCompressor compressor;
+    private int totalLoops = 0;
+    private int loopsWhereCompressorRunning = 0;
+
 
     public enum ArmState {
         EXTENDING,
@@ -102,9 +109,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     public ArmSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                         XDoubleSolenoid.XDoubleSolenoidFactory doubleSolenoidFactory,
                         XSolenoid.XSolenoidFactory solenoidFactory,
-                        ElectricalContract contract, PoseSubsystem pose) {
+                        ElectricalContract contract, PoseSubsystem pose,
+                        DriveSubsystem drive, XCompressor.XCompressorFactory compressorFactory) {
 
         this.pose = pose;
+        this.compressor = compressorFactory.create();
 
         armBrakeSolenoid = doubleSolenoidFactory.create(
                 solenoidFactory.create(contract.getBrakeSolenoidForward().channel),
@@ -161,11 +170,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorLeft.enableVoltageCompensation(12);
             armMotorRight.enableVoltageCompensation(12);
 
-            // Get through-bore encoders
-            var armWithEncoder = contract.getArmEncoderIsOnLeftMotor() ? armMotorLeft : armMotorRight;
-            armAbsoluteEncoder = armWithEncoder.getAbsoluteEncoder(
-                    this.getPrefix() + "ArmEncoder",
-                    contract.getArmEncoderInverted());
+            // Get through-bore encoder -
+            // this is plugged in to the front left drive motor controller
+            if (contract.isDriveReady()) {
+                armAbsoluteEncoder = drive.getFrontLeftSwerveModuleSubsystem()
+                        .getDriveSubsystem().getSparkMax().getAbsoluteEncoder(
+                                this.getPrefix() + "ArmEncoder",
+                                contract.getArmEncoderInverted());
+            }
 
             armMotorLeft.setSmartCurrentLimit(60);
             armMotorRight.setSmartCurrentLimit(60);
@@ -190,9 +202,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             .append(new MechanismLigament2d("box-top", 2, 90))
             .append(new MechanismLigament2d("box-left", 1, 90));
 
+
+        double[] rangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
+        double[] rangesInMeters = new double[7];
+        //PoseSubsystem.INCHES_IN_A_METER
+        // Convert the rangesInInches array to meters
+        for (int i = 0; i < rangesInInches.length; i++) {
+            rangesInMeters[i] = rangesInInches[i] / PoseSubsystem.INCHES_IN_A_METER;
+        }
+
         speakerDistanceToExtensionInterpolator =
                 new DoubleInterpolator(
-                        new double[]{0, 36, 49.5, 63, 80, 111, 136},
+                        rangesInMeters,
                         new double[]{0, 0,  20.0, 26, 41, 57,  64});
     }
 
@@ -379,8 +400,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public void dangerousManualSetPowerToBothArms(double power) {
         setBrakeEnabled(false);
-        armMotorLeft.set(power);
-        armMotorRight.set(power);
+        if (contract.isArmReady()) {
+            armMotorLeft.set(power);
+            armMotorRight.set(power);
+        }
     }
 
     public void extend() {
@@ -404,10 +427,40 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getArmAngleFromDistance(double distanceFromSpeaker) {
-        // Distance: Inches; Angle: Degrees; Distance = Measured Distance - Calibration Offset
-        return (0.0019 * Math.pow(distanceFromSpeaker, 2) + (-0.7106 * distanceFromSpeaker) + 82.844) + angleTrim.get();
+        // Get arm angle (in degrees) from distance from speaker (in meters)
+       double k0 = 9.085E+01 ;
+       double k1 = -3.922E+01 ;
+       double k2 = 7.291E+00 ;
+       double k3 = -4.877E-01 ;
+       double angle = ( k0 + k1 * distanceFromSpeaker + k2 * Math.pow(distanceFromSpeaker, 2) + k3 * Math.pow(distanceFromSpeaker, 3)+ angleTrim.get()) ;
+       if (angle > 54.7 ){
+           angle = 54.7 ;
+       }
+        return ( angle) ;
+        //return (0.0019 * Math.pow(distanceFromSpeaker, 2) + (-0.7106 * distanceFromSpeaker) + 82.844) + angleTrim.get();
     }
 
+    public double getArmAngleForExtension(double extensionDistance) {
+        // Get desired shooting angle (in degrees) from extension length (in mm)
+        double  b0 = 5.463E+01 ;
+        double b1 = -4.589E+02 ;
+        double b2 = 1.034E+03 ;
+        double b3 = -3.378E+03 ;
+        double extension_meters = extensionDistance / 1000.0 ;
+        double angle_degrees = ( b0 + b1 * extension_meters + b2 * Math.pow(extension_meters, 2) + b3 * Math.pow(extension_meters, 3)) ;
+        return ( angle_degrees) ;
+    }
+
+    public double getArmExtensionForAngle(double armAngle) {
+        // Get extension length (in mm) from desired shooting angle (degrees)
+      double a0 = 1.432E-01 ;
+      double a1 = -2.702E-03 ;
+      double a2 = -5.286E-06 ;
+      double a3 = 1.218E-07 ;
+      double extension_meters = ( a0 + a1 * armAngle + a2 * Math.pow(armAngle, 2) + a3 * Math.pow(armAngle, 3)) ;
+      double extension_mm = ( extension_meters * 1000.0) ;
+      return ( extension_mm) ;
+    }
 
     // Returns an angle for the shooter that can be converted into arm position later if needed
     public double getUsefulArmPositionAngle(UsefulArmPosition usefulArmPosition) {
@@ -496,12 +549,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return getArmAngleForExtension(getCurrentValue());
     }
 
-    public double getArmAngleForExtension(double extension) {
-        // TODO: This is just a placeholder, the relationship will actually be nonlinear
-        var degreesPerMmExtension = 0.01;
-        return extension * degreesPerMmExtension;
-    }
-
     public double getExtensionForArmAngle(double angle) {
         // TODO: this is just a placeholder, the relationship will be nonlinear
         var degreesPerMmExtension = 0.01;
@@ -516,7 +563,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     public Double getCurrentValue() {
-        return getExtensionDistance();
+        if (contract.isArmReady()) {
+            return getExtensionDistance();
+        }
+        return 0.0;
     }
 
     public double getExtensionDistance() {
@@ -587,6 +637,15 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return speakerDistanceToExtensionInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker);
     }
 
+    public double getRecommendedExtensionForSpeaker() {
+        return getRecommendedExtension(pose.getDistanceFromSpeaker());
+    }
+
+    @Override
+    protected boolean areTwoTargetsEquivalent(Double target1, Double target2) {
+        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1, target2);
+    }
+
     public void periodic() {
         if (contract.isArmReady()) {
             recordArmEncoderValues();
@@ -597,7 +656,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
         aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
-
+        aKitLog.record("BrakeEngaged", getBrakeEngaged());
         aKitLog.record("Target Extension", targetExtension);
         aKitLog.record("TargetAngle", getArmAngleForExtension(targetExtension));
         aKitLog.record("Arm3dState", new Pose3d(
@@ -608,6 +667,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         armLigament.setAngle(getArmAngle() - armPivotAngleAtArmAngleZero);
         armLigament.setColor(color);
         aKitLog.record("Arm2dStateActual", armActual2d);
+
+        if (DriverStation.isEnabled()) {
+            totalLoops++;
+            if (!compressor.isAtTargetPressure()) {
+                loopsWhereCompressorRunning++;
+            }
+        }
+        if (totalLoops > 0) {
+            aKitLog.record("CompressorRunningPercentage", (loopsWhereCompressorRunning * 100) / totalLoops);
+        }
     }
 
 
