@@ -1,10 +1,10 @@
 package competition.electrical_contract;
 
 import competition.subsystems.pose.PoseSubsystem;
-import xbot.common.injection.electrical_contract.CameraInfo;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
@@ -171,7 +171,7 @@ public class CompetitionContract extends ElectricalContract {
     }
     @Override
     public DeviceInfo getReadyToFireNoteSensorDio() {
-        return new DeviceInfo("ReadyToFireNoteSensor", 9, true);
+        return new DeviceInfo("ReadyToFireNoteSensor", 5, true);
     }
 
     // ArmSubsystem
@@ -206,36 +206,54 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public CameraInfo[] getCameraInfo() {
+    public CameraInfo[] getAprilTagCameraInfo() {
         return new CameraInfo[] {
             new CameraInfo("Apriltag_FrontLeft_Camera",
-                    "FrontLeft",
+                    "AprilTagFrontLeft",
                     new Transform3d(new Translation3d(
                             13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             13.09 / PoseSubsystem.INCHES_IN_A_METER,
                             9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(14)))),
+                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(14)))),
             new CameraInfo("Apriltag_FrontRight_Camera",
-                    "FrontRight",
+                    "AprilTagFrontRight",
                     new Transform3d(new Translation3d(
                             13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             -13.09 / PoseSubsystem.INCHES_IN_A_METER,
                             9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(-14)))),
+                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(-14)))),
             new CameraInfo("Apriltag_RearLeft_Camera",
-                    "RearLeft",
+                    "AprilTagRearLeft",
                     new Transform3d(new Translation3d(
                             -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             13.09 / PoseSubsystem.INCHES_IN_A_METER,
                             9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 - 14)))),
+                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(180 - 14)))),
             new CameraInfo("Apriltag_RearRight_Camera",
-                    "RearRight",
+                    "AprilTagRearRight",
                     new Transform3d(new Translation3d(
                             -13.48 / PoseSubsystem.INCHES_IN_A_METER,
                             -13.09 / PoseSubsystem.INCHES_IN_A_METER,
                             9.25 / PoseSubsystem.INCHES_IN_A_METER),
-                            new Rotation3d(0, Math.toRadians(30.5), Math.toRadians(180 + 14))))
+                            new Rotation3d(0, Math.toRadians(-30.5), Math.toRadians(180 + 14))))
+        };
+    }
+
+    @Override
+    public CameraInfo[] getNoteCameraInfo() {
+        return new CameraInfo[] {
+            new CameraInfo("GamePiece_FrontLeft_Camera",
+                    "NoteFrontLeft",
+                    new Transform3d(new Translation3d(), new Rotation3d())),
+            new CameraInfo("GamePiece_FrontRight_Camera",
+                    "NoteFrontRight",
+                    new Transform3d(new Translation3d(), new Rotation3d())),
+            new CameraInfo("GamePiece_RearLeft_Camera",
+                "NoteRearLeft",
+                new Transform3d(new Translation3d(), new Rotation3d())),
+            new CameraInfo("GamePiece_RearRight_Camera",
+                    "NoteRearRight",
+                    new Transform3d(new Translation3d(), new Rotation3d()))
         };
     }
 }

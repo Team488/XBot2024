@@ -25,6 +25,7 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
@@ -125,7 +126,8 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             FireWhenReadyCommand fireWhenReady,
-            FireCollectorCommand fireCollector
+            FireCollectorCommand fireCollector,
+            AlignToNoteCommand alignToNoteCommand
             )
     {
         double typicalVelocity = 2.5;
@@ -151,6 +153,8 @@ public class OperatorCommandMap {
         anyway.
         */
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
 
 
