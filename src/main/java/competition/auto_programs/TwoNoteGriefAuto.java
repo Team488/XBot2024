@@ -29,7 +29,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
 
-
+//am i cookin with this?? 🤫🧏‍♂️🤑
 public class TwoNoteGriefAuto extends SequentialCommandGroup {
     DynamicOracle oracle;
     @Inject
