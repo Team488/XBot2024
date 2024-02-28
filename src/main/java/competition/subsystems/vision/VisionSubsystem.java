@@ -8,6 +8,7 @@ import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.injection.electrical_contract.XCameraElectricalContract;
 import xbot.common.logging.RobotAssertionManager;
 import xbot.common.logic.TimeStableValidator;
@@ -15,6 +16,9 @@ import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
+import xbot.common.subsystems.vision.AprilTagCamera;
+import xbot.common.subsystems.vision.CameraCapabilities;
+import xbot.common.subsystems.vision.SimpleCamera;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -37,7 +41,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     AprilTagFieldLayout aprilTagFieldLayout;
     final ArrayList<AprilTagCamera> aprilTagCameras;
     final ArrayList<NoteCamera> noteCameras;
-    final ArrayList<SimpleCamera> allPhotonVisionBasedCameras;
+    final ArrayList<SimpleCamera> allCameras;
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
 
@@ -71,19 +75,27 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         aprilTagCameras = new ArrayList<AprilTagCamera>();
         if (aprilTagsLoaded) {
             PhotonCameraExtended.setVersionCheckEnabled(false);
-            for (var cameraInfo : electricalContract.getAprilTagCameraInfo()) {
-                aprilTagCameras.add(new AprilTagCamera(cameraInfo, waitForStablePoseTime::get, aprilTagFieldLayout));
+            var aprilTagCapableCameras = Arrays
+                    .stream(electricalContract.getCameraInfo())
+                    .filter(info -> info.capabilities().contains(CameraCapabilities.APRIL_TAG))
+                    .toArray(CameraInfo[]::new);
+            for (var camera : aprilTagCapableCameras) {
+                aprilTagCameras.add(new AprilTagCamera(camera, waitForStablePoseTime::get, aprilTagFieldLayout));
             }
         }
 
         noteCameras = new ArrayList<NoteCamera>();
-        for (var cameraInfo : electricalContract.getNoteCameraInfo()) {
-            noteCameras.add(new NoteCamera(cameraInfo));
+        var noteTrackingCapableCameras = Arrays
+                .stream(electricalContract.getCameraInfo())
+                .filter(info -> info.capabilities().contains(CameraCapabilities.GAME_SPECIFIC))
+                .toArray(CameraInfo[]::new);
+        for (var camera : noteTrackingCapableCameras) {
+            noteCameras.add(new NoteCamera(camera));
         }
 
-        allPhotonVisionBasedCameras = new ArrayList<SimpleCamera>();
-        allPhotonVisionBasedCameras.addAll(aprilTagCameras);
-        allPhotonVisionBasedCameras.addAll(noteCameras);
+        allCameras = new ArrayList<SimpleCamera>();
+        allCameras.addAll(aprilTagCameras);
+        allCameras.addAll(noteCameras);
     }
 
     public List<Optional<EstimatedRobotPose>> getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
@@ -201,7 +213,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     public void periodic() {
         loopCounter++;
 
-        var anyCameraBroken = allPhotonVisionBasedCameras.stream().anyMatch(state -> !state.isCameraWorking());
+        var anyCameraBroken = allCameras.stream().anyMatch(state -> !state.isCameraWorking());
 
         // If one of the cameras is not working, see if they have self healed every 5 seconds
         if (loopCounter % (50 * 5) == 0 && (anyCameraBroken)) {
@@ -213,7 +225,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
-        for (SimpleCamera camera : allPhotonVisionBasedCameras) {
+        for (SimpleCamera camera : allCameras) {
             aKitLog.record(camera.getName() + "CameraWorking", camera.isCameraWorking());
         }
 
@@ -228,7 +240,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     @Override
     public void refreshDataFrame() {
         if (aprilTagsLoaded) {
-            for (SimpleCamera camera : allPhotonVisionBasedCameras) {
+            for (SimpleCamera camera : allCameras) {
                 if (camera.isCameraWorking()) {
                     camera.getCamera().refreshDataFrame();
                 }
