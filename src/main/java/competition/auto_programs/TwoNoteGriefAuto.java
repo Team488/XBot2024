@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.XbotSwervePoint;
@@ -31,7 +32,8 @@ import java.util.ArrayList;
 
 //am i cookin with this?? 🤫🧏‍♂️🤑
 public class TwoNoteGriefAuto extends SequentialCommandGroup {
-    DynamicOracle oracle;
+    final DynamicOracle oracle;
+    final AutonomousCommandSelector autoSelector;
     @Inject
     public TwoNoteGriefAuto(Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
                             Provider<SetArmAngleCommand> setArmAngleProvider,
@@ -43,7 +45,9 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
                             EjectCollectorCommand eject,
                             StopCollectorCommand stopCollector,
                             PoseSubsystem pose,
-                            DynamicOracle oracle){
+                            DynamicOracle oracle,
+                            AutonomousCommandSelector autoSelector){
+        this.autoSelector = autoSelector;
         this.oracle = oracle;
 
         //starts us in front of the subwoofer, to score
