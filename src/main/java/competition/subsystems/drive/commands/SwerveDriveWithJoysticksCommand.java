@@ -6,11 +6,13 @@ import competition.operator_interface.OperatorInterface;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseCommand;
 import xbot.common.controls.sensors.XXboxController;
+import xbot.common.controls.sensors.buttons.AdvancedXboxButtonTrigger;
 import xbot.common.logic.HumanVsMachineDecider;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineDeciderFactory;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineMode;
@@ -45,6 +47,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
     final DoubleProperty triggerOnlyExponent;
     final HumanVsMachineDecider decider;
     DriverStation.Alliance alliance;
+    AdvancedXboxButtonTrigger pointAtSpeakerButton;
 
     @Inject
     public SwerveDriveWithJoysticksCommand(
@@ -76,6 +79,9 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         });
 
         this.addRequirements(drive);
+
+        this.pointAtSpeakerButton = oi.driverGamepad.getifAvailable(XXboxController.XboxButton.B);
+
     }
 
     public void setAbsoluteHeadingMode(boolean absoluteHeadingEnabled) {
@@ -200,16 +206,13 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
             suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
             decider.reset();
         }
-        else if (oi.driverGamepad.getXboxButton(XXboxController.XboxButton.A).getAsBoolean()) {
+        else if (pointAtSpeakerButton.getAsBoolean()) {
             //if driver button A is pressed
 
             desiredHeading = getRotationIntentPointAtSpeaker(pose.getCurrentPose2d());
 
-            if (pose.getHeadingResetRecently()) {
-                drive.setDesiredHeading(pose.getCurrentHeading().getDegrees());
-            } else {
-                drive.setDesiredHeading(desiredHeading);
-            }
+            drive.setDesiredHeading(desiredHeading);
+
             suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
 
         }else {
@@ -340,22 +343,10 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
     }
 
     private double getRotationIntentPointAtSpeaker(Pose2d currentPose) {
-        XYPair speakerPosition = new XYPair(-0.0381, 5.547868);
-        double angle;
+        Translation2d speakerPosition = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION);
+        Translation2d currentXY = new Translation2d(currentPose.getX(), currentPose.getY());
 
-        if (currentPose.getY() > speakerPosition.y) {
-            angle = (90 + (180 - Math.toDegrees(Math.atan(Math.abs((currentPose.getX() - speakerPosition.x))
-                    / Math.abs((currentPose.getY() - speakerPosition.y))))));
-        }
-        else if (currentPose.getY() < speakerPosition.y){
-            angle = (90 + Math.toDegrees(Math.atan(Math.abs((currentPose.getX() - speakerPosition.x))
-                    / Math.abs((currentPose.getY() - speakerPosition.y)))));
-        }
-        else{
-            angle = 180;
-        }
-
-        return angle;
+        return currentXY.minus(speakerPosition).getAngle().getDegrees() + 180;
     }
 
     private double scaleHumanRotationInput(double humanInputPower) {
