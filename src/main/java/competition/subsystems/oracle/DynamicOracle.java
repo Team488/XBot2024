@@ -194,13 +194,27 @@ public class DynamicOracle extends BaseSubsystem {
                             Note.NoteAvailability.SuggestedByDriver,
                             Note.NoteAvailability.SuggestedByVision);
                     setTargetNote(suggestedNote);
-                    setSpecialAimTarget(suggestedNote.getLocation());
+
                     if (suggestedNote == null) {
                         // No notes on the field! Let's suggest going to the source and hope something turns up.
-                        setTerminatingPoint(new Pose2d(14, 1.2, Rotation2d.fromDegrees(0)));
-                    } else {
+                        setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.NearbySource));
+                    }
+                    else if (suggestedNote.getAvailability() == Note.NoteAvailability.AgainstObstacle) {
+                        // Take the note's pose2d and extend it in to the super far distance so the robot
+                        // will effectively aim at the "wall" of the obstacle as it approaches the note.
+                        Pose2d superExtendedIntoTheDistancePose = new Pose2d(
+                                new Translation2d(
+                                        suggestedNote.getLocation().getTranslation().getX() + Math.cos(suggestedNote.getLocation().getRotation().getRadians()) * 10000000,
+                                        suggestedNote.getLocation().getTranslation().getY() + Math.sin(suggestedNote.getLocation().getRotation().getRadians()) * 10000000),
+                                suggestedNote.getLocation().getRotation()
+                                );
+                        setSpecialAimTarget(superExtendedIntoTheDistancePose);
+                        setTerminatingPoint(suggestedNote.getLocation());
+                    }
+                    else {
                         setTerminatingPoint(getTargetNote().getLocation());
                     }
+
                     // Publish a route from current position to that location
                     firstRunInNewGoal = false;
                     reevaluationRequested = false;
@@ -228,8 +242,11 @@ public class DynamicOracle extends BaseSubsystem {
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
-        aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
-        aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+
+        if (getTerminatingPoint() != null) {
+            aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
+            aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+        }
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
 
         // Let's show some major obstacles

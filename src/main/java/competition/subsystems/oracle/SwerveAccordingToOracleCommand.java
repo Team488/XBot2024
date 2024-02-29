@@ -63,33 +63,42 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         // This causes the robot to "point" along the direction of travel for all but the final leg of its travel.
         // This is useful for passing obstacles, as the robot will present a narrower profile and won't have its
         // corners collide with things.
-        logic.setAimAtIntermediateNonFinalLegs(true);
-
         var goalPosition = oracle.getTerminatingPoint();
 
         if (oracle.getHighLevelGoal() == DynamicOracle.HighLevelGoal.CollectNote) {
             // Since we're going to grab a note, point the front end of our robot towards the goal,
             // since our collector is on the front side.
             logic.setDriveBackwards(true);
-
-            if (oracle.targetNote.getAvailability() == Note.NoteAvailability.AgainstObstacle) {
-                // if a note is against an obstacle, we need to always point at it to avoid rotation thrashing as we
-                // try to approach it
-                logic.setEnableSpecialAimTarget(true);
-                logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
-                logic.setAimAtIntermediateNonFinalLegs(false);
-            } else {
-                // Note is in the clear, just drive straight at it.
-                logic.setEnableSpecialAimTarget(false);
-                logic.setAimAtIntermediateNonFinalLegs(true);
-            }
-
-            logic.setEnableSpecialAimDuringFinalLeg(false);
-            // When approaching the note, make sure to aim straight at the note for the best chance of collection.
+            logic.setAimAtIntermediateNonFinalLegs(true);
             logic.setAimAtGoalDuringFinalLeg(true);
 
+            if (oracle.targetNote == null) {
+                // No note, just driving somewhere where we might find some.
+                logic.setEnableSpecialAimTarget(false);
+                logic.setEnableSpecialAimDuringFinalLeg(false);
+                logic.setAimAtGoalDuringFinalLeg(false);
+            } else {
+                if (oracle.targetNote.getAvailability() == Note.NoteAvailability.AgainstObstacle) {
+                    // if a note is against an obstacle, we need to always point at it to avoid rotation thrashing as we
+                    // try to approach it
+                    logic.setEnableSpecialAimTarget(true);
+                    logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
+                    logic.setAimAtGoalDuringFinalLeg(false);
+                } else {
+                    // Note is in the clear, just drive straight at it.
+                    logic.setEnableSpecialAimTarget(false);
+                }
+
+                logic.setEnableSpecialAimDuringFinalLeg(false);
+                // When approaching the note, make sure to aim straight at the note for the best chance of collection.
+            }
+
         } else {
-            // We are doing some kind of score operation. We want to point the back of our robot towards the goal,
+            // We are doing some kind of score operation.
+            // Setup general "follow the path" behavior
+            logic.setAimAtIntermediateNonFinalLegs(true);
+            logic.setAimAtGoalDuringFinalLeg(true);
+            // We want to point the back of our robot towards the goal,
             // since our shooter is on the back side of the robot.
             logic.setDriveBackwards(false);
             // This "special aim" mode instructs the robot to aim at a point that isn't the goal point. For example,
