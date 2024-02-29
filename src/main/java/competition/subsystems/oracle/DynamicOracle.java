@@ -1,5 +1,6 @@
 package competition.subsystems.oracle;
 
+import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,6 +26,7 @@ public class DynamicOracle extends BaseSubsystem {
 
     public enum ScoringSubGoals {
         IngestNote,
+        IngestNoteAgainstObstacle,
         MoveToScoringRange,
         EarnestlyLaunchNote
     }
@@ -39,19 +41,21 @@ public class DynamicOracle extends BaseSubsystem {
     boolean firstRunInNewGoal;
 
     PoseSubsystem pose;
+    ArmSubsystem arm;
 
     int instructionNumber = 0;
 
     @Inject
     public DynamicOracle(NoteCollectionInfoSource noteCollectionInfoSource, NoteFiringInfoSource noteFiringInfoSource,
-                         PoseSubsystem pose) {
+                         PoseSubsystem pose, ArmSubsystem arm) {
         this.noteCollectionInfoSource = noteCollectionInfoSource;
         this.noteFiringInfoSource = noteFiringInfoSource;
         this.noteMap = new NoteMap();
         this.pose = pose;
+        this.arm = arm;
 
         this.currentHighLevelGoal = HighLevelGoal.CollectNote;
-        this.currentScoringSubGoal = ScoringSubGoals.IngestNote;
+        this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         firstRunInNewGoal = true;
         setupLowResField();
 
@@ -186,10 +190,11 @@ public class DynamicOracle extends BaseSubsystem {
                     // Choose a good note collection location
                     Note suggestedNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(),
                             Note.NoteAvailability.Available,
+                            Note.NoteAvailability.AgainstObstacle,
                             Note.NoteAvailability.SuggestedByDriver,
                             Note.NoteAvailability.SuggestedByVision);
                     setTargetNote(suggestedNote);
-                    setSpecialAimTarget(null);
+                    setSpecialAimTarget(suggestedNote.getLocation());
                     if (suggestedNote == null) {
                         // No notes on the field! Let's suggest going to the source and hope something turns up.
                         setTerminatingPoint(new Pose2d(14, 1.2, Rotation2d.fromDegrees(0)));
@@ -296,15 +301,18 @@ public class DynamicOracle extends BaseSubsystem {
 
     private void determineScoringSubgoal() {
         double acceptableRangeBeforeScoringMeters = 0;
+        boolean inUnderstoodRange = false;
         if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
             acceptableRangeBeforeScoringMeters = 2;
+            inUnderstoodRange = pose.getDistanceFromSpeaker() < arm.getMaximumRangeForAnyShot();
+
         } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
             // in the future we'll do something more like "get near amp, then drive into the wall for a few moments
             // before scoring"
             acceptableRangeBeforeScoringMeters = 0.05;
         }
 
-        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters)) {
+        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters) && inUnderstoodRange) {
             currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         } else {
             currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;

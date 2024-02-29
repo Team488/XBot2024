@@ -23,7 +23,7 @@ public class NoteMap {
     private void initializeNotes() {
         addNote(Note.KeyNoteNames.BlueSpikeTop,    new Note(PoseSubsystem.SpikeTop));
         addNote(Note.KeyNoteNames.BlueSpikeMiddle, new Note(PoseSubsystem.SpikeMiddle));
-        addNote(Note.KeyNoteNames.BlueSpikeBottom, new Note(PoseSubsystem.SpikeBottom));
+        addNote(Note.KeyNoteNames.BlueSpikeBottom, new Note(PoseSubsystem.SpikeBottom, 1, Note.NoteAvailability.AgainstObstacle));
         addNote(Note.KeyNoteNames.CenterLine1, new Note(PoseSubsystem.CenterLine1));
         addNote(Note.KeyNoteNames.CenterLine2, new Note(PoseSubsystem.CenterLine2));
         addNote(Note.KeyNoteNames.CenterLine3, new Note(PoseSubsystem.CenterLine3));
@@ -31,7 +31,7 @@ public class NoteMap {
         addNote(Note.KeyNoteNames.CenterLine5, new Note(PoseSubsystem.CenterLine5));
         addNote(Note.KeyNoteNames.RedSpikeTop,    new Note(BasePoseSubsystem.convertBluetoRed(PoseSubsystem.SpikeTop)));
         addNote(Note.KeyNoteNames.RedSpikeMiddle, new Note(BasePoseSubsystem.convertBluetoRed(PoseSubsystem.SpikeMiddle)));
-        addNote(Note.KeyNoteNames.RedSpikeBottom, new Note(BasePoseSubsystem.convertBluetoRed(PoseSubsystem.SpikeBottom)));
+        addNote(Note.KeyNoteNames.RedSpikeBottom, new Note(BasePoseSubsystem.convertBluetoRed(PoseSubsystem.SpikeBottom),1, Note.NoteAvailability.AgainstObstacle));
     }
 
     public void addNote(String key, Note note) {
@@ -85,7 +85,7 @@ public class NoteMap {
         for (Note note : this.internalNoteMap.values()) {
 
             double noteZ = 0.025;
-            if (note.getAvailability() != Note.NoteAvailability.Available) {
+            if (note.getAvailability() != Note.NoteAvailability.Available && note.getAvailability() != Note.NoteAvailability.AgainstObstacle) {
                 noteZ = -3.0;
             }
 

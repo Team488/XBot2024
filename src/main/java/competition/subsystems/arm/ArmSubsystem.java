@@ -27,6 +27,7 @@ import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Arrays;
 
 @Singleton
 public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
@@ -81,6 +82,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private int totalLoops = 0;
     private int loopsWhereCompressorRunning = 0;
 
+    private static double[] experimentalRangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
+    private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  20.0, 26, 41, 57,  64};
 
     public enum ArmState {
         EXTENDING,
@@ -202,19 +205,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             .append(new MechanismLigament2d("box-top", 2, 90))
             .append(new MechanismLigament2d("box-left", 1, 90));
 
-
-        double[] rangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
-        double[] rangesInMeters = new double[7];
+        double[] rangesInMeters = new double[experimentalRangesInInches.length];
         //PoseSubsystem.INCHES_IN_A_METER
         // Convert the rangesInInches array to meters
-        for (int i = 0; i < rangesInInches.length; i++) {
-            rangesInMeters[i] = rangesInInches[i] / PoseSubsystem.INCHES_IN_A_METER;
+        for (int i = 0; i < experimentalRangesInInches.length; i++) {
+            rangesInMeters[i] = experimentalRangesInInches[i] / PoseSubsystem.INCHES_IN_A_METER;
         }
 
         speakerDistanceToExtensionInterpolator =
                 new DoubleInterpolator(
                         rangesInMeters,
-                        new double[]{0, 0,  20.0, 26, 41, 57,  64});
+                        experimentalArmExtensionsInMm);
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
@@ -643,7 +644,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     protected boolean areTwoTargetsEquivalent(Double target1, Double target2) {
-        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1, target2);
+        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1, target2, 1);
+    }
+
+    public double getMaximumRangeForAnyShot() {
+        return experimentalRangesInInches[experimentalRangesInInches.length - 1] / PoseSubsystem.INCHES_IN_A_METER;
     }
 
     public void periodic() {

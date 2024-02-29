@@ -6,6 +6,7 @@ public class Note {
 
     public enum NoteAvailability {
         Available,
+        AgainstObstacle,
         ReservedByOthersInAuto,
         SuggestedByVision,
         SuggestedByDriver,

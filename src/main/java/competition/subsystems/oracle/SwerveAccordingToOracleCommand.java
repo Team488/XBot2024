@@ -71,8 +71,20 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
             // Since we're going to grab a note, point the front end of our robot towards the goal,
             // since our collector is on the front side.
             logic.setDriveBackwards(true);
-            logic.setEnableSpecialAimTarget(false);
 
+            if (oracle.targetNote.getAvailability() == Note.NoteAvailability.AgainstObstacle) {
+                // if a note is against an obstacle, we need to always point at it to avoid rotation thrashing as we
+                // try to approach it
+                logic.setEnableSpecialAimTarget(true);
+                logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
+                logic.setAimAtIntermediateNonFinalLegs(false);
+            } else {
+                // Note is in the clear, just drive straight at it.
+                logic.setEnableSpecialAimTarget(false);
+                logic.setAimAtIntermediateNonFinalLegs(true);
+            }
+
+            logic.setEnableSpecialAimDuringFinalLeg(false);
             // When approaching the note, make sure to aim straight at the note for the best chance of collection.
             logic.setAimAtGoalDuringFinalLeg(true);
 
@@ -83,7 +95,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
             // This "special aim" mode instructs the robot to aim at a point that isn't the goal point. For example,
             // we could aim directly at the Speaker aperture regardless of where the robot is, causing the robot to
             // "track" the speaker as it moves towards a nice firing point.
-            logic.setEnableSpecialAimTarget(true);
+            logic.setEnableSpecialAimDuringFinalLeg(true);
             logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
 
             // TODO: split the score in speaker and score in Amp into two independent sections. It's likely

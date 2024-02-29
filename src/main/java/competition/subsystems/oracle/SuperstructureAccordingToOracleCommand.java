@@ -82,15 +82,15 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
         aKitLog.record("SanityChecks", sanityChecks);
 
 
-        if (superStructureReady && shouldCommitToFiring && sanityChecks) {
+        if ((superStructureReady && sanityChecks) || shouldCommitToFiring) {
             collector.fire();
         } else {
             collector.stop();
         }
     }
 
+    // Once we've started shooting, don't stop until we're sure the note is totally gone.
     private boolean getShouldCommitToFiring() {
-        return collector.getIntakeState() == CollectorSubsystem.IntakeState.FIRING
-                || (shooter.isMaintainerAtGoal() && arm.isMaintainerAtGoal());
+        return collector.getIntakeState() == CollectorSubsystem.IntakeState.FIRING;
     }
 }

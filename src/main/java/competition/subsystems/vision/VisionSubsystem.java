@@ -66,6 +66,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         try {
             aprilTagFieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2024Crescendo.m_resourceFile);
+            double width = aprilTagFieldLayout.getFieldWidth();
+            double height = aprilTagFieldLayout.getFieldLength();
             aprilTagsLoaded = true;
             log.info("Successfully loaded AprilTagFieldLayout");
         } catch (IOException e) {
