@@ -334,8 +334,12 @@ public class OperatorCommandMap {
 
     @Inject
     public void setupAutonomousForTesting(OperatorInterface oi,
-                                FromMidShootCollectShoot fromMidShootCollectShoot) {
+                                          FromMidShootCollectShoot fromMidShootCollectShoot,
+                                          SubwooferShotFromMidShootThenShootNearestThree subwooferFour,
+                                          DistanceShotFromMidShootThenShootNearestThree distanceFour) {
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(fromMidShootCollectShoot);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(subwooferFour);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceFour);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
