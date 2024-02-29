@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkBase;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.oracle.Availability;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.Note;
 import competition.subsystems.pose.PoseSubsystem;
@@ -77,7 +78,7 @@ public class Simulator2024 {
 
     private void simulateCollector() {
         // If we are running the collector and near a note,
-        var nearestNote = oracle.getNoteMap().getClosestNote(pose.getCurrentPose2d().getTranslation(), 0.1, Note.NoteAvailability.Available, Note.NoteAvailability.AgainstObstacle);
+        var nearestNote = oracle.getNoteMap().getClosest(pose.getCurrentPose2d().getTranslation(), 0.1, Availability.Available, Availability.AgainstObstacle);
         if (nearestNote != null && collector.collectorMotor.getAppliedOutput() > 0.05) {
             // Trigger our sensors to say we have one.
             ((MockDigitalInput)collector.inControlNoteSensor).setValue(true);

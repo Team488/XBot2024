@@ -75,8 +75,8 @@ public class DynamicOracle extends BaseSubsystem {
 
     int noteCount = 1;
     private void reserveNote(Note.KeyNoteNames specificNote) {
-        Note reserved = noteMap.getNote(specificNote);
-        reserved.setAvailability(Note.NoteAvailability.ReservedByOthersInAuto);
+        Note reserved = noteMap.get(specificNote);
+        reserved.setAvailability(Availability.ReservedByOthersInAuto);
         // create an obstacle at the same location.
         field.addObstacle(new Obstacle(reserved.getLocation().getTranslation().getX(),
                 reserved.getLocation().getTranslation().getY(), 1.25, 1.25, "ReservedNote" + noteCount));
@@ -159,8 +159,19 @@ public class DynamicOracle extends BaseSubsystem {
         reevaluationRequested = true;
     }
 
+    /**
+     * Should be called in AutonomousInit
+     */
+    public void freezeConfigurationForAutonomous() {
+        //
+    }
+
     @Override
     public void periodic() {
+
+        // Need to spend a moment figuring out what alliance we are on and what state of the game we are in.
+        // For example,
+
 
         switch (currentHighLevelGoal) {
             case ScoreInAmp: // For now keeping things simple
@@ -188,18 +199,18 @@ public class DynamicOracle extends BaseSubsystem {
             case CollectNote:
                 if (firstRunInNewGoal || reevaluationRequested) {
                     // Choose a good note collection location
-                    Note suggestedNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(),
-                            Note.NoteAvailability.Available,
-                            Note.NoteAvailability.AgainstObstacle,
-                            Note.NoteAvailability.SuggestedByDriver,
-                            Note.NoteAvailability.SuggestedByVision);
+                    Note suggestedNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+                            Availability.Available,
+                            Availability.AgainstObstacle,
+                            Availability.SuggestedByDriver,
+                            Availability.SuggestedByVision);
                     setTargetNote(suggestedNote);
 
                     if (suggestedNote == null) {
                         // No notes on the field! Let's suggest going to the source and hope something turns up.
                         setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.NearbySource));
                     }
-                    else if (suggestedNote.getAvailability() == Note.NoteAvailability.AgainstObstacle) {
+                    else if (suggestedNote.getAvailability() == Availability.AgainstObstacle) {
                         // Take the note's pose2d and extend it in to the super far distance so the robot
                         // will effectively aim at the "wall" of the obstacle as it approaches the note.
                         Pose2d superExtendedIntoTheDistancePose = new Pose2d(
@@ -224,9 +235,9 @@ public class DynamicOracle extends BaseSubsystem {
 
                 if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
-                    Note nearestNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(), 1.0);
+                    Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.0);
                     if (nearestNote != null) {
-                        nearestNote.setAvailability(Note.NoteAvailability.Unavailable);
+                        nearestNote.setAvailability(Availability.Unavailable);
                     }
 
                     // Since we have a note, let's go score it.

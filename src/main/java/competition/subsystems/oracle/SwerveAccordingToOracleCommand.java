@@ -78,7 +78,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
                 logic.setEnableSpecialAimDuringFinalLeg(false);
                 logic.setAimAtGoalDuringFinalLeg(false);
             } else {
-                if (oracle.targetNote.getAvailability() == Note.NoteAvailability.AgainstObstacle) {
+                if (oracle.targetNote.getAvailability() == Availability.AgainstObstacle) {
                     // if a note is against an obstacle, we need to always point at it to avoid rotation thrashing as we
                     // try to approach it
                     logic.setEnableSpecialAimTarget(true);

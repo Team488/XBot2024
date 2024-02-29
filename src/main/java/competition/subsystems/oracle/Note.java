@@ -2,16 +2,7 @@ package competition.subsystems.oracle;
 
 import edu.wpi.first.math.geometry.Pose2d;
 
-public class Note {
-
-    public enum NoteAvailability {
-        Available,
-        AgainstObstacle,
-        ReservedByOthersInAuto,
-        SuggestedByVision,
-        SuggestedByDriver,
-        Unavailable
-    }
+public class Note implements ReservableLocation {
 
     public enum KeyNoteNames{
         BlueSpikeTop,
@@ -29,17 +20,17 @@ public class Note {
 
     private int priority;
 
-    private NoteAvailability availability;
+    private Availability availability;
 
     private Pose2d location;
 
     public Note(Pose2d location) {
         this.priority = -1;
-        this.availability = NoteAvailability.Available;
+        this.availability = Availability.Available;
         this.location = location;
     }
 
-    public Note(Pose2d location, int priority, NoteAvailability availability) {
+    public Note(Pose2d location, int priority, Availability availability) {
         this.priority = priority;
         this.availability = availability;
         this.location = location;
@@ -49,7 +40,7 @@ public class Note {
         return priority;
     }
 
-    public NoteAvailability getAvailability() {
+    public Availability getAvailability() {
         return availability;
     }
 
@@ -61,7 +52,7 @@ public class Note {
         this.priority = priority;
     }
 
-    public void setAvailability(NoteAvailability availability) {
+    public void setAvailability(Availability availability) {
         this.availability = availability;
     }
 
