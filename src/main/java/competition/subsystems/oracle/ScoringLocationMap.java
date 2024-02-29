@@ -17,13 +17,13 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
     private void initializeBlueScoringLocations() {
         add(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleBlue, new ScoringLocation(PoseSubsystem.SubwooferCentralScoringLocation, Availability.Available));
         add(ScoringLocation.WellKnownScoringLocations.SubwooferTopBlue, new ScoringLocation(PoseSubsystem.SubwooferTopScoringLocation, Availability.Available));
-        add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue, new ScoringLocation(PoseSubsystem.SubwooferBottomScoringLocation, Availability.AgainstObstacle));
+        add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue, new ScoringLocation(PoseSubsystem.SubwooferBottomScoringLocation, Availability.Available));
     }
 
     private void initializeRedScoringLocations() {
         add(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleRed, new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.SubwooferCentralScoringLocation), Availability.Available));
         add(ScoringLocation.WellKnownScoringLocations.SubwooferTopRed, new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.SubwooferTopScoringLocation), Availability.Available));
-        add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomRed, new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.SubwooferBottomScoringLocation), Availability.AgainstObstacle));
+        add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomRed, new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.SubwooferBottomScoringLocation), Availability.Available));
     }
 
     public void markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance alliance) {

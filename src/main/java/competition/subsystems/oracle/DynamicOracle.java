@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.LowResField;
@@ -34,6 +35,7 @@ public class DynamicOracle extends BaseSubsystem {
     NoteCollectionInfoSource noteCollectionInfoSource;
     NoteFiringInfoSource noteFiringInfoSource;
     NoteMap noteMap;
+    ScoringLocationMap scoringLocationMap;
     LowResField field;
 
     HighLevelGoal currentHighLevelGoal;
@@ -51,6 +53,12 @@ public class DynamicOracle extends BaseSubsystem {
         this.noteCollectionInfoSource = noteCollectionInfoSource;
         this.noteFiringInfoSource = noteFiringInfoSource;
         this.noteMap = new NoteMap();
+        this.scoringLocationMap = new ScoringLocationMap();
+
+        // TODO: adjust this during autonomous init
+        noteMap.markAllianceNotesAsUnavailable(DriverStation.Alliance.Red);
+        scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
+
         this.pose = pose;
         this.arm = arm;
 
@@ -61,14 +69,6 @@ public class DynamicOracle extends BaseSubsystem {
 
         //reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
         //reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
-
-        Pose2d scoringPositionTop = new Pose2d(1.3, 6.9, Rotation2d.fromDegrees(180));
-        Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(180));
-        Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(180));
-
-        activeScoringPosition = scoringPositionMiddle;
-        //createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.75, "PartnerA");
-        //createRobotObstacle(scoringPositionBottom.getTranslation(), 1.75, "PartnerB");
     }
 
     Pose2d activeScoringPosition;
@@ -178,7 +178,9 @@ public class DynamicOracle extends BaseSubsystem {
             case ScoreInSpeaker:
                 if (firstRunInNewGoal || reevaluationRequested) {
                     setTargetNote(null);
-                    setTerminatingPoint(activeScoringPosition);
+                    setTerminatingPoint(scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+                            Availability.Available).getLocation());
+
                     currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
                     setSpecialAimTarget(new Pose2d(0, 5.5, Rotation2d.fromDegrees(0)));
                     // Choose a good speaker scoring location
