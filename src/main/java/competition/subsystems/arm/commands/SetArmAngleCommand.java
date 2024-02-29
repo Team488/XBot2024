@@ -39,5 +39,4 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
     public boolean isFinished() {
         return true;
     }
-
 }
