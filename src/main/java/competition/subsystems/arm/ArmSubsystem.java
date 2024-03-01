@@ -83,7 +83,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private int loopsWhereCompressorRunning = 0;
 
     private static double[] experimentalRangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
-    private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  20.0, 26, 41, 57,  64};
+    //private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  20.0, 26, 41, 57,  64};
+    private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  0.0, 0, 0, 0,  0};
 
     public enum ArmState {
         EXTENDING,
