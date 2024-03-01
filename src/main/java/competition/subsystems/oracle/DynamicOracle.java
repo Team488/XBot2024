@@ -217,8 +217,10 @@ public class DynamicOracle extends BaseSubsystem {
                         // will effectively aim at the "wall" of the obstacle as it approaches the note.
                         Pose2d superExtendedIntoTheDistancePose = new Pose2d(
                                 new Translation2d(
-                                        suggestedNote.getLocation().getTranslation().getX() + Math.cos(suggestedNote.getLocation().getRotation().getRadians()) * 10000000,
-                                        suggestedNote.getLocation().getTranslation().getY() + Math.sin(suggestedNote.getLocation().getRotation().getRadians()) * 10000000),
+                                        suggestedNote.getLocation().getTranslation().getX()
+                                                + Math.cos(suggestedNote.getLocation().getRotation().getRadians()) * 10000000,
+                                        suggestedNote.getLocation().getTranslation().getY()
+                                                + Math.sin(suggestedNote.getLocation().getRotation().getRadians()) * 10000000),
                                 suggestedNote.getLocation().getRotation()
                                 );
                         setSpecialAimTarget(superExtendedIntoTheDistancePose);
