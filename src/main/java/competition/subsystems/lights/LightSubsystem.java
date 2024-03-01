@@ -78,7 +78,7 @@ public class LightSubsystem extends BaseSubsystem {
 
         // Always assumes disabled without auto because we don't have AutonomousOracle >:(
         // Needs to implement vision as well
-        // Not sure about if the way we are checking the shooter is correct
+        // Not sure about if the way we are checking the shooter is correct (and collector)
         if (!dsEnabled) {
 //            if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
 //                if (oracle.isAutoCustomized()) {
