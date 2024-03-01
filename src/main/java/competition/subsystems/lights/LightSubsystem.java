@@ -5,21 +5,14 @@ package competition.subsystems.lights;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
-import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
-import xbot.common.controls.actuators.XDigitalOutput;
-import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
-import xbot.common.controls.actuators.XPWM.XPWMFactory;
-import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
-import xbot.common.properties.StringProperty;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
 @Singleton
