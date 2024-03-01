@@ -348,6 +348,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
         return distanceFromSpeakerInMeters;
     }
+
     @Override
     public void periodic() {
         super.periodic();

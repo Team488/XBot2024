@@ -3,6 +3,7 @@ package competition.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -22,6 +23,7 @@ import xbot.common.subsystems.vision.SimpleCamera;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -209,6 +211,22 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return camera.getCamera().getLatestResult().getTargets().get(0).getArea();
     }
 
+    public List<Optional<Pose2d>> getListOfNotesSeenByCameraRobotRelative() {
+        var poses = new ArrayList<Optional<Pose2d>>();
+        for (NoteCamera camera : this.noteCameras) {
+            if (camera.isCameraWorking()) {
+                var pose = getNoteSeenByCamera(camera);
+                poses.add(pose);
+            }
+        }
+        return poses;
+    }
+
+    public Optional<Pose2d> getNoteSeenByCamera(NoteCamera camera) {
+        // TODO: replace with actual way to get this from note cameras.
+        return Optional.ofNullable(new Pose2d(3,0, new Rotation2d()));
+    }
+
     @Override
     public void periodic() {
         loopCounter++;
@@ -233,6 +251,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             if (camera.isCameraWorking()) {
                 aKitLog.record(camera.getName() + "NoteYaw", getNoteYaw(camera));
                 aKitLog.record(camera.getName() + "NoteArea", getNoteArea(camera));
+                aKitLog.record(camera.getName() + "NoteSeenByCamera", getNoteSeenByCamera(camera));
             }
         }
     }
