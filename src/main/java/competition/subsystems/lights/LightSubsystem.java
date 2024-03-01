@@ -84,9 +84,9 @@ public class LightSubsystem extends BaseSubsystem {
 //            }
             currentState = LightsStateMessage.DisabledWithoutAuto;
 
-        } else if (shooter.isMaintainerAtGoal() &&
-                shooterWheel.lowerWheelsTargetRPM != 0 &&
-                shooterWheel.upperWheelsTargetRPM != 0) {
+        } else if (shooter.isMaintainerAtGoal()
+                && shooterWheel.lowerWheelsTargetRPM != 0
+                && shooterWheel.upperWheelsTargetRPM != 0) {
             currentState = LightsStateMessage.ReadyToShoot;
 
         } else if (collector.getGamePieceReady()) {
