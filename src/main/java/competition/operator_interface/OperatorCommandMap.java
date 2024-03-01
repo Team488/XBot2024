@@ -4,9 +4,12 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.ShootThenMoveOutOfLine;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
+import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
+import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
@@ -22,6 +25,8 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.drive.commands.AlignToNoteCommand;
+import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
@@ -121,12 +126,13 @@ public class OperatorCommandMap {
             DynamicOracle oracle,
             DriveSubsystem drive,
             FireWhenReadyCommand fireWhenReady,
-            FireCollectorCommand fireCollector
+            FireCollectorCommand fireCollector,
+            AlignToNoteCommand alignToNoteCommand
             )
     {
         double typicalVelocity = 2.5;
         // Manipulate heading and position for easy testing
-        resetHeading.setHeadingToApply(0);
+        resetHeading.setHeadingToApply(180);
         var teleportRobot = pose.createSetPositionCommand(PoseSubsystem.SubwooferCentralScoringLocation);
         operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(teleportRobot);
 
@@ -147,6 +153,8 @@ public class OperatorCommandMap {
         anyway.
         */
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
 
 
@@ -194,7 +202,6 @@ public class OperatorCommandMap {
         operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
         operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
-
     }
 
     @Inject

@@ -58,9 +58,9 @@ public class DynamicOracle extends BaseSubsystem {
         //reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
         //reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
 
-        Pose2d scoringPositionTop = new Pose2d(1.3, 6.9, Rotation2d.fromDegrees(0));
-        Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(0));
-        Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(0));
+        Pose2d scoringPositionTop = new Pose2d(1.3, 6.9, Rotation2d.fromDegrees(180));
+        Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(180));
+        Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(180));
 
         activeScoringPosition = scoringPositionMiddle;
         //createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.75, "PartnerA");
@@ -295,16 +295,16 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     private void determineScoringSubgoal() {
-        double acceptableRangeBeforeScoring = 0;
+        double acceptableRangeBeforeScoringMeters = 0;
         if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
-            acceptableRangeBeforeScoring = 1;
+            acceptableRangeBeforeScoringMeters = 2;
         } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
             // in the future we'll do something more like "get near amp, then drive into the wall for a few moments
             // before scoring"
-            acceptableRangeBeforeScoring = 0.05;
+            acceptableRangeBeforeScoringMeters = 0.05;
         }
 
-        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoring)) {
+        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters)) {
             currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         } else {
             currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;

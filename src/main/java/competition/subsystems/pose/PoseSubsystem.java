@@ -77,7 +77,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.57);
 
     public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
-    public static Pose2d SubwooferCentralScoringLocation = new Pose2d(1.41, 5.54, Rotation2d.fromDegrees(0));
+    public static Pose2d SubwooferCentralScoringLocation = new Pose2d(1.41, 5.54, Rotation2d.fromDegrees(180));
 
     private DoubleProperty matchTime;
 
@@ -348,12 +348,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
         return distanceFromSpeakerInMeters;
     }
-
     @Override
     public void periodic() {
         super.periodic();
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
+        aKitLog.record("DistanceToSpeaker", getDistanceFromSpeaker());
     }
 }
 

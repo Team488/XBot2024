@@ -143,6 +143,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             aKitLog.record("GamePieceInControl", getGamePieceInControl());
             aKitLog.record("ConfidentlyHasControlOfNote", confidentlyHasControlOfNote());
             aKitLog.record("ConfidentlyHasFiredNote", confidentlyHasFiredNote());
+            aKitLog.record("IntakeState", intakeState);
         }
 
     }

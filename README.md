@@ -5,6 +5,7 @@ This is the robot project for the 2024 game season, Crescendo.
 <h4> Operator Interface Commands </h4>
 
 <h5> Driver Commands</h5>
+
 - [x] SwerveDriveWithJoySticks
 - [ ] PointAtSpeakerCommand
 - [ ] OrientToNearestNoteCommand
@@ -13,6 +14,7 @@ This is the robot project for the 2024 game season, Crescendo.
 - [ ] DriveAndOrientToAmpCommand
 
 <h5> Operator Commands</h5>
+
 - [ ] LowerArmIntakeCommand
 - [x] EjectCollectorCommand
 - [ ] FullSchoocherIntakeCommand (scoocher intake, scooch note and raise arm to let note pass)

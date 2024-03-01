@@ -68,7 +68,21 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
     }
 
     private void fireWhenReady() {
-        if (getShouldCommitToFiring() && oracle.getHighLevelGoal() != DynamicOracle.HighLevelGoal.CollectNote) {
+
+        boolean superStructureReady = arm.isMaintainerAtGoal()
+                && shooter.isMaintainerAtGoal()
+                && shooter.getTargetValue().upperWheelsTargetRPM > 500;
+
+        boolean shouldCommitToFiring = getShouldCommitToFiring();
+
+        boolean sanityChecks = oracle.getHighLevelGoal() != DynamicOracle.HighLevelGoal.CollectNote;
+
+        aKitLog.record("SuperstructureReady", superStructureReady);
+        aKitLog.record("ShouldCommitToFiring", shouldCommitToFiring);
+        aKitLog.record("SanityChecks", sanityChecks);
+
+
+        if (superStructureReady && shouldCommitToFiring && sanityChecks) {
             collector.fire();
         } else {
             collector.stop();
