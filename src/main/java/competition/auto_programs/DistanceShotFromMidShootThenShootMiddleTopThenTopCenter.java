@@ -1,10 +1,10 @@
 package competition.auto_programs;
 
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
-import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,18 +15,18 @@ import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
+public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
 
     @Inject
-    public DistanceShotFromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
-                                                         Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                                         Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
-                                                         Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                         PoseSubsystem pose, DriveSubsystem drive,
-                                                         Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
-                                                         FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup) {
+    public DistanceShotFromMidShootThenShootMiddleTopThenTopCenter(AutonomousCommandSelector autoSelector,
+                                                                   Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
+                                                                   Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
+                                                                   Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
+                                                                   PoseSubsystem pose, DriveSubsystem drive,
+                                                                   Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
+                                                                   Provider<DriveToGivenNoteCommand> driveToGivenNoteCommandProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -34,11 +34,9 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
-//        // Fire note into the speaker from starting position
-//        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
-//        this.addCommands(Commands.deadline(fireFirstNoteCommand));
-        // Fire preload note into the speaker from starting position
-        this.addCommands(Commands.deadline(fireFromSubwooferCommandGroup));
+        // Fire note into the speaker from starting position
+        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(fireFirstNoteCommand));
 
         // Drive to top spike note and collect
         this.addCommands(

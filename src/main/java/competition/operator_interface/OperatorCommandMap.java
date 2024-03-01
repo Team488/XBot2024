@@ -28,6 +28,8 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationCommand;
+import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
@@ -336,10 +338,13 @@ public class OperatorCommandMap {
     public void setupAutonomousForTesting(OperatorInterface oi,
                                           FromMidShootCollectShoot fromMidShootCollectShoot,
                                           SubwooferShotFromMidShootThenShootNearestThree subwooferFour,
-                                          DistanceShotFromMidShootThenShootNearestThree distanceFour) {
-        oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(fromMidShootCollectShoot);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(subwooferFour);
+                                          DistanceShotFromMidShootThenShootNearestThree distanceFour,
+                                          PointAtSpeakerCommand pointAtSpeakerCommand,
+                                          DriveToMidSpikeScoringLocationCommand driveToMidSpikeScoringLocationCommand) {
+        oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(driveToMidSpikeScoringLocationCommand);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(subwooferFour);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceFour);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(pointAtSpeakerCommand);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(

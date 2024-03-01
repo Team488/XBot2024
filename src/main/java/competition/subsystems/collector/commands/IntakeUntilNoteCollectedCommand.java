@@ -28,8 +28,8 @@ public class IntakeUntilNoteCollectedCommand extends BaseCommand {
     @Override
     public boolean isFinished() {
         if (collector.getGamePieceReady()) {
-            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
+//            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
+//            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
             return true;
         }
         return false;

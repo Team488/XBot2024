@@ -10,7 +10,9 @@ import javax.inject.Inject;
 public class IntakeCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
-    double intensity = 0.1;
+    double intensity = 0.05;
+
+    boolean rumbled = false;
 
     @Inject
     public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi) {
@@ -22,14 +24,16 @@ public class IntakeCollectorCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
+        rumbled = false;
     }
 
     @Override
     public void execute() {
         collector.intake();
-        if (collector.getGamePieceReady()) {
-            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.1);
+        if (collector.confidentlyHasControlOfNote() && !rumbled) {
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.3);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.3);
+            rumbled = true;
         }
     }
 }

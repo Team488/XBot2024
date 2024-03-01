@@ -6,6 +6,7 @@ import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -20,10 +21,11 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
     @Inject
     public SubwooferShotFromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
-                                             Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                             Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
-                                             Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                             PoseSubsystem pose, DriveSubsystem drive) {
+                                                          Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
+                                                          Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
+                                                          Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
+                                                          PoseSubsystem pose, DriveSubsystem drive,
+                                                          Provider<WarmUpShooterCommand> warmUpShooterCommandProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -33,7 +35,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Fire preload note into the speaker from starting position
         var fireFirstNoteCommand = fireFromSubwooferCommandGroup.get();
-        this.addCommands(Commands.deadline(fireFirstNoteCommand));
+        this.addCommands(fireFirstNoteCommand);
 
         // Drive to middle spike note and collect
         this.addCommands(
@@ -42,7 +44,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                 })
         );
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
+        this.addCommands(driveToMiddleSpikeNoteAndCollect);
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferFirst = driveToCentralSubwooferCommandProvider.get();
@@ -50,7 +52,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Fire second note into the speaker
         var fireSecondNoteCommand = fireFromSubwooferCommandGroup.get();
-        this.addCommands(Commands.deadline(fireSecondNoteCommand));
+        this.addCommands(fireSecondNoteCommand);
 
         // Drive to top spike note and collect
         this.addCommands(
@@ -59,7 +61,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
+        this.addCommands(driveToTopSpikeNoteAndCollect);
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferSecond = driveToCentralSubwooferCommandProvider.get();
@@ -67,7 +69,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Fire Note into the speaker
         var fireThirdNoteCommand = fireFromSubwooferCommandGroup.get();
-        this.addCommands(Commands.deadline(fireThirdNoteCommand));
+        this.addCommands(fireThirdNoteCommand);
 
         // Drive to bottom spike note and collect
         this.addCommands(
@@ -84,7 +86,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireFromSubwooferCommandGroup.get();
-        this.addCommands(Commands.deadline(fireFourthNoteCommand));
+        this.addCommands(fireFourthNoteCommand);
     }
 
 }

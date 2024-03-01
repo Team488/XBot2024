@@ -180,7 +180,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         );
 
         if (isUsingVisionAssistedPose()) {
-            improveFusedOdometryUsingPhotonLib(updatedPosition);
+//            improveFusedOdometryUsingPhotonLib(updatedPosition);
         }
 
         aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());

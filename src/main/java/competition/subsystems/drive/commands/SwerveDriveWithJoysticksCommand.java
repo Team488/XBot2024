@@ -80,7 +80,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
 
         this.addRequirements(drive);
 
-        this.pointAtSpeakerButton = oi.driverGamepad.getifAvailable(XXboxController.XboxButton.B);
+        this.pointAtSpeakerButton = oi.driverGamepad.getifAvailable(XXboxController.XboxButton.Y);
 
     }
 
