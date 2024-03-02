@@ -24,6 +24,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     double calibrationStartTime = 0;
     double calibrationMaxDuration = 5;
     TimeStableValidator calibrationValidator;
+    double timeToBrake;
     final double calibrationStallDurationSec = 0.5;
 
     @Inject
@@ -106,6 +107,9 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                 arm.setTargetValue(arm.getCurrentValue());
             }
         } else {
+            /* This runs when we are hanging and there's only 1 second of the match left. We are engaging the brake to
+            not fall off.
+             */
             if (DriverStation.getMatchTime() < 1 && arm.getManualHangingMode()) {
                 arm.setPower(0.0);
             }
