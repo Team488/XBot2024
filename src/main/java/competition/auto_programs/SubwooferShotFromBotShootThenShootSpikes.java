@@ -15,9 +15,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
+import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandGroup {
 
@@ -61,8 +64,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
 
         // Drive to middle spike note and collect
         var driveToMiddleSpikeNote = driveToListOfPointsCommandProvider.get();
-        driveToMiddleSpikeNote.addPoint(PoseSubsystem.SpikeBottomWhiteLine);
-        driveToMiddleSpikeNote.addPoint(PoseSubsystem.SpikeMiddle);
+        driveToMiddleSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeMiddle);
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
         this.addCommands(Commands.deadline(collectSequenceMid, driveToMiddleSpikeNote));
 
@@ -76,8 +78,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
 
         // Drive to middle spike note and collect
         var driveToTopSpikeNote = driveToListOfPointsCommandProvider.get();
-        driveToMiddleSpikeNote.addPoint(PoseSubsystem.SpikeBottomWhiteLine);
-        driveToMiddleSpikeNote.addPoint(PoseSubsystem.SpikeTop);
+        driveToTopSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeTop);
         var collectSequenceTop = collectSequenceCommandGroupProvider.get();
         this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
 
@@ -88,6 +89,20 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireFromSubwooferCommandGroup.get();
         this.addCommands(fireFourthNoteCommand);
+    }
+
+    public List<XbotSwervePoint> goToBottomWhiteLineThenSpikeMiddle() {
+        var points = new ArrayList<XbotSwervePoint>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeBottomWhiteLine, 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeMiddle, 10));
+        return points;
+    }
+
+    public List<XbotSwervePoint> goToBottomWhiteLineThenSpikeTop() {
+        var points = new ArrayList<XbotSwervePoint>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeBottomWhiteLine, 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeTop, 10));
+        return points;
     }
 
 }

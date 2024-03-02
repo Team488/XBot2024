@@ -16,12 +16,14 @@ import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
 
     DynamicOracle oracle;
     DriveSubsystem drive;
-    ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
+    Supplier<List<XbotSwervePoint>> pointsSupplier;
 
     @Inject
     public DriveToListOfPointsCommand(DriveSubsystem drive, DynamicOracle oracle,
@@ -35,7 +37,7 @@ public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
     @Override
     public void initialize() {
         log.info("Intitializing");
-        this.logic.setKeyPoints(swervePoints);
+        this.logic.setKeyPointsProvider(pointsSupplier);
         this.logic.setAimAtGoalDuringFinalLeg(true);
         this.logic.setDriveBackwards(true);
         this.logic.setEnableConstantVelocity(true);
@@ -55,7 +57,7 @@ public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
         return super.isFinished();
     }
 
-    public void addPoint(Pose2d pose){
-        swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(pose, 10));
+    public void addPointsSupplier(Supplier<List<XbotSwervePoint>> pointsSupplier) {
+        this.pointsSupplier = pointsSupplier;
     }
 }
