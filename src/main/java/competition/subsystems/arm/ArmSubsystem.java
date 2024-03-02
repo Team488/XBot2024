@@ -110,7 +110,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         COLLECTING_FROM_GROUND,
         FIRING_FROM_SUBWOOFER,
         FIRING_FROM_AMP,
-        SCOOCH_NOTE
+        SCOOCH_NOTE,
+        PROTECTED_AMP_SHOT,
+        PROTECTED_PODIUM_SHOT
     }
 
     private DoubleInterpolator speakerDistanceToExtensionInterpolator;
@@ -504,7 +506,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = upperLegalLimitMm.get();
                 break;
             case SCOOCH_NOTE:
-                extension = 15;
+                extension = 30;
+                break;
+            case PROTECTED_AMP_SHOT:
+                extension = 71.1;
+                break;
+            case PROTECTED_PODIUM_SHOT:
+                extension = 58.81;
                 break;
             default:
                 return 0;

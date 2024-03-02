@@ -311,6 +311,22 @@ public class OperatorCommandMap {
         var continuouslyPrepareToFireAtSpeaker =
                 continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
+        var warmUpForPodium = warmUpShooterCommandProvider.get();
+        warmUpForPodium.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        var setArmForPodium = setArmExtensionCommandProvider.get();
+        setArmForPodium.setTargetExtension(
+                arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.PROTECTED_PODIUM_SHOT));
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B)
+                .whileTrue(warmUpForPodium.alongWith(setArmForPodium));
+
+        var warmUpForProtectedAmp = warmUpShooterCommandProvider.get();
+        warmUpForProtectedAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        var setArmForProtectedAmp = setArmExtensionCommandProvider.get();
+        setArmForProtectedAmp.setTargetExtension(
+                arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.PROTECTED_AMP_SHOT));
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper)
+                .whileTrue(warmUpForProtectedAmp.alongWith(setArmForProtectedAmp));
+
         // Bind to buttons
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNote);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
@@ -321,7 +337,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSubwoofer);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtAmp);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(manualHangingModeCommand);
+        //oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(manualHangingModeCommand);
 
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
     }
