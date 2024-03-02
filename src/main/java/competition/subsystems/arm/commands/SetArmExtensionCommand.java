@@ -39,13 +39,6 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
     }
 
     @Override
-    public void end(boolean interrupted) {
-        if (interrupted) {
-            armSubsystem.setTargetValue(armSubsystem.getCurrentValue());
-        }
-    }
-
-    @Override
     public boolean isFinished() {
         return true;
     }
