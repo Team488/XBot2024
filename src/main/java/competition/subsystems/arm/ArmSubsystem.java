@@ -88,6 +88,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private static double[] experimentalRangesInInches = new double[]{0, 63};
     private static double[] experimentalArmExtensionsInMm = new double[]{0, 0};
 
+    boolean manualHangingModeEngaged = false;
+
 
 
     public enum ArmState {
@@ -228,7 +230,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             power = MathUtils.constrainDouble(power, powerMin.get(), 0);
         } else if (actualPosition >= upperSlowZoneThresholdMm.get()) {
             power = MathUtils.constrainDouble(power, powerMin.get(), upperSlowZonePowerLimit.get());
-        } else if (actualPosition <= lowerSlowZoneThresholdMm.get() && actualPosition > lowerExtremelySlowZoneThresholdMm.get()) {
+        } else if (actualPosition <= lowerSlowZoneThresholdMm.get()
+                && actualPosition > lowerExtremelySlowZoneThresholdMm.get()
+                && !manualHangingModeEngaged) {
             power = MathUtils.constrainDouble(power, lowerSlowZonePowerLimit.get(), powerMax.get());
         } else if (actualPosition <= lowerExtremelySlowZoneThresholdMm.get()) {
             power = MathUtils.constrainDouble(power, lowerExtremelySlowZonePowerLimit.get(), powerMax.get());
@@ -341,7 +345,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         rightPower = constrainPowerIfAtLimit(armMotorRight, rightPower);
 
         // Respect overall max/min power limits.
-        leftPower = MathUtils.constrainDouble(leftPower, powerMin.get(), powerMax.get());
+        if (!manualHangingModeEngaged) {
+            leftPower = MathUtils.constrainDouble(leftPower, powerMin.get(), powerMax.get());
+        } else {
+            // we need more power to hang
+            leftPower = MathUtils.constrainDouble(leftPower, -powerMax.get(), powerMax.get());
+        }
         rightPower = MathUtils.constrainDouble(rightPower, powerMin.get(), powerMax.get());
 
         // Try to ramp power - a smoother start will definitely help reduce high current shock loads,
@@ -659,6 +668,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
      */
     public double getMaximumRangeForAnyShotMeters() {
         return experimentalRangesInInches[experimentalRangesInInches.length - 1] / PoseSubsystem.INCHES_IN_A_METER;
+    }
+
+    public boolean getManualHangingMode() {
+        return manualHangingModeEngaged;
+    }
+
+    public void setManualHangingMode(boolean enabled) {
+        manualHangingModeEngaged = enabled;
     }
 
     public void periodic() {
