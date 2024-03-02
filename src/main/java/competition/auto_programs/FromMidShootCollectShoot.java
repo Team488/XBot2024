@@ -9,7 +9,6 @@ import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
@@ -38,7 +37,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         this.autoSelector = autoSelector;
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Shoot the pre-loaded note from the subwoofer
@@ -75,7 +74,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         driveToSubwoofer.logic.setConstantVelocity(1);
         driveToSubwoofer.logic.setKeyPointsProvider(() -> {
             ArrayList<XbotSwervePoint> points = new ArrayList<>();
-            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation);
+            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation);
             points.add(new XbotSwervePoint(target.getTranslation(), target.getRotation(), 10));
             return points;
         });

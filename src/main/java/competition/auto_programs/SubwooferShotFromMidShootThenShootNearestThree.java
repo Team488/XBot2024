@@ -2,7 +2,6 @@ package competition.auto_programs;
 
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
-import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
@@ -28,7 +27,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position

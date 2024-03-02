@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkBase;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.oracle.Availability;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.Note;
 import competition.subsystems.pose.PoseSubsystem;
@@ -77,7 +78,7 @@ public class Simulator2024 {
 
     private void simulateCollector() {
         // If we are running the collector and near a note,
-        var nearestNote = oracle.getNoteMap().getClosestNote(pose.getCurrentPose2d().getTranslation(), 0.1, Note.NoteAvailability.Available);
+        var nearestNote = oracle.getNoteMap().getClosest(pose.getCurrentPose2d().getTranslation(), 0.1, Availability.Available, Availability.AgainstObstacle);
         if (nearestNote != null && collector.collectorMotor.getAppliedOutput() > 0.05) {
             // Trigger our sensors to say we have one.
             ((MockDigitalInput)collector.inControlNoteSensor).setValue(true);
@@ -187,18 +188,18 @@ public class Simulator2024 {
         // create a translation3d representing note start point.
         noteStartPoint = new Translation3d(
                 currentPose.getTranslation().getX()
-                        + Math.cos(currentPose.getRotation().getRadians() + Math.PI) * 0.33,
+                        + Math.cos(currentPose.getRotation().getRadians()) * 0.33,
                 currentPose.getTranslation().getY()
-                        + Math.sin(currentPose.getRotation().getRadians() + Math.PI) * 0.33,
+                        + Math.sin(currentPose.getRotation().getRadians()) * 0.33,
                 0.33
         );
 
         // create a translation3d representing note finish point.
         noteFinishPoint = new Translation3d(
                 currentPose.getTranslation().getX()
-                        + Math.cos(currentPose.getRotation().getRadians() + Math.PI) * 3,
+                        + Math.cos(currentPose.getRotation().getRadians()) * 3,
                 currentPose.getTranslation().getY()
-                        + Math.sin(currentPose.getRotation().getRadians() + Math.PI) * 3,
+                        + Math.sin(currentPose.getRotation().getRadians()) * 3,
                 3
         );
     }

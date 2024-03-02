@@ -81,6 +81,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private int totalLoops = 0;
     private int loopsWhereCompressorRunning = 0;
 
+    //private static double[] experimentalRangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
+    //private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  20.0, 26, 41, 57,  64};
+    // TODO: For now, this was a very ugly and quick way to force the arm low, given that all our scoring is coming
+    // from the subwoofer. This will need to be revisited.
+    private static double[] experimentalRangesInInches = new double[]{0, 63};
+    private static double[] experimentalArmExtensionsInMm = new double[]{0, 0};
+
+    boolean manualHangingModeEngaged = false;
+
+
 
     public enum ArmState {
         EXTENDING,
@@ -202,19 +212,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             .append(new MechanismLigament2d("box-top", 2, 90))
             .append(new MechanismLigament2d("box-left", 1, 90));
 
-
-        double[] rangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
-        double[] rangesInMeters = new double[7];
+        double[] rangesInMeters = new double[experimentalRangesInInches.length];
         //PoseSubsystem.INCHES_IN_A_METER
         // Convert the rangesInInches array to meters
-        for (int i = 0; i < rangesInInches.length; i++) {
-            rangesInMeters[i] = rangesInInches[i] / PoseSubsystem.INCHES_IN_A_METER;
+        for (int i = 0; i < experimentalRangesInInches.length; i++) {
+            rangesInMeters[i] = experimentalRangesInInches[i] / PoseSubsystem.INCHES_IN_A_METER;
         }
 
         speakerDistanceToExtensionInterpolator =
                 new DoubleInterpolator(
                         rangesInMeters,
-                        new double[]{0, 0,  20.0, 26, 41, 57,  64});
+                        experimentalArmExtensionsInMm);
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
@@ -222,7 +230,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             power = MathUtils.constrainDouble(power, powerMin.get(), 0);
         } else if (actualPosition >= upperSlowZoneThresholdMm.get()) {
             power = MathUtils.constrainDouble(power, powerMin.get(), upperSlowZonePowerLimit.get());
-        } else if (actualPosition <= lowerSlowZoneThresholdMm.get() && actualPosition > lowerExtremelySlowZoneThresholdMm.get()) {
+        } else if (actualPosition <= lowerSlowZoneThresholdMm.get()
+                && actualPosition > lowerExtremelySlowZoneThresholdMm.get()
+                && !manualHangingModeEngaged) {
             power = MathUtils.constrainDouble(power, lowerSlowZonePowerLimit.get(), powerMax.get());
         } else if (actualPosition <= lowerExtremelySlowZoneThresholdMm.get()) {
             power = MathUtils.constrainDouble(power, lowerExtremelySlowZonePowerLimit.get(), powerMax.get());
@@ -335,7 +345,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         rightPower = constrainPowerIfAtLimit(armMotorRight, rightPower);
 
         // Respect overall max/min power limits.
-        leftPower = MathUtils.constrainDouble(leftPower, powerMin.get(), powerMax.get());
+        if (!manualHangingModeEngaged) {
+            leftPower = MathUtils.constrainDouble(leftPower, powerMin.get(), powerMax.get());
+        } else {
+            // we need more power to hang
+            leftPower = MathUtils.constrainDouble(leftPower, -powerMax.get(), powerMax.get());
+        }
         rightPower = MathUtils.constrainDouble(rightPower, powerMin.get(), powerMax.get());
 
         // Try to ramp power - a smoother start will definitely help reduce high current shock loads,
@@ -644,7 +659,24 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     @Override
     protected boolean areTwoTargetsEquivalent(Double target1, Double target2) {
-        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1, target2);
+        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1, target2, 1);
+    }
+
+    /**
+     * Returns our maximum scoring range. Is useful if the arm is "at target"
+     * but we know there's no way it will actually score.
+     * @return the maximum scoring range in meters
+     */
+    public double getMaximumRangeForAnyShotMeters() {
+        return experimentalRangesInInches[experimentalRangesInInches.length - 1] / PoseSubsystem.INCHES_IN_A_METER;
+    }
+
+    public boolean getManualHangingMode() {
+        return manualHangingModeEngaged;
+    }
+
+    public void setManualHangingMode(boolean enabled) {
+        manualHangingModeEngaged = enabled;
     }
 
     public void periodic() {
