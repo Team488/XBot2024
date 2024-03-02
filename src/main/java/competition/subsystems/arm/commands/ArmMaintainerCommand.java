@@ -106,7 +106,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                 arm.setTargetValue(arm.getCurrentValue());
             }
         } else {
-            if (DriverStation.getMatchTime() < 1) {
+            if (DriverStation.getMatchTime() < 1 && arm.getManualHangingMode()) {
                 arm.setPower(0.0);
             }
             humanControlAction();
