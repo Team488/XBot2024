@@ -508,6 +508,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case SCOOCH_NOTE:
                 extension = 15;
                 break;
+            case HANGING_POSITION:
             default:
                 return 0;
         }
