@@ -2,6 +2,7 @@ package competition.subsystems.arm.commands;
 
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseMaintainerCommand;
 import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.CalibrationDecider;
@@ -105,6 +106,9 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                 arm.setTargetValue(arm.getCurrentValue());
             }
         } else {
+            if (DriverStation.getMatchTime() < 1) {
+                arm.setPower(0.0);
+            }
             humanControlAction();
         }
     }
