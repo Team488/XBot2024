@@ -50,6 +50,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private double armMotorLeftRevolutionOffset; // # of revolutions
     private double armMotorRightRevolutionOffset;
     public final DoubleProperty upperLegalLimitMm;
+    public double assumedExtenstionForPodiumShot = 20;
     public final DoubleProperty absoluteEncoderOffset;
     public final DoubleProperty absoluteEncoderRevolutionsPerArmDegree;
     public final DoubleProperty upperSlowZoneThresholdMm;
@@ -109,6 +110,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         STARTING_POSITION,
         COLLECTING_FROM_GROUND,
         FIRING_FROM_SUBWOOFER,
+        FIRING_FROM_PODIUM,
         FIRING_FROM_AMP,
         SCOOCH_NOTE
     }
@@ -485,8 +487,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case STARTING_POSITION -> angle = 40;
             case COLLECTING_FROM_GROUND -> angle = 0;
             case FIRING_FROM_SUBWOOFER -> angle = 30;
+            case FIRING_FROM_PODIUM -> angle = 40;
             case FIRING_FROM_AMP -> angle = 80;
-            case SCOOCH_NOTE -> angle = 60; // placeholder value, safe angle to let note through while still low
+            case SCOOCH_NOTE -> angle = 60;// placeholder value, safe angle to let note through while still low
             default -> angle = 40;
         }
         return angle;
@@ -500,6 +503,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case FIRING_FROM_SUBWOOFER:
                 extension = 0;
                 break;
+            case FIRING_FROM_PODIUM:
+                extension = assumedExtenstionForPodiumShot;
             case FIRING_FROM_AMP:
                 extension = upperLegalLimitMm.get();
                 break;

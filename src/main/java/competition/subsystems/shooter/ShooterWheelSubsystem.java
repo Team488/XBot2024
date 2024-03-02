@@ -23,7 +23,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         SUBWOOFER,
         NEARSHOT,
         DISTANCESHOT,
-        AMP_SHOT
+        AMP_SHOT,
+        PODIUM_SHOT
     }
 
     //need pose for real time calculations
@@ -41,6 +42,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private final DoubleProperty nearShotRpm;
     private final DoubleProperty distanceShotRpm;
     private final DoubleProperty ampShotRpm;
+    private final DoubleProperty podiumShotRpm;
     private final DoubleProperty shortRangeErrorToleranceRpm;
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
@@ -64,6 +66,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
         // placeholder value for rpm when preparing to score in amp
         ampShotRpm = pf.createPersistentProperty("AmpShotRpm", 2000);
+        podiumShotRpm = pf.createPersistentProperty("PodiumShotRpm", 1500);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();
@@ -116,6 +119,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             case NEARSHOT -> setTargetValue(nearShotRpm.get());
             case DISTANCESHOT -> setTargetValue(distanceShotRpm.get());
             case AMP_SHOT -> setTargetValue(ampShotRpm.get());
+            case PODIUM_SHOT -> setTargetValue(podiumShotRpm.get());
             default -> setTargetValue(0.0);
         }
     }
