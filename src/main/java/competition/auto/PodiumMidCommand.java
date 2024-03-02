@@ -4,11 +4,10 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import xbot.common.command.BaseCommand;
-import xbot.common.math.WrappedRotation2d;
 
 import javax.inject.Inject;
 
-public class MarkerTestAutoCommand extends BaseCommand {
+public class PodiumMidCommand extends BaseCommand {
     PathPlannerDriveSubsystem drive;
     Command autonomousCommand;
     RobotContainer robotContainer;
@@ -16,15 +15,15 @@ public class MarkerTestAutoCommand extends BaseCommand {
     PoseSubsystem pose;
 
     @Inject
-    public MarkerTestAutoCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
-                                 DriveSubsystem driveSubsystem, PoseSubsystem pose) {
+    public PodiumMidCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
+                            DriveSubsystem driveSubsystem, PoseSubsystem pose) {
         this.robotContainer = robotContainer;
         this.drive = drive;
         this.driveSubsystem = driveSubsystem;
         this.pose = pose;
         addRequirements(driveSubsystem);
         addRequirements(drive);
-        this.autonomousCommand = robotContainer.getMarkerTestAutoCommand();
+        this.autonomousCommand = robotContainer.getPodiumMidCommand();
         autonomousCommand.addRequirements(drive);
         autonomousCommand.addRequirements(driveSubsystem);
 
@@ -33,7 +32,7 @@ public class MarkerTestAutoCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
-            autonomousCommand.schedule();
+        autonomousCommand.schedule();
     }
 
     @Override

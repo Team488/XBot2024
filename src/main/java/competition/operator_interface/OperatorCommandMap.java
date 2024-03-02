@@ -4,22 +4,16 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import competition.auto.Fast4NoteFarCommand;
-import competition.auto.MidNoteCommandGroup;
-import competition.auto_programs.ShootThenMoveOutOfLine;
-import competition.commandgroups.FireNoteCommandGroup;
+import competition.auto.Far4NoteCommandGroup;
+import competition.auto.PodiumMidCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
-import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
-import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.arm.commands.DisengageBrakeCommand;
 import competition.subsystems.arm.commands.EngageBrakeCommand;
-import competition.subsystems.arm.commands.ManipulateArmBrakeCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -27,7 +21,6 @@ import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
-import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
@@ -42,7 +35,6 @@ import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
@@ -129,8 +121,8 @@ public class OperatorCommandMap {
             FireWhenReadyCommand fireWhenReady,
             FireCollectorCommand fireCollector,
             AlignToNoteCommand alignToNoteCommand,
-            MidNoteCommandGroup midNoteCommandGroup,
-            Fast4NoteFarCommand fast4NoteFarCommand)
+            Far4NoteCommandGroup far4NoteCommandGroup,
+            PodiumMidCommandGroup podiumMidCommandGroup)
 
     {
         double typicalVelocity = 2.5;
@@ -152,8 +144,9 @@ public class OperatorCommandMap {
 //        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady);
 
 //        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue();
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(midNoteCommandGroup);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(fast4NoteFarCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(far4NoteCommandGroup);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(podiumMidCommandGroup);
+
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 

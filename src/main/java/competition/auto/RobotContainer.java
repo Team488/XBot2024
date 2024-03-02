@@ -35,27 +35,12 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     @Inject
     public RobotContainer(DriveSubsystem drive, PoseSubsystem pose,
-                          IntakeCollectorCommand intakeCollectorCommand,
-                          StopCollectorCommand stopCollectorCommand,
                           Provider<IntakeUntilNoteCollectedCommand> intakeUntilNoteCollectedCommandProvider,
-                          Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
-                          Provider<ContinuouslyWarmUpForSpeakerCommand> continuouslyWarmUpForSpeakerCommandProvider,
-                          Provider<ContinuouslyPointArmAtSpeakerCommand> continuouslyPointArmAtSpeakerCommandProvider,
-                          Provider<StopIntooterCommandGroup> stopIntooterCommandGroupProvider,
                           Provider<PrepareEverywhereCommandGroup> prepareEverywhereCommandGroupProvider) {
 
         this.drive = drive;
         this.pose = pose;
 
-        //TODO: 2024
-        //fire while moving to note
-        var warmUpPreload = continuouslyWarmUpForSpeakerCommandProvider.get();
-        var pointArmPreload = continuouslyPointArmAtSpeakerCommandProvider.get();
-        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
-
-        NamedCommands.registerCommand("WarmUpPreloaded", warmUpPreload);
-        NamedCommands.registerCommand("PointArmPreloaded", pointArmPreload);
-        NamedCommands.registerCommand("FirePreloaded", fireFirstNoteCommand);
 
         //INTAKING NOTES
         var intakeFirstNote = intakeUntilNoteCollectedCommandProvider.get();
@@ -73,10 +58,6 @@ public class RobotContainer {
         var prepareArm3 = prepareEverywhereCommandGroupProvider.get();
         NamedCommands.registerCommand("PrepareEverywhere3", prepareArm3);
 
-
-
-        var prepareArmMidNote = prepareEverywhereCommandGroupProvider.get();
-        NamedCommands.registerCommand("PrepareEverywhere", prepareArmMidNote);
 
         autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -96,23 +77,11 @@ public class RobotContainer {
         path.preventFlipping = true;
         return AutoBuilder.followPath(path);
     }
-    public Command getFourNoteAutoCommand() {
-        return new PathPlannerAuto("4noteAutoClose");
-    }
-    public Command getMidNoteCommand() {
-        return new PathPlannerAuto("midnote");
-    }
     public Command getFast4NoteFarCommand() {
-        return new PathPlannerAuto("4noteAutoFar");
+        return new PathPlannerAuto("4noteAutoFarBot");
     }
-    public Command getFast4NoteCloseCommand() {
-        return new PathPlannerAuto("Fast4NoteAutoClose");
-    }
-    public Command getMarkerTestAutoCommand() {
-        return new PathPlannerAuto("MarkerTestAuto");
-    }
-    public Command getMomentumRight() {
-        return new PathPlannerAuto("momRight");
+    public Command getPodiumMidCommand() {
+        return new PathPlannerAuto("PodiumMid");
     }
 
 }
