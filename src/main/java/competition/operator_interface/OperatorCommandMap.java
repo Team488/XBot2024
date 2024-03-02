@@ -395,8 +395,6 @@ public class OperatorCommandMap {
         return command;
     }
 
-}
-
     @Inject
     public void setupAutonomousCommandSelection(OperatorInterface oi,
                                                 Provider<SetAutonomousCommand> setAutonomousCommandProvider,
