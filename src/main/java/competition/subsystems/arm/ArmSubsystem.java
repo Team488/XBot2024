@@ -81,11 +81,14 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private int totalLoops = 0;
     private int loopsWhereCompressorRunning = 0;
 
-    private static double[] experimentalRangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
+    //private static double[] experimentalRangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
     //private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  20.0, 26, 41, 57,  64};
     // TODO: For now, this was a very ugly and quick way to force the arm low, given that all our scoring is coming
     // from the subwoofer. This will need to be revisited.
-    private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  0.0, 0, 0, 0,  0};
+    private static double[] experimentalRangesInInches = new double[]{0, 63};
+    private static double[] experimentalArmExtensionsInMm = new double[]{0, 0};
+
+
 
     public enum ArmState {
         EXTENDING,

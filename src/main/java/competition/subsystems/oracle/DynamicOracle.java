@@ -160,10 +160,11 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     /**
-     * Should be called in AutonomousInit
+     * Should be called in AutonomousInit.
+     * Idea: the operator will use the NeoTrellis to lay out a plan, and then either press a button to
+     * lock in that plan (or make updates to the plan), or the plan will automatically lock in at the start of auto.
      */
     public void freezeConfigurationForAutonomous() {
-        //
     }
 
     @Override
