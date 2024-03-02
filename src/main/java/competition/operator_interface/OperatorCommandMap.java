@@ -8,6 +8,7 @@ import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.arm.commands.DisengageBrakeCommand;
 import competition.subsystems.arm.commands.EngageBrakeCommand;
+import competition.subsystems.arm.commands.ManualHangingModeCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -146,7 +147,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightStick).onTrue(expertMode);
 
         // Launch note from collector to the already warmed up shooterwheel
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady.repeatedly());
 
 
         /*Used only when we want to manually shoot. For example, if the sensors are broken in game and we want to shoot
@@ -276,7 +277,8 @@ public class OperatorCommandMap {
             Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
             ContinuouslyPointArmAtSpeakerCommand continuouslyPointArmAtSpeaker,
             ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeaker,
-            FireWhenReadyCommand fireWhenReady
+            FireWhenReadyCommand fireWhenReady,
+            ManualHangingModeCommand manualHangingModeCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -323,6 +325,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSubwoofer);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtAmp);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(manualHangingModeCommand);
 
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
     }
