@@ -58,6 +58,7 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
         }
 
         if (tryToScore) {
+            // If it's time to score, or if we're already started firing, commit! (Or should this live in the collector?)
             if (oracle.getScoringSubgoal() == DynamicOracle.ScoringSubGoals.EarnestlyLaunchNote) {
                 fireWhenReady();
             } else {
@@ -73,24 +74,16 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
                 && shooter.isMaintainerAtGoal()
                 && shooter.getTargetValue().upperWheelsTargetRPM > 500;
 
-        boolean shouldCommitToFiring = getShouldCommitToFiring();
-
         boolean sanityChecks = oracle.getHighLevelGoal() != DynamicOracle.HighLevelGoal.CollectNote;
 
         aKitLog.record("SuperstructureReady", superStructureReady);
-        aKitLog.record("ShouldCommitToFiring", shouldCommitToFiring);
         aKitLog.record("SanityChecks", sanityChecks);
 
 
-        if ((superStructureReady && sanityChecks) || shouldCommitToFiring) {
+        if (superStructureReady && sanityChecks) {
             collector.fire();
         } else {
             collector.stop();
         }
-    }
-
-    // Once we've started shooting, don't stop until we're sure the note is totally gone.
-    private boolean getShouldCommitToFiring() {
-        return collector.getIntakeState() == CollectorSubsystem.IntakeState.FIRING;
     }
 }
