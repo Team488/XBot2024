@@ -1,10 +1,11 @@
 package competition.auto_programs;
 
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
-import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
+import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,18 +16,19 @@ import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
+public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
 
     @Inject
-    public DistanceShotFromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
-                                                         Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                                         Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
-                                                         Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                         PoseSubsystem pose, DriveSubsystem drive,
-                                                         Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
-                                                         FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup) {
+    public DistanceShotFromMidShootThenShootMiddleTopThenTopCenter(AutonomousCommandSelector autoSelector,
+                                                                   Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectProvider,
+                                                                   Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
+                                                                   Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
+                                                                   PoseSubsystem pose, DriveSubsystem drive,
+                                                                   Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
+                                                                   Provider<DriveToGivenNoteCommand> driveToGivenNoteCommandProvider,
+                                                                   Provider<DriveToMidSpikeScoringLocationCommand> driveToMidSpikeScoringLocationProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -34,19 +36,17 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
-//        // Fire note into the speaker from starting position
-//        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
-//        this.addCommands(Commands.deadline(fireFirstNoteCommand));
-        // Fire preload note into the speaker from starting position
-        this.addCommands(Commands.deadline(fireFromSubwooferCommandGroup));
+        // Fire note into the speaker from starting position
+        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(fireFirstNoteCommand));
 
-        // Drive to top spike note and collect
+        // Drive to middle spike note and collect
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeTop);
+                    drive.setTargetNote(PoseSubsystem.SpikeMiddle);
                 })
         );
-        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
         this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
 
         // Point at speaker
@@ -59,10 +59,10 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         // Drive to top spike note and collect
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+                    drive.setTargetNote(PoseSubsystem.SpikeTop);
                 })
         );
-        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
         this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
 
         // Point at speaker
@@ -72,14 +72,18 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         var fireThirdNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireThirdNoteCommand, pointAtSpeakerSecond));
 
-        // Drive to bottom spike note and collect
+        // Drive to top center spike note and collect
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeBottom);
+                    drive.setTargetNote(PoseSubsystem.CenterLine1);
                 })
         );
-        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
         this.addCommands(driveToBottomSpikeNoteAndCollect);
+
+        // drive back to middle spike location
+        var driveToMiddleSpikeScoringLocation = driveToMidSpikeScoringLocationProvider.get();
+        this.addCommands(driveToMiddleSpikeScoringLocation);
 
         // Point at speaker
         var pointAtSpeakerThird = pointAtSpeakerCommandProvider.get();
