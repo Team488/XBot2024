@@ -39,11 +39,6 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
     }
 
     @Override
-    public void execute() {
-        // no-op
-    }
-
-    @Override
     public boolean isFinished() {
         return true;
     }
