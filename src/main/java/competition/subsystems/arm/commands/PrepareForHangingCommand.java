@@ -2,26 +2,24 @@ package competition.subsystems.arm.commands;
 import xbot.common.command.BaseCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import javax.inject.Inject;
-public class PrepareForHangingCommand extends BaseSetpointCommand{
+public class PrepareForHangingCommand extends BaseCommand{
 
     ArmSubsystem armSubsystem;
-    private double TargetExtension;
 
     @Inject
     public PrepareForHangingCommand(ArmSubsystem armSubsystem){
-        super(armSubsystem);
         this.armSubsystem = armSubsystem;
-    }
-    public void setTargetExtension(double TargetExtension){
-        this.targetExtension = HANGING_POSITION
     }
     @Override
     public void initialize(){
         log.info("Preparing Hanging");
+        armSubsystem.setTargetAngle(armSubsystem.getUsefulArmPositionAngle(ArmSubsystem.UsefulArmPosition.HANGING_POSITION));
     }
+
 
     @Override
     public void execute(){
+        //don't think anything is needed
     }
 }
 
