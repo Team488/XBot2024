@@ -110,7 +110,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         COLLECTING_FROM_GROUND,
         FIRING_FROM_SUBWOOFER,
         FIRING_FROM_AMP,
-        SCOOCH_NOTE
+        SCOOCH_NOTE,
+        HANGING_POSITION
     }
 
     private DoubleInterpolator speakerDistanceToExtensionInterpolator;
@@ -487,6 +488,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case FIRING_FROM_SUBWOOFER -> angle = 30;
             case FIRING_FROM_AMP -> angle = 80;
             case SCOOCH_NOTE -> angle = 60; // placeholder value, safe angle to let note through while still low
+            case HANGING_POSITION -> angle = 40; // placehold value, change once value is found
             default -> angle = 40;
         }
         return angle;
