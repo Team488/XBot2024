@@ -51,6 +51,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         log.info("Initializing");
         oracle.requestReevaluation();
         setNewInstruction();
+        logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
     }
 
     /**

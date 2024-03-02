@@ -1,5 +1,6 @@
 package competition.subsystems.oracle;
 
+import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -8,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.controls.sensors.buttons.AdvancedTrigger;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.Obstacle;
@@ -44,14 +46,28 @@ public class DynamicOracle extends BaseSubsystem {
 
     PoseSubsystem pose;
     ArmSubsystem arm;
+    OperatorInterface oi;
 
     int instructionNumber = 0;
     double robotWidth = 0.914;
     double scoringZoneOffset = 0.93;
 
+    private final AdvancedTrigger reserveTopSubwooferButton;
+    private final AdvancedTrigger reserveMiddleSubwooferButton;
+    private final AdvancedTrigger reserveBottomSubwooferButton;
+    private final AdvancedTrigger reserveTopSpikeButton;
+    private final AdvancedTrigger reserveMiddleSpikeButton;
+    private final AdvancedTrigger reserveBottomSpikeButton;
+    private final AdvancedTrigger reserveCenterLine1Button;
+    private final AdvancedTrigger reserveCenterLine2Button;
+    private final AdvancedTrigger reserveCenterLine3Button;
+    private final AdvancedTrigger reserveCenterLine4Button;
+    private final AdvancedTrigger reserveCenterLine5Button;
+
+
     @Inject
     public DynamicOracle(NoteCollectionInfoSource noteCollectionInfoSource, NoteFiringInfoSource noteFiringInfoSource,
-                         PoseSubsystem pose, ArmSubsystem arm) {
+                         PoseSubsystem pose, ArmSubsystem arm, OperatorInterface oi) {
         this.noteCollectionInfoSource = noteCollectionInfoSource;
         this.noteFiringInfoSource = noteFiringInfoSource;
         this.noteMap = new NoteMap();
@@ -59,11 +75,23 @@ public class DynamicOracle extends BaseSubsystem {
 
         this.pose = pose;
         this.arm = arm;
+        this.oi = oi;
 
         this.currentHighLevelGoal = HighLevelGoal.CollectNote;
         this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         firstRunInNewGoal = true;
-        setupLowResField();
+
+        reserveTopSubwooferButton = oi.neoTrellis.getifAvailable(25);
+        reserveMiddleSubwooferButton = oi.neoTrellis.getifAvailable(26);
+        reserveBottomSubwooferButton = oi.neoTrellis.getifAvailable(27);
+        reserveTopSpikeButton = oi.neoTrellis.getifAvailable(10);
+        reserveMiddleSpikeButton = oi.neoTrellis.getifAvailable(11);
+        reserveBottomSpikeButton = oi.neoTrellis.getifAvailable(12);
+        reserveCenterLine1Button = oi.neoTrellis.getifAvailable(2);
+        reserveCenterLine2Button = oi.neoTrellis.getifAvailable(3);
+        reserveCenterLine3Button = oi.neoTrellis.getifAvailable(4);
+        reserveCenterLine4Button = oi.neoTrellis.getifAvailable(5);
+        reserveCenterLine5Button = oi.neoTrellis.getifAvailable(6);
     }
 
     Pose2d activeScoringPosition;
@@ -280,21 +308,97 @@ public class DynamicOracle extends BaseSubsystem {
      * lock in that plan (or make updates to the plan), or the plan will automatically lock in at the start of auto.
      */
     public void freezeConfigurationForAutonomous() {
+        setupLowResField();
         noteMap = new NoteMap();
         scoringLocationMap = new ScoringLocationMap();
 
         if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+            // We are on the blue alliance.
+            // Disable things that aren't possible (on red side of field)
             noteMap.get(Note.KeyNoteNames.RedSpikeTop).setAvailability(Availability.Unavailable);
             noteMap.get(Note.KeyNoteNames.RedSpikeMiddle).setAvailability(Availability.Unavailable);
             noteMap.get(Note.KeyNoteNames.RedSpikeBottom).setAvailability(Availability.Unavailable);
-
             scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
+            // Disable subwoofer positions the driver has told us to avoid
+            if (reserveTopSubwooferButton.getAsBoolean()) {
+                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferTopBlue);
+            }
+            if (reserveMiddleSubwooferButton.getAsBoolean()) {
+                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleBlue);
+            }
+            if (reserveBottomSubwooferButton.getAsBoolean()) {
+                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue);
+            }
+            // Disable notes the driver told us to avoid
+            if (reserveTopSpikeButton.getAsBoolean()) {
+                reserveNote(Note.KeyNoteNames.BlueSpikeTop);
+            }
+            if (reserveMiddleSpikeButton.getAsBoolean()) {
+                reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
+            }
+            if (reserveBottomSpikeButton.getAsBoolean()) {
+                reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
+            }
+
+            // Linkers for nearby notes
+            if (reserveTopSpikeButton.getAsBoolean() && reserveMiddleSpikeButton.getAsBoolean()) {
+                createNoteLinkingObstacle(Note.KeyNoteNames.BlueSpikeTop, Note.KeyNoteNames.BlueSpikeMiddle);
+            }
+            if (reserveMiddleSpikeButton.getAsBoolean() && reserveBottomSpikeButton.getAsBoolean()) {
+                createNoteLinkingObstacle(Note.KeyNoteNames.BlueSpikeMiddle, Note.KeyNoteNames.BlueSpikeBottom);
+            }
+
         } else {
+            // We are on the red alliance.
+            // Disable things that aren't possible (on blue side of field)
             noteMap.get(Note.KeyNoteNames.BlueSpikeTop).setAvailability(Availability.Unavailable);
             noteMap.get(Note.KeyNoteNames.BlueSpikeMiddle).setAvailability(Availability.Unavailable);
             noteMap.get(Note.KeyNoteNames.BlueSpikeBottom).setAvailability(Availability.Unavailable);
-
             scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Blue);
+            // Disable subwoofer positions the driver has told us to avoid
+            if (reserveTopSubwooferButton.getAsBoolean()) {
+                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferTopRed);
+            }
+            if (reserveMiddleSubwooferButton.getAsBoolean()) {
+                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleRed);
+            }
+            if (reserveBottomSubwooferButton.getAsBoolean()) {
+                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferBottomRed);
+            }
+            // Disable notes the driver told us to avoid
+            if (reserveTopSpikeButton.getAsBoolean()) {
+                reserveNote(Note.KeyNoteNames.RedSpikeTop);
+            }
+            if (reserveMiddleSpikeButton.getAsBoolean()) {
+                reserveNote(Note.KeyNoteNames.RedSpikeMiddle);
+            }
+            if (reserveBottomSpikeButton.getAsBoolean()) {
+                reserveNote(Note.KeyNoteNames.RedSpikeBottom);
+            }
+
+            // Linkers for nearby notes
+            if (reserveTopSpikeButton.getAsBoolean() && reserveMiddleSpikeButton.getAsBoolean()) {
+                createNoteLinkingObstacle(Note.KeyNoteNames.RedSpikeTop, Note.KeyNoteNames.RedSpikeMiddle);
+            }
+            if (reserveMiddleSpikeButton.getAsBoolean() && reserveBottomSpikeButton.getAsBoolean()) {
+                createNoteLinkingObstacle(Note.KeyNoteNames.RedSpikeMiddle, Note.KeyNoteNames.RedSpikeBottom);
+            }
+        }
+
+        if (reserveCenterLine1Button.getAsBoolean()) {
+            reserveNote(Note.KeyNoteNames.CenterLine1);
+        }
+        if (reserveCenterLine2Button.getAsBoolean()) {
+            reserveNote(Note.KeyNoteNames.CenterLine2);
+        }
+        if (reserveCenterLine3Button.getAsBoolean()) {
+            reserveNote(Note.KeyNoteNames.CenterLine3);
+        }
+        if (reserveCenterLine4Button.getAsBoolean()) {
+            reserveNote(Note.KeyNoteNames.CenterLine4);
+        }
+        if (reserveCenterLine5Button.getAsBoolean()) {
+            reserveNote(Note.KeyNoteNames.CenterLine5);
         }
 
         // TODO: Read the values from the neotrellis to reserve more notes / scoring locations.
@@ -400,9 +504,11 @@ public class DynamicOracle extends BaseSubsystem {
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
 
         // Let's show some major obstacles
-        field.getObstacles().forEach(obstacle -> {
-            aKitLog.record(obstacle.getName(), obstacleToTrajectory(obstacle));
-        });
+        if (field != null) {
+            field.getObstacles().forEach(obstacle -> {
+                aKitLog.record(obstacle.getName(), obstacleToTrajectory(obstacle));
+            });
+        }
     }
 
     /**

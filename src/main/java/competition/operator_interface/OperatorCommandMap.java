@@ -190,18 +190,7 @@ public class OperatorCommandMap {
                 swerveCommandProvider.get(), PoseSubsystem.NearbySource, typicalVelocity, fieldWithObstacles, true);
 
         // Bind these to buttons on the neotrellis.
-        operatorInterface.neoTrellis.getifAvailable(10).whileTrue(goToTopSpike);
-        operatorInterface.neoTrellis.getifAvailable(11).whileTrue(goToMiddleSpike);
-        operatorInterface.neoTrellis.getifAvailable(12).whileTrue(goToBottomSpike);
-
-        operatorInterface.neoTrellis.getifAvailable(2).whileTrue(goToCenterLine1);
-        operatorInterface.neoTrellis.getifAvailable(3).whileTrue(goToCenterLine2);
-        operatorInterface.neoTrellis.getifAvailable(4).whileTrue(goToCenterLine3);
-        operatorInterface.neoTrellis.getifAvailable(5).whileTrue(goToCenterLine4);
-        operatorInterface.neoTrellis.getifAvailable(6).whileTrue(goToCenterLine5);
-
         operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
-        operatorInterface.neoTrellis.getifAvailable(26).whileTrue(goToSpeaker);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
     }
 
@@ -223,7 +212,6 @@ public class OperatorCommandMap {
                                     DynamicOracle oracle) {
         driveAccoringToOracle.logic.setEnableConstantVelocity(true);
         driveAccoringToOracle.logic.setConstantVelocity(2.8);
-        driveAccoringToOracle.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
 
         oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(driveAccoringToOracle.alongWith(superstructureAccordingToOracle));
         oi.driverGamepad.getPovIfAvailable(0).onTrue(new InstantCommand(() -> oracle.resetNoteMap()));
