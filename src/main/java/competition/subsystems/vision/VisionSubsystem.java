@@ -3,6 +3,11 @@ package competition.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.StringArrayEntry;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -44,6 +49,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final ArrayList<SimpleCamera> allCameras;
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
+    StringArrayEntry detectionEntry;
 
 
     @Inject
@@ -56,6 +62,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         singleTagStableDistance = pf.createPersistentProperty("Single tag stable distance", 2.0);
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
 
+        var trackingNt = NetworkTableInstance.create().getTable("SmartDashboard");
+        var detectionTopic = trackingNt.getStringArrayTopic("DetectionCameraphotonvisionfrontleft/Target Coordinate Pairs");
+        detectionEntry = detectionTopic.getEntry(new String[] {}, new PubSubOption[] {});
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
         errorThreshold = pf.createPersistentProperty("Error threshold",200);
@@ -235,6 +244,19 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 aKitLog.record(camera.getName() + "NoteArea", getNoteArea(camera));
             }
         }
+
+        var detections = detectionEntry.get();
+        aKitLog.record("DetectedNotes",
+                Arrays.stream(detections)
+                        .map(detection -> {
+                            var parts = detection.split(",");
+                            return new Pose3d(Double.parseDouble(parts[0]),
+                                    Double.parseDouble(parts[1]),
+                                    Double.parseDouble(parts[2]),
+                                    new Rotation3d()
+                            );
+                        })
+                        .toArray(Pose3d[]::new));
     }
 
     @Override
