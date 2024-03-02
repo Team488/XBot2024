@@ -1,24 +1,13 @@
 package competition.operator_interface;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
-import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
-import competition.auto_programs.ShootThenMoveOutOfLine;
-import competition.commandgroups.FireNoteCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
-import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
-import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.arm.commands.DisengageBrakeCommand;
 import competition.subsystems.arm.commands.EngageBrakeCommand;
-import competition.subsystems.arm.commands.ManipulateArmBrakeCommand;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -26,11 +15,10 @@ import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
-import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
-import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
-import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
+import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
+import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
@@ -41,7 +29,6 @@ import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
@@ -49,6 +36,9 @@ import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.XbotSwervePoint;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 
 /**
@@ -226,6 +216,7 @@ public class OperatorCommandMap {
 
         oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(driveAccoringToOracle.alongWith(superstructureAccordingToOracle));
         oi.driverGamepad.getPovIfAvailable(0).onTrue(new InstantCommand(() -> oracle.resetNoteMap()));
+        oi.driverGamepad.getPovIfAvailable(270).onTrue(new InstantCommand(() -> oracle.freezeConfigurationForAutonomous()));
 
     }
 

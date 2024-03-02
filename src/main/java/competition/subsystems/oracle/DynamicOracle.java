@@ -57,10 +57,6 @@ public class DynamicOracle extends BaseSubsystem {
         this.noteMap = new NoteMap();
         this.scoringLocationMap = new ScoringLocationMap();
 
-        // TODO: adjust this during autonomous init rather than here
-        noteMap.markAllianceNotesAsUnavailable(DriverStation.Alliance.Red);
-        scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
-
         this.pose = pose;
         this.arm = arm;
 
@@ -68,17 +64,6 @@ public class DynamicOracle extends BaseSubsystem {
         this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         firstRunInNewGoal = true;
         setupLowResField();
-
-        reserveNote(Note.KeyNoteNames.BlueSpikeTop);
-        reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
-        reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
-
-        reserveScoringLocation(ScoringLocation.WellKnownScoringLocations.SubwooferTopBlue);
-        reserveScoringLocation(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleBlue);
-        //reserveScoringLocation(ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue);
-
-        createNoteLinkingObstacle(Note.KeyNoteNames.BlueSpikeTop, Note.KeyNoteNames.BlueSpikeMiddle);
-        createNoteLinkingObstacle(Note.KeyNoteNames.BlueSpikeMiddle, Note.KeyNoteNames.BlueSpikeBottom);
     }
 
     Pose2d activeScoringPosition;
@@ -124,6 +109,10 @@ public class DynamicOracle extends BaseSubsystem {
         return obstacle;
     }
 
+    /**
+     * Helper function to create Obstacles for each of the permanent, non-changing aspects of the field, like
+     * the Subwoofer and Stage columns.
+     */
     private void setupPermanentObstacles() {
         // Blue Stage
         createObstacleWithRobotWidth(PoseSubsystem.BlueLeftStageColumn,
@@ -143,43 +132,52 @@ public class DynamicOracle extends BaseSubsystem {
                 PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, robotWidth, "RedBottomStageColumn", field);
 
         // Subwoofers
-        setupSubwooferTriad(PoseSubsystem.BlueSubwoofer, "Blue");
-        setupSubwooferTriad(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueSubwoofer), "Red");
+        setupSubwooferTriad(PoseSubsystem.BlueSubwoofer, DriverStation.Alliance.Blue);
+        setupSubwooferTriad(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueSubwoofer), DriverStation.Alliance.Red);
     }
 
-    private void setupSubwooferTriad(Translation2d subwooferCoreCoordinate, String alliance) {
-        var speakerTop = new Obstacle(
+    /**
+     * Due to the way obstacles can be combined after the fact, it's easier to create the subwoofer as 3 separate
+     * obstacles, one for each of the scoring zones.
+     * @param subwooferCoreCoordinate The center of the overall subwoofer
+     * @param yOffset How many meters to adjust this particular component
+     * @param height The height in meterse of this particualr component
+     * @param alliance Is this the Blue or Red subwoofer?
+     * @param name A unique name for this component, like SubwooferTop.
+     */
+    private void setupSubwooferComponent(Translation2d subwooferCoreCoordinate, double yOffset, double height, DriverStation.Alliance alliance, String name) {
+        var speaker = new Obstacle(
                 subwooferCoreCoordinate.getX(),
-                subwooferCoreCoordinate.getY()+scoringZoneOffset,
+                subwooferCoreCoordinate.getY()+yOffset,
                 PoseSubsystem.SubwooferWidth + robotWidth,
-                PoseSubsystem.SubwooferHeight / 6,
-                alliance+"SubwooferTop");
-        speakerTop.defaultBottomLeft = false;
-        speakerTop.defaultTopLeft = false;
-        field.addObstacle(speakerTop);
-
-        var speakerMid = new Obstacle(
-                subwooferCoreCoordinate.getX(),
-                subwooferCoreCoordinate.getY(),
-                PoseSubsystem.SubwooferWidth + robotWidth,
-                1.25,
-                alliance+"SubwooferMid");
-        speakerMid.defaultBottomLeft = false;
-        speakerMid.defaultTopLeft = false;
-        field.addObstacle(speakerMid);
-
-        var speakerBottom = new Obstacle(
-                subwooferCoreCoordinate.getX(),
-                subwooferCoreCoordinate.getY()-scoringZoneOffset,
-                PoseSubsystem.SubwooferWidth + robotWidth,
-                PoseSubsystem.SubwooferHeight / 6,
-                alliance+"SubwooferBottom");
-        speakerBottom.defaultBottomLeft = false;
-        speakerBottom.defaultTopLeft = false;
-        field.addObstacle(speakerBottom);
+                height,
+                alliance+name);
+        if (alliance== DriverStation.Alliance.Blue) {
+            speaker.defaultBottomLeft = false;
+            speaker.defaultTopLeft = false;
+        } else {
+            speaker.defaultBottomRight = false;
+            speaker.defaultTopRight = false;
+        }
+        field.addObstacle(speaker);
     }
 
-    public void reserveScoringLocation(ScoringLocation.WellKnownScoringLocations location) {
+    /**
+     * Create the 3 subwoofer components, top/middle/bottom.
+     * @param subwooferCoreCoordinate The center of the overall subwoofer
+     * @param alliance Is this the Blue or Red subwoofer?
+     */
+    private void setupSubwooferTriad(Translation2d subwooferCoreCoordinate, DriverStation.Alliance alliance) {
+        setupSubwooferComponent(subwooferCoreCoordinate, scoringZoneOffset, PoseSubsystem.SubwooferHeight / 6, alliance, "SubwooferTop");
+        setupSubwooferComponent(subwooferCoreCoordinate, 0, 1.25, alliance, "SubwooferMid");
+        setupSubwooferComponent(subwooferCoreCoordinate, -scoringZoneOffset, PoseSubsystem.SubwooferHeight / 6, alliance, "SubwooferBottom");
+    }
+
+    /**
+     * Reserve a scoring location, marking it inaccessible to the robot during autonomous.
+     * @param location The scoring location to mark as reserved by others during auto
+     */
+    public void reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations location) {
         // Mark it as reserved in the map, so we don't try to navigate there
         scoringLocationMap.get(location).setAvailability(Availability.ReservedByOthersInAuto);
         // create the relevant obstacle so we path around any robot chilling there
@@ -282,8 +280,31 @@ public class DynamicOracle extends BaseSubsystem {
      * lock in that plan (or make updates to the plan), or the plan will automatically lock in at the start of auto.
      */
     public void freezeConfigurationForAutonomous() {
+        noteMap = new NoteMap();
+        scoringLocationMap = new ScoringLocationMap();
+
+        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+            noteMap.get(Note.KeyNoteNames.RedSpikeTop).setAvailability(Availability.Unavailable);
+            noteMap.get(Note.KeyNoteNames.RedSpikeMiddle).setAvailability(Availability.Unavailable);
+            noteMap.get(Note.KeyNoteNames.RedSpikeBottom).setAvailability(Availability.Unavailable);
+
+            scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
+        } else {
+            noteMap.get(Note.KeyNoteNames.BlueSpikeTop).setAvailability(Availability.Unavailable);
+            noteMap.get(Note.KeyNoteNames.BlueSpikeMiddle).setAvailability(Availability.Unavailable);
+            noteMap.get(Note.KeyNoteNames.BlueSpikeBottom).setAvailability(Availability.Unavailable);
+
+            scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Blue);
+        }
+
+        // TODO: Read the values from the neotrellis to reserve more notes / scoring locations.
     }
 
+    /**
+     * The core state machine for the Oracle. Reads everything it can from the robot and its environment,
+     * and then recommends actions. Other commands like SwerveAcordingToOracle or
+     * SuperstructureControlAccordingToOracle may act on those recommendations.
+     */
     @Override
     public void periodic() {
 
@@ -296,7 +317,7 @@ public class DynamicOracle extends BaseSubsystem {
                             Availability.Available).getLocation());
 
                     currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
-                    setSpecialAimTarget(new Pose2d(0, 5.5, Rotation2d.fromDegrees(0)));
+                    setSpecialAimTarget(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_AIM_TARGET));
                     // Choose a good speaker scoring location
                     // Publish a route from current position to that location
                     firstRunInNewGoal = false;
@@ -384,6 +405,12 @@ public class DynamicOracle extends BaseSubsystem {
         });
     }
 
+    /**
+     * Helper function that visualizes the bounding box of an obstacles using WPI trajectories,
+     * which draw nicely on AdvantageScope
+     * @param o The obstacle to visualize
+     * @return A WPI trajectory that can be visualized by AdvantageScope
+     */
     private Trajectory obstacleToTrajectory(Obstacle o) {
         // create a trajectory using the 4 corners of the obstacle.
         ArrayList<Trajectory.State> wpiStates = new ArrayList<>();
