@@ -3,6 +3,7 @@ package competition.operator_interface;
 import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
 import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.FromMidShootCollectShoot;
+import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
@@ -30,8 +31,6 @@ import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationComma
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
-import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
-import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
@@ -224,14 +223,11 @@ public class OperatorCommandMap {
 
     @Inject
     public void setupOracleCommands(OperatorInterface oi,
-                                    SwerveAccordingToOracleCommand driveAccoringToOracle,
-                                    SuperstructureAccordingToOracleCommand superstructureAccordingToOracle,
+                                    ListenToOracleCommandGroup listenToOracleCommandGroup,
                                     ManualRobotKnowledgeSubsystem knowledgeSubsystem,
                                     DynamicOracle oracle) {
-        driveAccoringToOracle.logic.setEnableConstantVelocity(true);
-        driveAccoringToOracle.logic.setConstantVelocity(2.8);
 
-        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(driveAccoringToOracle.alongWith(superstructureAccordingToOracle));
+        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         oi.driverGamepad.getPovIfAvailable(0).onTrue(new InstantCommand(() -> oracle.resetNoteMap()));
         oi.driverGamepad.getPovIfAvailable(270).onTrue(new InstantCommand(() -> oracle.freezeConfigurationForAutonomous()));
 
@@ -388,14 +384,34 @@ public class OperatorCommandMap {
     @Inject
     public void setupAutonomousCommandSelection(OperatorInterface oi,
                                                 Provider<SetAutonomousCommand> setAutonomousCommandProvider,
-                                                SwerveAccordingToOracleCommand driveAccoringToOracle,
-                                                SuperstructureAccordingToOracleCommand superstructureAccordingToOracle) {
-
-        driveAccoringToOracle.logic.setEnableConstantVelocity(true);
-        driveAccoringToOracle.logic.setConstantVelocity(2.8);
-        var oracleAuto = driveAccoringToOracle.alongWith(superstructureAccordingToOracle);
+                                                ListenToOracleCommandGroup listenToOracleCommandGroup,
+                                                SubwooferShotFromMidShootThenShootNearestThree midThenThree,
+                                                SubwooferShotFromTopShootThenShootSpikes topThenThree,
+                                                SubwooferShotFromBotShootThenShootSpikes botThenThree,
+                                                SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter topThenTopSpikeTopCenter,
+                                                SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter) {
         var setOracleAuto = setAutonomousCommandProvider.get();
-        setOracleAuto.setAutoCommand(oracleAuto);
+        setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
+
+        var setMidThenThree = setAutonomousCommandProvider.get();
+        setMidThenThree.setAutoCommand(midThenThree);
+        oi.neoTrellis.getifAvailable(23).onTrue(setMidThenThree);
+
+        var setTopThenThree = setAutonomousCommandProvider.get();
+        setTopThenThree.setAutoCommand(topThenThree);
+        oi.neoTrellis.getifAvailable(15).onTrue(setTopThenThree);
+
+        var setBotThenThree = setAutonomousCommandProvider.get();
+        setBotThenThree.setAutoCommand(botThenThree);
+        oi.neoTrellis.getifAvailable(7).onTrue(setBotThenThree);
+
+        var setTopThenTopSpikeTopCenter = setAutonomousCommandProvider.get();
+        setTopThenTopSpikeTopCenter.setAutoCommand(topThenTopSpikeTopCenter);
+        oi.neoTrellis.getifAvailable(32).onTrue(setTopThenTopSpikeTopCenter);
+
+        var setBotThenBotSpikeBotCenter = setAutonomousCommandProvider.get();
+        setBotThenBotSpikeBotCenter.setAutoCommand(botThenBotSpikeBotCenter);
+        oi.neoTrellis.getifAvailable(24).onTrue(setBotThenBotSpikeBotCenter);
     }
 }
