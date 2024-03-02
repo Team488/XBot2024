@@ -24,13 +24,13 @@ import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandGroup {
+public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
     PoseSubsystem pose;
 
     @Inject
-    public SubwooferShotFromBotShootThenShootSpikes(AutonomousCommandSelector autoSelector,
+    public SubwooferShotFromTopShootThenShootSpikes(AutonomousCommandSelector autoSelector,
                                                     Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                     Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                     Provider<DriveToBottomSubwooferCommand> driveToBottomSubwooferCommandProvider,
@@ -43,7 +43,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferBottomScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferTopScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position

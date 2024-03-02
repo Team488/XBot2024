@@ -354,7 +354,6 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(pointAtSpeakerCommand);
 
 //        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(subwooferFour);
-        driveToListOfPointsCommand.addPoint(PoseSubsystem.SpikeTop);
         oi.operatorGamepadAdvanced.getPovIfAvailable(45).whileTrue(driveToListOfPointsCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(135).whileTrue(subwooferShotFromBotShootThenShootSpikes);
     }

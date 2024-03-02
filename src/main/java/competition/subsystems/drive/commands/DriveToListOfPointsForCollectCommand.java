@@ -19,14 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
+public class DriveToListOfPointsForCollectCommand extends SwerveSimpleTrajectoryCommand {
 
     DynamicOracle oracle;
     DriveSubsystem drive;
     Supplier<List<XbotSwervePoint>> pointsSupplier;
 
     @Inject
-    public DriveToListOfPointsCommand(DriveSubsystem drive, DynamicOracle oracle,
+    public DriveToListOfPointsForCollectCommand(DriveSubsystem drive, DynamicOracle oracle,
                                       PoseSubsystem pose, PropertyFactory pf,
                                       HeadingModule.HeadingModuleFactory headingModuleFactory) {
         super(drive, pose, pf, headingModuleFactory);
@@ -38,7 +38,8 @@ public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
     public void initialize() {
         log.info("Intitializing");
         this.logic.setKeyPointsProvider(pointsSupplier);
-//        this.logic.setAimAtGoalDuringFinalLeg(true);
+        this.logic.setAimAtGoalDuringFinalLeg(true);
+        this.logic.setDriveBackwards(true);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
         // this is commented out because we want our autonomous to be very basic right now
