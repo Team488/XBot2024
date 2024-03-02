@@ -65,10 +65,10 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         var driveToMiddleSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
         driveToMiddleSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeMiddle);
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
-//        this.addCommands(Commands.deadline(collectSequenceMid, driveToMiddleSpikeNote));
+        this.addCommands(Commands.deadline(collectSequenceMid, driveToMiddleSpikeNote));
 
         // this is only used for testing in the sim
-        this.addCommands(Commands.deadline(driveToMiddleSpikeNote, collectSequenceMid));
+//        this.addCommands(Commands.deadline(driveToMiddleSpikeNote, collectSequenceMid));
 
 
         // Drive back to subwoofer
@@ -84,8 +84,8 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         var driveToTopSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
         driveToTopSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeTop);
         var collectSequenceTop = collectSequenceCommandGroupProvider.get();
-//        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
-        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
+        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
+//        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
 
         // Drive back to subwoofer
         var driveBackToBottomSubwooferThird = driveToListOfPointsCommandProvider.get();

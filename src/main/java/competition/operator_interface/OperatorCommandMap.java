@@ -145,29 +145,23 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(teleportRobotToSubwooferTop);
         var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation)).ignoringDisable(true);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(teleportRobotToSubwooferMid);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(teleportRobotToSubwooferMid);
         var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation)).ignoringDisable(true);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(teleportRobotToSubwooferBottom);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(teleportRobotToSubwooferBottom);
 
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
 
-        var noviceMode = new InstantCommand(() -> drive.setNoviceMode(true));
-        var expertMode = new InstantCommand(() -> drive.setNoviceMode(false));
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftStick).onTrue(noviceMode);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightStick).onTrue(expertMode);
-
         // Launch note from collector to the already warmed up shooterwheel
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady.repeatedly());
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady.repeatedly());
 
 
         /*Used only when we want to manually shoot. For example, if the sensors are broken in game and we want to shoot
         anyway.
         */
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
