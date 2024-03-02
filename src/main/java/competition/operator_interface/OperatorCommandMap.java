@@ -154,12 +154,6 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
 
-        var noviceMode = new InstantCommand(() -> drive.setNoviceMode(true));
-        var expertMode = new InstantCommand(() -> drive.setNoviceMode(false));
-
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftStick).onTrue(noviceMode);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightStick).onTrue(expertMode);
-
         // Launch note from collector to the already warmed up shooterwheel
 //        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady.repeatedly());
 
