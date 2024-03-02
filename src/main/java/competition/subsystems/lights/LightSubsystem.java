@@ -77,7 +77,10 @@ public class LightSubsystem extends BaseSubsystem {
 
         } else {
             // Try and match enabled states
-            if (shooter.isMaintainerAtGoal()
+            if (ampSignalOn) {
+                currentState = LightsStateMessage.AmpSignal;
+
+            } else if (shooter.isMaintainerAtGoal()
                     && shooterWheel.lowerWheelsTargetRPM != 0
                     && shooterWheel.upperWheelsTargetRPM != 0) {
                 currentState = LightsStateMessage.ReadyToShoot;
