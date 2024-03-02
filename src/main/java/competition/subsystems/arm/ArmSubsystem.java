@@ -642,6 +642,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return getRecommendedExtension(pose.getDistanceFromSpeaker());
     }
 
+    @Override
+    protected boolean areTwoTargetsEquivalent(Double target1, Double target2) {
+        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1, target2);
+    }
+
     public void periodic() {
         if (contract.isArmReady()) {
             recordArmEncoderValues();
@@ -652,7 +657,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
         aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
-
+        aKitLog.record("BrakeEngaged", getBrakeEngaged());
         aKitLog.record("Target Extension", targetExtension);
         aKitLog.record("TargetAngle", getArmAngleForExtension(targetExtension));
         aKitLog.record("Arm3dState", new Pose3d(

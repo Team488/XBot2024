@@ -1,12 +1,17 @@
 package competition.electrical_contract;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import competition.subsystems.pose.PoseSubsystem;
-import xbot.common.injection.electrical_contract.CANTalonInfo;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
+import xbot.common.subsystems.vision.CameraCapabilities;
+
 import javax.inject.Inject;
+import java.util.EnumSet;
 
 public class CompetitionContract extends ElectricalContract {
     protected final double simulationScalingValue = 256.0 * PoseSubsystem.INCHES_IN_A_METER;
@@ -200,6 +205,66 @@ public class CompetitionContract extends ElectricalContract {
     @Override
     public boolean getArmEncoderIsOnLeftMotor() {
         return true;
+    }
+
+    private static double aprilCameraXDisplacement = 13.48 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraYDisplacement = 13.09 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraZDisplacement = 9.25 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraPitch = Math.toRadians(-30.5);
+    private static double aprilCameraYaw = Math.toRadians(14);
+
+    @Override
+    public CameraInfo[] getCameraInfo() {
+        return new CameraInfo[] {
+            new CameraInfo("Apriltag_FrontLeft_Camera",
+                    "AprilTagFrontLeft",
+                    new Transform3d(new Translation3d(
+                            aprilCameraXDisplacement,
+                            aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, aprilCameraYaw)),
+                    EnumSet.of(CameraCapabilities.APRIL_TAG)),
+            new CameraInfo("Apriltag_FrontRight_Camera",
+                    "AprilTagFrontRight",
+                    new Transform3d(new Translation3d(
+                            aprilCameraXDisplacement,
+                            -aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, -aprilCameraYaw)),
+                    EnumSet.of(CameraCapabilities.APRIL_TAG)),
+            new CameraInfo("Apriltag_RearLeft_Camera",
+                    "AprilTagRearLeft",
+                    new Transform3d(new Translation3d(
+                            -aprilCameraXDisplacement,
+                            aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, Math.toRadians(180) - aprilCameraYaw)),
+                    EnumSet.of(CameraCapabilities.APRIL_TAG)),
+            new CameraInfo("Apriltag_RearRight_Camera",
+                    "AprilTagRearRight",
+                    new Transform3d(new Translation3d(
+                            -aprilCameraXDisplacement,
+                            -aprilCameraYDisplacement,
+                            aprilCameraZDisplacement),
+                            new Rotation3d(0, aprilCameraPitch, Math.toRadians(180) + aprilCameraYaw)),
+                    EnumSet.of(CameraCapabilities.APRIL_TAG)),
+            new CameraInfo("GamePiece_FrontLeft_Camera",
+                    "NoteFrontLeft",
+                    new Transform3d(new Translation3d(), new Rotation3d()),
+                    EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
+            new CameraInfo("GamePiece_FrontRight_Camera",
+                    "NoteFrontRight",
+                    new Transform3d(new Translation3d(), new Rotation3d()),
+                    EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
+            new CameraInfo("GamePiece_RearLeft_Camera",
+                "NoteRearLeft",
+                new Transform3d(new Translation3d(), new Rotation3d()),
+                    EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
+            new CameraInfo("GamePiece_RearRight_Camera",
+                    "NoteRearRight",
+                    new Transform3d(new Translation3d(), new Rotation3d()),
+                    EnumSet.of(CameraCapabilities.GAME_SPECIFIC))
+        };
     }
 }
 

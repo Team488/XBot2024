@@ -14,7 +14,8 @@ public class PrepareEverywhereCommandGroup extends ParallelDeadlineGroup {
                                          ContinuouslyPointArmAtSpeakerCommand continuouslyPointArmAtSpeakerCommand,
                                          FireWhenReadyCommand fireWhenReadyCommand) {
         super(fireWhenReadyCommand);
-        this.addCommands(continuouslyWarmUpForSpeakerCommand, continuouslyPointArmAtSpeakerCommand);
+//        this.addCommands(continuouslyWarmUpForSpeakerCommand, continuouslyPointArmAtSpeakerCommand);
+        this.addCommands(continuouslyPointArmAtSpeakerCommand);
     }
 
 }

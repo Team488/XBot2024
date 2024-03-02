@@ -13,6 +13,7 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
 
     @Inject
     public SetArmAngleCommand(ArmSubsystem armSubsystem) {
+        super(armSubsystem);
         this.armSubsystem = armSubsystem;
     }
 
@@ -32,5 +33,10 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
     @Override
     public void execute() {
         // No-op. Set angle for maintainer to move arms to.
+    }
+
+    @Override
+    public boolean isFinished() {
+        return true;
     }
 }

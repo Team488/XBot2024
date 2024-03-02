@@ -48,7 +48,31 @@
       }
     }
   ],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0.4,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "IntakeThirdNote"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "PrepareEverywhere3"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 1.0,
     "maxAcceleration": 1.0,
@@ -57,7 +81,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -137.83,
+    "rotation": -150.57347488787647,
     "rotateFast": false
   },
   "reversed": false,

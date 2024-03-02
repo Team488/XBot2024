@@ -68,7 +68,7 @@ public class RobotContainer {
         var intakeSecondNote = intakeUntilNoteCollectedCommandProvider.get();
         NamedCommands.registerCommand("IntakeSecondNote", intakeSecondNote);
         var intakeThirdNote = intakeUntilNoteCollectedCommandProvider.get();
-        NamedCommands.registerCommand("IntakeSecondNote", intakeThirdNote);
+        NamedCommands.registerCommand("IntakeThirdNote", intakeThirdNote);
 
         //FIRING EVERYWHERE
         var prepareArm1 = prepareEverywhereCommandGroupProvider.get();

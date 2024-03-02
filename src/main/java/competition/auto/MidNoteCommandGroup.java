@@ -1,8 +1,10 @@
 package competition.auto;
 
+import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
+import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -15,20 +17,17 @@ public class MidNoteCommandGroup extends SequentialCommandGroup {
     public MidNoteCommandGroup(MidNoteCommand midNoteCommand,
                                Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
                                Provider<PrepareEverywhereCommandGroup> prepareEverywhereCommandGroupProvider,
-                               Provider<WarmUpShooterCommand> warmUpShooterCommandProvider) {
+                               Provider<WarmUpShooterCommand> warmUpShooterCommandProvider, PoseSubsystem pose,
+                               Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroupProvider) {
 
-        var warmUpPreload = warmUpShooterCommandProvider.get();
-        warmUpPreload.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        var startInFrontOfSpeaker = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
+        this.addCommands(startInFrontOfSpeaker);
 
-        this.addCommands(warmUpPreload);
-        var firePreload = fireNoteCommandGroupProvider.get();
-        this.addCommands(firePreload);
+        var firePreloadNote = fireFromSubwooferCommandGroupProvider.get();
+        this.addCommands(firePreloadNote);
 
         this.addCommands(midNoteCommand);
 
-        var prepareSpikeNote = prepareEverywhereCommandGroupProvider.get();
-        this.addCommands(prepareSpikeNote);
-        var fireFromSpike = fireNoteCommandGroupProvider.get();
-        this.addCommands(fireFromSpike);
     }
 }
