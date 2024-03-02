@@ -28,13 +28,14 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter extend
     final AutonomousCommandSelector autoSelector;
 
     @Inject
-    public SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter(AutonomousCommandSelector autoSelector,
-                                                                        Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                                                        Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
-                                                                        Provider<DriveToTopSubwooferCommand> DriveToTopSubwooferCommandProvider,
-                                                                        PoseSubsystem pose, DriveSubsystem drive, CollectSequenceCommandGroup collectSequence,
-                                                                        DriveToListOfPointsForCollectCommand driveToBottomCenterNote,
-                                                                        DriveToListOfPointsCommand driveBackToBottomSubwoofer
+    public SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter(
+            AutonomousCommandSelector autoSelector,
+            Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
+            Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
+            Provider<DriveToTopSubwooferCommand> driveToTopSubwooferCommandProvider,
+            PoseSubsystem pose, DriveSubsystem drive, CollectSequenceCommandGroup collectSequence,
+            DriveToListOfPointsForCollectCommand driveToBottomCenterNote,
+            DriveToListOfPointsCommand driveBackToBottomSubwoofer
     ) {
         this.autoSelector = autoSelector;
 
@@ -57,7 +58,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter extend
         this.addCommands(driveToTopSpikeNoteAndCollect);
 
         // Drive back to subwoofer
-        var driveBackToTopSubwooferFirst = DriveToTopSubwooferCommandProvider.get();
+        var driveBackToTopSubwooferFirst = driveToTopSubwooferCommandProvider.get();
         this.addCommands(driveBackToTopSubwooferFirst);
 
         // Fire second note into the speaker
@@ -74,7 +75,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter extend
         this.addCommands(driveToTopCenterNoteAndCollect);
 
         // Drive back to subwoofer
-        var driveBackToTopSubwooferSecond = DriveToTopSubwooferCommandProvider.get();
+        var driveBackToTopSubwooferSecond = driveToTopSubwooferCommandProvider.get();
         this.addCommands(driveBackToTopSubwooferSecond);
 
         // Fire third note into the speaker

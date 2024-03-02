@@ -25,14 +25,15 @@ public class SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter extend
     final AutonomousCommandSelector autoSelector;
 
     @Inject
-    public SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter(AutonomousCommandSelector autoSelector,
-                                                                        Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                                                        Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
-                                                                        Provider<DriveToBottomSubwooferCommand> driveToBottomSubwooferCommandProvider,
-                                                                        PoseSubsystem pose, DriveSubsystem drive, CollectSequenceCommandGroup collectSequence,
-                                                                        DriveToListOfPointsForCollectCommand driveToBottomCenterNote,
-                                                                        DriveToListOfPointsCommand driveBackToBottomSubwoofer
-                                                                        ) {
+    public SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter(
+            AutonomousCommandSelector autoSelector,
+            Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
+            Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
+            Provider<DriveToBottomSubwooferCommand> driveToBottomSubwooferCommandProvider,
+            PoseSubsystem pose, DriveSubsystem drive, CollectSequenceCommandGroup collectSequence,
+            DriveToListOfPointsForCollectCommand driveToBottomCenterNote,
+            DriveToListOfPointsCommand driveBackToBottomSubwoofer
+            ) {
         this.autoSelector = autoSelector;
 
         // Force our location

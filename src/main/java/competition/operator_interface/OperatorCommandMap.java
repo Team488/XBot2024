@@ -343,8 +343,8 @@ public class OperatorCommandMap {
                                           DriveToListOfPointsCommand driveToListOfPointsCommand,
                                           SubwooferShotFromBotShootThenShootSpikes subwooferShotFromBotShootThenShootSpikes,
                                           SubwooferShotFromTopShootThenShootSpikes subwooferShotFromTopShootThenShootSpikes,
-                                          SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter SubShotFromBotBotSpikeBotCenter,
-                                          SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter SubShotFromTopTopSpikeTopCenter) {
+                                          SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter subShotFromBotBotSpikeBotCenter,
+                                          SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter subShotFromTopTopSpikeTopCenter) {
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(fromMidShootCollectShoot);
         oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(distanceFour);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceShotPreTopTwoSpikesTopCenter);
@@ -352,8 +352,8 @@ public class OperatorCommandMap {
 
         oi.operatorGamepadAdvanced.getPovIfAvailable(45).whileTrue(subwooferShotFromBotShootThenShootSpikes);
         oi.operatorGamepadAdvanced.getPovIfAvailable(135).whileTrue(subwooferShotFromTopShootThenShootSpikes);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(225).whileTrue(SubShotFromBotBotSpikeBotCenter);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(315).whileTrue(SubShotFromTopTopSpikeTopCenter);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(225).whileTrue(subShotFromBotBotSpikeBotCenter);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(315).whileTrue(subShotFromTopTopSpikeTopCenter);
 
     }
 
