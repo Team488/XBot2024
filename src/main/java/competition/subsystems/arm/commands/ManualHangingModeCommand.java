@@ -12,7 +12,6 @@ public class ManualHangingModeCommand extends BaseCommand {
     @Inject
     public ManualHangingModeCommand(ArmSubsystem arm) {
         this.arm = arm;
-        this.addRequirements(arm);
     }
 
     @Override
