@@ -5,6 +5,7 @@ import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
+import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,7 +27,8 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
                                                                    Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
                                                                    PoseSubsystem pose, DriveSubsystem drive,
                                                                    Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
-                                                                   Provider<DriveToGivenNoteCommand> driveToGivenNoteCommandProvider) {
+                                                                   Provider<DriveToGivenNoteCommand> driveToGivenNoteCommandProvider,
+                                                                   Provider<DriveToMidSpikeScoringLocationCommand> driveToMidSpikeScoringLocationCommandProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -38,10 +40,10 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireFirstNoteCommand));
 
-        // Drive to top spike note and collect
+        // Drive to middle spike note and collect
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeTop);
+                    drive.setTargetNote(PoseSubsystem.SpikeMiddle);
                 })
         );
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
@@ -57,7 +59,7 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         // Drive to top spike note and collect
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+                    drive.setTargetNote(PoseSubsystem.SpikeTop);
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
@@ -70,14 +72,18 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         var fireThirdNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireThirdNoteCommand, pointAtSpeakerSecond));
 
-        // Drive to bottom spike note and collect
+        // Drive to top center spike note and collect
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeBottom);
+                    drive.setTargetNote(PoseSubsystem.CenterLine1);
                 })
         );
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(driveToBottomSpikeNoteAndCollect);
+
+        // drive back to middle spike location
+        var driveToMiddleSpikeScoringLocation = driveToMidSpikeScoringLocationCommandProvider.get();
+        this.addCommands(driveToMiddleSpikeScoringLocation);
 
         // Point at speaker
         var pointAtSpeakerThird = pointAtSpeakerCommandProvider.get();

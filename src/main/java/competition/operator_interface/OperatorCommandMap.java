@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
 import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.ShootThenMoveOutOfLine;
 import competition.commandgroups.FireNoteCommandGroup;
@@ -340,11 +341,15 @@ public class OperatorCommandMap {
                                           SubwooferShotFromMidShootThenShootNearestThree subwooferFour,
                                           DistanceShotFromMidShootThenShootNearestThree distanceFour,
                                           PointAtSpeakerCommand pointAtSpeakerCommand,
-                                          DriveToMidSpikeScoringLocationCommand driveToMidSpikeScoringLocationCommand) {
+                                          DriveToMidSpikeScoringLocationCommand driveToMidSpikeScoringLocationCommand,
+                                          DistanceShotFromMidShootThenShootMiddleTopThenTopCenter distanceShotPreTopTwoSpikesTopCenter) {
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(driveToMidSpikeScoringLocationCommand);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(subwooferFour);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceFour);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(distanceFour);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceShotPreTopTwoSpikesTopCenter);
         oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(pointAtSpeakerCommand);
+
+//        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(subwooferFour);
+
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
