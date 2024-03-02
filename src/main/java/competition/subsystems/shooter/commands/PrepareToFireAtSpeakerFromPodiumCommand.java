@@ -1,12 +1,11 @@
 package competition.subsystems.shooter.commands;
 
-import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import xbot.common.command.BaseCommand;
 
 import javax.inject.Inject;
-import java.util.function.Supplier;
+
 
 public class PrepareToFireAtSpeakerFromPodiumCommand extends BaseCommand {
     ArmSubsystem armSubsystem;
