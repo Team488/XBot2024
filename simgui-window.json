@@ -10,15 +10,15 @@
       "style": "0",
       "userScale": "2",
       "width": "1600",
-      "xpos": "487",
-      "ypos": "147"
+      "xpos": "1140",
+      "ypos": "142"
     }
   },
   "Window": {
     "###FMS": {
       "Collapsed": "0",
       "Pos": "6,675",
-      "Size": "283,140"
+      "Size": "169,184"
     },
     "###Joysticks": {
       "Collapsed": "0",
@@ -27,7 +27,7 @@
     },
     "###Keyboard 0 Settings": {
       "Collapsed": "0",
-      "Pos": "128,25",
+      "Pos": "127,-5",
       "Size": "300,560"
     },
     "###Keyboard 1 Settings": {

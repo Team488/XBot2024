@@ -27,7 +27,6 @@ import java.util.List;
 public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
-    PoseSubsystem pose;
 
     @Inject
     public SubwooferShotFromBotShootThenShootSpikes(AutonomousCommandSelector autoSelector,
@@ -39,7 +38,6 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
                                                     Provider<CollectSequenceCommandGroup> collectSequenceCommandGroupProvider,
                                                     Provider<DriveToListOfPointsForCollectCommand> driveToListOfPointsForCollectCommandProvider) {
         this.autoSelector = autoSelector;
-        this.pose = pose;
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
@@ -72,6 +70,8 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         driveToMiddleSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeMiddle);
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
 //        this.addCommands(Commands.deadline(collectSequenceMid, driveToMiddleSpikeNote));
+
+        // this is only used for testing in the sim
         this.addCommands(Commands.deadline(driveToMiddleSpikeNote, collectSequenceMid));
 
 
