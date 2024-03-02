@@ -27,7 +27,6 @@ import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Arrays;
 
 @Singleton
 public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable {
@@ -84,6 +83,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     private static double[] experimentalRangesInInches = new double[]{0, 36, 49.5, 63, 80, 111, 136};
     //private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  20.0, 26, 41, 57,  64};
+    // TODO: For now, this was a very ugly and quick way to force the arm low, given that all our scoring is coming
+    // from the subwoofer. This will need to be revisited.
     private static double[] experimentalArmExtensionsInMm = new double[]{0, 0,  0.0, 0, 0, 0,  0};
 
     public enum ArmState {
@@ -648,7 +649,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1, target2, 1);
     }
 
-    public double getMaximumRangeForAnyShot() {
+    /**
+     * Returns our maximum scoring range. Is useful if the arm is "at target"
+     * but we know there's no way it will actually score.
+     * @return the maximum scoring range in meters
+     */
+    public double getMaximumRangeForAnyShotMeters() {
         return experimentalRangesInInches[experimentalRangesInInches.length - 1] / PoseSubsystem.INCHES_IN_A_METER;
     }
 

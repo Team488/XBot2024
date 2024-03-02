@@ -336,7 +336,7 @@ public class DynamicOracle extends BaseSubsystem {
         boolean inUnderstoodRange = false;
         if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
             acceptableRangeBeforeScoringMeters = 0.2;
-            inUnderstoodRange = pose.getDistanceFromSpeaker() < arm.getMaximumRangeForAnyShot();
+            inUnderstoodRange = pose.getDistanceFromSpeaker() < arm.getMaximumRangeForAnyShotMeters();
 
         } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
             // in the future we'll do something more like "get near amp, then drive into the wall for a few moments
