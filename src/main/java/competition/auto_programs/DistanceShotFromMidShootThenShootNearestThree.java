@@ -31,7 +31,7 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
 //        // Fire note into the speaker from starting position

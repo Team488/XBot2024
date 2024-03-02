@@ -3,17 +3,12 @@ package competition.auto_programs;
 import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
-import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.drive.commands.DriveToBottomSubwooferCommand;
-import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsForCollectCommand;
 import competition.subsystems.drive.commands.DriveToTopSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
-import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -44,7 +39,7 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferTopScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position
@@ -107,7 +102,7 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
     public List<XbotSwervePoint> goToTopWhiteLineThenSpikeMiddle() {
         var points = new ArrayList<XbotSwervePoint>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.SpikeTopWhiteLine.getTranslation(),
+                PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeMiddle, 10));
         return points;
@@ -116,7 +111,7 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
     public List<XbotSwervePoint> goToTopWhiteLineThenSpikeBottom() {
         var points = new ArrayList<XbotSwervePoint>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.SpikeTopWhiteLine.getTranslation(),
+                PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeBottom, 10));
         return points;
@@ -125,9 +120,9 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
     public List<XbotSwervePoint> goBackToSubwoofer() {
         var points = new ArrayList<XbotSwervePoint>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.SpikeTopWhiteLine.getTranslation(),
-                PoseSubsystem.SubwooferTopScoringLocation.getRotation(), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SubwooferTopScoringLocation, 10));
+                PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
+                PoseSubsystem.BlueSubwooferTopScoringLocation.getRotation(), 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferTopScoringLocation, 10));
         return points;
     }
 

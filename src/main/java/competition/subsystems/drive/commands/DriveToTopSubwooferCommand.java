@@ -32,7 +32,7 @@ public class DriveToTopSubwooferCommand extends SwerveSimpleTrajectoryCommand {
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.SubwooferTopScoringLocation, 10));
+                PoseSubsystem.BlueSubwooferTopScoringLocation, 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());

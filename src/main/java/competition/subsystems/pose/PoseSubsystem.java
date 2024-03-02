@@ -8,11 +8,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
 import xbot.common.logic.Latch;
@@ -27,8 +24,6 @@ import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -55,6 +50,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final Latch useVisionToUpdateGyroLatch;
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
+    public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0, 5.5, Rotation2d.fromDegrees(180));
     public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
     public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
@@ -74,16 +70,17 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public static double SubwooferWidth = 0.95;
     public static double SubwooferHeight = 1.1;
-    public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.57);
+    public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.55);
 
     public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
 
     // TODO: get good positions
-    public static Pose2d SubwooferTopScoringLocation = new Pose2d(0.77, 6.8, Rotation2d.fromDegrees(-119.69));
-    public static Pose2d SubwooferCentralScoringLocation = new Pose2d(1.41, 5.54, Rotation2d.fromDegrees(180));
-    public static Pose2d SubwooferBottomScoringLocation = new Pose2d(0.77, 4.32, Rotation2d.fromDegrees(119.69));
-    public static Pose2d SpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());
-    public static Pose2d SpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
+    public static Pose2d BlueSubwooferTopScoringLocation = new Pose2d(0.751, 6.702, Rotation2d.fromDegrees(-120));
+    public static Pose2d BlueSubwooferCentralScoringLocation = new Pose2d(1.383, 5.54, Rotation2d.fromDegrees(180));
+    public static Pose2d BlueSubwooferBottomScoringLocation = new Pose2d(0.758, 4.395, Rotation2d.fromDegrees(120));
+    public static Pose2d BlueSpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());
+    public static Pose2d BlueSpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
+
 
 
 
@@ -188,17 +185,16 @@ public class PoseSubsystem extends BasePoseSubsystem {
         );
 
         if (isUsingVisionAssistedPose()) {
-            //improveFusedOdometryUsingPhotonLib(updatedPosition);
+            improveFusedOdometryUsingPhotonLib(updatedPosition);
         }
 
         aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
         aKitLog.record("WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
-        // Pull out the new estimated pose from odometry. Note that for now, we only pull out X and Y
-        // and trust the gyro implicitly. Eventually, we should allow the gyro to be updated via vision
-        // if we have a lot of confidence in the vision data.
+        // For now, we only trust the odometry and the gyro. We will continue to log the vision data,
+        // but the few inches of error we are seeing in the vision system are causing us to miss
         var estimatedPosition = new Pose2d(
-                fusedSwerveOdometry.getEstimatedPosition().getTranslation(),
+                onlyWheelsGyroSwerveOdometry.getEstimatedPosition().getTranslation(),
                 getCurrentHeading());
 
         totalDistanceX = estimatedPosition.getX();
@@ -356,6 +352,16 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
         return distanceFromSpeakerInMeters;
     }
+
+    public double getAngularErrorToSpeakerInDegrees() {
+        return getAngularErrorToTranslation2dInDegrees(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+    }
+
+    public double getAngularErrorToTranslation2dInDegrees(Translation2d targetPosition) {
+        var angleFromChassisToTarget =  WrappedRotation2d.fromDegrees(targetPosition.minus(getCurrentPose2d().getTranslation()).getAngle().getDegrees());
+        return getCurrentHeading().minus(angleFromChassisToTarget).getDegrees();
+    }
+
     @Override
     public void periodic() {
         super.periodic();

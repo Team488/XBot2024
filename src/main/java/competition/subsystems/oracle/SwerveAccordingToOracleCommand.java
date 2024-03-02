@@ -51,6 +51,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         log.info("Initializing");
         oracle.requestReevaluation();
         setNewInstruction();
+        logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
     }
 
     /**
@@ -76,7 +77,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
                 // No note, just driving somewhere where we might find some.
                 logic.setEnableSpecialAimTarget(false);
                 logic.setEnableSpecialAimDuringFinalLeg(false);
-                logic.setAimAtGoalDuringFinalLeg(false);
+                logic.setAimAtGoalDuringFinalLeg(true);
             } else {
                 if (oracle.targetNote.getAvailability() == Availability.AgainstObstacle) {
                     // if a note is against an obstacle, we need to always point at it to avoid rotation thrashing as we

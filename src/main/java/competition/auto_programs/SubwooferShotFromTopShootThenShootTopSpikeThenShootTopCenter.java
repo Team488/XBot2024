@@ -40,7 +40,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter extend
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferTopScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position

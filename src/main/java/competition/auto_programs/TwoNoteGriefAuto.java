@@ -1,11 +1,8 @@
 package competition.auto_programs;
 
-import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.SetArmAngleCommand;
-import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
-import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
@@ -13,17 +10,12 @@ import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
@@ -59,7 +51,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         //starts us in front of the subwoofer, to score
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         //fires the note we are holding at the start

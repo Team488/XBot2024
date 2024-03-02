@@ -67,6 +67,9 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         this.triggerOnlyPowerScaling = pf.createPersistentProperty("TriggerOnlyPowerScaling", 0.75);
         this.triggerOnlyExponent = pf.createPersistentProperty("TriggerOnlyExponent", 2.0);
 
+        // We are already applying deadband to the joysticks; this additional layer of deadband is unnecessary.
+        decider.setDeadband(0.001);
+
         // Set up a latch to trigger whenever we change the rotational mode. In either case,
         // there's some PIDs that will need to be reset, or goals that need updating.
         absoluteOrientationLatch = new Latch(absoluteOrientationMode.get(), EdgeType.Both, edge -> {
@@ -126,19 +129,16 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
 
         // Grab all human sources of rotation intent
         double humanRotateIntentFromTriggers = getRotationIntentFromDriverTriggers();
-        double humanRotateIntentFromStick = getRotationIntentFromDriverJoystick();
 
         // Fuse them together while keeping them in the -1 to 1 range. This is to help avoid doing some kind of
         // conflicting move like trying to rotate in two directions at once.
-        double fusedHumanRotateIntent = MathUtils.constrainDoubleToRobotScale(
-                humanRotateIntentFromStick + humanRotateIntentFromTriggers);
 
         double rotateIntent = 0;
         if (absoluteOrientationMode.get()) {
             rotateIntent = getSuggestedRotateIntentForAbsoluteStickControl(humanRotateIntentFromTriggers);
         } else {
             // If we are in the typical "rotate using joystick to turn" mode, use the Heading Assist module to get the suggested power.
-            rotateIntent = scaleHumanRotationInput(fusedHumanRotateIntent);
+            rotateIntent = scaleHumanRotationInput(humanRotateIntentFromTriggers);
         }
 
         // --------------------------------------------------
@@ -305,7 +305,13 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
                 (a) -> MathUtils.exponentAndRetainSign(a, (int) input_exponent.get()));
 
         // create new vector with the scaled magnitude and angle
-        XYPair translationIntent = XYPair.fromPolar(rawAngle-90, updatedMagnitude);
+        // However, if we are on the red alliance, we need to rotate the intent a lot more.
+        double angleOffset = 90;
+        if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red) {
+            angleOffset = 270;
+        }
+
+        XYPair translationIntent = XYPair.fromPolar(rawAngle-angleOffset, updatedMagnitude);
         return translationIntent;
     }
 

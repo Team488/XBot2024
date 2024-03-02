@@ -5,11 +5,9 @@ import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToBottomSubwooferCommand;
-import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsForCollectCommand;
 import competition.subsystems.pose.PoseSubsystem;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -39,7 +37,7 @@ public class SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter extend
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SubwooferBottomScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position
@@ -81,21 +79,21 @@ public class SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter extend
 
     public List<XbotSwervePoint> goToBottomCenterLine() {
         var points = new ArrayList<XbotSwervePoint>();
-        var translation = new Translation2d(PoseSubsystem.SpikeBottomWhiteLine.getX(), PoseSubsystem.SpikeBottomWhiteLine.getY() - 1);
+        var translation = new Translation2d(PoseSubsystem.BlueSpikeBottomWhiteLine.getX(), PoseSubsystem.BlueSpikeBottomWhiteLine.getY() - 1);
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 translation,
-                PoseSubsystem.SubwooferBottomScoringLocation.getRotation(), 10));
+                PoseSubsystem.BlueSubwooferBottomScoringLocation.getRotation(), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine5, 10));
         return points;
     }
 
     public List<XbotSwervePoint> goBackToSubwoofer() {
         var points = new ArrayList<XbotSwervePoint>();
-        var translation = new Translation2d(PoseSubsystem.SpikeBottomWhiteLine.getX(), PoseSubsystem.SpikeBottomWhiteLine.getY() - 1.1);
+        var translation = new Translation2d(PoseSubsystem.BlueSpikeBottomWhiteLine.getX(), PoseSubsystem.BlueSpikeBottomWhiteLine.getY() - 1.1);
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 translation,
-                PoseSubsystem.SubwooferBottomScoringLocation.getRotation(), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SubwooferBottomScoringLocation, 10));
+                PoseSubsystem.BlueSubwooferBottomScoringLocation.getRotation(), 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferBottomScoringLocation, 10));
         return points;
     }
 }
