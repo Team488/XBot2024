@@ -30,7 +30,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
 
-//am i cookin with this?? 🤫🧏‍♂️🤑
+//am i cookin with this??
 //this auto starts in front of the subwoofer
 //scores the note we are holding, then goes to the center and steals the notes to our side via both the scoocher and the collector
 //at the end, it grabs the last centerline note and scores it at the subwoofer.

@@ -11,23 +11,19 @@ import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import xbot.common.command.BaseSubsystem;
-import xbot.common.properties.Property;
-import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
 @Singleton
 public class LightSubsystem extends BaseSubsystem {
 
     SerialPort serialPort;
-    private int loopCounter;
-    private final int loopMod = 5;
+    private int loopcount;
+    private final int loopMod = 4;
     AutonomousCommandSelector autonomousCommandSelector;
     ShooterWheelSubsystem shooter;
     CollectorSubsystem collector;
 
     public enum LightsStateMessage{
-
-        RobotNoCode("31"), // Likely to be unnecessary
         DisabledWithoutAuto("32"),
         DisabledWithAuto("33"),
         RobotEnabled("34"),
@@ -45,13 +41,12 @@ public class LightSubsystem extends BaseSubsystem {
             return value;
         }
     }
+
     @Inject
-    public LightSubsystem(PropertyFactory pf, AutonomousCommandSelector autonomousCommandSelector,
+    public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
+
         serialPort = new SerialPort(115200, SerialPort.Port.kUSB, 64);
-        // Not sure about these, is pf necessary here?
-        pf.setPrefix(this);
-        pf.setDefaultLevel(Property.PropertyLevel.Debug);
 
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
@@ -61,39 +56,37 @@ public class LightSubsystem extends BaseSubsystem {
     @Override
     public void periodic() {
         // Runs period every 1/10 of a second
-        if (this.loopCounter++ % loopMod != 0) {
+        if (this.loopcount++ % loopMod != 0) {
             return;
         }
 
         boolean dsEnabled = DriverStation.isEnabled();
-        LightsStateMessage currentState = LightsStateMessage.RobotNoCode;
+        LightsStateMessage currentState;
         ShooterWheelTargetSpeeds shooterWheel = shooter.getCurrentValue();
 
-        // Always assumes disabled without auto because we don't have AutonomousOracle >:(
         // Needs to implement vision as well
         // Not sure about if the way we are checking the shooter is correct (and collector)
         if (!dsEnabled) {
-//            if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
-//                if (oracle.isAutoCustomized()) {
-//                    currentState = LightsStateMessage.RobotDisabledWithCustomizedAuto;
-//                } else {
-//                    currentState = LightsStateMessage.RobotDisabledWithBasicAuto;
-//                }
-//            } else {
-//                currentState = LightsStateMessage.RobotDisabledNoAuto;
-//            }
-            currentState = LightsStateMessage.DisabledWithoutAuto;
-
-        } else if (shooter.isMaintainerAtGoal()
-                && shooterWheel.lowerWheelsTargetRPM != 0
-                && shooterWheel.upperWheelsTargetRPM != 0) {
-            currentState = LightsStateMessage.ReadyToShoot;
-
-        } else if (collector.getGamePieceReady()) {
-            currentState = LightsStateMessage.RobotContainsNote;
+            // Check if auto program is set
+            if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
+                currentState = LightsStateMessage.DisabledWithAuto;
+            } else {
+                currentState = LightsStateMessage.DisabledWithoutAuto;
+            }
 
         } else {
-            currentState = LightsStateMessage.RobotEnabled;
+            // Try and match enabled states
+            if (shooter.isMaintainerAtGoal()
+                    && shooterWheel.lowerWheelsTargetRPM != 0
+                    && shooterWheel.upperWheelsTargetRPM != 0) {
+                currentState = LightsStateMessage.ReadyToShoot;
+
+            } else if (collector.getGamePieceReady()) {
+                currentState = LightsStateMessage.RobotContainsNote;
+
+            } else {
+                currentState = LightsStateMessage.RobotEnabled;
+            }
         }
 
         String stateValue = currentState.getValue();
