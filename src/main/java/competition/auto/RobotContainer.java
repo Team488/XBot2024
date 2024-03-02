@@ -47,11 +47,6 @@ public class RobotContainer {
         this.drive = drive;
         this.pose = pose;
 
-        //testing on 2023
-        NamedCommands.registerCommand("IntakeCollectorCommand", intakeCollectorCommand);
-        NamedCommands.registerCommand("StopCollectorCommand", stopCollectorCommand);
-
-
         //TODO: 2024
         //fire while moving to note
         var warmUpPreload = continuouslyWarmUpForSpeakerCommandProvider.get();

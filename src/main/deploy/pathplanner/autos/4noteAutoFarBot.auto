@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3940937283605104,
-      "y": 5.5086133925236975
+      "x": 0.7059762690953959,
+      "y": 4.397837367103306
     },
-    "rotation": 0.0
+    "rotation": 122.27564431457758
   },
   "command": {
     "type": "sequential",
@@ -14,19 +14,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CloseNoteLeft1"
+            "pathName": "FarNote1Bot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "CloseNoteMid2"
+            "pathName": "FarNote2Bot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "CloseNoteRight3"
+            "pathName": "FarNote3Bot"
           }
         }
       ]

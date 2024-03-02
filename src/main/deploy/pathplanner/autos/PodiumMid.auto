@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.359011265031077,
-      "y": 5.496252587946771
+      "x": 0.7059762690953959,
+      "y": 4.397837367103306
     },
-    "rotation": 178.93908830973572
+    "rotation": 119.74488129694224
   },
   "command": {
     "type": "sequential",
@@ -14,19 +14,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FarNoteRight1"
+            "pathName": "PodiumMid1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "FarNoteMid2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "FarNoteLeft3"
+            "pathName": "PodiumMid2"
           }
         }
       ]

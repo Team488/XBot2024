@@ -3,41 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.53,
-        "y": 4.1
+        "x": 0.7059762690953959,
+        "y": 4.397837367103306
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5518150181599504,
-        "y": 2.02308871854211
+        "x": 1.5708842846257125,
+        "y": 4.046010377735041
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.907737752797442,
-        "y": 0.8653674287405564
+        "x": 2.53,
+        "y": 4.1
       },
       "prevControl": {
-        "x": 7.802490362815484,
-        "y": 0.9706148187225148
-      },
-      "nextControl": {
-        "x": 7.9723208316011895,
-        "y": 0.8007843499368092
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.4114851648506717,
-        "y": 3.87076512044762
-      },
-      "prevControl": {
-        "x": 3.9886227238551335,
-        "y": 1.110944672031796
+        "x": 2.3528791170364007,
+        "y": 4.115155588737536
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,8 +30,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1,
-      "rotationDegrees": -16.144338780283558,
+      "waypointRelativePos": 0.9,
+      "rotationDegrees": 180.0,
       "rotateFast": false
     }
   ],
@@ -55,16 +39,40 @@
     {
       "name": "New Constraints Zone",
       "minWaypointRelativePos": 0.7,
-      "maxWaypointRelativePos": 1.05,
+      "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 2.0,
+        "maxVelocity": 0.75,
+        "maxAcceleration": 0.5,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0
       }
     }
   ],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "IntakeFirstNote"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "PrepareEverywhere1"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -73,13 +81,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -37.7468053872746,
+    "rotation": 152.89,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "GoingForMid",
   "previewStartingState": {
-    "rotation": -28.363926393819327,
+    "rotation": 119.0546040990772,
     "velocity": 0
   },
   "useDefaultConstraints": true

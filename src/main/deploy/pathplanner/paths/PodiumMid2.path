@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.9,
-        "y": 5.54
+        "x": 2.53,
+        "y": 4.1
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9,
-        "y": 6.116630498239709
+        "x": 2.5518150181599504,
+        "y": 2.02308871854211
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.9,
-        "y": 6.981410202136645
+        "x": 7.907737752797442,
+        "y": 0.8653674287405564
       },
       "prevControl": {
-        "x": 2.9,
-        "y": 6.68891616099731
+        "x": 7.802490362815484,
+        "y": 0.9706148187225148
+      },
+      "nextControl": {
+        "x": 7.9723208316011895,
+        "y": 0.8007843499368092
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.4114851648506717,
+        "y": 3.87076512044762
+      },
+      "prevControl": {
+        "x": 3.9886227238551335,
+        "y": 1.110944672031796
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,19 +46,19 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.7,
-      "rotationDegrees": -90.0,
-      "rotateFast": true
+      "waypointRelativePos": 1,
+      "rotationDegrees": 163.86,
+      "rotateFast": false
     }
   ],
   "constraintZones": [
     {
       "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0.8,
-      "maxWaypointRelativePos": 1.0,
+      "minWaypointRelativePos": 0.7,
+      "maxWaypointRelativePos": 1.05,
       "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 1.0,
+        "maxVelocity": 2.0,
+        "maxAcceleration": 2.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0
       }
@@ -51,7 +67,7 @@
   "eventMarkers": [
     {
       "name": "New Event Marker",
-      "waypointRelativePos": 0.4,
+      "waypointRelativePos": 0.0,
       "command": {
         "type": "sequential",
         "data": {
@@ -59,13 +75,13 @@
             {
               "type": "named",
               "data": {
-                "name": "IntakeThirdNote"
+                "name": "IntakeSecondNote"
               }
             },
             {
               "type": "named",
               "data": {
-                "name": "PrepareEverywhere3"
+                "name": "PrepareEverywhere2"
               }
             }
           ]
@@ -74,21 +90,21 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 1.0,
-    "maxAcceleration": 1.0,
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -150.57347488787647,
+    "rotation": 142.25,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "ShootingFar",
+  "folder": "GoingForMid",
   "previewStartingState": {
-    "rotation": 180.0,
+    "rotation": 149.24987751378129,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
