@@ -69,6 +69,10 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return intakeState;
     }
     public void intake(){
+        if (shouldCommitToFiring()){
+            return;
+        }
+
         double power = intakePower.get();
         if (getGamePieceInControl()) {
             power *= intakePowerInControlMultiplier.get();
@@ -80,10 +84,22 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
+        if (shouldCommitToFiring()){
+            return;
+        }
+
         setPower(ejectPower.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
+        if (shouldCommitToFiring()){
+            return;
+        }
+        setPower(0);
+        intakeState = IntakeState.STOPPED;
+    }
+
+    public void emergencyStopBypassingJammingPrevention() {
         setPower(0);
         intakeState = IntakeState.STOPPED;
     }
@@ -132,6 +148,15 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     @Override
     public boolean confidentlyHasFiredNote() {
         return getSecondsSinceFiringBegan() > waitTimeAfterFiring.get();
+    }
+
+    /**
+     * If we start firing for any reason, we have to commit to running the intake at full power
+     * for a few moments to avoid jamming the system.
+     * @return Returns true if we have started, but not finished, the firing process.
+     */
+    public boolean shouldCommitToFiring() {
+        return intakeState == IntakeState.FIRING && !confidentlyHasFiredNote();
     }
 
     @Override

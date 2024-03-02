@@ -1,10 +1,12 @@
 package competition.subsystems.oracle;
 
+import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.LowResField;
@@ -25,6 +27,7 @@ public class DynamicOracle extends BaseSubsystem {
 
     public enum ScoringSubGoals {
         IngestNote,
+        IngestNoteAgainstObstacle,
         MoveToScoringRange,
         EarnestlyLaunchNote
     }
@@ -32,6 +35,7 @@ public class DynamicOracle extends BaseSubsystem {
     NoteCollectionInfoSource noteCollectionInfoSource;
     NoteFiringInfoSource noteFiringInfoSource;
     NoteMap noteMap;
+    ScoringLocationMap scoringLocationMap;
     LowResField field;
 
     HighLevelGoal currentHighLevelGoal;
@@ -39,40 +43,40 @@ public class DynamicOracle extends BaseSubsystem {
     boolean firstRunInNewGoal;
 
     PoseSubsystem pose;
+    ArmSubsystem arm;
 
     int instructionNumber = 0;
 
     @Inject
     public DynamicOracle(NoteCollectionInfoSource noteCollectionInfoSource, NoteFiringInfoSource noteFiringInfoSource,
-                         PoseSubsystem pose) {
+                         PoseSubsystem pose, ArmSubsystem arm) {
         this.noteCollectionInfoSource = noteCollectionInfoSource;
         this.noteFiringInfoSource = noteFiringInfoSource;
         this.noteMap = new NoteMap();
+        this.scoringLocationMap = new ScoringLocationMap();
+
+        // TODO: adjust this during autonomous init
+        noteMap.markAllianceNotesAsUnavailable(DriverStation.Alliance.Red);
+        scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
+
         this.pose = pose;
+        this.arm = arm;
 
         this.currentHighLevelGoal = HighLevelGoal.CollectNote;
-        this.currentScoringSubGoal = ScoringSubGoals.IngestNote;
+        this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         firstRunInNewGoal = true;
         setupLowResField();
 
         //reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
         //reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
-
-        Pose2d scoringPositionTop = new Pose2d(1.3, 6.9, Rotation2d.fromDegrees(180));
-        Pose2d scoringPositionMiddle = new Pose2d(1.5, 5.5, Rotation2d.fromDegrees(180));
-        Pose2d scoringPositionBottom = new Pose2d(0.9, 4.3, Rotation2d.fromDegrees(180));
-
-        activeScoringPosition = scoringPositionMiddle;
-        //createRobotObstacle(scoringPositionMiddle.getTranslation(), 1.75, "PartnerA");
-        //createRobotObstacle(scoringPositionBottom.getTranslation(), 1.75, "PartnerB");
     }
 
     Pose2d activeScoringPosition;
 
     int noteCount = 1;
     private void reserveNote(Note.KeyNoteNames specificNote) {
-        Note reserved = noteMap.getNote(specificNote);
-        reserved.setAvailability(Note.NoteAvailability.ReservedByOthersInAuto);
+        Note reserved = noteMap.get(specificNote);
+        reserved.setAvailability(Availability.ReservedByOthersInAuto);
         // create an obstacle at the same location.
         field.addObstacle(new Obstacle(reserved.getLocation().getTranslation().getX(),
                 reserved.getLocation().getTranslation().getY(), 1.25, 1.25, "ReservedNote" + noteCount));
@@ -155,15 +159,29 @@ public class DynamicOracle extends BaseSubsystem {
         reevaluationRequested = true;
     }
 
+    /**
+     * Should be called in AutonomousInit.
+     * Idea: the operator will use the NeoTrellis to lay out a plan, and then either press a button to
+     * lock in that plan (or make updates to the plan), or the plan will automatically lock in at the start of auto.
+     */
+    public void freezeConfigurationForAutonomous() {
+    }
+
     @Override
     public void periodic() {
+
+        // Need to spend a moment figuring out what alliance we are on and what state of the game we are in.
+        // For example,
+
 
         switch (currentHighLevelGoal) {
             case ScoreInAmp: // For now keeping things simple
             case ScoreInSpeaker:
                 if (firstRunInNewGoal || reevaluationRequested) {
                     setTargetNote(null);
-                    setTerminatingPoint(activeScoringPosition);
+                    setTerminatingPoint(scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+                            Availability.Available).getLocation());
+
                     currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
                     setSpecialAimTarget(new Pose2d(0, 5.5, Rotation2d.fromDegrees(0)));
                     // Choose a good speaker scoring location
@@ -184,18 +202,35 @@ public class DynamicOracle extends BaseSubsystem {
             case CollectNote:
                 if (firstRunInNewGoal || reevaluationRequested) {
                     // Choose a good note collection location
-                    Note suggestedNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(),
-                            Note.NoteAvailability.Available,
-                            Note.NoteAvailability.SuggestedByDriver,
-                            Note.NoteAvailability.SuggestedByVision);
+                    Note suggestedNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+                            Availability.Available,
+                            Availability.AgainstObstacle,
+                            Availability.SuggestedByDriver,
+                            Availability.SuggestedByVision);
                     setTargetNote(suggestedNote);
-                    setSpecialAimTarget(null);
+
                     if (suggestedNote == null) {
                         // No notes on the field! Let's suggest going to the source and hope something turns up.
-                        setTerminatingPoint(new Pose2d(14, 1.2, Rotation2d.fromDegrees(0)));
-                    } else {
+                        setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.NearbySource));
+                    }
+                    else if (suggestedNote.getAvailability() == Availability.AgainstObstacle) {
+                        // Take the note's pose2d and extend it in to the super far distance so the robot
+                        // will effectively aim at the "wall" of the obstacle as it approaches the note.
+                        Pose2d superExtendedIntoTheDistancePose = new Pose2d(
+                                new Translation2d(
+                                        suggestedNote.getLocation().getTranslation().getX()
+                                                + Math.cos(suggestedNote.getLocation().getRotation().getRadians()) * 10000000,
+                                        suggestedNote.getLocation().getTranslation().getY()
+                                                + Math.sin(suggestedNote.getLocation().getRotation().getRadians()) * 10000000),
+                                suggestedNote.getLocation().getRotation()
+                                );
+                        setSpecialAimTarget(superExtendedIntoTheDistancePose);
+                        setTerminatingPoint(suggestedNote.getLocation());
+                    }
+                    else {
                         setTerminatingPoint(getTargetNote().getLocation());
                     }
+
                     // Publish a route from current position to that location
                     firstRunInNewGoal = false;
                     reevaluationRequested = false;
@@ -205,9 +240,9 @@ public class DynamicOracle extends BaseSubsystem {
 
                 if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
-                    Note nearestNote = noteMap.getClosestNote(pose.getCurrentPose2d().getTranslation(), 1.0);
+                    Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.0);
                     if (nearestNote != null) {
-                        nearestNote.setAvailability(Note.NoteAvailability.Unavailable);
+                        nearestNote.setAvailability(Availability.Unavailable);
                     }
 
                     // Since we have a note, let's go score it.
@@ -223,8 +258,11 @@ public class DynamicOracle extends BaseSubsystem {
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
-        aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
-        aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+
+        if (getTerminatingPoint() != null) {
+            aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
+            aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+        }
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
 
         // Let's show some major obstacles
@@ -296,15 +334,18 @@ public class DynamicOracle extends BaseSubsystem {
 
     private void determineScoringSubgoal() {
         double acceptableRangeBeforeScoringMeters = 0;
+        boolean inUnderstoodRange = false;
         if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
-            acceptableRangeBeforeScoringMeters = 2;
+            acceptableRangeBeforeScoringMeters = 0.2;
+            inUnderstoodRange = pose.getDistanceFromSpeaker() < arm.getMaximumRangeForAnyShotMeters();
+
         } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
             // in the future we'll do something more like "get near amp, then drive into the wall for a few moments
             // before scoring"
             acceptableRangeBeforeScoringMeters = 0.05;
         }
 
-        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters)) {
+        if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters) && inUnderstoodRange) {
             currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         } else {
             currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;

@@ -58,11 +58,11 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
     public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
-    public static Pose2d CenterLine1 = new Pose2d(8.2956, 7.4584, new Rotation2d());
-    public static Pose2d CenterLine2 = new Pose2d(8.2956, 5.7820, new Rotation2d());
-    public static Pose2d CenterLine3 = new Pose2d(8.2956, 4.1056, new Rotation2d());
-    public static Pose2d CenterLine4 = new Pose2d(8.2956, 2.4292, new Rotation2d());
-    public static Pose2d CenterLine5 = new Pose2d(8.2956, 0.7528, new Rotation2d());
+    public static Pose2d CenterLine1 = new Pose2d(fieldXMidpointInMeters, 7.4584, new Rotation2d());
+    public static Pose2d CenterLine2 = new Pose2d(fieldXMidpointInMeters, 5.7820, new Rotation2d());
+    public static Pose2d CenterLine3 = new Pose2d(fieldXMidpointInMeters, 4.1056, new Rotation2d());
+    public static Pose2d CenterLine4 = new Pose2d(fieldXMidpointInMeters, 2.4292, new Rotation2d());
+    public static Pose2d CenterLine5 = new Pose2d(fieldXMidpointInMeters, 0.7528, new Rotation2d());
 
     public static Pose2d NearbySource = new Pose2d(14, 1.2, Rotation2d.fromDegrees(0));
 
@@ -77,7 +77,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.57);
 
     public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
+
+    // TODO: get good positions
+    public static Pose2d SubwooferTopScoringLocation = new Pose2d(0.77, 6.8, Rotation2d.fromDegrees(180));
     public static Pose2d SubwooferCentralScoringLocation = new Pose2d(1.41, 5.54, Rotation2d.fromDegrees(180));
+    public static Pose2d SubwooferBottomScoringLocation = new Pose2d(0.77, 4.32, Rotation2d.fromDegrees(180));
+
 
     private DoubleProperty matchTime;
 
@@ -180,7 +185,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         );
 
         if (isUsingVisionAssistedPose()) {
-//            improveFusedOdometryUsingPhotonLib(updatedPosition);
+            //improveFusedOdometryUsingPhotonLib(updatedPosition);
         }
 
         aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
