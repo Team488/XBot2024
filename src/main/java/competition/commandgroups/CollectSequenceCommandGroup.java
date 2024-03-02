@@ -23,10 +23,9 @@ public class CollectSequenceCommandGroup extends ParallelDeadlineGroup {
                                        WaitForNoteCollectedCommand waitForNoteCollectedCommand) {
         super(waitForNoteCollectedCommand);
 
-        stopShooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.STOP);
         setArmExtensionCommand.setTargetExtension(armSubsystem.getUsefulArmPositionExtensionInMm(
                 ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND));
 
-        this.addCommands(stopShooter, armToIntakingPosition, intakeCollectorCommand);
+        this.addCommands(armToIntakingPosition, intakeCollectorCommand);
     }
 }

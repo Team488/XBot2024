@@ -8,6 +8,7 @@ import competition.injection.components.DaggerRoboxComponent;
 import competition.injection.components.DaggerSimulationComponent;
 import competition.simulation.Simulator2024;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.Preferences;
@@ -24,6 +25,7 @@ public class Robot extends BaseRobot {
     }
 
     Simulator2024 simulator;
+    DynamicOracle oracle;
 
     @Override
     protected void initializeSystems() {
@@ -33,6 +35,7 @@ public class Robot extends BaseRobot {
         getInjectorComponent().operatorCommandMap();
 
         simulator = getInjectorComponent().simulator2024();
+        oracle = getInjectorComponent().dynamicOracle();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
@@ -72,6 +75,12 @@ public class Robot extends BaseRobot {
 
     public BaseRobotComponent getInjectorComponent() {
         return (BaseRobotComponent)super.getInjectorComponent();
+    }
+
+    @Override
+    public void autonomousInit() {
+        oracle.freezeConfigurationForAutonomous();
+        super.autonomousInit();
     }
 
     @Override

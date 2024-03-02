@@ -8,6 +8,7 @@ import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.arm.commands.RetractArmCommand;
 import competition.subsystems.arm.commands.StopArmCommand;
 import competition.subsystems.collector.CollectorSubsystem;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
@@ -53,4 +54,5 @@ public abstract class BaseRobotComponent extends BaseComponent {
 
     public abstract Simulator2024 simulator2024();
     public abstract ShooterWheelMaintainerCommand shooterWheelMaintainerCommand();
+    public abstract DynamicOracle dynamicOracle();
 }

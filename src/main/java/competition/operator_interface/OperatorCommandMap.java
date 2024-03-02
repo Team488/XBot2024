@@ -6,7 +6,17 @@ import javax.inject.Singleton;
 
 import competition.auto.Far4NoteCommandGroup;
 import competition.auto.PodiumMidCommandGroup;
+
+import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
+import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
+
 import competition.auto_programs.FromMidShootCollectShoot;
+import competition.subsystems.oracle.ListenToOracleCommandGroup;
+import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
+import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
+import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
+import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
+import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
 import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
@@ -22,12 +32,17 @@ import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
+
 import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
 import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
+import competition.subsystems.drive.commands.DriveToAmpCommand;
+import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
+import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationCommand;
+import competition.subsystems.drive.commands.PointAtSpeakerCommand;
+
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
-import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
-import competition.subsystems.oracle.SwerveAccordingToOracleCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
@@ -41,6 +56,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
+import xbot.common.subsystems.autonomous.SetAutonomousCommand;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 import xbot.common.trajectory.LowResField;
@@ -130,20 +146,22 @@ public class OperatorCommandMap {
             AlignToNoteCommand alignToNoteCommand,
             Far4NoteCommandGroup far4NoteCommandGroup,
             PodiumMidCommandGroup podiumMidCommandGroup)
-
+            DriveToCentralSubwooferCommand driveToCentralSubwooferCommand,
+            DriveToAmpCommand driveToAmpCommand
+            )
     {
         double typicalVelocity = 2.5;
         // Manipulate heading and position for easy testing
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
 
         var teleportRobotToSubwooferTop = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)).ignoringDisable(true);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(teleportRobotToSubwooferTop);
         var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation)).ignoringDisable(true);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(teleportRobotToSubwooferMid);
         var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation)).ignoringDisable(true);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(teleportRobotToSubwooferBottom);
 
 
@@ -202,6 +220,9 @@ public class OperatorCommandMap {
         // Bind these to buttons on the neotrellis.
         operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
         operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToAmpCommand);
     }
 
     @Inject
@@ -216,14 +237,11 @@ public class OperatorCommandMap {
 
     @Inject
     public void setupOracleCommands(OperatorInterface oi,
-                                    SwerveAccordingToOracleCommand driveAccoringToOracle,
-                                    SuperstructureAccordingToOracleCommand superstructureAccordingToOracle,
+                                    ListenToOracleCommandGroup listenToOracleCommandGroup,
                                     ManualRobotKnowledgeSubsystem knowledgeSubsystem,
                                     DynamicOracle oracle) {
-        driveAccoringToOracle.logic.setEnableConstantVelocity(true);
-        driveAccoringToOracle.logic.setConstantVelocity(2.8);
 
-        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(driveAccoringToOracle.alongWith(superstructureAccordingToOracle));
+        oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         oi.driverGamepad.getPovIfAvailable(0).onTrue(new InstantCommand(() -> oracle.resetNoteMap()));
         oi.driverGamepad.getPovIfAvailable(270).onTrue(new InstantCommand(() -> oracle.freezeConfigurationForAutonomous()));
 
@@ -330,8 +348,27 @@ public class OperatorCommandMap {
 
     @Inject
     public void setupAutonomousForTesting(OperatorInterface oi,
-                                          FromMidShootCollectShoot fromMidShootCollectShoot) {
+                                          FromMidShootCollectShoot fromMidShootCollectShoot,
+                                          SubwooferShotFromMidShootThenShootNearestThree subwooferFour,
+                                          DistanceShotFromMidShootThenShootNearestThree distanceFour,
+                                          PointAtSpeakerCommand pointAtSpeakerCommand,
+                                          DriveToMidSpikeScoringLocationCommand driveToMidSpikeScoringLocationCommand,
+                                          DistanceShotFromMidShootThenShootMiddleTopThenTopCenter distanceShotPreTopTwoSpikesTopCenter,
+                                          DriveToListOfPointsCommand driveToListOfPointsCommand,
+                                          SubwooferShotFromBotShootThenShootSpikes subwooferShotFromBotShootThenShootSpikes,
+                                          SubwooferShotFromTopShootThenShootSpikes subwooferShotFromTopShootThenShootSpikes,
+                                          SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter subShotFromBotBotSpikeBotCenter,
+                                          SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter subShotFromTopTopSpikeTopCenter) {
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(fromMidShootCollectShoot);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(distanceFour);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceShotPreTopTwoSpikesTopCenter);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(subwooferFour);
+
+        oi.operatorGamepadAdvanced.getPovIfAvailable(45).whileTrue(subwooferShotFromBotShootThenShootSpikes);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(135).whileTrue(subwooferShotFromTopShootThenShootSpikes);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(225).whileTrue(subShotFromBotBotSpikeBotCenter);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(315).whileTrue(subShotFromTopTopSpikeTopCenter);
+
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
@@ -357,4 +394,41 @@ public class OperatorCommandMap {
 
         return command;
     }
+
 }
+
+    @Inject
+    public void setupAutonomousCommandSelection(OperatorInterface oi,
+                                                Provider<SetAutonomousCommand> setAutonomousCommandProvider,
+                                                ListenToOracleCommandGroup listenToOracleCommandGroup,
+                                                SubwooferShotFromMidShootThenShootNearestThree midThenThree,
+                                                SubwooferShotFromTopShootThenShootSpikes topThenThree,
+                                                SubwooferShotFromBotShootThenShootSpikes botThenThree,
+                                                SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter topThenTopSpikeTopCenter,
+                                                SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter) {
+        var setOracleAuto = setAutonomousCommandProvider.get();
+        setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
+        oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
+
+        var setMidThenThree = setAutonomousCommandProvider.get();
+        setMidThenThree.setAutoCommand(midThenThree);
+        oi.neoTrellis.getifAvailable(23).onTrue(setMidThenThree);
+
+        var setTopThenThree = setAutonomousCommandProvider.get();
+        setTopThenThree.setAutoCommand(topThenThree);
+        oi.neoTrellis.getifAvailable(15).onTrue(setTopThenThree);
+
+        var setBotThenThree = setAutonomousCommandProvider.get();
+        setBotThenThree.setAutoCommand(botThenThree);
+        oi.neoTrellis.getifAvailable(7).onTrue(setBotThenThree);
+
+        var setTopThenTopSpikeTopCenter = setAutonomousCommandProvider.get();
+        setTopThenTopSpikeTopCenter.setAutoCommand(topThenTopSpikeTopCenter);
+        oi.neoTrellis.getifAvailable(32).onTrue(setTopThenTopSpikeTopCenter);
+
+        var setBotThenBotSpikeBotCenter = setAutonomousCommandProvider.get();
+        setBotThenBotSpikeBotCenter.setAutoCommand(botThenBotSpikeBotCenter);
+        oi.neoTrellis.getifAvailable(24).onTrue(setBotThenBotSpikeBotCenter);
+    }
+}
+

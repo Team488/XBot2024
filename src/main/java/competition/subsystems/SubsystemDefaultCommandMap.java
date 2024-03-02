@@ -36,7 +36,10 @@ public class SubsystemDefaultCommandMap {
                                   ArmMaintainerCommand command,
                                   SetArmTargetToCurrentPositionCommand setArmTargetToCurrentPositionCommand) {
         armSubsystem.setDefaultCommand(command);
-        armSubsystem.getSetpointLock().setDefaultCommand(setArmTargetToCurrentPositionCommand);
+        // Commenting this out until we have a better way of having the arm target position commands
+        // interrupt themselves. Another option would be for commands that set the arm position explicitly
+        // set the arm target to the current position when interrupted.
+        //armSubsystem.getSetpointLock().setDefaultCommand(setArmTargetToCurrentPositionCommand);
     }
     @Inject
     public void setupScoocherSubsystem(ScoocherSubsystem scoocherSubsystem, StopScoocherCommand command){
