@@ -45,6 +45,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
+import xbot.common.subsystems.autonomous.SetAutonomousCommand;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 import xbot.common.trajectory.LowResField;
@@ -141,13 +142,13 @@ public class OperatorCommandMap {
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
 
         var teleportRobotToSubwooferTop = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)).ignoringDisable(true);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(teleportRobotToSubwooferTop);
         var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation)).ignoringDisable(true);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(teleportRobotToSubwooferMid);
         var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation)).ignoringDisable(true);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(teleportRobotToSubwooferBottom);
 
 
@@ -382,5 +383,19 @@ public class OperatorCommandMap {
         command.logic.setKeyPoints(points);
 
         return command;
+    }
+
+    @Inject
+    public void setupAutonomousCommandSelection(OperatorInterface oi,
+                                                Provider<SetAutonomousCommand> setAutonomousCommandProvider,
+                                                SwerveAccordingToOracleCommand driveAccoringToOracle,
+                                                SuperstructureAccordingToOracleCommand superstructureAccordingToOracle) {
+
+        driveAccoringToOracle.logic.setEnableConstantVelocity(true);
+        driveAccoringToOracle.logic.setConstantVelocity(2.8);
+        var oracleAuto = driveAccoringToOracle.alongWith(superstructureAccordingToOracle);
+        var setOracleAuto = setAutonomousCommandProvider.get();
+        setOracleAuto.setAutoCommand(oracleAuto);
+        oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
     }
 }
