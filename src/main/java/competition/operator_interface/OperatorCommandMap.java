@@ -29,6 +29,7 @@ import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
@@ -122,9 +123,18 @@ public class OperatorCommandMap {
     {
         double typicalVelocity = 2.5;
         // Manipulate heading and position for easy testing
-        resetHeading.setHeadingToApply(180);
-        var teleportRobot = pose.createSetPositionCommand(PoseSubsystem.SubwooferCentralScoringLocation);
-        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(teleportRobot);
+        resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
+
+        var teleportRobotToSubwooferTop = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation));
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(teleportRobotToSubwooferTop);
+        var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue(teleportRobotToSubwooferMid);
+        var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(teleportRobotToSubwooferBottom);
+
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
@@ -172,7 +182,7 @@ public class OperatorCommandMap {
         var goToAmp = createAndConfigureTypicalSwerveCommand(
                 swerveCommandProvider.get(), PoseSubsystem.AmpScoringLocation, typicalVelocity, fieldWithObstacles);
         var goToSpeaker = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.SubwooferCentralScoringLocation, typicalVelocity, fieldWithObstacles);
+                swerveCommandProvider.get(), PoseSubsystem.BlueSubwooferCentralScoringLocation, typicalVelocity, fieldWithObstacles);
 
         // 3) Or pick up a new note from the source!
         var goToNoteSource = createAndConfigureTypicalSwerveCommand(
