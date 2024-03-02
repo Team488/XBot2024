@@ -12,8 +12,8 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
 
     private double targetAngle;
 
-    @Inject
     public SetArmAngleCommand(ArmSubsystem armSubsystem, ArmMaintainerCommand armMaintainerCommand) {
+        super(armSubsystem);
         this.armSubsystem = armSubsystem;
         this.armMaintainerCommand = armMaintainerCommand;
     }
@@ -40,5 +40,4 @@ public class SetArmAngleCommand extends BaseSetpointCommand {
     public boolean isFinished() {
         return true;
     }
-
 }

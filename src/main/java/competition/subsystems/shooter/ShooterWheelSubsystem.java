@@ -97,8 +97,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             upperWheelMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
             lowerWheelMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
 
-            upperWheelMotor.setSmartCurrentLimit(75);
-            lowerWheelMotor.setSmartCurrentLimit(75);
+            upperWheelMotor.setSmartCurrentLimit(60);
+            lowerWheelMotor.setSmartCurrentLimit(60);
         }
 
         var distanceArray =      new double[]{0,    36,   49.5, 63,   80,   111,  136};
@@ -227,6 +227,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
                 upperWheelDistanceToRpmInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker),
                 lowerWheelDistanceToRpmInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker)
         );
+    }
+
+    @Override
+    protected boolean areTwoTargetsEquivalent(ShooterWheelTargetSpeeds target1, ShooterWheelTargetSpeeds target2) {
+        return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.upperWheelsTargetRPM, target2.upperWheelsTargetRPM)
+                && BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.lowerWheelsTargetRPM, target2.lowerWheelsTargetRPM);
     }
 
     public void periodic() {

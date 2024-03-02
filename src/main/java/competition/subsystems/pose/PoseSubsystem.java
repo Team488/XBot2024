@@ -353,6 +353,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         super.periodic();
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
+        aKitLog.record("DistanceToSpeaker", getDistanceFromSpeaker());
     }
 }
 
