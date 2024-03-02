@@ -22,13 +22,13 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
 
     @Inject
     public DistanceShotFromMidShootThenShootMiddleTopThenTopCenter(AutonomousCommandSelector autoSelector,
-                                                                   Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
+                                                                   Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectProvider,
                                                                    Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
                                                                    Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
                                                                    PoseSubsystem pose, DriveSubsystem drive,
                                                                    Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
                                                                    Provider<DriveToGivenNoteCommand> driveToGivenNoteCommandProvider,
-                                                                   Provider<DriveToMidSpikeScoringLocationCommand> driveToMidSpikeScoringLocationCommandProvider) {
+                                                                   Provider<DriveToMidSpikeScoringLocationCommand> driveToMidSpikeScoringLocationProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -46,7 +46,7 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
                     drive.setTargetNote(PoseSubsystem.SpikeMiddle);
                 })
         );
-        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
         this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
 
         // Point at speaker
@@ -62,7 +62,7 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
                     drive.setTargetNote(PoseSubsystem.SpikeTop);
                 })
         );
-        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
         this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
 
         // Point at speaker
@@ -78,11 +78,11 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
                     drive.setTargetNote(PoseSubsystem.CenterLine1);
                 })
         );
-        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
         this.addCommands(driveToBottomSpikeNoteAndCollect);
 
         // drive back to middle spike location
-        var driveToMiddleSpikeScoringLocation = driveToMidSpikeScoringLocationCommandProvider.get();
+        var driveToMiddleSpikeScoringLocation = driveToMidSpikeScoringLocationProvider.get();
         this.addCommands(driveToMiddleSpikeScoringLocation);
 
         // Point at speaker

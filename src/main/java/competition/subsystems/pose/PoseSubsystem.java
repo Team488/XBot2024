@@ -79,9 +79,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
 
     // TODO: get good positions
-    public static Pose2d SubwooferTopScoringLocation = new Pose2d(0.77, 6.8, Rotation2d.fromDegrees(180));
+    public static Pose2d SubwooferTopScoringLocation = new Pose2d(0.77, 6.8, Rotation2d.fromDegrees(-119.69));
     public static Pose2d SubwooferCentralScoringLocation = new Pose2d(1.41, 5.54, Rotation2d.fromDegrees(180));
-    public static Pose2d SubwooferBottomScoringLocation = new Pose2d(0.77, 4.32, Rotation2d.fromDegrees(180));
+    public static Pose2d SubwooferBottomScoringLocation = new Pose2d(0.77, 4.32, Rotation2d.fromDegrees(119.69));
+    public static Pose2d SpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());
+    public static Pose2d SpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
+
 
 
     private DoubleProperty matchTime;

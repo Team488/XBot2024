@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
 import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.ShootThenMoveOutOfLine;
+import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.auto_programs.FromMidShootCollectShoot;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
@@ -29,6 +30,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.oracle.SuperstructureAccordingToOracleCommand;
@@ -49,6 +51,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
+import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.XbotSwervePoint;
@@ -342,14 +345,18 @@ public class OperatorCommandMap {
                                           DistanceShotFromMidShootThenShootNearestThree distanceFour,
                                           PointAtSpeakerCommand pointAtSpeakerCommand,
                                           DriveToMidSpikeScoringLocationCommand driveToMidSpikeScoringLocationCommand,
-                                          DistanceShotFromMidShootThenShootMiddleTopThenTopCenter distanceShotPreTopTwoSpikesTopCenter) {
+                                          DistanceShotFromMidShootThenShootMiddleTopThenTopCenter distanceShotPreTopTwoSpikesTopCenter,
+                                          DriveToListOfPointsCommand driveToListOfPointsCommand,
+                                          SubwooferShotFromBotShootThenShootSpikes subwooferShotFromBotShootThenShootSpikes) {
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(driveToMidSpikeScoringLocationCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(distanceFour);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceShotPreTopTwoSpikesTopCenter);
         oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(pointAtSpeakerCommand);
 
 //        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(subwooferFour);
-
+        driveToListOfPointsCommand.addPoint(PoseSubsystem.SpikeTop);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(45).whileTrue(driveToListOfPointsCommand);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(135).whileTrue(subwooferShotFromBotShootThenShootSpikes);
     }
 
     private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(

@@ -24,8 +24,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                                                           Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                          PoseSubsystem pose, DriveSubsystem drive,
-                                                          Provider<WarmUpShooterCommand> warmUpShooterCommandProvider) {
+                                                          PoseSubsystem pose, DriveSubsystem drive) {
         this.autoSelector = autoSelector;
 
         // Force our location
