@@ -64,10 +64,10 @@ public class SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter extend
 
         // Drive to bottom center note and collect
         driveToBottomCenterNote.addPointsSupplier(this::goToBottomCenterLine);
-//        this.addCommands(Commands.deadline(collectSequence, driveToBottomCenterNote));
+        this.addCommands(Commands.deadline(collectSequence, driveToBottomCenterNote));
 
         // only used for testing in sim
-        this.addCommands(Commands.deadline(driveToBottomCenterNote, collectSequence));
+//        this.addCommands(Commands.deadline(driveToBottomCenterNote, collectSequence));
 
         // Drive back to subwoofer
         driveBackToBottomSubwoofer.addPointsSupplier(this::goBackToSubwoofer);
