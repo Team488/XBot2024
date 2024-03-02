@@ -204,8 +204,24 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
     @Test
     public void testGetArmExtensionForAngle() {
         assertEquals(0.0, arm.getArmExtensionForAngle(54.7), .5);
+        assertEquals(18.8, arm.getArmExtensionForAngle(46.29), .5);
+        assertEquals(67.3, arm.getArmExtensionForAngle(27.56), .5);
         assertEquals(126.7, arm.getArmExtensionForAngle(6.03), .5);
+        assertEquals(165.0, arm.getArmExtensionForAngle(-8.25), .5);
+        assertEquals(191.0, arm.getArmExtensionForAngle(-18.6), .5);
+        assertEquals(216.0, arm.getArmExtensionForAngle(-30), .5);
         assertEquals(240.8, arm.getArmExtensionForAngle(-43.6), .5);
+
+    }
+
+    @Test
+    public void testGetArmExtensionForDistance() {
+        assertEquals(0.0, arm.getArmExtensionForAngle(arm.getArmAngleFromDistance(1.0)), .5);
+        assertEquals(0.0, arm.getArmExtensionForAngle(arm.getArmAngleFromDistance(1.15)), .5);
+        assertEquals(18.9, arm.getArmExtensionForAngle(arm.getArmAngleFromDistance(1.52)), .5);
+        assertEquals(41.7, arm.getArmExtensionForAngle(arm.getArmAngleFromDistance(2.032)), .5);
+        assertEquals(90.35, arm.getArmExtensionForAngle(arm.getArmAngleFromDistance(4.064)), .5);
+
 
     }
 }
