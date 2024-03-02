@@ -2,8 +2,10 @@ package competition.subsystems.arm.commands;
 
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseMaintainerCommand;
 import xbot.common.controls.sensors.XTimer;
+import xbot.common.controls.sensors.XXboxController;
 import xbot.common.logic.CalibrationDecider;
 import xbot.common.logic.HumanVsMachineDecider;
 import xbot.common.logic.TimeStableValidator;
@@ -12,6 +14,8 @@ import xbot.common.math.PIDManager;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
+import java.sql.Driver;
+
 public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     private final ArmSubsystem arm;
     private final PIDManager positionPid;
@@ -20,6 +24,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     boolean startedCalibration = false;
     boolean givenUpOnCalibration = false;
+    boolean isButtonPressed = false;
     double calibrationStartTime = 0;
     double calibrationMaxDuration = 5;
     TimeStableValidator calibrationValidator;
@@ -55,14 +60,6 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         // then we need to kill power.
         if (isMaintainerAtGoal()) {
             arm.setPower(0.0);
-        } else {
-            if (arm.armState == ArmSubsystem.ArmState.HANGING) {
-                double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
-
-                //"multiplier" is used because we need higher power for hanging
-                double multiplier = 1.2;
-                arm.setPower(power * multiplier);
-            }
         }
     }
 
@@ -110,7 +107,12 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                 arm.setTargetValue(arm.getCurrentValue());
             }
         } else {
-            humanControlAction();
+            if (DriverStation.getMatchTime() < 1 && arm.armState == ArmSubsystem.ArmState.HANGING) {
+                arm.setPower(0.0);
+                arm.setBrakeEnabled(true);
+            } else {
+                humanControlAction();
+            }
         }
     }
 

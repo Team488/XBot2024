@@ -41,6 +41,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public double extendPower;
     public double retractPower;
+    public double hangPower;
     public final DoubleProperty powerMax;
     public final DoubleProperty powerMin;
 
@@ -125,6 +126,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         setBrakeEnabled(false);
         extendPower = 0.1;
         retractPower = -0.1;
+        hangPower = 0.5;
       
         powerMax = pf.createPersistentProperty("PowerMax", 0.45);
         powerMin = pf.createPersistentProperty("PowerMin", -0.25);
@@ -396,6 +398,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("RequestedArmPower", power);
         setPowerToLeftAndRightArms(power, power);
         previousPower = power;
+    }
+
+    public void setHangingPower(Double hangPower) {
+        if (previousPower == 0 && hangPower != 0) {
+            initializeRampingPowerTarget();
+        }
+
+        aKitLog.record("RequestedHangingArmPower", hangPower);
+        setPowerToLeftAndRightArms(hangPower, hangPower);
+        previousPower = hangPower;
     }
 
     public void dangerousManualSetPowerToBothArms(double power) {
