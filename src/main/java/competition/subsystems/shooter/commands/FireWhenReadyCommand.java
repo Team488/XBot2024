@@ -32,10 +32,9 @@ public class FireWhenReadyCommand extends BaseCommand {
 
     @Override
     public void execute() {
-
-
-
-        if (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal()) {
+        if (wheel.isMaintainerAtGoal()
+                && arm.isMaintainerAtGoal()
+                && wheel.getTargetValue().upperWheelsTargetRPM > 50) {
             collector.fire();
         }
     }
