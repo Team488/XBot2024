@@ -21,7 +21,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue, PoseSubsystem.BlueSubwooferBottomScoringLocation);
 
         add(ScoringLocation.WellKnownScoringLocations.PodiumBlue, PoseSubsystem.BluePodiumScoringLocation);
-        add(ScoringLocation.WellKnownScoringLocations.AmpZoneFarBlue, PoseSubsystem.BlueTopAmpScoringLocation);
+        add(ScoringLocation.WellKnownScoringLocations.AmpZoneFarBlue, PoseSubsystem.BlueFarAmpScoringLocation);
     }
 
     private void initializeRedScoringLocations() {
@@ -30,7 +30,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomRed, PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSubwooferBottomScoringLocation));
 
         add(ScoringLocation.WellKnownScoringLocations.PodiumRed, PoseSubsystem.convertBluetoRed(PoseSubsystem.BluePodiumScoringLocation));
-        add(ScoringLocation.WellKnownScoringLocations.AmpZoneFarRed, PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueTopAmpScoringLocation));
+        add(ScoringLocation.WellKnownScoringLocations.AmpZoneFarRed, PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueFarAmpScoringLocation));
     }
 
     public void markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance alliance) {

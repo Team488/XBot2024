@@ -72,18 +72,37 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static double SubwooferHeight = 1.1;
     public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.55);
 
-    public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
+    public static Pose2d BlueAmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
 
     // TODO: get good positions
     public static Pose2d BlueSubwooferTopScoringLocation = new Pose2d(0.751, 6.702, Rotation2d.fromDegrees(-120));
     public static Pose2d BlueSubwooferMiddleScoringLocation = new Pose2d(1.383, 5.54, Rotation2d.fromDegrees(180));
     public static Pose2d BlueSubwooferBottomScoringLocation = new Pose2d(0.758, 4.395, Rotation2d.fromDegrees(120));
     public static Pose2d BluePodiumScoringLocation = new Pose2d(2.770, 4.389, Rotation2d.fromDegrees(159));
-    public static Pose2d BlueTopAmpScoringLocation = new Pose2d(3.073, 7.597, Rotation2d.fromDegrees(-146.6));
+    public static Pose2d BlueFarAmpScoringLocation = new Pose2d(3.073, 7.597, Rotation2d.fromDegrees(-146.6));
     public static Pose2d BlueSpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());
     public static Pose2d BlueSpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
 
     public static Rotation2d FaceCollectorToBlueSource = Rotation2d.fromDegrees(120);
+
+    // More navigation points
+    public static Pose2d podiumWaypoint = new Pose2d(2.5, 4.25, new Rotation2d());
+    public static Pose2d BlueTopWingUpper = new Pose2d(5.861, 7.374, new Rotation2d());
+    public static Pose2d BlueTopWingLower = new Pose2d(5.861, 6.413, new Rotation2d());
+    public static Pose2d BlueBottomWing = new Pose2d(5.861, 1.505, new Rotation2d());
+
+    // Navigation in/under/around the stage
+    public static Pose2d BlueStageNW = new Pose2d(4.347, 4.912, new Rotation2d());
+    public static Pose2d BlueStageE = new Pose2d(5.886, 4.132, new Rotation2d());
+    public static Pose2d BlueStageSW = new Pose2d(4.420, 3.239, new Rotation2d());
+    public static Pose2d BlueStageCenter = new Pose2d(4.892, 4.081, new Rotation2d());
+    public static Pose2d BlueSouthOfStage = new Pose2d(4.572, 2.069, new Rotation2d());
+
+    // Slots for the source
+    public static Pose2d BlueSourceNearest = new Pose2d(14.883, 0.684, Rotation2d.fromDegrees(120));
+    public static Pose2d BlueSourceMiddle = new Pose2d(15.437, 0.967, Rotation2d.fromDegrees(120));
+    public static Pose2d BlueSourceFarthest = new Pose2d(15.918, 1.276, Rotation2d.fromDegrees(120));
+
 
 
     private DoubleProperty matchTime;

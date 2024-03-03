@@ -23,4 +23,20 @@ public class Pose2dNode {
     public Translation2d getTranslation() {
         return pose.getTranslation();
     }
+
+    public Pose2d getPose() {
+        return pose;
+    }
+
+    public void setAllWeightsToMax() {
+        for (Edge edge : edges) {
+            edge.setWeightToMax();
+        }
+    }
+
+    public void restoreWeights() {
+        for (Edge edge : edges) {
+            edge.calculateProperWeight();
+        }
+    }
 }

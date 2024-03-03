@@ -16,7 +16,7 @@ class Graph {
         Edge edge = new Edge(source, destination);
         source.addEdge(edge);
         // If the graph is undirected, also connect destination to source
-        // destination.addEdge(new Edge(destination, source));
+         destination.addEdge(new Edge(destination, source));
     }
 
     public Pose2dNode getNode(String name) {
