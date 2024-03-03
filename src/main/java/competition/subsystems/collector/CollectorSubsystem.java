@@ -52,10 +52,10 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     boolean upperTripwireHit = false;
     double lastNoteDetectionTime = -Double.MAX_VALUE;
 
-    double aggressivelyStopPower = -0.4;
-    double aggressivelyStopDuration = 0.1;
-    double carefulAdvancePower = 0.15;
-    double carefulAdvanceTimeout = 0.5;
+    final DoubleProperty aggressiveStopPower;
+    final DoubleProperty aggressiveStopDuration;
+    final DoubleProperty carefulAdvancePower;
+    final DoubleProperty carefulAdvanceTimeout;
     double carefulAdvanceBeginTime = -Double.MAX_VALUE;
 
 
@@ -80,7 +80,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
         intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
-        this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
+        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
+        aggressiveStopPower = pf.createPersistentProperty("AggressiveStopPower", -0.4);
+        aggressiveStopDuration = pf.createPersistentProperty("AggressiveStopDuration", 0.1);
+        carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
+        carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
+
         this.intakeState = IntakeState.STOPPED;
 
         noteInControlValidator = new TimeStableValidator(() -> 0.1); // Checks for having the note over 0.1 seconds
@@ -132,11 +137,11 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         // before it enters the shooter.
         if (collectionSubstate == CollectionSubstate.AggresivelyPauseCollection) {
             // If we've already paused collection for a while, time to start advancing the note.
-            if (XTimer.getFPGATimestamp() - lastNoteDetectionTime > aggressivelyStopDuration) {
+            if (XTimer.getFPGATimestamp() - lastNoteDetectionTime > aggressiveStopDuration.get()) {
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
                 carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
             } else {
-                suggestedPower = aggressivelyStopPower;
+                suggestedPower = aggressiveStopPower.get();
             }
         }
 
@@ -154,15 +159,15 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                 collectionSubstate = CollectionSubstate.Complete;
             } else {
                 if (lowerTripwireHit) {
-                    suggestedPower = carefulAdvancePower;
+                    suggestedPower = carefulAdvancePower.get();
                 }
                 if (upperTripwireHit) {
                     // If the note hit the upper sensor, and we can't see it now,
                     // try driving backwards until we do
-                    suggestedPower = -carefulAdvancePower;
+                    suggestedPower = -carefulAdvancePower.get();
                 }
 
-                if (XTimer.getFPGATimestamp() - carefulAdvanceBeginTime > carefulAdvanceTimeout) {
+                if (XTimer.getFPGATimestamp() - carefulAdvanceBeginTime > carefulAdvanceTimeout.get()) {
                     // If we've been trying to advance the note for a while, and it's not working,
                     // we need to stop and re-evaluate.
                     collectionSubstate = CollectionSubstate.EvaluationNeeded;
