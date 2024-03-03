@@ -111,7 +111,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         FIRING_FROM_SUBWOOFER,
         FIRING_FROM_AMP,
         SCOOCH_NOTE,
-        PROTECTED_AMP_SHOT,
+        PROTECTED_FAR_AMP_SHOT,
         PROTECTED_PODIUM_SHOT
     }
 
@@ -491,7 +491,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case COLLECTING_FROM_GROUND -> angle = 0;
             case FIRING_FROM_SUBWOOFER -> angle = 30;
             case FIRING_FROM_AMP -> angle = 80;
-            case SCOOCH_NOTE -> angle = 60; // placeholder value, safe angle to let note through while still low
+            case SCOOCH_NOTE -> angle = 60;// placeholder value, safe angle to let note through while still low
             default -> angle = 40;
         }
         return angle;
@@ -511,7 +511,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case SCOOCH_NOTE:
                 extension = 30;
                 break;
-            case PROTECTED_AMP_SHOT:
+            case PROTECTED_FAR_AMP_SHOT:
                 extension = 71.1;
                 break;
             case PROTECTED_PODIUM_SHOT:

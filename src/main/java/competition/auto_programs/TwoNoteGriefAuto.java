@@ -56,7 +56,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         //fires the note we are holding at the start
         var warmUpForFirstSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         var fireFirstShot = fireWhenReadyCommandProvider.get();
 
         this.addCommands(Commands.deadline(fireFirstShot,
@@ -94,7 +94,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         setUpLogic(driveToSubwoofer,KeyPointsForSwerve.BACKTOSUBWOOFER);
 
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         var fireSecondShot = fireWhenReadyCommandProvider.get();
 
         this.addCommands(Commands.deadline(driveToSubwoofer, warmUpForSecondSubwooferShot));

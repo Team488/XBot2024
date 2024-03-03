@@ -20,10 +20,8 @@ import javax.inject.Singleton;
 public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTargetSpeeds> implements DataFrameRefreshable {
     public enum TargetRPM {
         STOP,
-        SUBWOOFER,
-        NEARSHOT,
-        DISTANCESHOT,
-        AMP_SHOT
+        TYPICAL,
+        INTO_AMP
     }
 
     //need pose for real time calculations
@@ -37,14 +35,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     // IMPORTANT PROPERTIES
     private ShooterWheelTargetSpeeds targetRpms = new ShooterWheelTargetSpeeds(0.0);
     private double trimRpm;
-    private final DoubleProperty safeRpm;
-    private final DoubleProperty nearShotRpm;
-    private final DoubleProperty distanceShotRpm;
-    private final DoubleProperty ampShotRpm;
+    private final DoubleProperty intoAmpShotRpm;
     private final DoubleProperty shortRangeErrorToleranceRpm;
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
     private final DoubleProperty acceptableToleranceRPM;
+    private final DoubleProperty typicalShotRpm;
 
     //DEFINING MOTORS
     public XCANSparkMax upperWheelMotor;
@@ -59,11 +55,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         this.contract = contract;
         pf.setPrefix(this);
 
-        safeRpm = pf.createPersistentProperty("SafeRpm", 500);
-        nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
-        distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
-        // placeholder value for rpm when preparing to score in amp
-        ampShotRpm = pf.createPersistentProperty("AmpShotRpm", 2000);
+        typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
+        intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 2000);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();
@@ -118,10 +111,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     public void setTargetRPM(TargetRPM target) {
         switch (target) {
             case STOP -> setTargetValue(0.0);
-            case SUBWOOFER -> setTargetValue(safeRpm.get());
-            case NEARSHOT -> setTargetValue(nearShotRpm.get());
-            case DISTANCESHOT -> setTargetValue(distanceShotRpm.get());
-            case AMP_SHOT -> setTargetValue(ampShotRpm.get());
+            case TYPICAL -> setTargetValue(typicalShotRpm.get());
+            case INTO_AMP -> setTargetValue(intoAmpShotRpm.get());
             default -> setTargetValue(0.0);
         }
     }
