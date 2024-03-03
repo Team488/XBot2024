@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArraySubscriber;
+import edu.wpi.first.networktables.StringArrayTopic;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -48,7 +49,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final ArrayList<SimpleCamera> allCameras;
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
-    StringArraySubscriber detectionSubscriber;
+    Pose3d[] detectedNotes;
+    StringArraySubscriber[] detectionSubscribers;
 
 
     @Inject
@@ -62,8 +64,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
-        var detectionTopic = trackingNt.getStringArrayTopic("DetectionCameraphotonvisionfrontleft/Target Coordinate Pairs");
-        detectionSubscriber = detectionTopic.subscribe(new String[] {});
+        var detectionTopicNames = new String[]{
+                "DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
+                "DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
+                "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+        };
+        var detectionTopics = Arrays.stream(detectionTopicNames)
+                .map(trackingNt::getStringArrayTopic)
+                .toArray(StringArrayTopic[]::new);
+        detectionSubscribers = Arrays.stream(detectionTopics)
+                .map(topic -> topic.subscribe(new String[] {}))
+                .toArray(StringArraySubscriber[]::new);
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
         robotDisplacementThresholdToRejectVisionUpdate = pf.createPersistentProperty("Robot Displacement Threshold",3);
@@ -219,6 +231,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return camera.getCamera().getLatestResult().getTargets().get(0).getArea();
     }
 
+    public Pose3d[] getDetectedNotes() {
+        return detectedNotes;
+    }
+
     @Override
     public void periodic() {
         loopCounter++;
@@ -246,18 +262,22 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
-        var detections = detectionSubscriber.get();
-        aKitLog.record("DetectedNotes",
-                Arrays.stream(detections)
-                        .map(detection -> {
-                            var parts = detection.split(",");
-                            return new Pose3d(Double.parseDouble(parts[0]),
-                                    Double.parseDouble(parts[1]),
-                                    Double.parseDouble(parts[2]),
-                                    new Rotation3d()
-                            );
-                        })
-                        .toArray(Pose3d[]::new));
+        var detections = Arrays.stream(detectionSubscribers)
+                .map(StringArraySubscriber::get)
+                .flatMap(Arrays::stream)
+                .toArray(String[]::new);
+        detectedNotes = Arrays.stream(detections)
+                .map(detection -> {
+                    var parts = detection.split(",");
+                    return new Pose3d(Double.parseDouble(parts[0]),
+                            Double.parseDouble(parts[1]),
+                            Double.parseDouble(parts[2]),
+                            new Rotation3d()
+                    );
+                })
+                .toArray(Pose3d[]::new);
+
+        aKitLog.record("DetectedNotes", detectedNotes);
     }
 
     @Override
