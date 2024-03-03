@@ -1,5 +1,7 @@
 package competition.navigation;
 
+import edu.wpi.first.math.geometry.Pose2d;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,5 +23,18 @@ class Graph {
 
     public Pose2dNode getNode(String name) {
         return nodes.get(name);
+    }
+
+    public Pose2dNode getClosestNode(Pose2d pose) {
+        Pose2dNode closestNode = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (Pose2dNode node : nodes.values()) {
+            double distance = node.getPose().getTranslation().getDistance(pose.getTranslation());
+            if (distance < closestDistance) {
+                closestNode = node;
+                closestDistance = distance;
+            }
+        }
+        return closestNode;
     }
 }

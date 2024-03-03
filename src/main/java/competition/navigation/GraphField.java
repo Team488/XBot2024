@@ -1,16 +1,18 @@
 package competition.navigation;
 
+import competition.subsystems.oracle.ScoringLocation;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import xbot.common.trajectory.ProvidesWaypoints;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GraphField {
+public class GraphField implements ProvidesWaypoints {
 
     private Graph graph;
     private List<Pose2dNode> nodesToAddToGraph;
@@ -26,9 +28,12 @@ public class GraphField {
 
         // Places you may want to go
         // Subwoofer
-        var subwooferTop = createBlueAndRedVariants("SubwooferTop", PoseSubsystem.BlueSubwooferTopScoringLocation);
-        var subwooferMiddle = createBlueAndRedVariants("SubwooferMiddle", PoseSubsystem.BlueSubwooferMiddleScoringLocation);
-        var subwooferBottom = createBlueAndRedVariants("SubwooferBottom", PoseSubsystem.BlueSubwooferBottomScoringLocation);
+        var subwooferTop = createBlueAndRedVariants(
+                ScoringLocation.WellKnownScoringLocations.SubwooferTopBlue.toString(), PoseSubsystem.BlueSubwooferTopScoringLocation);
+        var subwooferMiddle = createBlueAndRedVariants(
+                ScoringLocation.WellKnownScoringLocations.SubwooferMiddleBlue.toString(), PoseSubsystem.BlueSubwooferMiddleScoringLocation);
+        var subwooferBottom = createBlueAndRedVariants(
+                ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue.toString(), PoseSubsystem.BlueSubwooferBottomScoringLocation);
 
         // Amp
         var amp = createBlueAndRedVariants("Amp", PoseSubsystem.BlueAmpScoringLocation);
@@ -174,6 +179,7 @@ public class GraphField {
     }
 
     private Pair<Pose2dNode, Pose2dNode> createBlueAndRedVariants(String baseName, Pose2d bluePose) {
+        baseName = baseName.replace("Red", "").replace("Blue", "");
         Pose2dNode blue = new Pose2dNode("Blue" + baseName, bluePose);
         Pose2dNode red = new Pose2dNode("Red" + baseName, PoseSubsystem.convertBluetoRed(bluePose));
         nodesToAddToGraph.add(blue);
@@ -206,13 +212,30 @@ public class GraphField {
 
     public List<XbotSwervePoint> getShortestPathInSwervePoints(String startName, String endName) {
         List<Pose2dNode> path = getShortestPath(startName, endName);
-        Rotation2d finalHeading = path.get(path.size() - 1).getPose().getRotation();
         List<XbotSwervePoint> swervePoints = new ArrayList<>();
+        for (Pose2dNode node : path) {
+            swervePoints.add(new XbotSwervePoint(node.pose, 10));
+        }
+
+        return swervePoints;
+    }
+
+    @Override
+    public List<XbotSwervePoint> generatePath(Pose2d start, Pose2d end) {
+        // Iterate through all nodes and find the one closest to the start, and the one closest to the end.
+        var closestToStart = graph.getClosestNode(start);
+        var closestToEnd = graph.getClosestNode(end);
+
+        List<XbotSwervePoint> swervePoints = new ArrayList<>();
+        //swervePoints.add(new XbotSwervePoint(start, 10));
+        swervePoints.addAll(getShortestPathInSwervePoints(closestToStart.name, closestToEnd.name));
+        swervePoints.add(new XbotSwervePoint(end, 10));
 
         // Force all intermediate points to use the final rotation
-        for (Pose2dNode node : path) {
-            swervePoints.add(new XbotSwervePoint(new Pose2d(node.getTranslation(), finalHeading), 10));
+        for (XbotSwervePoint point : swervePoints) {
+            point.keyPose = new Pose2d(point.keyPose.getTranslation(), end.getRotation());
         }
+
         return swervePoints;
     }
 }

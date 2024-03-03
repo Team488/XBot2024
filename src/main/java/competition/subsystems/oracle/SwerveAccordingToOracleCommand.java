@@ -49,7 +49,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
-        logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        logic.setWaypointRouter(oracle.getFieldWithObstacles());
         oracle.requestReevaluation();
         setNewInstruction();
     }
@@ -65,6 +65,8 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         // This is useful for passing obstacles, as the robot will present a narrower profile and won't have its
         // corners collide with things.
         var goalPosition = oracle.getTerminatingPoint();
+
+        logic.setPrioritizeRotationIfCloseToGoal(true);
 
         if (oracle.getHighLevelGoal() == DynamicOracle.HighLevelGoal.CollectNote) {
             // Since we're going to grab a note, point the front end of our robot towards the goal,

@@ -106,7 +106,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         swerve.logic.setEnableConstantVelocity(true);
         swerve.logic.setConstantVelocity(4.5);
         swerve.logic.setKeyPoints(getPoints(point));
-        swerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        swerve.logic.setWaypointRouter(oracle.getFieldWithObstacles());
     }
     //a key to make this function return different points based on what you need
     private ArrayList<XbotSwervePoint> getPoints(KeyPointsForSwerve point){

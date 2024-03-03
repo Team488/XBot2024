@@ -1,5 +1,6 @@
 package competition.subsystems.oracle;
 
+import competition.navigation.GraphField;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
@@ -14,9 +15,9 @@ import xbot.common.controls.sensors.buttons.AdvancedTrigger;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.Obstacle;
+import xbot.common.trajectory.ProvidesWaypoints;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,7 +45,7 @@ public class DynamicOracle extends BaseSubsystem {
     NoteFiringInfoSource noteFiringInfoSource;
     NoteMap noteMap;
     ScoringLocationMap scoringLocationMap;
-    LowResField field;
+    GraphField field;
 
     HighLevelGoal currentHighLevelGoal;
     ScoringSubGoals currentScoringSubGoal;
@@ -117,104 +118,7 @@ public class DynamicOracle extends BaseSubsystem {
         Note reserved = noteMap.get(specificNote);
         reserved.setAvailability(Availability.ReservedByOthersInAuto);
         // create an obstacle at the same location.
-        field.addObstacle(new Obstacle(reserved.getLocation().getTranslation().getX(),
-                reserved.getLocation().getTranslation().getY(), 1.25, 1.25, "ReservedNote" + noteCount));
         noteCount++;
-    }
-
-    private void createNoteLinkingObstacle(Note.KeyNoteNames firstNote, Note.KeyNoteNames secondNote) {
-        var first = noteMap.get(firstNote);
-        var second = noteMap.get(secondNote);
-        var obstacle = new Obstacle(
-                (first.getLocation().getTranslation().getX() + second.getLocation().getTranslation().getX()) / 2,
-                (first.getLocation().getTranslation().getY() + second.getLocation().getTranslation().getY()) / 2,
-                1,
-                1,
-                "Linker"
-                );
-        field.addObstacle(obstacle);
-    }
-
-    private void createRobotObstacle(Translation2d location, double sideLength, String name) {
-        field.addObstacle(new Obstacle(location.getX(), location.getY(), sideLength, sideLength, name));
-    }
-
-    private Obstacle createObstacleWithRobotWidth(Translation2d location, double width, double height,
-                                                  double robotWidth, String name, LowResField field) {
-        return createObstacleWithRobotWidth(location.getX(), location.getY(), width, height, robotWidth, name, field);
-    }
-
-
-
-    private Obstacle createObstacleWithRobotWidth(double x, double y, double width, double height,
-                                              double robotWidth, String name, LowResField field) {
-        var obstacle = new Obstacle(x, y, width+robotWidth, height+robotWidth, name);
-        field.addObstacle(obstacle);
-        return obstacle;
-    }
-
-    /**
-     * Helper function to create Obstacles for each of the permanent, non-changing aspects of the field, like
-     * the Subwoofer and Stage columns.
-     */
-    private void setupPermanentObstacles() {
-        // Blue Stage
-        createObstacleWithRobotWidth(PoseSubsystem.BlueLeftStageColumn,
-                PoseSubsystem.closeColumnWidth, PoseSubsystem.closeColumnWidth, robotWidth, "BlueLeftStageColumn", field);
-        createObstacleWithRobotWidth(PoseSubsystem.BlueTopStageColumn,
-                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, robotWidth,"BlueTopStageColumn", field);
-        createObstacleWithRobotWidth(PoseSubsystem.BlueBottomStageColumn,
-                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, robotWidth, "BlueBottomStageColumn", field);
-
-
-        // Red Stage
-        createObstacleWithRobotWidth(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueLeftStageColumn),
-                PoseSubsystem.closeColumnWidth, PoseSubsystem.closeColumnWidth, robotWidth, "RedLeftStageColumn", field);
-        createObstacleWithRobotWidth(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueTopStageColumn),
-                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, robotWidth, "RedTopStageColumn", field);
-        createObstacleWithRobotWidth(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueBottomStageColumn),
-                PoseSubsystem.farColumnWidths, PoseSubsystem.farColumnWidths, robotWidth, "RedBottomStageColumn", field);
-
-        // Subwoofers
-        setupSubwooferTriad(PoseSubsystem.BlueSubwoofer, DriverStation.Alliance.Blue);
-        setupSubwooferTriad(BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueSubwoofer), DriverStation.Alliance.Red);
-    }
-
-    /**
-     * Due to the way obstacles can be combined after the fact, it's easier to create the subwoofer as 3 separate
-     * obstacles, one for each of the scoring zones.
-     * @param subwooferCoreCoordinate The center of the overall subwoofer
-     * @param yOffset How many meters to adjust this particular component
-     * @param height The height in meterse of this particualr component
-     * @param alliance Is this the Blue or Red subwoofer?
-     * @param name A unique name for this component, like SubwooferTop.
-     */
-    private void setupSubwooferComponent(Translation2d subwooferCoreCoordinate, double yOffset, double height, DriverStation.Alliance alliance, String name) {
-        var speaker = new Obstacle(
-                subwooferCoreCoordinate.getX(),
-                subwooferCoreCoordinate.getY()+yOffset,
-                PoseSubsystem.SubwooferWidth + robotWidth,
-                height,
-                alliance+name);
-        if (alliance== DriverStation.Alliance.Blue) {
-            speaker.defaultBottomLeft = false;
-            speaker.defaultTopLeft = false;
-        } else {
-            speaker.defaultBottomRight = false;
-            speaker.defaultTopRight = false;
-        }
-        field.addObstacle(speaker);
-    }
-
-    /**
-     * Create the 3 subwoofer components, top/middle/bottom.
-     * @param subwooferCoreCoordinate The center of the overall subwoofer
-     * @param alliance Is this the Blue or Red subwoofer?
-     */
-    private void setupSubwooferTriad(Translation2d subwooferCoreCoordinate, DriverStation.Alliance alliance) {
-        setupSubwooferComponent(subwooferCoreCoordinate, scoringZoneOffset, PoseSubsystem.SubwooferHeight / 6, alliance, "SubwooferTop");
-        setupSubwooferComponent(subwooferCoreCoordinate, 0, 1.25, alliance, "SubwooferMid");
-        setupSubwooferComponent(subwooferCoreCoordinate, -scoringZoneOffset, PoseSubsystem.SubwooferHeight / 6, alliance, "SubwooferBottom");
     }
 
     /**
@@ -225,80 +129,13 @@ public class DynamicOracle extends BaseSubsystem {
         // Mark it as reserved in the map, so we don't try to navigate there
         scoringLocationMap.get(location).setAvailability(Availability.ReservedByOthersInAuto);
         // create the relevant obstacle so we path around any robot chilling there
-
-        double xCoordinate = 0;
-        double yCoordinate = 0;
-        DriverStation.Alliance alliance = DriverStation.Alliance.Blue;
-        String locationName = "";
-
-
-        switch (location) {
-            case SubwooferTopBlue -> {
-                xCoordinate = PoseSubsystem.BlueSubwoofer.getX();
-                yCoordinate = PoseSubsystem.SpikeTop.getY();
-                locationName = "SubwooferTopScoring";
-            }
-            case SubwooferMiddleBlue -> {
-                xCoordinate = PoseSubsystem.BlueSubwoofer.getX()+1;
-                yCoordinate = PoseSubsystem.SpikeMiddle.getY();
-                locationName = "SubwooferMiddleScoring";
-            }
-            case SubwooferBottomBlue -> {
-                xCoordinate = PoseSubsystem.BlueSubwoofer.getX();
-                yCoordinate = PoseSubsystem.SpikeBottom.getY();
-                locationName = "SubwooferBottomScoring";
-            }
-            case SubwooferTopRed -> {
-                xCoordinate = BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueSubwoofer).getX();
-                yCoordinate = PoseSubsystem.SpikeTop.getY();
-                alliance = DriverStation.Alliance.Red;
-                locationName = "SubwooferTopScoring";
-            }
-            case SubwooferMiddleRed -> {
-                xCoordinate = BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueSubwoofer).getX()+1;
-                yCoordinate = PoseSubsystem.SpikeMiddle.getY();
-                alliance = DriverStation.Alliance.Red;
-                locationName = "SubwooferMiddleScoring";
-            }
-            case SubwooferBottomRed -> {
-                xCoordinate = BasePoseSubsystem.convertBlueToRed(PoseSubsystem.BlueSubwoofer).getX();
-                yCoordinate = PoseSubsystem.SpikeBottom.getY();
-                alliance = DriverStation.Alliance.Red;
-                locationName = "SubwooferBottomScoring";
-            }
-            default -> {
-                // No obstacle created; for now we only care about ones where robots are likely to start.
-                return;
-            }
-        }
-
-        var obstacle = new Obstacle(
-                xCoordinate,
-                yCoordinate,
-                1.25,
-                1.25,
-                alliance.toString() + locationName);
-
-        if (alliance == DriverStation.Alliance.Blue) {
-            obstacle.defaultBottomLeft = false;
-            obstacle.defaultTopLeft = false;
-        } else {
-            obstacle.defaultBottomRight = false;
-            obstacle.defaultTopRight = false;
-        }
-
-        field.addObstacle(obstacle);
     }
 
-    private LowResField setupLowResField() {
-        field = new LowResField();
-
-        setupPermanentObstacles();
-
-        return field;
+    private void setupField() {
+        field = new GraphField();
     }
 
-    public LowResField getFieldWithObstacles() {
+    public ProvidesWaypoints getFieldWithObstacles() {
         return field;
     }
 
@@ -324,7 +161,7 @@ public class DynamicOracle extends BaseSubsystem {
      * lock in that plan (or make updates to the plan), or the plan will automatically lock in at the start of auto.
      */
     public void freezeConfigurationForAutonomous() {
-        setupLowResField();
+        setupField();
         noteMap = new NoteMap();
         scoringLocationMap = new ScoringLocationMap();
 
@@ -354,14 +191,6 @@ public class DynamicOracle extends BaseSubsystem {
             }
             if (reserveBottomSpikeButton.getAsBoolean()) {
                 reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
-            }
-
-            // Linkers for nearby notes
-            if (reserveTopSpikeButton.getAsBoolean() && reserveMiddleSpikeButton.getAsBoolean()) {
-                createNoteLinkingObstacle(Note.KeyNoteNames.BlueSpikeTop, Note.KeyNoteNames.BlueSpikeMiddle);
-            }
-            if (reserveMiddleSpikeButton.getAsBoolean() && reserveBottomSpikeButton.getAsBoolean()) {
-                createNoteLinkingObstacle(Note.KeyNoteNames.BlueSpikeMiddle, Note.KeyNoteNames.BlueSpikeBottom);
             }
 
             // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
@@ -396,14 +225,6 @@ public class DynamicOracle extends BaseSubsystem {
             }
             if (reserveBottomSpikeButton.getAsBoolean()) {
                 reserveNote(Note.KeyNoteNames.RedSpikeBottom);
-            }
-
-            // Linkers for nearby notes
-            if (reserveTopSpikeButton.getAsBoolean() && reserveMiddleSpikeButton.getAsBoolean()) {
-                createNoteLinkingObstacle(Note.KeyNoteNames.RedSpikeTop, Note.KeyNoteNames.RedSpikeMiddle);
-            }
-            if (reserveMiddleSpikeButton.getAsBoolean() && reserveBottomSpikeButton.getAsBoolean()) {
-                createNoteLinkingObstacle(Note.KeyNoteNames.RedSpikeMiddle, Note.KeyNoteNames.RedSpikeBottom);
             }
 
             // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
@@ -547,13 +368,6 @@ public class DynamicOracle extends BaseSubsystem {
             aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
         }
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
-
-        // Let's show some major obstacles
-        if (field != null) {
-            field.getObstacles().forEach(obstacle -> {
-                aKitLog.record(obstacle.getName(), obstacleToTrajectory(obstacle));
-            });
-        }
     }
 
     private void checkForPodiumShotBecomingAvailable() {
