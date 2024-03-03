@@ -112,7 +112,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         FIRING_FROM_SUBWOOFER,
         FIRING_FROM_PODIUM,
         FIRING_FROM_AMP,
-        SCOOCH_NOTE
+        SCOOCH_NOTE,
+        PROTECTED_AMP_SHOT,
+        PROTECTED_PODIUM_SHOT
     }
 
     private DoubleInterpolator speakerDistanceToExtensionInterpolator;
@@ -470,13 +472,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public double getArmExtensionForAngle(double armAngle) {
         // Get extension length (in mm) from desired shooting angle (degrees)
-      double a0 = 1.432E-01 ;
-      double a1 = -2.702E-03 ;
-      double a2 = -5.286E-06 ;
-      double a3 = 1.218E-07 ;
-      double extension_meters = ( a0 + a1 * armAngle + a2 * Math.pow(armAngle, 2) + a3 * Math.pow(armAngle, 3)) ;
-      double extension_mm = ( extension_meters * 1000.0) ;
-      return ( extension_mm) ;
+        double a0 = 1.432E-01 ;
+        double a1 = -2.702E-03 ;
+        double a2 = -5.286E-06 ;
+        double a3 = 1.218E-07 ;
+        double extension_meters = ( a0 + a1 * armAngle + a2 * Math.pow(armAngle, 2) + a3 * Math.pow(armAngle, 3)) ;
+        double extension_mm = ( extension_meters * 1000.0) ;
+        // Any value over 150mm isn't useful, as that's a "flat shot" that can't possibly
+        // score in the Speaker.
+        extension_mm = MathUtils.constrainDouble(extension_mm, 0, upperLegalLimitMm.get());
+        return ( extension_mm) ;
     }
 
     // Returns an angle for the shooter that can be converted into arm position later if needed
@@ -509,7 +514,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = upperLegalLimitMm.get();
                 break;
             case SCOOCH_NOTE:
-                extension = 15;
+                extension = 30;
+                break;
+            case PROTECTED_AMP_SHOT:
+                extension = 71.1;
+                break;
+            case PROTECTED_PODIUM_SHOT:
+                extension = 58.81;
                 break;
             default:
                 return 0;

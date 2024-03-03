@@ -5,8 +5,8 @@ import xbot.common.subsystems.vision.SimpleCamera;
 
 public class NoteCamera extends SimpleCamera {
 
-    public NoteCamera(CameraInfo cameraInfo) {
-        super(cameraInfo);
+    public NoteCamera(CameraInfo cameraInfo, String prefix) {
+        super(cameraInfo, prefix);
     }
 
 }

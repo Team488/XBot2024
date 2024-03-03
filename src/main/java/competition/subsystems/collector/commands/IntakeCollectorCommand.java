@@ -21,6 +21,7 @@ public class IntakeCollectorCommand extends BaseCommand {
 
     @Override
     public void initialize() {
+        collector.resetCollectionState();
         log.info("Initializing");
     }
 

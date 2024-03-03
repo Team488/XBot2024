@@ -23,7 +23,6 @@ public class OperatorInterface {
     public XXboxController operatorFundamentalsGamepad;
     public XXboxController operatorGamepadAdvanced;
 
-    public XXboxController autoGamepad;
     public XJoystick neoTrellis;
     public NeoTrellisGamepadSubsystem neoTrellisLights;
 
@@ -41,17 +40,15 @@ public class OperatorInterface {
         driverGamepad.setLeftInversion(false, true);
         driverGamepad.setRightInversion(true, true);
 
-        operatorFundamentalsGamepad = controllerFactory.create(1);
-        operatorFundamentalsGamepad.setLeftInversion(false, true);
-        operatorFundamentalsGamepad.setRightInversion(false, true);
-
-        operatorGamepadAdvanced = controllerFactory.create(4);
+        operatorGamepadAdvanced = controllerFactory.create(1);
         operatorGamepadAdvanced.setLeftInversion(false, true);
         operatorGamepadAdvanced.setRightInversion(false, true);
 
-        autoGamepad = controllerFactory.create(3);
+        operatorFundamentalsGamepad = controllerFactory.create(2);
+        operatorFundamentalsGamepad.setLeftInversion(false, true);
+        operatorFundamentalsGamepad.setRightInversion(false, true);
 
-        neoTrellis = joystickFactory.create(2, 32);
+        neoTrellis = joystickFactory.create(3, 32);
         neoTrellisLights = neoTrellisSubsystem;
 
         pf.setPrefix("OperatorInterface");

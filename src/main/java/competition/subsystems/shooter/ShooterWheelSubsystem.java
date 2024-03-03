@@ -102,6 +102,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
             upperWheelMotor.setSmartCurrentLimit(60);
             lowerWheelMotor.setSmartCurrentLimit(60);
+
+            upperWheelMotor.setMeasurementPeriod(8);
+            lowerWheelMotor.setMeasurementPeriod(8);
+
+            upperWheelMotor.setAverageDepth(1);
+            lowerWheelMotor.setAverageDepth(1);
         }
 
         var distanceArray =      new double[]{0,    36,   49.5, 63,   80,   111,  136};
