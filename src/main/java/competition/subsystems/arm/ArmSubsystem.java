@@ -470,13 +470,22 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public double getArmExtensionForAngle(double armAngle) {
         // Get extension length (in mm) from desired shooting angle (degrees)
-      double a0 = 1.432E-01 ;
-      double a1 = -2.702E-03 ;
-      double a2 = -5.286E-06 ;
-      double a3 = 1.218E-07 ;
-      double extension_meters = ( a0 + a1 * armAngle + a2 * Math.pow(armAngle, 2) + a3 * Math.pow(armAngle, 3)) ;
-      double extension_mm = ( extension_meters * 1000.0) ;
-      return ( extension_mm) ;
+        double a0 = 1.432E-01 ;
+        double a1 = -2.702E-03 ;
+        double a2 = -5.286E-06 ;
+        double a3 = 1.218E-07 ;
+        double extension_meters = ( a0 + a1 * armAngle + a2 * Math.pow(armAngle, 2) + a3 * Math.pow(armAngle, 3)) ;
+        double extension_mm = ( extension_meters * 1000.0) ;
+        // Any value over 150mm isn't useful, as that's a "flat shot" that can't possibly
+        // score in the Speaker.
+        if (extension_mm > 150) {
+            extension_mm = 150;
+        }
+        // Similarly, no sense trying to go underground.
+        if (extension_mm < 0) {
+            extension_mm = 0;
+        }
+        return ( extension_mm) ;
     }
 
     // Returns an angle for the shooter that can be converted into arm position later if needed
