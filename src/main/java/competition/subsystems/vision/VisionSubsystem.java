@@ -263,9 +263,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     public void refreshDataFrame() {
         if (aprilTagsLoaded) {
             for (SimpleCamera camera : allCameras) {
-                if (camera.isCameraWorking()) {
-                    camera.getCamera().refreshDataFrame();
-                }
+                camera.getCamera().refreshDataFrame();
             }
         }
     }
