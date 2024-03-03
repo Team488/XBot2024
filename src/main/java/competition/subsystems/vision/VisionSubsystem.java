@@ -89,7 +89,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                     .filter(info -> info.capabilities().contains(CameraCapabilities.APRIL_TAG))
                     .toArray(CameraInfo[]::new);
             for (var camera : aprilTagCapableCameras) {
-                aprilTagCameras.add(new AprilTagCamera(camera, waitForStablePoseTime::get, aprilTagFieldLayout));
+                aprilTagCameras.add(new AprilTagCamera(camera, waitForStablePoseTime::get, aprilTagFieldLayout, this.getPrefix()));
             }
         }
 
@@ -99,7 +99,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .filter(info -> info.capabilities().contains(CameraCapabilities.GAME_SPECIFIC))
                 .toArray(CameraInfo[]::new);
         for (var camera : noteTrackingCapableCameras) {
-            noteCameras.add(new NoteCamera(camera));
+            noteCameras.add(new NoteCamera(camera, this.getPrefix()));
         }
 
         allCameras = new ArrayList<SimpleCamera>();
