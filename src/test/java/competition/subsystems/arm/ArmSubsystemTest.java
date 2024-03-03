@@ -210,7 +210,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
         assertEquals(165.0, arm.getArmExtensionForAngle(-8.25), .5);
         assertEquals(191.0, arm.getArmExtensionForAngle(-18.6), .5);
         assertEquals(216.0, arm.getArmExtensionForAngle(-30), .5);
-        assertEquals(240.8, arm.getArmExtensionForAngle(-43.6), .5);
+        assertEquals(arm.upperLegalLimitMm.get(), arm.getArmExtensionForAngle(-43.6), .5);
 
     }
 

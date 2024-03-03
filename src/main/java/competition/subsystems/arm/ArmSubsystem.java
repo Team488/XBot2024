@@ -478,13 +478,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         double extension_mm = ( extension_meters * 1000.0) ;
         // Any value over 150mm isn't useful, as that's a "flat shot" that can't possibly
         // score in the Speaker.
-        if (extension_mm > 150) {
-            extension_mm = 150;
-        }
-        // Similarly, no sense trying to go underground.
-        if (extension_mm < 0) {
-            extension_mm = 0;
-        }
+        extension_mm = MathUtils.constrainDouble(extension_mm, 0, upperLegalLimitMm.get());
         return ( extension_mm) ;
     }
 
