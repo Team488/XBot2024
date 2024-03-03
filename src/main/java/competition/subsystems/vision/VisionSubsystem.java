@@ -6,7 +6,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringArraySubscriber;
 import edu.wpi.first.networktables.StringArrayTopic;
 import org.photonvision.EstimatedRobotPose;
@@ -41,7 +40,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final BooleanProperty isInverted;
     final DoubleProperty yawOffset;
     final DoubleProperty waitForStablePoseTime;
-    final DoubleProperty errorThreshold;
+    final DoubleProperty robotDisplacementThresholdToRejectVisionUpdate;
     final DoubleProperty singleTagStableDistance;
     final DoubleProperty multiTagStableDistance;
     AprilTagFieldLayout aprilTagFieldLayout;
@@ -79,7 +78,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .toArray(StringArraySubscriber[]::new);
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
-        errorThreshold = pf.createPersistentProperty("Error threshold",200);
+        robotDisplacementThresholdToRejectVisionUpdate = pf.createPersistentProperty("Robot Displacement Threshold",3);
 
         // TODO: Add resiliency to this subsystem, so that if the camera is not connected, it doesn't cause a pile
         // of errors. Some sort of VisionReady in the ElectricalContract may also make sense. Similarly,
@@ -165,6 +164,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
      * @return True if the pose is reliable and should be consumed by the robot
      */
     public boolean isEstimatedPoseReliable(EstimatedRobotPose estimatedPose, Pose2d previousEstimatedPose) {
+        // No targets, so there's no way we should use this data.
         if (estimatedPose.targetsUsed.size() == 0) {
             return false;
         }
@@ -177,8 +177,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             return false;
         }
 
+        // If this is way too far from our current location, then it's probably a bad estimate.
         double distance = previousEstimatedPose.getTranslation().getDistance(estimatedPose.estimatedPose.toPose2d().getTranslation());
-        if(distance > errorThreshold.get()) {
+        if(distance > robotDisplacementThresholdToRejectVisionUpdate.get()) {
             if (logCounter++ % 20 == 0) {
                 log.warn(String.format("Ignoring vision pose because distance is %f from our previous pose. Current pose: %s, vision pose: %s.",
                         distance,
@@ -189,18 +190,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         }
 
         // How far away is the camera from the target?
-        double cameraDistance =
+        double cameraDistanceToTarget =
                 estimatedPose.targetsUsed.get(0).getBestCameraToTarget().getTranslation().getNorm();
 
         // Two or more targets tends to be very reliable, but there's still a limit for distance
         if (estimatedPose.targetsUsed.size() > 1
-        && cameraDistance < multiTagStableDistance.get()) {
+        && cameraDistanceToTarget < multiTagStableDistance.get()) {
             return true;
         }
 
-        // For a single target we need to be above reliability threshold and within 1m
+        // For a single target we need to be above reliability threshold and very close.
         return estimatedPose.targetsUsed.get(0).getPoseAmbiguity() < 0.20
-                && cameraDistance < singleTagStableDistance.get();
+                && cameraDistanceToTarget < singleTagStableDistance.get();
     }
 
     private List<Integer> getTagListFromPose(EstimatedRobotPose estimatedPose) {
