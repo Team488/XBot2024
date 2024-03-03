@@ -50,6 +50,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final ArrayList<SimpleCamera> allCameras;
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
+    Pose3d[] detectedNotes;
     StringArraySubscriber[] detectionSubscribers;
 
 
@@ -229,6 +230,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return camera.getCamera().getLatestResult().getTargets().get(0).getArea();
     }
 
+    public Pose3d[] getDetectedNotes() {
+        return detectedNotes;
+    }
+
     @Override
     public void periodic() {
         loopCounter++;
@@ -260,17 +265,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .map(StringArraySubscriber::get)
                 .flatMap(Arrays::stream)
                 .toArray(String[]::new);
-        aKitLog.record("DetectedNotes",
-                Arrays.stream(detections)
-                        .map(detection -> {
-                            var parts = detection.split(",");
-                            return new Pose3d(Double.parseDouble(parts[0]),
-                                    Double.parseDouble(parts[1]),
-                                    Double.parseDouble(parts[2]),
-                                    new Rotation3d()
-                            );
-                        })
-                        .toArray(Pose3d[]::new));
+        detectedNotes = Arrays.stream(detections)
+                .map(detection -> {
+                    var parts = detection.split(",");
+                    return new Pose3d(Double.parseDouble(parts[0]),
+                            Double.parseDouble(parts[1]),
+                            Double.parseDouble(parts[2]),
+                            new Rotation3d()
+                    );
+                })
+                .toArray(Pose3d[]::new);
+
+        aKitLog.record("DetectedNotes", detectedNotes);
     }
 
     @Override
