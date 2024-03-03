@@ -111,6 +111,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     public void setTargetRPM(TargetRPM target) {
         switch (target) {
             case STOP -> setTargetValue(0.0);
+            case TYPICAL -> setTargetValue(typicalShotRpm.get());
             case INTO_AMP -> setTargetValue(intoAmpShotRpm.get());
             default -> setTargetValue(0.0);
         }
