@@ -51,7 +51,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         //starts us in front of the subwoofer, to score
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         //fires the note we are holding at the start

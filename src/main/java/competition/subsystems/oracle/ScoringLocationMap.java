@@ -18,7 +18,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         add(ScoringLocation.WellKnownScoringLocations.SubwooferTopBlue,
                 new ScoringLocation(PoseSubsystem.BlueSubwooferTopScoringLocation, Availability.Available));
         add(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleBlue,
-                new ScoringLocation(PoseSubsystem.BlueSubwooferCentralScoringLocation, Availability.Available));
+                new ScoringLocation(PoseSubsystem.BlueSubwooferMiddleScoringLocation, Availability.Available));
         add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue,
                 new ScoringLocation(PoseSubsystem.BlueSubwooferBottomScoringLocation, Availability.Available));
     }
@@ -27,7 +27,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         add(ScoringLocation.WellKnownScoringLocations.SubwooferTopRed,
                 new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSubwooferTopScoringLocation), Availability.Available));
         add(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleRed,
-                new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSubwooferCentralScoringLocation), Availability.Available));
+                new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSubwooferMiddleScoringLocation), Availability.Available));
         add(ScoringLocation.WellKnownScoringLocations.SubwooferBottomRed,
                 new ScoringLocation(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSubwooferBottomScoringLocation), Availability.Available));
     }

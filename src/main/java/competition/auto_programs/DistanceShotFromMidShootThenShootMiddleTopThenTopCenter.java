@@ -33,7 +33,7 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire note into the speaker from starting position
