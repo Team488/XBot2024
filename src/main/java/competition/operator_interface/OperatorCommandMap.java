@@ -311,6 +311,19 @@ public class OperatorCommandMap {
         var continuouslyPrepareToFireAtSpeaker =
                 continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
+        // Bind to buttons
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNote);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
+
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftBumper).whileTrue(scoochNote);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(ejectScoocher);
+
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSubwoofer);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtAmp);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
+
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
+
         var warmUpForPodium = warmUpShooterCommandProvider.get();
         warmUpForPodium.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
         var setArmForPodium = setArmExtensionCommandProvider.get();
@@ -326,20 +339,6 @@ public class OperatorCommandMap {
                 arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.PROTECTED_AMP_SHOT));
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(warmUpForProtectedAmp.alongWith(setArmForProtectedAmp));
-
-        // Bind to buttons
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNote);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
-
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftBumper).whileTrue(scoochNote);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(ejectScoocher);
-
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSubwoofer);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtAmp);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
-        //oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(manualHangingModeCommand);
-
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
     }
 
     @Inject
