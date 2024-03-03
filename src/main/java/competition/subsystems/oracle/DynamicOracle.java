@@ -27,6 +27,7 @@ import java.util.Arrays;
 public class DynamicOracle extends BaseSubsystem {
 
     public enum HighLevelGoal {
+        NoGoal,
         CollectNote,
         ScoreInAmp,
         ScoreInSpeaker
@@ -58,7 +59,7 @@ public class DynamicOracle extends BaseSubsystem {
     final DoubleProperty maxVisionNoteAge;
 
     int instructionNumber = 0;
-    double robotWidth = 0.914;
+    double robotWidth = 0.914+0.5;
     double scoringZoneOffset = 0.93;
 
     private final AdvancedTrigger reserveTopSubwooferButton;
@@ -363,6 +364,12 @@ public class DynamicOracle extends BaseSubsystem {
                 createNoteLinkingObstacle(Note.KeyNoteNames.BlueSpikeMiddle, Note.KeyNoteNames.BlueSpikeBottom);
             }
 
+            // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
+            if (!reserveBottomSpikeButton.getAsBoolean()) {
+                scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumBlue)
+                        .setAvailability(Availability.MaskedByNote);
+            }
+
         } else {
             // We are on the red alliance.
             // Disable things that aren't possible (on blue side of field)
@@ -398,6 +405,12 @@ public class DynamicOracle extends BaseSubsystem {
             if (reserveMiddleSpikeButton.getAsBoolean() && reserveBottomSpikeButton.getAsBoolean()) {
                 createNoteLinkingObstacle(Note.KeyNoteNames.RedSpikeMiddle, Note.KeyNoteNames.RedSpikeBottom);
             }
+
+            // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
+            if (!reserveBottomSpikeButton.getAsBoolean()) {
+                scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumRed)
+                        .setAvailability(Availability.MaskedByNote);
+            }
         }
 
         if (reserveCenterLine1Button.getAsBoolean()) {
@@ -426,6 +439,7 @@ public class DynamicOracle extends BaseSubsystem {
      */
     @Override
     public void periodic() {
+        checkForPodiumShotBecomingAvailable();
 
         // Populate the field with notes from vision
         noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
@@ -445,8 +459,10 @@ public class DynamicOracle extends BaseSubsystem {
             case ScoreInSpeaker:
                 if (firstRunInNewGoal || reevaluationRequested) {
                     setTargetNote(null);
-                    setTerminatingPoint(scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
-                            Availability.Available).getLocation());
+                    var closestScoringLocation = scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+                            Availability.Available);
+                    setTerminatingPoint(closestScoringLocation.getLocation());
+                    setChosenScoringLocation(closestScoringLocation.getWellKnownLocation());
 
                     currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
                     setSpecialAimTarget(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_AIM_TARGET));
@@ -478,7 +494,7 @@ public class DynamicOracle extends BaseSubsystem {
                     if (suggestedNote == null) {
                         // No notes on the field! Let's suggest going to the source and hope something turns up.
                         setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.NearbySource));
-                    }
+                    }/*
                     else if (suggestedNote.getAvailability() == Availability.AgainstObstacle) {
                         // Take the note's pose2d and extend it in to the super far distance so the robot
                         // will effectively aim at the "wall" of the obstacle as it approaches the note.
@@ -492,9 +508,10 @@ public class DynamicOracle extends BaseSubsystem {
                                 );
                         setSpecialAimTarget(superExtendedIntoTheDistancePose);
                         setTerminatingPoint(suggestedNote.getLocation());
-                    }
+                    }*/
                     else {
                         setTerminatingPoint(getTargetNote().getLocation());
+                        setSpecialAimTarget(getTargetNote().getLocation());
                     }
 
                     // Publish a route from current position to that location
@@ -536,6 +553,21 @@ public class DynamicOracle extends BaseSubsystem {
             field.getObstacles().forEach(obstacle -> {
                 aKitLog.record(obstacle.getName(), obstacleToTrajectory(obstacle));
             });
+        }
+    }
+
+    private void checkForPodiumShotBecomingAvailable() {
+        // check to see if the podium note has been collected (it will be marked Unavailable).
+        // If so, check our alliance, and restore the podium shot.
+        if (scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumBlue).getAvailability() == Availability.MaskedByNote
+                && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Blue
+                && noteMap.get(Note.KeyNoteNames.BlueSpikeBottom).getAvailability() == Availability.Unavailable) {
+            scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumBlue).setAvailability(Availability.Available);
+        }
+        if (scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumRed).getAvailability() == Availability.MaskedByNote
+                && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red
+                && noteMap.get(Note.KeyNoteNames.RedSpikeBottom).getAvailability() == Availability.Unavailable) {
+            scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumRed).setAvailability(Availability.Available);
         }
     }
 
@@ -594,6 +626,15 @@ public class DynamicOracle extends BaseSubsystem {
         return this.specialAimTarget;
     }
 
+    ScoringLocation.WellKnownScoringLocations chosenScoringLocation;
+    public ScoringLocation.WellKnownScoringLocations getChosenScoringLocation() {
+        return chosenScoringLocation;
+    }
+
+    public void setChosenScoringLocation(ScoringLocation.WellKnownScoringLocations location) {
+        chosenScoringLocation = location;
+    }
+
     private double getEstimatedSecondsUntilScoringRequired() {
         return 0;
     }
@@ -611,7 +652,10 @@ public class DynamicOracle extends BaseSubsystem {
         boolean inUnderstoodRange = false;
         if (currentHighLevelGoal == HighLevelGoal.ScoreInSpeaker) {
             acceptableRangeBeforeScoringMeters = 0.2;
-            inUnderstoodRange = pose.getDistanceFromSpeaker() < arm.getMaximumRangeForAnyShotMeters();
+            inUnderstoodRange = true; //pose.getDistanceFromSpeaker() < arm.getMaximumRangeForAnyShotMeters();
+            // Since we currently only fire from "well known locations', this is true by default.
+            // still leaving the above code commented out for when we (hopefully) get a smooth firing solution for
+            // all ranges.
 
         } else if (currentHighLevelGoal == HighLevelGoal.ScoreInAmp) {
             // in the future we'll do something more like "get near amp, then drive into the wall for a few moments

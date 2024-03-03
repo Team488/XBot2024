@@ -1,7 +1,6 @@
 package competition.subsystems.oracle;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 
 public class ScoringLocation implements ReservableLocation {
 
@@ -11,15 +10,21 @@ public class ScoringLocation implements ReservableLocation {
         SubwooferBottomBlue,
         SubwooferTopRed,
         SubwooferMiddleRed,
-        SubwooferBottomRed
+        SubwooferBottomRed,
+        PodiumBlue,
+        AmpZoneFarBlue,
+        PodiumRed,
+        AmpZoneFarRed
     }
 
     private Pose2d location;
     private Availability availability;
+    private WellKnownScoringLocations locationName;
 
-    public ScoringLocation(Pose2d location, Availability availability) {
+    public ScoringLocation(Pose2d location, Availability availability, WellKnownScoringLocations locationName) {
         this.location = location;
         this.availability = availability;
+        this.locationName = locationName;
     }
 
     public Pose2d getLocation() {
@@ -28,6 +33,10 @@ public class ScoringLocation implements ReservableLocation {
 
     public Availability getAvailability() {
         return availability;
+    }
+
+    public WellKnownScoringLocations getWellKnownLocation() {
+        return locationName;
     }
 
     public void setAvailability(Availability availability) {
