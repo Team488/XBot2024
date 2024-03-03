@@ -3,6 +3,7 @@ package competition.subsystems.oracle;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -10,6 +11,9 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.sensors.buttons.AdvancedTrigger;
+import xbot.common.properties.BooleanProperty;
+import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.Obstacle;
@@ -17,6 +21,7 @@ import xbot.common.trajectory.Obstacle;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @Singleton
 public class DynamicOracle extends BaseSubsystem {
@@ -45,8 +50,12 @@ public class DynamicOracle extends BaseSubsystem {
     boolean firstRunInNewGoal;
 
     PoseSubsystem pose;
+    VisionSubsystem vision;
     ArmSubsystem arm;
     OperatorInterface oi;
+
+    final BooleanProperty includeVisionNotes;
+    final DoubleProperty maxVisionNoteAge;
 
     int instructionNumber = 0;
     double robotWidth = 0.914;
@@ -67,15 +76,21 @@ public class DynamicOracle extends BaseSubsystem {
 
     @Inject
     public DynamicOracle(NoteCollectionInfoSource noteCollectionInfoSource, NoteFiringInfoSource noteFiringInfoSource,
-                         PoseSubsystem pose, ArmSubsystem arm, OperatorInterface oi) {
+                         PoseSubsystem pose, VisionSubsystem vision, ArmSubsystem arm, OperatorInterface oi,
+                         PropertyFactory pf) {
         this.noteCollectionInfoSource = noteCollectionInfoSource;
         this.noteFiringInfoSource = noteFiringInfoSource;
         this.noteMap = new NoteMap();
         this.scoringLocationMap = new ScoringLocationMap();
 
         this.pose = pose;
+        this.vision = vision;
         this.arm = arm;
         this.oi = oi;
+
+        pf.setPrefix(this);
+        this.includeVisionNotes = pf.createPersistentProperty("IncludeVisionNotes", true);
+        this.maxVisionNoteAge = pf.createPersistentProperty("MaxVisionNoteAge", 1.0);
 
         this.currentHighLevelGoal = HighLevelGoal.CollectNote;
         this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
@@ -411,6 +426,19 @@ public class DynamicOracle extends BaseSubsystem {
      */
     @Override
     public void periodic() {
+
+        // Populate the field with notes from vision
+        noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
+        if (this.includeVisionNotes.get()) {
+            var robotTranslation = pose.getCurrentPose2d().getTranslation();
+            Arrays.stream(vision.getDetectedNotes())
+                    .map(note -> new Pose2d(
+                            new Translation2d(note.getX(), note.getY()).minus(robotTranslation),
+                            new Rotation2d()))
+                    .forEach(noteMap::addVisionNote);
+        }
+
+        aKitLog.record("NoteMap", noteMap.getAllKnownNotes());
 
         switch (currentHighLevelGoal) {
             case ScoreInAmp: // For now keeping things simple

@@ -1,22 +1,29 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import xbot.common.controls.sensors.XTimer;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 @Singleton
 public class NoteMap extends ReservableLocationMap<Note> {
 
+    private final List<VisionSourceNote> visionSourceNotes;
+
     public NoteMap() {
         initializeNotes();
+        visionSourceNotes = new ArrayList<>();
     }
 
     private void initializeNotes() {
@@ -49,12 +56,25 @@ public class NoteMap extends ReservableLocationMap<Note> {
             add(key.toString(), note);
     }
 
+    public void addVisionNote(Pose2d location) {
+        visionSourceNotes.add(new VisionSourceNote(new Note(location), XTimer.getFPGATimestamp()));
+    }
+
+    public void clearStaleVisionNotes(double maxAgeInSeconds) {
+        double currentTime = XTimer.getFPGATimestamp();
+        visionSourceNotes.removeIf(note -> currentTime - note.getTimestamp() > maxAgeInSeconds);
+    }
+
+    public void clearVisionNotes() {
+        visionSourceNotes.clear();
+    }
+
     public Note get(Note.KeyNoteNames key) {
         return get(key.toString());
     }
 
     public Pose3d[] getAllKnownNotes() {
-        Pose3d[] notes = new Pose3d[internalMap.size()];
+        Pose3d[] notes = new Pose3d[internalMap.size() + visionSourceNotes.size()];
         int i = 0;
         for (Note note : this.internalMap.values()) {
 
@@ -70,6 +90,16 @@ public class NoteMap extends ReservableLocationMap<Note> {
                     new Rotation3d(0,0,0));
             i++;
         }
+
+        for (VisionSourceNote note : visionSourceNotes) {
+            notes[i] = new Pose3d(new Translation3d(
+                    note.getNote().getLocation().getX(),
+                    note.getNote().getLocation().getY(),
+                    0.025),
+                    new Rotation3d(0,0,0));
+            i++;
+        }
+
         return notes;
     }
 }
