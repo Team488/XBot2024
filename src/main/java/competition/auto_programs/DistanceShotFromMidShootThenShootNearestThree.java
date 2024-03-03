@@ -46,8 +46,8 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
                     drive.setTargetNote(PoseSubsystem.SpikeTop);
                 })
         );
-        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
+        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
 
         // Point at speaker
         var pointAtSpeakerFirst = pointAtSpeakerCommandProvider.get();
@@ -56,14 +56,14 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         var fireSecondNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireSecondNoteCommand, pointAtSpeakerFirst));
 
-        // Drive to top spike note and collect
+        // Drive to middle spike note and collect
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeMiddle);
                 })
         );
-        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
+        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
 
         // Point at speaker
         var pointAtSpeakerSecond = pointAtSpeakerCommandProvider.get();
