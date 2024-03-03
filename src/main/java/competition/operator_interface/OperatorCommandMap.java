@@ -164,7 +164,7 @@ public class OperatorCommandMap {
             OperatorInterface oi,
             ArmSubsystem arm,
             Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
-            IntakeCollectorCommand intakeCollector,
+            Provider<IntakeCollectorCommand> intakeCollectorProvider,
             EjectCollectorCommand ejectCollector,
             IntakeScoocherCommand intakeScoocher,
             EjectScoocherCommand ejectScoocher,
@@ -193,6 +193,10 @@ public class OperatorCommandMap {
         armToAmp.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
                 ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP));
 
+        var armToSource = setArmExtensionCommandProvider.get();
+        armToSource.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
+                ArmSubsystem.UsefulArmPosition.COLLECT_DIRECTLY_FROM_SOURCE));
+
         // Useful wheel speeds
         var warmUpShooterSubwoofer = warmUpShooterCommandProvider.get();
         warmUpShooterSubwoofer.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
@@ -202,7 +206,8 @@ public class OperatorCommandMap {
 
         // Combine into useful actions
         // Note manipulation:
-        var collectNote = intakeCollector.alongWith(armToCollection);
+        var collectNoteFromGround = intakeCollectorProvider.get().alongWith(armToCollection);
+        var collectNoteFromSource = intakeCollectorProvider.get().alongWith(armToSource);
         var scoochNote = intakeScoocher.alongWith(armToScooch);
 
         // Preparing to score:
@@ -212,20 +217,17 @@ public class OperatorCommandMap {
                 continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
         // Bind to buttons
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNote);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
-
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNoteFromGround);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftBumper).whileTrue(scoochNote);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper).whileTrue(prepareToFireAtSpeakerFromFarAmp);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(ejectScoocher);
-
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSubwoofer);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtAmp);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
-
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
-
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromPodium);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper).whileTrue(prepareToFireAtSpeakerFromFarAmp);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
     }
     
     @Inject
