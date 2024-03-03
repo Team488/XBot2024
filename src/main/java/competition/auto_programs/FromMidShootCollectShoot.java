@@ -43,7 +43,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         // Shoot the pre-loaded note from the subwoofer
         queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer");
         var warmUpForFirstSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         var fireFirstShot = fireWhenReadyCommandProvider.get();
 
         this.addCommands(Commands.deadline(fireFirstShot,
@@ -80,7 +80,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         });
 
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
 
         this.addCommands(Commands.deadline(driveToSubwoofer,
                 warmUpForSecondSubwooferShot));

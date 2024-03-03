@@ -1,8 +1,6 @@
 package competition.operator_interface;
 
-import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
-import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
-import competition.auto_programs.FromMidShootCollectShoot;
+import competition.commandgroups.PrepareToFireAtSpeakerFromFarAmpCommand;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
@@ -25,9 +23,6 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
-import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
-import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationCommand;
-import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
@@ -35,22 +30,19 @@ import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.ContinuouslyWarmUpForSpeakerCommand;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
+import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
 import xbot.common.subsystems.autonomous.SetAutonomousCommand;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.pose.commands.SetRobotHeadingCommand;
-import xbot.common.trajectory.LowResField;
-import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.ArrayList;
 
 /**
  * Maps operator interface buttons to commands
@@ -68,16 +60,9 @@ public class OperatorCommandMap {
             EjectScoocherCommand scoocherEject,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
-            SetArmAngleCommand armAngle,
-            PrepareToFireAtSpeakerCommandGroup prepareToFireAtSpeakerCommandGroup,
-            WarmUpShooterCommand shooterWarmUpSafe,
-            WarmUpShooterCommand shooterWarmUpNear,
-            WarmUpShooterCommand shooterWarmUpFar,
+            WarmUpShooterCommand shooterWarmUpTypical,
             WarmUpShooterCommand shooterWarmUpAmp,
-            FireCollectorCommand fireCollectorCommand,
-            WarmUpShooterRPMCommand warmUpShooterDifferentialRPM,
-            EngageBrakeCommand engageBrake,
-            DisengageBrakeCommand disengageBrake
+            FireCollectorCommand fireCollectorCommand
     ) {
         // Scooch
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
@@ -89,14 +74,10 @@ public class OperatorCommandMap {
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
 
         // Fire
-        shooterWarmUpSafe.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
-        shooterWarmUpNear.setTargetRpm(ShooterWheelSubsystem.TargetRPM.NEARSHOT);
-        shooterWarmUpFar.setTargetRpm(ShooterWheelSubsystem.TargetRPM.DISTANCESHOT);
-        shooterWarmUpAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
+        shooterWarmUpTypical.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
+        shooterWarmUpAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.INTO_AMP);
 
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpSafe);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUpNear);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpFar);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpTypical);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Back).whileTrue(shooterWarmUpAmp);
 
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.B).whileTrue(fireCollectorCommand);
@@ -181,6 +162,8 @@ public class OperatorCommandMap {
             ContinuouslyPointArmAtSpeakerCommand continuouslyPointArmAtSpeaker,
             ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeaker,
             FireWhenReadyCommand fireWhenReady,
+            PrepareToFireAtSpeakerFromPodiumCommand prepareToFireAtSpeakerFromPodium,
+            PrepareToFireAtSpeakerFromFarAmpCommand prepareToFireAtSpeakerFromFarAmp,
             ManualHangingModeCommand manualHangingModeCommand
     ) {
         //Useful arm positions
@@ -202,10 +185,10 @@ public class OperatorCommandMap {
 
         // Useful wheel speeds
         var warmUpShooterSubwoofer = warmUpShooterCommandProvider.get();
-        warmUpShooterSubwoofer.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpShooterSubwoofer.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
 
-        var warmUpShooterAmp = warmUpShooterCommandProvider.get();
-        warmUpShooterAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.AMP_SHOT);
+        var warmUpShooterToFireInAmp = warmUpShooterCommandProvider.get();
+        warmUpShooterToFireInAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.INTO_AMP);
 
         // Combine into useful actions
         // Note manipulation:
@@ -214,7 +197,7 @@ public class OperatorCommandMap {
 
         // Preparing to score:
         var prepareToFireAtSubwoofer = warmUpShooterSubwoofer.alongWith(armToSubwoofer);
-        var prepareToFireAtAmp = warmUpShooterAmp.alongWith(armToAmp);
+        var prepareToFireAtAmp = warmUpShooterToFireInAmp.alongWith(armToAmp);
         var continuouslyPrepareToFireAtSpeaker =
                 continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
@@ -231,21 +214,8 @@ public class OperatorCommandMap {
 
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
 
-        var warmUpForPodium = warmUpShooterCommandProvider.get();
-        warmUpForPodium.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
-        var setArmForPodium = setArmExtensionCommandProvider.get();
-        setArmForPodium.setTargetExtension(
-                arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.PROTECTED_PODIUM_SHOT));
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B)
-                .whileTrue(warmUpForPodium.alongWith(setArmForPodium));
-
-        var warmUpForProtectedAmp = warmUpShooterCommandProvider.get();
-        warmUpForProtectedAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
-        var setArmForProtectedAmp = setArmExtensionCommandProvider.get();
-        setArmForProtectedAmp.setTargetExtension(
-                arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.PROTECTED_AMP_SHOT));
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper)
-                .whileTrue(warmUpForProtectedAmp.alongWith(setArmForProtectedAmp));
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromPodium);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper).whileTrue(prepareToFireAtSpeakerFromFarAmp);
     }
     
     @Inject
