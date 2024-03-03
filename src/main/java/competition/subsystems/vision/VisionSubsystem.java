@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringArraySubscriber;
+import edu.wpi.first.networktables.StringArrayTopic;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -49,7 +50,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final ArrayList<SimpleCamera> allCameras;
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
-    StringArraySubscriber detectionSubscriber;
+    StringArraySubscriber[] detectionSubscribers;
 
 
     @Inject
@@ -63,8 +64,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
-        var detectionTopic = trackingNt.getStringArrayTopic("DetectionCameraphotonvisionfrontleft/Target Coordinate Pairs");
-        detectionSubscriber = detectionTopic.subscribe(new String[] {});
+        var detectionTopicNames = new String[]{
+                "DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
+                "DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
+                "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+        };
+        var detectionTopics = Arrays.stream(detectionTopicNames)
+                .map(trackingNt::getStringArrayTopic)
+                .toArray(StringArrayTopic[]::new);
+        detectionSubscribers = Arrays.stream(detectionTopics)
+                .map(topic -> topic.subscribe(new String[] {}))
+                .toArray(StringArraySubscriber[]::new);
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
         errorThreshold = pf.createPersistentProperty("Error threshold",200);
@@ -245,7 +256,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
-        var detections = detectionSubscriber.get();
+        var detections = Arrays.stream(detectionSubscribers)
+                .map(StringArraySubscriber::get)
+                .flatMap(Arrays::stream)
+                .toArray(String[]::new);
         aKitLog.record("DetectedNotes",
                 Arrays.stream(detections)
                         .map(detection -> {
