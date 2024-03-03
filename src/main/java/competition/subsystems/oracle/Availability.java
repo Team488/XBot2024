@@ -6,5 +6,6 @@ public enum Availability {
     ReservedByOthersInAuto,
     SuggestedByVision,
     SuggestedByDriver,
-    Unavailable
+    Unavailable,
+    MaskedByNote
 }
