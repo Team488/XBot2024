@@ -30,10 +30,12 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position
+        queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer (middle)");
         var fireFirstNoteCommand = fireFromSubwooferCommandGroup.get();
         this.addCommands(fireFirstNoteCommand);
 
         // Drive to middle spike note and collect
+        queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeMiddle);
@@ -51,6 +53,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         this.addCommands(fireSecondNoteCommand);
 
         // Drive to top spike note and collect
+        queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(middle) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeTop);
@@ -68,6 +71,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         this.addCommands(fireThirdNoteCommand);
 
         // Drive to bottom spike note and collect
+        queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeBottom);
@@ -85,4 +89,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         this.addCommands(fireFourthNoteCommand);
     }
 
+    private void queueMessageToAutoSelector(String message) {
+        this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
+    }
 }

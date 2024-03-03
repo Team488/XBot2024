@@ -36,6 +36,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.autoSelector = autoSelector;
 
         // Force our location
+        queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer (bottom)");
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
@@ -45,6 +46,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.addCommands(fireFirstNoteCommand);
 
         // Drive to bottom spike note and collect
+        queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(bottom) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeBottom);
@@ -62,6 +64,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.addCommands(fireSecondNoteCommand);
 
         // Drive to middle spike note and collect
+        queueMessageToAutoSelector("Drive to middle spike note, collect, drive back to sub(bottom) and shoot");
         var driveToMiddleSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
         driveToMiddleSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeMiddle);
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
@@ -81,6 +84,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.addCommands(fireThirdNoteCommand);
 
         // Drive to top spike note and collect
+        queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(bottom) and shoot");
         var driveToTopSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
         driveToTopSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeTop);
         var collectSequenceTop = collectSequenceCommandGroupProvider.get();
@@ -124,4 +128,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         return points;
     }
 
+    private void queueMessageToAutoSelector(String message) {
+        this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
+    }
 }

@@ -35,19 +35,21 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         this.addCommands(startInFrontOfSpeaker);
 
 //        // Fire note into the speaker from starting position
+        queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer (center)");
 //        var fireFirstNoteCommand = fireNoteCommandGroupProvider.get();
 //        this.addCommands(Commands.deadline(fireFirstNoteCommand));
         // Fire preload note into the speaker from starting position
         this.addCommands(Commands.deadline(fireFromSubwooferCommandGroup));
 
         // Drive to top spike note and collect
+        queueMessageToAutoSelector("Drive to top spike note, collect and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeTop);
                 })
         );
-        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
+        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
 
         // Point at speaker
         var pointAtSpeakerFirst = pointAtSpeakerCommandProvider.get();
@@ -56,14 +58,15 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         var fireSecondNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireSecondNoteCommand, pointAtSpeakerFirst));
 
-        // Drive to top spike note and collect
+        // Drive to middle spike note and collect
+        queueMessageToAutoSelector("Drive to middle spike note, collect and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeMiddle);
                 })
         );
-        var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(driveToTopSpikeNoteAndCollect));
+        var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(driveToMiddleSpikeNoteAndCollect));
 
         // Point at speaker
         var pointAtSpeakerSecond = pointAtSpeakerCommandProvider.get();
@@ -73,6 +76,7 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         this.addCommands(Commands.deadline(fireThirdNoteCommand, pointAtSpeakerSecond));
 
         // Drive to bottom spike note and collect
+        queueMessageToAutoSelector("Drive to bottom spike note, collect and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeBottom);
@@ -87,6 +91,10 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireFourthNoteCommand, pointAtSpeakerThird));
+    }
+
+    private void queueMessageToAutoSelector(String message) {
+        this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
     }
 
 }
