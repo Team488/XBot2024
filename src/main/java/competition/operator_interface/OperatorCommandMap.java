@@ -9,7 +9,6 @@ import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
-import competition.commandgroups.PrepareToFireAtAmpCommandGroup;
 import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
@@ -30,12 +29,10 @@ import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.drive.commands.DriveToMidSpikeScoringLocationCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.oracle.DynamicOracle;
-import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
-import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import competition.subsystems.shooter.commands.ContinuouslyWarmUpForSpeakerCommand;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
@@ -103,21 +100,6 @@ public class OperatorCommandMap {
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Back).whileTrue(shooterWarmUpAmp);
 
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.B).whileTrue(fireCollectorCommand);
-
-        // Arms are taken care of via their maintainer & han overrides.
-        armAngle.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
-        var scoochNote = scoocherIntakeProvider.get();
-        scoochNote.alongWith(armAngle);
-        // TODO: bind scoochNote action to a button in operatorGamepad
-
-        warmUpShooterDifferentialRPM.setTargetRpm(new ShooterWheelTargetSpeeds(1000, 2000));
-        //oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(warmUpShooterDifferentialRPM);
-
-        engageBrake.setBrakeMode(true);
-        disengageBrake.setBrakeMode(false);
-
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightJoystickYAxisPositive).onTrue(engageBrake);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(disengageBrake);
     }
     
     // Example for setting up a command to fire when a button is pressed:
@@ -136,99 +118,24 @@ public class OperatorCommandMap {
             DriveToAmpCommand driveToAmpCommand
             )
     {
-        double typicalVelocity = 2.5;
-        // Manipulate heading and position for easy testing
+        // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
 
-        var teleportRobotToSubwooferTop = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)).ignoringDisable(true);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(teleportRobotToSubwooferTop);
-        var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation)).ignoringDisable(true);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(teleportRobotToSubwooferMid);
-        var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation)).ignoringDisable(true);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(teleportRobotToSubwooferBottom);
-
-
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
-        LowResField fieldWithObstacles = oracle.getFieldWithObstacles();
-
-        // Launch note from collector to the already warmed up shooterwheel
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).onTrue(fireWhenReady.repeatedly());
-
-
-        /*Used only when we want to manually shoot. For example, if the sensors are broken in game and we want to shoot
-        anyway.
-        */
-//        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(fireCollector);
-
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
-
-
-
-        // Where are some cool places we may want to go..
-        // 1) Where there are Notes!
-        var goToTopSpike = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.SpikeTop, typicalVelocity, fieldWithObstacles, true);
-        var goToMiddleSpike = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.SpikeMiddle, typicalVelocity, fieldWithObstacles, true);
-        var goToBottomSpike = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.SpikeBottom, typicalVelocity, fieldWithObstacles, true);
-
-        var goToCenterLine1 = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.CenterLine1, typicalVelocity, fieldWithObstacles, true);
-        var goToCenterLine2 = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.CenterLine2, typicalVelocity, fieldWithObstacles, true);
-        var goToCenterLine3 = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.CenterLine3, typicalVelocity, fieldWithObstacles, true);
-        var goToCenterLine4 = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.CenterLine4, typicalVelocity, fieldWithObstacles, true);
-        var goToCenterLine5 = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.CenterLine5, typicalVelocity, fieldWithObstacles, true);
-
-        // 2) Or to go score!
-        var goToAmp = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.AmpScoringLocation, typicalVelocity, fieldWithObstacles);
-        var goToSpeaker = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.BlueSubwooferCentralScoringLocation, typicalVelocity, fieldWithObstacles);
-
-        // 3) Or pick up a new note from the source!
-        var goToNoteSource = createAndConfigureTypicalSwerveCommand(
-                swerveCommandProvider.get(), PoseSubsystem.NearbySource, typicalVelocity, fieldWithObstacles, true);
-
-        // Bind these to buttons on the neotrellis.
-        operatorInterface.neoTrellis.getifAvailable(9).whileTrue(goToAmp);
-        operatorInterface.neoTrellis.getifAvailable(14).whileTrue(goToNoteSource);
-
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToAmpCommand);
     }
 
     @Inject
-    public void scoringCommands(
-            PrepareToFireAtAmpCommandGroup prepareToFireAtAmpCommand,
-            PrepareToFireAtSpeakerCommandGroup prepareToFireAtSpeakerCommand
-            )
-    {
-        // TODO: Bind prepareToFireAtAmpCommand to a button in operatorGamepad
-        // TODO: Bind prepareToFireAtSpeakerCommand to a button in operatorGamepad
-    }
-
-    @Inject
     public void setupOracleCommands(OperatorInterface oi,
-                                    ListenToOracleCommandGroup listenToOracleCommandGroup,
-                                    ManualRobotKnowledgeSubsystem knowledgeSubsystem,
-                                    DynamicOracle oracle) {
+                                    ListenToOracleCommandGroup listenToOracleCommandGroup) {
 
         oi.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
-        oi.driverGamepad.getPovIfAvailable(0).onTrue(new InstantCommand(() -> oracle.resetNoteMap()));
-        oi.driverGamepad.getPovIfAvailable(270).onTrue(new InstantCommand(() -> oracle.freezeConfigurationForAutonomous()));
-
     }
 
     @Inject
-    public void setupArmPIDCommands(
+    public void setupArmFineAdjustmentCommands(
             OperatorInterface oi,
             Provider<SetArmExtensionCommand> commandProvider,
             CalibrateArmsManuallyCommand calibrateArmsManuallyCommand) {
@@ -340,54 +247,21 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper)
                 .whileTrue(warmUpForProtectedAmp.alongWith(setArmForProtectedAmp));
     }
-
+    
     @Inject
-    public void setupAutonomousForTesting(OperatorInterface oi,
-                                          FromMidShootCollectShoot fromMidShootCollectShoot,
-                                          SubwooferShotFromMidShootThenShootNearestThree subwooferFour,
-                                          DistanceShotFromMidShootThenShootNearestThree distanceFour,
-                                          PointAtSpeakerCommand pointAtSpeakerCommand,
-                                          DriveToMidSpikeScoringLocationCommand driveToMidSpikeScoringLocationCommand,
-                                          DistanceShotFromMidShootThenShootMiddleTopThenTopCenter distanceShotPreTopTwoSpikesTopCenter,
-                                          DriveToListOfPointsCommand driveToListOfPointsCommand,
-                                          SubwooferShotFromBotShootThenShootSpikes subwooferShotFromBotShootThenShootSpikes,
-                                          SubwooferShotFromTopShootThenShootSpikes subwooferShotFromTopShootThenShootSpikes,
-                                          SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter subShotFromBotBotSpikeBotCenter,
-                                          SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter subShotFromTopTopSpikeTopCenter) {
-        oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(fromMidShootCollectShoot);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(distanceFour);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(distanceShotPreTopTwoSpikesTopCenter);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(subwooferFour);
+    public void setupForceRobotToPositionCommands(PoseSubsystem pose,
+                                                  OperatorInterface oi) {
+        var teleportRobotToSubwooferTop = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)).ignoringDisable(true);
+        oi.neoTrellis.getifAvailable(17).onTrue(teleportRobotToSubwooferTop);
 
-        oi.operatorGamepadAdvanced.getPovIfAvailable(45).whileTrue(subwooferShotFromBotShootThenShootSpikes);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(135).whileTrue(subwooferShotFromTopShootThenShootSpikes);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(225).whileTrue(subShotFromBotBotSpikeBotCenter);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(315).whileTrue(subShotFromTopTopSpikeTopCenter);
+        var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation)).ignoringDisable(true);
+        oi.neoTrellis.getifAvailable(18).onTrue(teleportRobotToSubwooferMid);
 
-    }
-
-    private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
-            SwerveSimpleTrajectoryCommand command, Pose2d target, double targetVelocity, LowResField fieldWithObstacles) {
-
-        return createAndConfigureTypicalSwerveCommand(command, target, targetVelocity,
-                fieldWithObstacles, false);
-    }
-
-    private SwerveSimpleTrajectoryCommand createAndConfigureTypicalSwerveCommand(
-            SwerveSimpleTrajectoryCommand command, Pose2d target, double targetVelocity, LowResField fieldWithObstacles,
-            boolean aimAtGoalDuringFinalLeg) {
-
-        ArrayList<XbotSwervePoint> points = new ArrayList<>();
-        points.add(new XbotSwervePoint(
-                target.getTranslation(), target.getRotation(), 10));
-        command.logic.setEnableConstantVelocity(true);
-        command.logic.setConstantVelocity(targetVelocity);
-        command.logic.setFieldWithObstacles(fieldWithObstacles);
-        command.logic.setAimAtGoalDuringFinalLeg(aimAtGoalDuringFinalLeg);
-
-        command.logic.setKeyPoints(points);
-
-        return command;
+        var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation)).ignoringDisable(true);
+        oi.neoTrellis.getifAvailable(19).onTrue(teleportRobotToSubwooferBottom);
     }
 
     @Inject
