@@ -1,20 +1,16 @@
 package competition.operator_interface;
 
-import competition.commandgroups.PrepareToFireAtSpeakerFromFarAmpCommand;
-import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
-import competition.commandgroups.PrepareToFireAtSpeakerCommandGroup;
+import competition.commandgroups.PrepareToFireAtSpeakerFromFarAmpCommand;
+import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
-import competition.subsystems.arm.commands.DisengageBrakeCommand;
-import competition.subsystems.arm.commands.EngageBrakeCommand;
 import competition.subsystems.arm.commands.ManualHangingModeCommand;
-import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
@@ -24,15 +20,14 @@ import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.oracle.DynamicOracle;
+import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
 import competition.subsystems.schoocher.commands.IntakeScoocherCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.ContinuouslyWarmUpForSpeakerCommand;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
-import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
-import competition.subsystems.shooter.commands.WarmUpShooterRPMCommand;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.controls.sensors.XXboxController.XboxButton;
@@ -102,10 +97,25 @@ public class OperatorCommandMap {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
 
+        var pointAtSpeaker = drive.createSetSpecialPointAtPositionTargetCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+
+        var pointAtSource = drive.createSetSpecialHeadingTargetCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.FaceCollectorToBlueSource));
+
+        var clearSpecialTargets = drive.createClearAllSpecialTargetsCommand();
+
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToCentralSubwooferCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToAmpCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
+                .onTrue(pointAtSpeaker)
+                .onFalse(clearSpecialTargets);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
+                .onTrue(pointAtSource)
+                .onFalse(clearSpecialTargets);
     }
 
     @Inject
