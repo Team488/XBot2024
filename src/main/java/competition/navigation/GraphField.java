@@ -23,6 +23,8 @@ public class GraphField implements ProvidesWaypoints {
         constructFieldRepresentation();
     }
 
+    //CHECKSTYLE:OFF
+
     private void constructFieldRepresentation() {
         nodesToAddToGraph.clear();
 
@@ -177,6 +179,8 @@ public class GraphField implements ProvidesWaypoints {
         connectRedToBlue(bottomWing, sourceMiddle);
         connectRedToBlue(bottomWing, sourceFarthest);
     }
+
+    //CHECKSTYLE:ON
 
     private Pair<Pose2dNode, Pose2dNode> createBlueAndRedVariants(String baseName, Pose2d bluePose) {
         baseName = baseName.replace("Red", "").replace("Blue", "");

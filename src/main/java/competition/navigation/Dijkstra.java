@@ -34,7 +34,9 @@ class Dijkstra {
             explored.add(current);
 
             for (Edge edge : current.edges) {
-                if (explored.contains(edge.destination)) continue;
+                if (explored.contains(edge.destination)) {
+                    continue;
+                }
                 double newDist = distances.get(current) + edge.weight;
                 if (newDist < distances.get(edge.destination)) {
                     distances.put(edge.destination, newDist);

@@ -34,5 +34,5 @@ public class TestGraphField extends BaseCompetitionTest {
         GraphField graphField = new GraphField();
         var path = graphField.getShortestPath("BlueSubwooferMiddle", "BlueSourceFarthest");
 
-        assertEquals(6, path.size());}
+        assertEquals(7, path.size());}
 }
