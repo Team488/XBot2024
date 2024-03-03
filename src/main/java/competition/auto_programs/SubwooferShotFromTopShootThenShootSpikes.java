@@ -43,10 +43,12 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position
+        queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer (top)");
         var fireFirstNoteCommand = fireFromSubwooferCommandGroup.get();
         this.addCommands(fireFirstNoteCommand);
 
         // Drive to top spike note and collect
+        queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(top) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.SpikeTop);
@@ -64,6 +66,7 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         this.addCommands(fireSecondNoteCommand);
 
         // Drive to middle spike note and collect
+        queueMessageToAutoSelector("Drive to middle spike note, collect, drive back to sub(top) and shoot");
         var driveToMiddleSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
         driveToMiddleSpikeNote.addPointsSupplier(this::goToTopWhiteLineThenSpikeMiddle);
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
@@ -82,11 +85,12 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         var fireThirdNoteCommand = fireFromSubwooferCommandGroup.get();
         this.addCommands(fireThirdNoteCommand);
 
-        // Drive to top spike note and collect
-        var driveToTopSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
-        driveToTopSpikeNote.addPointsSupplier(this::goToTopWhiteLineThenSpikeBottom);
+        // Drive to bottom spike note and collect
+        queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(top) and shoot");
+        var driveToBottomSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
+        driveToBottomSpikeNote.addPointsSupplier(this::goToTopWhiteLineThenSpikeBottom);
         var collectSequenceTop = collectSequenceCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
+        this.addCommands(Commands.deadline(collectSequenceTop, driveToBottomSpikeNote));
 //        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
 
         // Drive back to subwoofer
@@ -124,6 +128,10 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
                 PoseSubsystem.BlueSubwooferTopScoringLocation.getRotation(), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferTopScoringLocation, 10));
         return points;
+    }
+
+    private void queueMessageToAutoSelector(String message) {
+        this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
     }
 
 }

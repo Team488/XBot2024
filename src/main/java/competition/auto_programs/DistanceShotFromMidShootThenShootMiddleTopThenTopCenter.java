@@ -75,15 +75,15 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         var fireThirdNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(Commands.deadline(fireThirdNoteCommand, pointAtSpeakerSecond));
 
-        // Drive to bottom spike note and collect
-        queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to middle spike location and shoot");
+        // Drive to top center note and collect
+        queueMessageToAutoSelector("Drive to center top note, collect, drive back to middle spike location and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
                     drive.setTargetNote(PoseSubsystem.CenterLine1);
                 })
         );
-        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
-        this.addCommands(driveToBottomSpikeNoteAndCollect);
+        var driveToTopCenterNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
+        this.addCommands(driveToTopCenterNoteAndCollect);
 
         // drive back to middle spike location
         var driveToMiddleSpikeScoringLocation = driveToMidSpikeScoringLocationProvider.get();
