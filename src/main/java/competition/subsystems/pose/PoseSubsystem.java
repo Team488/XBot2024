@@ -102,7 +102,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         extremelyConfidentVisionDistanceUpdateInMetersProp = propManager.createPersistentProperty("ExtremelyConfidentVisionDistanceUpdateInMeters", 0.01);
         isVisionPoseExtremelyConfident = false;
         allianceAwareFieldProp = propManager.createPersistentProperty("Alliance Aware Field", true);
-        useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", true);
+        useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", false);
         useForwardCameraForPose = propManager.createPersistentProperty("Use forward april cam", true);
         useRearCameraForPose = propManager.createPersistentProperty("Use rear april cam", true);
 
@@ -189,17 +189,24 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 getSwerveModulePositions()
         );
 
-        if (isUsingVisionAssistedPose()) {
-            improveFusedOdometryUsingPhotonLib(updatedPosition);
-        }
+        improveFusedOdometryUsingPhotonLib(updatedPosition);
 
         aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
         aKitLog.record("WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
-        // For now, we only trust the odometry and the gyro. We will continue to log the vision data,
-        // but the few inches of error we are seeing in the vision system are causing us to miss
+        Translation2d positionSource;
+        if (isUsingVisionAssistedPose() || DriverStation.isTeleop()) {
+            // If we trust vision implicitly, use it all the time.
+            // If we don't trust it strongly, we still need to use it in teleop as
+            // odometry will build up a lot of error quickly.
+            positionSource = fusedSwerveOdometry.getEstimatedPosition().getTranslation();
+        } else {
+            // If we don't trust vision, use only odometry. Typically happens in autonomous.
+            positionSource = onlyWheelsGyroSwerveOdometry.getEstimatedPosition().getTranslation();
+        }
+
         var estimatedPosition = new Pose2d(
-                onlyWheelsGyroSwerveOdometry.getEstimatedPosition().getTranslation(),
+                positionSource,
                 getCurrentHeading());
 
         totalDistanceX = estimatedPosition.getX();
