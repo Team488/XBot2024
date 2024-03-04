@@ -12,36 +12,31 @@ import java.util.ArrayList;
 public class LineUpForHangingCommand extends SwerveSimpleTrajectoryCommand {
 
     PoseSubsystem pose;
-    Pose2d hang1 = PoseSubsystem.BlueTopHangingLineUp;
-    Pose2d hang2 = PoseSubsystem.BlueBottomHangingLineUp;
-    Pose2d hang3 = PoseSubsystem.BlueHangFromBackLineUp;
-
-    private double calculateDistance(double x1, double x2, double y1, double y2) {
-        return Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
-    }
+    Pose2d hang1 = PoseSubsystem.BlueStageNWHangingPreparationPoint;
+    Pose2d hang2 = PoseSubsystem.BlueStageSWHangingPreparationPoint;
+    Pose2d hang3 = PoseSubsystem.BlueStageEHangingPreparationPoint;
 
     private Pose2d getClosestMagnitudeHangingPosition() {
         Pose2d currentPose = pose.getCurrentPose2d();
 
-        double dist1 = calculateDistance(hang1.getX(), currentPose.getX(), hang1.getY(), currentPose.getY());
-        double dist2 = calculateDistance(hang2.getX(), currentPose.getX(), hang2.getY(), currentPose.getY());
-        double dist3 = calculateDistance(hang3.getX(), currentPose.getX(), hang3.getY(), currentPose.getY());
+        // Get distance between currentPose and hangingPoses
+        double dist1 = hang1.getTranslation().getDistance(currentPose.getTranslation());
+        double dist2 = hang2.getTranslation().getDistance(currentPose.getTranslation());
+        double dist3 = hang3.getTranslation().getDistance(currentPose.getTranslation());
 
+        // Return closest Pose2d
+        Pose2d closestPose = hang1;
         double leastDistance = dist1;
+
         if (dist2 < leastDistance) {
             leastDistance = dist2;
+            closestPose = hang2;
         }
         if (dist3 < leastDistance) {
-            leastDistance = dist3;
+            closestPose = hang3;
         }
 
-        if (leastDistance == dist1) {
-            return hang1;
-        } else if (leastDistance == dist2) {
-            return hang2;
-        } else {
-            return hang3;
-        }
+        return closestPose;
     }
 
     @Inject
@@ -53,15 +48,17 @@ public class LineUpForHangingCommand extends SwerveSimpleTrajectoryCommand {
 
     @Override
     public void initialize() {
-        super.initialize();
 
-        // Get the closest hanging position from where we currently are.
+        // Get the closest hanging position
         Pose2d closestHangingPose = getClosestMagnitudeHangingPosition();
 
+        // Set up swerve points to the position
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(closestHangingPose, 10));
         logic.setKeyPoints(points);
         logic.setEnableConstantVelocity(true);
-        logic.setConstantVelocity(1);
+        logic.setConstantVelocity(3);
+
+        super.initialize();
     }
 }
