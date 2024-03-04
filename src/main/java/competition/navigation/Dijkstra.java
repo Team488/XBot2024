@@ -39,9 +39,10 @@ class Dijkstra {
                 }
                 double newDist = distances.get(current) + edge.weight;
                 if (newDist < distances.get(edge.destination)) {
+                    nodes.remove(edge.destination); // Remove the old node
                     distances.put(edge.destination, newDist);
                     previous.put(edge.destination, current);
-                    nodes.add(edge.destination); // Update priority queue
+                    nodes.add(edge.destination); // Add the updated node
                 }
             }
         }

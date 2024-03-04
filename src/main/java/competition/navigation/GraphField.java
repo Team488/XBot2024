@@ -1,10 +1,11 @@
 package competition.navigation;
 
-import competition.subsystems.oracle.ScoringLocation;
 import competition.subsystems.pose.PointOfInterest;
-import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
 import xbot.common.trajectory.ProvidesWaypoints;
 import xbot.common.trajectory.XbotSwervePoint;
 
@@ -205,8 +206,16 @@ public class GraphField implements ProvidesWaypoints {
         return Dijkstra.findShortestPath(graph, startName, endName);
     }
 
+    public List<Pose2dNode> getShortestPath(PointOfInterest start, PointOfInterest end) {
+        return getShortestPath(start.getName(), end.getName());
+    }
+
     public Pose2dNode getNode(String name) {
         return graph.getNode(name);
+    }
+
+    public Pose2dNode getNode(PointOfInterest poi) {
+        return getNode(poi.getName());
     }
 
     public List<XbotSwervePoint> getShortestPathInSwervePoints(String startName, String endName) {
@@ -236,5 +245,34 @@ public class GraphField implements ProvidesWaypoints {
         }
 
         return swervePoints;
+    }
+
+    public List<Pair<String,Trajectory>> visualizeNodesAndEdges() {
+        List<Pair<String,Trajectory>> trajectories = new ArrayList<>();
+        for (Pose2dNode node : graph.nodes.values()) {
+            trajectories.add(new Pair<>(node.name+"Node", generateTrajectoryForNode(node)));
+            trajectories.add(new Pair<>(node.name+"Edges", node.visualizeConnectionsAsTrajectory()));
+        }
+        return trajectories;
+    }
+
+    private Trajectory generateTrajectoryForNode(Pose2dNode node) {
+
+        var wpiStates = new ArrayList<edu.wpi.first.math.trajectory.Trajectory.State>();
+        edu.wpi.first.math.trajectory.Trajectory.State topRight = new edu.wpi.first.math.trajectory.Trajectory.State();
+        topRight.poseMeters = new Pose2d(node.getTranslation().plus(new Translation2d(0.1, .1)), new Rotation2d());
+        edu.wpi.first.math.trajectory.Trajectory.State topLeft = new edu.wpi.first.math.trajectory.Trajectory.State();
+        topLeft.poseMeters = new Pose2d(node.getTranslation().plus(new Translation2d(-0.1, .1)), new Rotation2d());
+        edu.wpi.first.math.trajectory.Trajectory.State bottomRight = new edu.wpi.first.math.trajectory.Trajectory.State();
+        bottomRight.poseMeters = new Pose2d(node.getTranslation().plus(new Translation2d(0.1, -0.1)), new Rotation2d());
+        edu.wpi.first.math.trajectory.Trajectory.State bottomLeft = new edu.wpi.first.math.trajectory.Trajectory.State();
+        bottomLeft.poseMeters = new Pose2d(node.getTranslation().plus(new Translation2d(-0.1, -0.1)), new Rotation2d());
+
+
+        wpiStates.add(topLeft);
+        wpiStates.add(topRight);
+        wpiStates.add(bottomLeft);
+        wpiStates.add(bottomRight);
+        return new edu.wpi.first.math.trajectory.Trajectory(wpiStates);
     }
 }

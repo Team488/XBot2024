@@ -17,7 +17,7 @@ public enum PointOfInterest {
     CenterLine5(true, PoseSubsystem.CenterLine5),
 
     // Scoring locations
-    AmpScoringLocation(false, PoseSubsystem.BlueFarAmpScoringLocation),
+    AmpScoringLocation(false, PoseSubsystem.BlueAmpScoringLocation),
     SubwooferTopScoringLocation(false, PoseSubsystem.BlueSubwooferTopScoringLocation),
     SubwooferMiddleScoringLocation(false, PoseSubsystem.BlueSubwooferMiddleScoringLocation),
     SubwooferBottomScoringLocation(false, PoseSubsystem.BlueSubwooferBottomScoringLocation),

@@ -16,7 +16,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         addForBothAlliances(PointOfInterest.SubwooferMiddleScoringLocation);
         addForBothAlliances(PointOfInterest.SubwooferBottomScoringLocation);
         addForBothAlliances(PointOfInterest.PodiumScoringLocation);
-        addForBothAlliances(PointOfInterest.AmpScoringLocation);
+        addForBothAlliances(PointOfInterest.AmpFarScoringLocation);
     }
 
     private void addForBothAlliances(PointOfInterest pointOfInterest) {
@@ -29,7 +29,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         get(PointOfInterest.SubwooferMiddleScoringLocation, alliance).setAvailability(Availability.Unavailable);
         get(PointOfInterest.SubwooferBottomScoringLocation, alliance).setAvailability(Availability.Unavailable);
         get(PointOfInterest.PodiumScoringLocation, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.AmpScoringLocation, alliance).setAvailability(Availability.Unavailable);
+        get(PointOfInterest.AmpFarScoringLocation, alliance).setAvailability(Availability.Unavailable);
     }
 
     public ScoringLocation get(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {

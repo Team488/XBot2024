@@ -6,6 +6,7 @@ import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -176,7 +177,7 @@ public class DynamicOracle extends BaseSubsystem {
         noteMap.get(PointOfInterest.SpikeTop, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
         noteMap.get(PointOfInterest.SpikeMiddle, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
         noteMap.get(PointOfInterest.SpikeBottom, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
-        scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
+        scoringLocationMap.markAllianceScoringLocationsAsUnavailable(allianceToMarkAsUnavailable);
 
         // Disable subwoofer positions the driver has told us to avoid
         if (reserveTopSubwooferButton.getAsBoolean()) {
@@ -201,7 +202,8 @@ public class DynamicOracle extends BaseSubsystem {
 
         // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
         if (!reserveBottomSpikeButton.getAsBoolean()) {
-            scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, allianceToMarkAsUnavailable).setAvailability(Availability.MaskedByNote);
+            scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
+            field.getNode(PointOfInterest.PodiumScoringLocation.getName(ourAlliance)).setAllWeightsToMax();
         }
 
         // Disable center line notes the driver told us to avoid
@@ -330,6 +332,13 @@ public class DynamicOracle extends BaseSubsystem {
                 break;
         }
 
+        /*
+        if (field != null) {
+            for (Pair<String,Trajectory> labelAndTrajectory : field.visualizeNodesAndEdges()) {
+                aKitLog.record("Graph" + labelAndTrajectory.getFirst(), labelAndTrajectory.getSecond());
+            }
+        }*/
+
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
@@ -353,6 +362,7 @@ public class DynamicOracle extends BaseSubsystem {
                 && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == alliance
                 && noteMap.get(PointOfInterest.SpikeBottom, alliance).getAvailability() == Availability.Unavailable) {
             scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, alliance).setAvailability(Availability.Available);
+            field.getNode(PointOfInterest.PodiumScoringLocation.getName(alliance)).restoreWeights();
         }
     }
 
