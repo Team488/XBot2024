@@ -3,6 +3,7 @@ package competition.subsystems.oracle;
 import competition.navigation.GraphField;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,6 +22,7 @@ import xbot.common.trajectory.ProvidesWaypoints;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -113,21 +115,18 @@ public class DynamicOracle extends BaseSubsystem {
 
     Pose2d activeScoringPosition;
 
-    int noteCount = 1;
-    private void reserveNote(Note.KeyNoteNames specificNote) {
-        Note reserved = noteMap.get(specificNote);
+    private void reserveNote(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
+        Note reserved = noteMap.get(pointOfInterest, alliance);
         reserved.setAvailability(Availability.ReservedByOthersInAuto);
-        // create an obstacle at the same location.
-        noteCount++;
     }
 
     /**
-     * Reserve a scoring location, marking it inaccessible to the robot during autonomous.
-     * @param location The scoring location to mark as reserved by others during auto
+     * Reserve a scoring pointOfInterest, marking it inaccessible to the robot during autonomous.
+     * @param pointOfInterest The scoring pointOfInterest to mark as reserved by others during auto
      */
-    public void reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations location) {
+    public void reserveScoringLocationForOtherTeams(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         // Mark it as reserved in the map, so we don't try to navigate there
-        scoringLocationMap.get(location).setAvailability(Availability.ReservedByOthersInAuto);
+        scoringLocationMap.get(pointOfInterest, alliance).setAvailability(Availability.ReservedByOthersInAuto);
         // create the relevant obstacle so we path around any robot chilling there
     }
 
@@ -165,92 +164,64 @@ public class DynamicOracle extends BaseSubsystem {
         noteMap = new NoteMap();
         scoringLocationMap = new ScoringLocationMap();
 
-        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
-            // We are on the blue alliance.
-            // Disable things that aren't possible (on red side of field)
-            noteMap.get(Note.KeyNoteNames.RedSpikeTop).setAvailability(Availability.Unavailable);
-            noteMap.get(Note.KeyNoteNames.RedSpikeMiddle).setAvailability(Availability.Unavailable);
-            noteMap.get(Note.KeyNoteNames.RedSpikeBottom).setAvailability(Availability.Unavailable);
-            scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
-            // Disable subwoofer positions the driver has told us to avoid
-            if (reserveTopSubwooferButton.getAsBoolean()) {
-                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferTopBlue);
-            }
-            if (reserveMiddleSubwooferButton.getAsBoolean()) {
-                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleBlue);
-            }
-            if (reserveBottomSubwooferButton.getAsBoolean()) {
-                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue);
-            }
-            // Disable notes the driver told us to avoid
-            if (reserveTopSpikeButton.getAsBoolean()) {
-                reserveNote(Note.KeyNoteNames.BlueSpikeTop);
-            }
-            if (reserveMiddleSpikeButton.getAsBoolean()) {
-                reserveNote(Note.KeyNoteNames.BlueSpikeMiddle);
-            }
-            if (reserveBottomSpikeButton.getAsBoolean()) {
-                reserveNote(Note.KeyNoteNames.BlueSpikeBottom);
-            }
-
-            // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
-            if (!reserveBottomSpikeButton.getAsBoolean()) {
-                scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumBlue)
-                        .setAvailability(Availability.MaskedByNote);
-            }
-
-        } else {
-            // We are on the red alliance.
-            // Disable things that aren't possible (on blue side of field)
-            noteMap.get(Note.KeyNoteNames.BlueSpikeTop).setAvailability(Availability.Unavailable);
-            noteMap.get(Note.KeyNoteNames.BlueSpikeMiddle).setAvailability(Availability.Unavailable);
-            noteMap.get(Note.KeyNoteNames.BlueSpikeBottom).setAvailability(Availability.Unavailable);
-            scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Blue);
-            // Disable subwoofer positions the driver has told us to avoid
-            if (reserveTopSubwooferButton.getAsBoolean()) {
-                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferTopRed);
-            }
-            if (reserveMiddleSubwooferButton.getAsBoolean()) {
-                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferMiddleRed);
-            }
-            if (reserveBottomSubwooferButton.getAsBoolean()) {
-                reserveScoringLocationForOtherTeams(ScoringLocation.WellKnownScoringLocations.SubwooferBottomRed);
-            }
-            // Disable notes the driver told us to avoid
-            if (reserveTopSpikeButton.getAsBoolean()) {
-                reserveNote(Note.KeyNoteNames.RedSpikeTop);
-            }
-            if (reserveMiddleSpikeButton.getAsBoolean()) {
-                reserveNote(Note.KeyNoteNames.RedSpikeMiddle);
-            }
-            if (reserveBottomSpikeButton.getAsBoolean()) {
-                reserveNote(Note.KeyNoteNames.RedSpikeBottom);
-            }
-
-            // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
-            if (!reserveBottomSpikeButton.getAsBoolean()) {
-                scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumRed)
-                        .setAvailability(Availability.MaskedByNote);
-            }
+        DriverStation.Alliance ourAlliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
+        DriverStation.Alliance allianceToMarkAsUnavailable;
+        if (ourAlliance == DriverStation.Alliance.Blue) {
+            allianceToMarkAsUnavailable = DriverStation.Alliance.Red;
+        } else{
+            allianceToMarkAsUnavailable = DriverStation.Alliance.Blue;
         }
 
+        // Disable things that aren't possible
+        noteMap.get(PointOfInterest.SpikeTop, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
+        noteMap.get(PointOfInterest.SpikeMiddle, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
+        noteMap.get(PointOfInterest.SpikeBottom, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
+        scoringLocationMap.markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance.Red);
+
+        // Disable subwoofer positions the driver has told us to avoid
+        if (reserveTopSubwooferButton.getAsBoolean()) {
+            reserveScoringLocationForOtherTeams(PointOfInterest.SubwooferTopScoringLocation, ourAlliance);
+        }
+        if (reserveMiddleSubwooferButton.getAsBoolean()) {
+            reserveScoringLocationForOtherTeams(PointOfInterest.SubwooferMiddleScoringLocation, ourAlliance);
+        }
+        if (reserveBottomSubwooferButton.getAsBoolean()) {
+            reserveScoringLocationForOtherTeams(PointOfInterest.SubwooferBottomScoringLocation, ourAlliance);
+        }
+        // Disable notes the driver told us to avoid
+        if (reserveTopSpikeButton.getAsBoolean()) {
+            reserveNote(PointOfInterest.SpikeTop, ourAlliance);
+        }
+        if (reserveMiddleSpikeButton.getAsBoolean()) {
+            reserveNote(PointOfInterest.SpikeMiddle, ourAlliance);
+        }
+        if (reserveBottomSpikeButton.getAsBoolean()) {
+            reserveNote(PointOfInterest.SpikeBottom, ourAlliance);
+        }
+
+        // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
+        if (!reserveBottomSpikeButton.getAsBoolean()) {
+            scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, allianceToMarkAsUnavailable).setAvailability(Availability.MaskedByNote);
+        }
+
+        // Disable center line notes the driver told us to avoid
+        // This says we are reserving for blue, but the underlying layer will detect
+        // these are unique. (I wish there was a "invalid" alliance).
         if (reserveCenterLine1Button.getAsBoolean()) {
-            reserveNote(Note.KeyNoteNames.CenterLine1);
+            reserveNote(PointOfInterest.CenterLine1, DriverStation.Alliance.Blue);
         }
         if (reserveCenterLine2Button.getAsBoolean()) {
-            reserveNote(Note.KeyNoteNames.CenterLine2);
+            reserveNote(PointOfInterest.CenterLine2, DriverStation.Alliance.Blue);
         }
         if (reserveCenterLine3Button.getAsBoolean()) {
-            reserveNote(Note.KeyNoteNames.CenterLine3);
+            reserveNote(PointOfInterest.CenterLine3, DriverStation.Alliance.Blue);
         }
         if (reserveCenterLine4Button.getAsBoolean()) {
-            reserveNote(Note.KeyNoteNames.CenterLine4);
+            reserveNote(PointOfInterest.CenterLine4, DriverStation.Alliance.Blue);
         }
         if (reserveCenterLine5Button.getAsBoolean()) {
-            reserveNote(Note.KeyNoteNames.CenterLine5);
+            reserveNote(PointOfInterest.CenterLine5, DriverStation.Alliance.Blue);
         }
-
-        // TODO: Read the values from the neotrellis to reserve more notes / scoring locations.
     }
 
     /**
@@ -283,7 +254,7 @@ public class DynamicOracle extends BaseSubsystem {
                     var closestScoringLocation = scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
                             Availability.Available);
                     setTerminatingPoint(closestScoringLocation.getLocation());
-                    setChosenScoringLocation(closestScoringLocation.getWellKnownLocation());
+                    setChosenScoringLocation(closestScoringLocation.getPointOfInterest());
 
                     currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
                     setSpecialAimTarget(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_AIM_TARGET));
@@ -373,15 +344,15 @@ public class DynamicOracle extends BaseSubsystem {
     private void checkForPodiumShotBecomingAvailable() {
         // check to see if the podium note has been collected (it will be marked Unavailable).
         // If so, check our alliance, and restore the podium shot.
-        if (scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumBlue).getAvailability() == Availability.MaskedByNote
-                && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Blue
-                && noteMap.get(Note.KeyNoteNames.BlueSpikeBottom).getAvailability() == Availability.Unavailable) {
-            scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumBlue).setAvailability(Availability.Available);
-        }
-        if (scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumRed).getAvailability() == Availability.MaskedByNote
-                && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red
-                && noteMap.get(Note.KeyNoteNames.RedSpikeBottom).getAvailability() == Availability.Unavailable) {
-            scoringLocationMap.get(ScoringLocation.WellKnownScoringLocations.PodiumRed).setAvailability(Availability.Available);
+        checkForAllianceSpecificPodiumShotBecomingAvailable(DriverStation.Alliance.Blue);
+        checkForAllianceSpecificPodiumShotBecomingAvailable(DriverStation.Alliance.Red);
+    }
+
+    private void checkForAllianceSpecificPodiumShotBecomingAvailable(DriverStation.Alliance alliance) {
+        if (scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, alliance).getAvailability() == Availability.MaskedByNote
+                && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == alliance
+                && noteMap.get(PointOfInterest.SpikeBottom, alliance).getAvailability() == Availability.Unavailable) {
+            scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, alliance).setAvailability(Availability.Available);
         }
     }
 
@@ -440,12 +411,12 @@ public class DynamicOracle extends BaseSubsystem {
         return this.specialAimTarget;
     }
 
-    ScoringLocation.WellKnownScoringLocations chosenScoringLocation;
-    public ScoringLocation.WellKnownScoringLocations getChosenScoringLocation() {
+    PointOfInterest chosenScoringLocation;
+    public PointOfInterest getChosenScoringLocation() {
         return chosenScoringLocation;
     }
 
-    public void setChosenScoringLocation(ScoringLocation.WellKnownScoringLocations location) {
+    public void setChosenScoringLocation(PointOfInterest location) {
         chosenScoringLocation = location;
     }
 

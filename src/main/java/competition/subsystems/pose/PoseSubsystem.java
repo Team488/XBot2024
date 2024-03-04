@@ -51,9 +51,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
     public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0, 5.5, Rotation2d.fromDegrees(180));
-    public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
-    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
-    public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
+    public static Pose2d BlueSpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
+    public static Pose2d BlueSpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
+    public static Pose2d BlueSpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
     public static Pose2d CenterLine1 = new Pose2d(fieldXMidpointInMeters, 7.4584, new Rotation2d());
     public static Pose2d CenterLine2 = new Pose2d(fieldXMidpointInMeters, 5.7820, new Rotation2d());
     public static Pose2d CenterLine3 = new Pose2d(fieldXMidpointInMeters, 4.1056, new Rotation2d());
@@ -86,7 +86,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Rotation2d FaceCollectorToBlueSource = Rotation2d.fromDegrees(120);
 
     // More navigation points
-    public static Pose2d podiumWaypoint = new Pose2d(2.5, 4.25, new Rotation2d());
+    public static Pose2d BluePodiumWaypoint = new Pose2d(2.5, 4.25, new Rotation2d());
     public static Pose2d BlueTopWingUpper = new Pose2d(5.861, 7.374, new Rotation2d());
     public static Pose2d BlueTopWingLower = new Pose2d(5.861, 6.413, new Rotation2d());
     public static Pose2d BlueBottomWing = new Pose2d(5.861, 1.505, new Rotation2d());

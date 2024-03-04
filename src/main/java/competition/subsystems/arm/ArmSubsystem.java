@@ -5,6 +5,7 @@ import com.revrobotics.SparkLimitSwitch;
 import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.ScoringLocation;
+import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -489,23 +490,18 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return extension;
     }
 
-    public double getUsefulArmPositionExtensionInMm(ScoringLocation.WellKnownScoringLocations wellKnownScoringLocation) {
+    public double getUsefulArmPositionExtensionInMm(PointOfInterest pointOfInterest) {
         double extension = 0;
-        switch (wellKnownScoringLocation) {
-            case SubwooferTopBlue:
-            case SubwooferMiddleBlue:
-            case SubwooferBottomBlue:
-            case SubwooferTopRed:
-            case SubwooferMiddleRed:
-            case SubwooferBottomRed:
+        switch (pointOfInterest) {
+            case SubwooferTopScoringLocation:
+            case SubwooferMiddleScoringLocation:
+            case SubwooferBottomScoringLocation:
                 extension = 0;
                 break;
-            case PodiumBlue:
-            case PodiumRed:
+            case PodiumScoringLocation:
                 extension = 58.81;
                 break;
-            case AmpZoneFarBlue:
-            case AmpZoneFarRed:
+            case AmpFarScoringLocation:
                 extension = 71.1;
                 break;
             default:

@@ -51,7 +51,7 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(top) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeTop);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeTop);
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
@@ -108,7 +108,7 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeMiddle, 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSpikeMiddle, 10));
         return points;
     }
 
@@ -117,7 +117,7 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeBottom, 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSpikeBottom, 10));
         return points;
     }
 

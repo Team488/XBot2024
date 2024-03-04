@@ -1,14 +1,13 @@
 package competition.navigation;
 
 import competition.subsystems.oracle.ScoringLocation;
+import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import xbot.common.trajectory.ProvidesWaypoints;
 import xbot.common.trajectory.XbotSwervePoint;
 
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,52 +29,49 @@ public class GraphField implements ProvidesWaypoints {
 
         // Places you may want to go
         // Subwoofer
-        var subwooferTop = createBlueAndRedVariants(
-                ScoringLocation.WellKnownScoringLocations.SubwooferTopBlue.toString(), PoseSubsystem.BlueSubwooferTopScoringLocation);
-        var subwooferMiddle = createBlueAndRedVariants(
-                ScoringLocation.WellKnownScoringLocations.SubwooferMiddleBlue.toString(), PoseSubsystem.BlueSubwooferMiddleScoringLocation);
-        var subwooferBottom = createBlueAndRedVariants(
-                ScoringLocation.WellKnownScoringLocations.SubwooferBottomBlue.toString(), PoseSubsystem.BlueSubwooferBottomScoringLocation);
+        var subwooferTop = createBlueAndRedVariants(PointOfInterest.SubwooferTopScoringLocation);
+        var subwooferMiddle = createBlueAndRedVariants(PointOfInterest.SubwooferMiddleScoringLocation);
+        var subwooferBottom = createBlueAndRedVariants(PointOfInterest.SubwooferBottomScoringLocation);
 
         // Amp
-        var amp = createBlueAndRedVariants("Amp", PoseSubsystem.BlueAmpScoringLocation);
+        var amp = createBlueAndRedVariants(PointOfInterest.AmpScoringLocation);
 
         // Spike Notes
-        var spikeTop = createBlueAndRedVariants("SpikeTop", PoseSubsystem.SpikeTop);
-        var spikeMiddle = createBlueAndRedVariants("SpikeMiddle", PoseSubsystem.SpikeMiddle);
-        var spikeBottom = createBlueAndRedVariants("SpikeBottom", PoseSubsystem.SpikeBottom);
+        var spikeTop = createBlueAndRedVariants(PointOfInterest.SpikeTop);
+        var spikeMiddle = createBlueAndRedVariants(PointOfInterest.SpikeMiddle);
+        var spikeBottom = createBlueAndRedVariants(PointOfInterest.SpikeBottom);
 
         // Special Shots
-        var podiumShot = createBlueAndRedVariants("PodiumShot", PoseSubsystem.BluePodiumScoringLocation);
-        var ampFarShot = createBlueAndRedVariants("AmpFarShot", PoseSubsystem.BlueFarAmpScoringLocation);
+        var podiumShot = createBlueAndRedVariants(PointOfInterest.PodiumScoringLocation);
+        var ampFarShot = createBlueAndRedVariants(PointOfInterest.AmpFarScoringLocation);
 
         // Source
-        var sourceNearest = createBlueAndRedVariants("SourceNearest", PoseSubsystem.BlueSourceNearest);
-        var sourceMiddle = createBlueAndRedVariants("SourceMiddle", PoseSubsystem.BlueSourceMiddle);
-        var sourceFarthest = createBlueAndRedVariants("SourceFarthest", PoseSubsystem.BlueSourceFarthest);
+        var sourceNearest = createBlueAndRedVariants(PointOfInterest.SourceNearest);
+        var sourceMiddle = createBlueAndRedVariants(PointOfInterest.SourceMiddle);
+        var sourceFarthest = createBlueAndRedVariants(PointOfInterest.SourceFarthest);
 
         // Navigation waypoints
-        var lowerWhiteLine = createBlueAndRedVariants("LowerWhiteLine", PoseSubsystem.BlueSpikeBottomWhiteLine);
-        var upperWhiteLine = createBlueAndRedVariants("UpperWhiteLine", PoseSubsystem.BlueSpikeTopWhiteLine);
+        var lowerWhiteLine = createBlueAndRedVariants(PointOfInterest.SpikeBottomWhiteLine);
+        var upperWhiteLine = createBlueAndRedVariants(PointOfInterest.SpikeTopWhiteLine);
 
-        var topWingUpper = createBlueAndRedVariants("TopWingUpper", PoseSubsystem.BlueTopWingUpper);
-        var topWingLower = createBlueAndRedVariants("TopWingLower", PoseSubsystem.BlueTopWingLower);
-        var bottomWing = createBlueAndRedVariants("BottomWing", PoseSubsystem.BlueBottomWing);
+        var topWingUpper = createBlueAndRedVariants(PointOfInterest.TopWingUpper);
+        var topWingLower = createBlueAndRedVariants(PointOfInterest.TopWingLower);
+        var bottomWing = createBlueAndRedVariants(PointOfInterest.BottomWing);
 
-        var stageNW = createBlueAndRedVariants("StageNw", PoseSubsystem.BlueStageNW);
-        var stageE = createBlueAndRedVariants("StageE", PoseSubsystem.BlueStageE);
-        var stageSW = createBlueAndRedVariants("StageSw", PoseSubsystem.BlueStageSW);
-        var stageCenter = createBlueAndRedVariants("StageCenter", PoseSubsystem.BlueStageCenter);
-        var southOfStage = createBlueAndRedVariants("SouthOfStage", PoseSubsystem.BlueSouthOfStage);
+        var stageNW = createBlueAndRedVariants(PointOfInterest.StageNW);
+        var stageE = createBlueAndRedVariants(PointOfInterest.StageE);
+        var stageSW = createBlueAndRedVariants(PointOfInterest.StageSW);
+        var stageCenter = createBlueAndRedVariants(PointOfInterest.StageCenter);
+        var southOfStage = createBlueAndRedVariants(PointOfInterest.SouthOfStage);
 
-        var podiumWaypoint = createBlueAndRedVariants("PodiumPrepPoint", PoseSubsystem.podiumWaypoint);
+        var podiumWaypoint = createBlueAndRedVariants(PointOfInterest.PodiumWaypoint);
 
         // Centerline notes - no duplicates!
-        Pose2dNode centerLine1 = new Pose2dNode("CenterLine1", PoseSubsystem.CenterLine1);
-        Pose2dNode centerLine2 = new Pose2dNode("CenterLine2", PoseSubsystem.CenterLine2);
-        Pose2dNode centerLine3 = new Pose2dNode("CenterLine3", PoseSubsystem.CenterLine3);
-        Pose2dNode centerLine4 = new Pose2dNode("CenterLine4", PoseSubsystem.CenterLine4);
-        Pose2dNode centerLine5 = new Pose2dNode("CenterLine5", PoseSubsystem.CenterLine5);
+        Pose2dNode centerLine1 = new Pose2dNode(PointOfInterest.CenterLine1.toString(), PointOfInterest.CenterLine1.getLocation());
+        Pose2dNode centerLine2 = new Pose2dNode(PointOfInterest.CenterLine2.toString(), PointOfInterest.CenterLine2.getLocation());
+        Pose2dNode centerLine3 = new Pose2dNode(PointOfInterest.CenterLine3.toString(), PointOfInterest.CenterLine3.getLocation());
+        Pose2dNode centerLine4 = new Pose2dNode(PointOfInterest.CenterLine4.toString(), PointOfInterest.CenterLine4.getLocation());
+        Pose2dNode centerLine5 = new Pose2dNode(PointOfInterest.CenterLine5.toString(), PointOfInterest.CenterLine5.getLocation());
         nodesToAddToGraph.add(centerLine1);
         nodesToAddToGraph.add(centerLine2);
         nodesToAddToGraph.add(centerLine3);
@@ -182,10 +178,9 @@ public class GraphField implements ProvidesWaypoints {
 
     //CHECKSTYLE:ON
 
-    private Pair<Pose2dNode, Pose2dNode> createBlueAndRedVariants(String baseName, Pose2d bluePose) {
-        baseName = baseName.replace("Red", "").replace("Blue", "");
-        Pose2dNode blue = new Pose2dNode("Blue" + baseName, bluePose);
-        Pose2dNode red = new Pose2dNode("Red" + baseName, PoseSubsystem.convertBluetoRed(bluePose));
+    private Pair<Pose2dNode, Pose2dNode> createBlueAndRedVariants(PointOfInterest poi) {
+        Pose2dNode blue = new Pose2dNode(poi.getBlueName(), poi.getBlueLocation());
+        Pose2dNode red = new Pose2dNode(poi.getRedName(), poi.getRedLocation());
         nodesToAddToGraph.add(blue);
         nodesToAddToGraph.add(red);
         return new Pair<>(blue, red);

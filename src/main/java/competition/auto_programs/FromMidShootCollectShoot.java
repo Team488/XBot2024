@@ -57,7 +57,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         driveToMiddleSpike.logic.setAimAtGoalDuringFinalLeg(true);
         driveToMiddleSpike.logic.setKeyPointsProvider(() -> {
             ArrayList<XbotSwervePoint> points = new ArrayList<>();
-            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SpikeMiddle);
+            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSpikeMiddle);
             points.add(new XbotSwervePoint(target.getTranslation(), target.getRotation(), 10));
             return points;
         });

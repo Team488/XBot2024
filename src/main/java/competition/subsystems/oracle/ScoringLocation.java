@@ -1,30 +1,18 @@
 package competition.subsystems.oracle;
 
+import competition.subsystems.pose.PointOfInterest;
 import edu.wpi.first.math.geometry.Pose2d;
 
 public class ScoringLocation implements ReservableLocation {
 
-    public enum WellKnownScoringLocations {
-        SubwooferTopBlue,
-        SubwooferMiddleBlue,
-        SubwooferBottomBlue,
-        SubwooferTopRed,
-        SubwooferMiddleRed,
-        SubwooferBottomRed,
-        PodiumBlue,
-        AmpZoneFarBlue,
-        PodiumRed,
-        AmpZoneFarRed
-    }
-
     private Pose2d location;
     private Availability availability;
-    private WellKnownScoringLocations locationName;
+    private PointOfInterest pointOfInterest;
 
-    public ScoringLocation(Pose2d location, Availability availability, WellKnownScoringLocations locationName) {
+    public ScoringLocation(Pose2d location, Availability availability, PointOfInterest pointOfInterest) {
         this.location = location;
         this.availability = availability;
-        this.locationName = locationName;
+        this.pointOfInterest = pointOfInterest;
     }
 
     public Pose2d getLocation() {
@@ -35,8 +23,8 @@ public class ScoringLocation implements ReservableLocation {
         return availability;
     }
 
-    public WellKnownScoringLocations getWellKnownLocation() {
-        return locationName;
+    public PointOfInterest getPointOfInterest() {
+        return pointOfInterest;
     }
 
     public void setAvailability(Availability availability) {

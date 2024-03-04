@@ -3,6 +3,7 @@ package competition.subsystems.shooter;
 import com.revrobotics.CANSparkBase;
 
 import competition.subsystems.oracle.ScoringLocation;
+import competition.subsystems.pose.PointOfInterest;
 import xbot.common.advantage.DataFrameRefreshable;
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
@@ -127,11 +128,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         }
     }
 
-    public double getRPMForGivenScoringLocation(ScoringLocation.WellKnownScoringLocations location) {
-        switch (location) {
-            case SubwooferTopBlue, SubwooferTopRed, SubwooferMiddleBlue, SubwooferMiddleRed, SubwooferBottomBlue, SubwooferBottomRed -> {return 4000;}
-            case PodiumBlue, PodiumRed -> {return 4000;}
-            case AmpZoneFarBlue, AmpZoneFarRed -> {return 4000;}
+    public double getRPMForGivenScoringLocation(PointOfInterest pointOfInterest) {
+        switch (pointOfInterest) {
+            // These speeds may be different someday.
+            case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return 4000;}
+            case PodiumScoringLocation -> {return 4000;}
+            case AmpFarScoringLocation -> {return 4000;}
             default -> {return 0.0;}
         }
     }

@@ -45,7 +45,7 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         queueMessageToAutoSelector("Drive to middle spike note, collect and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeMiddle);
                 })
         );
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
@@ -62,7 +62,7 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         queueMessageToAutoSelector("Drive to top spike note, collect and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeTop);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeTop);
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectProvider.get();
