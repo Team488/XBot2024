@@ -16,6 +16,13 @@ public class LineUpForHangingCommand extends SwerveSimpleTrajectoryCommand {
     Pose2d hang2 = PoseSubsystem.BlueStageSWHangingPreparationPoint;
     Pose2d hang3 = PoseSubsystem.BlueStageEHangingPreparationPoint;
 
+    @Inject
+    LineUpForHangingCommand(DriveSubsystem drive, PoseSubsystem pose, PropertyFactory pf,
+                            HeadingModule.HeadingModuleFactory headingModuleFactory) {
+        super(drive, pose, pf, headingModuleFactory);
+        this.pose = pose;
+    }
+
     private Pose2d getClosestMagnitudeHangingPosition() {
         Pose2d currentPose = pose.getCurrentPose2d();
 
@@ -38,15 +45,7 @@ public class LineUpForHangingCommand extends SwerveSimpleTrajectoryCommand {
         if (dist3 < leastDistance) {
             closestPose = hang3;
         }
-
         return closestPose;
-    }
-
-    @Inject
-    LineUpForHangingCommand(DriveSubsystem drive, PoseSubsystem pose, PropertyFactory pf,
-                            HeadingModule.HeadingModuleFactory headingModuleFactory) {
-        super(drive, pose, pf, headingModuleFactory);
-        this.pose = pose;
     }
 
     @Override
