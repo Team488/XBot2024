@@ -83,6 +83,11 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public static Rotation2d FaceCollectorToBlueSource = Rotation2d.fromDegrees(120);
 
+    // Hanging positions
+    public static Pose2d BlueTopHangingLineUp = new Pose2d(3.859, 5.573, Rotation2d.fromDegrees(-60));
+    public static Pose2d BlueBottomHangingLineUp = new Pose2d(4.071, 2.736, Rotation2d.fromDegrees(60));
+    public static Pose2d BlueHangFromBackLineUp = new Pose2d(6.712, 4.087, Rotation2d.fromDegrees(180));
+
 
     private DoubleProperty matchTime;
 
