@@ -20,9 +20,12 @@ public class LineUpForHangingCommand extends SwerveSimpleTrajectoryCommand {
         Pose2d currentPose = pose.getCurrentPose2d();
 
         // Get distance between currentPose and hangingPoses
-        double dist1 = hang1.getTranslation().getDistance(currentPose.getTranslation());
-        double dist2 = hang2.getTranslation().getDistance(currentPose.getTranslation());
-        double dist3 = hang3.getTranslation().getDistance(currentPose.getTranslation());
+        double dist1 = PoseSubsystem.convertBlueToRedIfNeeded(
+                hang1).getTranslation().getDistance(currentPose.getTranslation());
+        double dist2 = PoseSubsystem.convertBlueToRedIfNeeded(
+                hang2).getTranslation().getDistance(currentPose.getTranslation());
+        double dist3 = PoseSubsystem.convertBlueToRedIfNeeded(
+                hang3).getTranslation().getDistance(currentPose.getTranslation());
 
         // Return closest Pose2d
         Pose2d closestPose = hang1;
