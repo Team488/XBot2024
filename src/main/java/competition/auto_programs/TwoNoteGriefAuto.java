@@ -1,7 +1,7 @@
 package competition.auto_programs;
 
 import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.arm.commands.SetArmAngleCommand;
+import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
@@ -37,7 +37,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
     }
     @Inject
     public TwoNoteGriefAuto(Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
-                            Provider<SetArmAngleCommand> setArmAngleProvider,
+                            Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
                             Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
                             Provider<FireWhenReadyCommand> fireWhenReadyCommandProvider,
                             IntakeScoocherCommand scoochIntake,
@@ -45,6 +45,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
                             IntakeUntilNoteCollectedCommand intakeUntilCollected,
                             PoseSubsystem pose,
                             DynamicOracle oracle,
+                            ArmSubsystem arm,
                             AutonomousCommandSelector autoSelector){
         this.autoSelector = autoSelector;
         this.oracle = oracle;
@@ -63,8 +64,8 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
                 warmUpForFirstSubwooferShot));
 
         //gets arm into scooching position and sets up swerve pathing to mess up center notes
-        var setArmToScooch = setArmAngleProvider.get();
-        setArmToScooch.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
+        var setArmToScooch = setArmExtensionCommandProvider.get();
+        setArmToScooch.setTargetExtension(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
 
         var swerveToEdge = swerveProvider.get();
         setUpLogic(swerveToEdge,KeyPointsForSwerve.CENTERLINE1);
@@ -83,8 +84,8 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         swerveLastNote.logic.setAimAtGoalDuringFinalLeg(true);
         swerveLastNote.logic.setDriveBackwards(true);
 
-        var setArmToCollect = setArmAngleProvider.get();
-        setArmToCollect.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
+        var setArmToCollect = setArmExtensionCommandProvider.get();
+        setArmToCollect.setTargetExtension(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
         //swap the swerve and the intake later this is just for simulator
         this.addCommands(setArmToCollect.alongWith(Commands.deadline(swerveLastNote,intakeUntilCollected)));

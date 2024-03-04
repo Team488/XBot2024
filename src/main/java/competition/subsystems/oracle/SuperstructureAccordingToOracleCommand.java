@@ -45,7 +45,7 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
                 tryToScore = false;
             }
             case ScoreInAmp -> {
-                arm.setTargetValue(arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP));
+                arm.setTargetValue(ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP);
                 tryToScore = true;
             }
             case ScoreInSpeaker -> {

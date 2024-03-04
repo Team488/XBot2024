@@ -18,8 +18,7 @@ public class PrepareToFireAtSpeakerFromPodiumCommand extends ParallelCommandGrou
             SetArmExtensionCommand setArmExtension,
             ArmSubsystem arm) {
         warmUpShooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
-        setArmExtension.setTargetExtension(
-                arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.PROTECTED_PODIUM_SHOT));
+        setArmExtension.setTargetExtension(ArmSubsystem.UsefulArmPosition.PROTECTED_PODIUM_SHOT);
 
         this.addCommands(warmUpShooter, setArmExtension);
     }

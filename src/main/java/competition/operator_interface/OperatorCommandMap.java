@@ -10,7 +10,9 @@ import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
+import competition.subsystems.arm.commands.ForceEngageBrakeCommand;
 import competition.subsystems.arm.commands.ManualHangingModeCommand;
+import competition.subsystems.arm.commands.RemoveForcedBrakingCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
@@ -174,28 +176,25 @@ public class OperatorCommandMap {
             FireWhenReadyCommand fireWhenReady,
             PrepareToFireAtSpeakerFromPodiumCommand prepareToFireAtSpeakerFromPodium,
             PrepareToFireAtSpeakerFromFarAmpCommand prepareToFireAtSpeakerFromFarAmp,
-            ManualHangingModeCommand manualHangingModeCommand
+            ManualHangingModeCommand manualHangingModeCommand,
+            ForceEngageBrakeCommand forceEngageBrakeCommand,
+            RemoveForcedBrakingCommand removeForcedBrakingCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
-        armToCollection.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND));
+        armToCollection.setTargetExtension(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
         var armToScooch = setArmExtensionCommandProvider.get();
-        armToScooch.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE));
+        armToScooch.setTargetExtension(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
 
         var armToSubwoofer = setArmExtensionCommandProvider.get();
-        armToSubwoofer.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER));
+        armToSubwoofer.setTargetExtension(ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER);
 
         var armToAmp = setArmExtensionCommandProvider.get();
-        armToAmp.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP));
+        armToAmp.setTargetExtension(ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP);
 
         var armToSource = setArmExtensionCommandProvider.get();
-        armToSource.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.COLLECT_DIRECTLY_FROM_SOURCE));
+        armToSource.setTargetExtension(ArmSubsystem.UsefulArmPosition.COLLECT_DIRECTLY_FROM_SOURCE);
 
         // Useful wheel speeds
         var warmUpShooterSubwoofer = warmUpShooterCommandProvider.get();
@@ -216,6 +215,8 @@ public class OperatorCommandMap {
         var continuouslyPrepareToFireAtSpeaker =
                 continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
+        // Forcing Brakes
+
         // Bind to buttons
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNoteFromGround);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
@@ -228,6 +229,8 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromPodium);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).whileTrue(forceEngageBrakeCommand);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).whileTrue(removeForcedBrakingCommand);
     }
     
     @Inject
