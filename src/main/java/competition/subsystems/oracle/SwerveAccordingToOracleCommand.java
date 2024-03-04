@@ -49,9 +49,9 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
+        logic.setWaypointRouter(oracle.getFieldWithObstacles());
         oracle.requestReevaluation();
         setNewInstruction();
-        logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
     }
 
     /**
@@ -66,11 +66,13 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         // corners collide with things.
         var goalPosition = oracle.getTerminatingPoint();
 
+        logic.setPrioritizeRotationIfCloseToGoal(true);
+
         if (oracle.getHighLevelGoal() == DynamicOracle.HighLevelGoal.CollectNote) {
             // Since we're going to grab a note, point the front end of our robot towards the goal,
             // since our collector is on the front side.
             logic.setDriveBackwards(true);
-            logic.setAimAtIntermediateNonFinalLegs(true);
+            logic.setAimAtIntermediateNonFinalLegs(false);
             logic.setAimAtGoalDuringFinalLeg(true);
 
             if (oracle.targetNote == null) {
@@ -87,7 +89,9 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
                     logic.setAimAtGoalDuringFinalLeg(false);
                 } else {
                     // Note is in the clear, just drive straight at it.
-                    logic.setEnableSpecialAimTarget(false);
+                    logic.setEnableSpecialAimTarget(true);
+                    logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
+                    logic.setAimAtGoalDuringFinalLeg(false);
                 }
 
                 logic.setEnableSpecialAimDuringFinalLeg(false);
@@ -97,16 +101,17 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         } else {
             // We are doing some kind of score operation.
             // Setup general "follow the path" behavior
-            logic.setAimAtIntermediateNonFinalLegs(true);
-            logic.setAimAtGoalDuringFinalLeg(true);
+            logic.setAimAtIntermediateNonFinalLegs(false);
+            logic.setAimAtGoalDuringFinalLeg(false);
             // We want to point the back of our robot towards the goal,
             // since our shooter is on the back side of the robot.
             logic.setDriveBackwards(false);
             // This "special aim" mode instructs the robot to aim at a point that isn't the goal point. For example,
             // we could aim directly at the Speaker aperture regardless of where the robot is, causing the robot to
             // "track" the speaker as it moves towards a nice firing point.
-            logic.setEnableSpecialAimDuringFinalLeg(true);
-            logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
+            logic.setEnableSpecialAimTarget(false);
+            logic.setEnableSpecialAimDuringFinalLeg(false);
+            //logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
 
             // TODO: split the score in speaker and score in Amp into two independent sections. It's likely
             // they will want different behavior.

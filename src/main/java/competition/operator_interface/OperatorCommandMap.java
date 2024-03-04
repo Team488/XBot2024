@@ -241,7 +241,7 @@ public class OperatorCommandMap {
         oi.neoTrellis.getifAvailable(17).onTrue(teleportRobotToSubwooferTop);
 
         var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation)).ignoringDisable(true);
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation)).ignoringDisable(true);
         oi.neoTrellis.getifAvailable(18).onTrue(teleportRobotToSubwooferMid);
 
         var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(

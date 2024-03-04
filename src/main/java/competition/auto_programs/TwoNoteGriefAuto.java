@@ -52,7 +52,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
 
         //starts us in front of the subwoofer, to score
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         //fires the note we are holding at the start
@@ -107,7 +107,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         swerve.logic.setEnableConstantVelocity(true);
         swerve.logic.setConstantVelocity(4.5);
         swerve.logic.setKeyPoints(getPoints(point));
-        swerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        swerve.logic.setWaypointRouter(oracle.getFieldWithObstacles());
     }
     //a key to make this function return different points based on what you need
     private ArrayList<XbotSwervePoint> getPoints(KeyPointsForSwerve point){

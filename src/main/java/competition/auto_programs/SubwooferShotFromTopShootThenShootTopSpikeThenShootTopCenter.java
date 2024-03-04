@@ -4,24 +4,16 @@ import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.drive.commands.DriveToBottomSubwooferCommand;
-import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsForCollectCommand;
 import competition.subsystems.drive.commands.DriveToTopSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
-import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter extends SequentialCommandGroup {
 
@@ -53,7 +45,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter extend
         queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(top) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeTop);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeTop);
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
