@@ -10,7 +10,9 @@ import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
+import competition.subsystems.arm.commands.ForceEngageBrakeCommand;
 import competition.subsystems.arm.commands.ManualHangingModeCommand;
+import competition.subsystems.arm.commands.RemoveForcedBrakingCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
@@ -174,7 +176,9 @@ public class OperatorCommandMap {
             FireWhenReadyCommand fireWhenReady,
             PrepareToFireAtSpeakerFromPodiumCommand prepareToFireAtSpeakerFromPodium,
             PrepareToFireAtSpeakerFromFarAmpCommand prepareToFireAtSpeakerFromFarAmp,
-            ManualHangingModeCommand manualHangingModeCommand
+            ManualHangingModeCommand manualHangingModeCommand,
+            ForceEngageBrakeCommand forceEngageBrakeCommand,
+            RemoveForcedBrakingCommand removeForcedBrakingCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -216,6 +220,8 @@ public class OperatorCommandMap {
         var continuouslyPrepareToFireAtSpeaker =
                 continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
+        // Forcing Brakes
+
         // Bind to buttons
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNoteFromGround);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightTrigger).whileTrue(fireWhenReady.repeatedly());
@@ -228,6 +234,8 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(continuouslyPrepareToFireAtSpeaker);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromPodium);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).whileTrue(forceEngageBrakeCommand);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).whileTrue(removeForcedBrakingCommand);
     }
     
     @Inject
