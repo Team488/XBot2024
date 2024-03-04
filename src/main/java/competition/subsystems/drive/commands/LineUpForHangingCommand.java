@@ -55,7 +55,7 @@ public class LineUpForHangingCommand extends SwerveSimpleTrajectoryCommand {
     public void initialize() {
         super.initialize();
 
-        // Get the closest position to our
+        // Get the closest hanging position from where we currently are.
         Pose2d closestHangingPose = getClosestMagnitudeHangingPosition();
 
         ArrayList<XbotSwervePoint> points = new ArrayList<>();
