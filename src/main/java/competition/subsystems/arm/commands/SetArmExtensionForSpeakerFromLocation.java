@@ -5,19 +5,19 @@ import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
 
-public class SetArmAngleForSpeakerFromLocation extends BaseSetpointCommand {
+public class SetArmExtensionForSpeakerFromLocation extends BaseSetpointCommand {
 
     ArmSubsystem arm;
 
     @Inject
-    SetArmAngleForSpeakerFromLocation(ArmSubsystem arm) {
+    SetArmExtensionForSpeakerFromLocation(ArmSubsystem arm) {
         super(arm);
         this.arm = arm;
     }
 
     @Override
     public void initialize() {
-        arm.setTargetValue(arm.getAngleFromRange());
+        arm.setTargetValue(arm.getRecommendedExtensionForSpeaker());
     }
 
     @Override

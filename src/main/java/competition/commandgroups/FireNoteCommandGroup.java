@@ -1,6 +1,6 @@
 package competition.commandgroups;
 
-import competition.subsystems.arm.commands.SetArmAngleForSpeakerFromLocation;
+import competition.subsystems.arm.commands.SetArmExtensionForSpeakerFromLocation;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.SetShooterSpeedFromLocationCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -12,7 +12,7 @@ public class FireNoteCommandGroup extends ParallelDeadlineGroup {
     @Inject
     FireNoteCommandGroup(SetShooterSpeedFromLocationCommand setShooterSpeedFromLocationCommand,
                          FireWhenReadyCommand fireWhenReadyCommand,
-                         SetArmAngleForSpeakerFromLocation setArmFromLocationCommand) {
+                         SetArmExtensionForSpeakerFromLocation setArmFromLocationCommand) {
 
         // Fire note when arm angle and shooter rpm within our range
         super(fireWhenReadyCommand);
