@@ -32,12 +32,9 @@ public class FireWhenReadyCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        /* WE CANNOT CHECK IF CURRENT VALUE OF WHEEL AND TARGET VALUE ARE EXACTLY THE SAME, THAT IS WHY WE
-        HAVE THE TOLERANCE PROPERTIES IN THE FIRST PLACE
-
-        RUNS 50 TIMES A SECOND
-        */
-        if (collector.getIntakeState() == CollectorSubsystem.IntakeState.FIRING || (wheel.isMaintainerAtGoal() && arm.isMaintainerAtGoal())) {
+        if (wheel.isMaintainerAtGoal()
+                && arm.isMaintainerAtGoal()
+                && wheel.getTargetValue().upperWheelsTargetRPM > 50) {
             collector.fire();
         }
     }

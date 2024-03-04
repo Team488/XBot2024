@@ -19,6 +19,7 @@ public class IntakeUntilNoteCollectedCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
+        collector.resetCollectionState();
     }
 
     @Override

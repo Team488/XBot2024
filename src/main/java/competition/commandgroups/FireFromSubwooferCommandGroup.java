@@ -1,7 +1,6 @@
 package competition.commandgroups;
 
 import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.arm.commands.SetArmAngleCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
@@ -19,7 +18,7 @@ public class FireFromSubwooferCommandGroup extends ParallelDeadlineGroup {
                                          ArmSubsystem armSubsystem) {
         super(fireWhenReadyCommand);
 
-        warmUpShooterCommand.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpShooterCommand.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         setArmExtensionCommand.setTargetExtension(
                 armSubsystem.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER));
 

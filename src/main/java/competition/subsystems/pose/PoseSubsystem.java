@@ -81,7 +81,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Pose2d BlueSpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());
     public static Pose2d BlueSpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
 
-
+    public static Rotation2d FaceCollectorToBlueSource = Rotation2d.fromDegrees(120);
 
 
     private DoubleProperty matchTime;
