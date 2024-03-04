@@ -182,24 +182,19 @@ public class OperatorCommandMap {
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
-        armToCollection.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND));
+        armToCollection.setTargetExtension(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
         var armToScooch = setArmExtensionCommandProvider.get();
-        armToScooch.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE));
+        armToScooch.setTargetExtension(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
 
         var armToSubwoofer = setArmExtensionCommandProvider.get();
-        armToSubwoofer.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER));
+        armToSubwoofer.setTargetExtension(ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER);
 
         var armToAmp = setArmExtensionCommandProvider.get();
-        armToAmp.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP));
+        armToAmp.setTargetExtension(ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP);
 
         var armToSource = setArmExtensionCommandProvider.get();
-        armToSource.setTargetExtension(arm.getUsefulArmPositionExtensionInMm(
-                ArmSubsystem.UsefulArmPosition.COLLECT_DIRECTLY_FROM_SOURCE));
+        armToSource.setTargetExtension(ArmSubsystem.UsefulArmPosition.COLLECT_DIRECTLY_FROM_SOURCE);
 
         // Useful wheel speeds
         var warmUpShooterSubwoofer = warmUpShooterCommandProvider.get();

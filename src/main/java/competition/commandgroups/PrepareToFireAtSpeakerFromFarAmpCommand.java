@@ -16,8 +16,7 @@ public class PrepareToFireAtSpeakerFromFarAmpCommand  extends ParallelCommandGro
             SetArmExtensionCommand setArmExtension,
             ArmSubsystem arm) {
         warmUpShooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
-        setArmExtension.setTargetExtension(
-                arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.PROTECTED_FAR_AMP_SHOT));
+        setArmExtension.setTargetExtension(ArmSubsystem.UsefulArmPosition.PROTECTED_FAR_AMP_SHOT);
 
         this.addCommands(warmUpShooter, setArmExtension);
     }
