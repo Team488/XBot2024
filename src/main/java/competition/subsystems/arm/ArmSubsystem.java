@@ -89,6 +89,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     private static double[] experimentalArmExtensionsInMm = new double[]{0, 0};
 
     boolean manualHangingModeEngaged = false;
+    boolean brakesForceEngaged = false;
 
 
 
@@ -135,7 +136,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         // THIS IS FOR END OF DAY COMMIT        
         pf.setPrefix(this);
         this.contract = contract;
-        setBrakeEnabled(false);
+        setBrakeState(false);
         extendPower = 0.1;
         retractPower = -0.1;
       
@@ -369,10 +370,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         // Engage brake if no power commanded
         if (leftPower == 0 && rightPower == 0) {
-            setBrakeEnabled(true);
+            setBrakeState(true);
         } else {
             // Disengage brake if any power commanded.
-            setBrakeEnabled(false);
+            setBrakeState(false);
         }
 
         // finally, if the brake is engaged, just stop the motors.
@@ -389,7 +390,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     boolean brakeEngaged = false;
     //brake solenoid
-    public void setBrakeEnabled(boolean enabled) {
+    public void setBrakeState(boolean enabled) {
+        if (brakesForceEngaged) {
+            enabled = true;
+        }
+
         brakeEngaged = enabled;
         if (enabled) {
             armBrakeSolenoid.setForward();
@@ -400,6 +405,21 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public boolean getBrakeEngaged() {
         return brakeEngaged;
+    }
+
+    /**
+     * Forces the brakes on, even if other callers try to free them.
+     * @param enabled if true, brakes will stay permanently engaged until this is called again with false
+     */
+    public void setForceBrakesEngaged(boolean enabled) {
+        brakesForceEngaged = enabled;
+        if (enabled) {
+            setBrakeState(true);
+        }
+    }
+
+    public boolean getForceBrakesEngaged() {
+        return brakesForceEngaged;
     }
 
     double previousPower;
@@ -417,7 +437,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public void dangerousManualSetPowerToBothArms(double power) {
-        setBrakeEnabled(false);
+        setForceBrakesEngaged(false);
+        setBrakeState(false);
         if (contract.isArmReady()) {
             armMotorLeft.set(power);
             armMotorRight.set(power);
