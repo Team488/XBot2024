@@ -58,6 +58,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         // then we need to kill power.
         if (isMaintainerAtGoal() || shouldFreezeArmSinceEndOfMatch()) {
             arm.setPower(0.0);
+            arm.setForceBrakesEngaged(true);
         } else {
             double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
             arm.setPower(power);
@@ -72,6 +73,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     protected void humanControlAction() {
         if (shouldFreezeArmSinceEndOfMatch()) {
             arm.setPower(0.0);
+            arm.setForceBrakesEngaged(true);
         } else {
             super.humanControlAction();
         }
