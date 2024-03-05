@@ -6,24 +6,20 @@ import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
-import xbot.common.controls.sensors.buttons.AdvancedTrigger;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
-import xbot.common.trajectory.LowResField;
 import xbot.common.trajectory.Obstacle;
 import xbot.common.trajectory.ProvidesWaypoints;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -54,10 +50,10 @@ public class DynamicOracle extends BaseSubsystem {
     ScoringSubGoals currentScoringSubGoal;
     boolean firstRunInNewGoal;
 
-    PoseSubsystem pose;
-    VisionSubsystem vision;
-    ArmSubsystem arm;
-    OperatorInterface oi;
+    final PoseSubsystem pose;
+    final VisionSubsystem vision;
+    final ArmSubsystem arm;
+    final OperatorInterface oi;
 
     final BooleanProperty includeVisionNotes;
     final DoubleProperty maxVisionNoteAge;
@@ -65,19 +61,6 @@ public class DynamicOracle extends BaseSubsystem {
     int instructionNumber = 0;
     double robotWidth = 0.914+0.5;
     double scoringZoneOffset = 0.93;
-
-    private final AdvancedTrigger reserveTopSubwooferButton;
-    private final AdvancedTrigger reserveMiddleSubwooferButton;
-    private final AdvancedTrigger reserveBottomSubwooferButton;
-    private final AdvancedTrigger reserveTopSpikeButton;
-    private final AdvancedTrigger reserveMiddleSpikeButton;
-    private final AdvancedTrigger reserveBottomSpikeButton;
-    private final AdvancedTrigger reserveCenterLine1Button;
-    private final AdvancedTrigger reserveCenterLine2Button;
-    private final AdvancedTrigger reserveCenterLine3Button;
-    private final AdvancedTrigger reserveCenterLine4Button;
-    private final AdvancedTrigger reserveCenterLine5Button;
-
 
     @Inject
     public DynamicOracle(NoteCollectionInfoSource noteCollectionInfoSource, NoteFiringInfoSource noteFiringInfoSource,
@@ -100,18 +83,6 @@ public class DynamicOracle extends BaseSubsystem {
         this.currentHighLevelGoal = HighLevelGoal.CollectNote;
         this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         firstRunInNewGoal = true;
-
-        reserveTopSubwooferButton = oi.neoTrellis.getifAvailable(25);
-        reserveMiddleSubwooferButton = oi.neoTrellis.getifAvailable(26);
-        reserveBottomSubwooferButton = oi.neoTrellis.getifAvailable(27);
-        reserveTopSpikeButton = oi.neoTrellis.getifAvailable(10);
-        reserveMiddleSpikeButton = oi.neoTrellis.getifAvailable(11);
-        reserveBottomSpikeButton = oi.neoTrellis.getifAvailable(12);
-        reserveCenterLine1Button = oi.neoTrellis.getifAvailable(2);
-        reserveCenterLine2Button = oi.neoTrellis.getifAvailable(3);
-        reserveCenterLine3Button = oi.neoTrellis.getifAvailable(4);
-        reserveCenterLine4Button = oi.neoTrellis.getifAvailable(5);
-        reserveCenterLine5Button = oi.neoTrellis.getifAvailable(6);
     }
 
     Pose2d activeScoringPosition;
@@ -180,28 +151,16 @@ public class DynamicOracle extends BaseSubsystem {
         scoringLocationMap.markAllianceScoringLocationsAsUnavailable(allianceToMarkAsUnavailable);
 
         // Disable subwoofer positions the driver has told us to avoid
-        if (reserveTopSubwooferButton.getAsBoolean()) {
-            reserveScoringLocationForOtherTeams(PointOfInterest.SubwooferTopScoringLocation, ourAlliance);
-        }
-        if (reserveMiddleSubwooferButton.getAsBoolean()) {
-            reserveScoringLocationForOtherTeams(PointOfInterest.SubwooferMiddleScoringLocation, ourAlliance);
-        }
-        if (reserveBottomSubwooferButton.getAsBoolean()) {
-            reserveScoringLocationForOtherTeams(PointOfInterest.SubwooferBottomScoringLocation, ourAlliance);
-        }
-        // Disable notes the driver told us to avoid
-        if (reserveTopSpikeButton.getAsBoolean()) {
-            reserveNote(PointOfInterest.SpikeTop, ourAlliance);
-        }
-        if (reserveMiddleSpikeButton.getAsBoolean()) {
-            reserveNote(PointOfInterest.SpikeMiddle, ourAlliance);
-        }
-        if (reserveBottomSpikeButton.getAsBoolean()) {
-            reserveNote(PointOfInterest.SpikeBottom, ourAlliance);
-        }
+        reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferTopScoringLocation, ourAlliance);
+        reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferMiddleScoringLocation, ourAlliance);
+        reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferBottomScoringLocation, ourAlliance);
+
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeTop, ourAlliance);
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeMiddle, ourAlliance);
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeBottom, ourAlliance);
 
         // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
-        if (!reserveBottomSpikeButton.getAsBoolean()) {
+        if (oi.getNeoTrellisValue(PointOfInterest.SpikeBottom)) {
             scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
             field.getNode(PointOfInterest.PodiumScoringLocation.getName(ourAlliance)).setAllWeightsToMax();
         }
@@ -209,20 +168,22 @@ public class DynamicOracle extends BaseSubsystem {
         // Disable center line notes the driver told us to avoid
         // This says we are reserving for blue, but the underlying layer will detect
         // these are unique. (I wish there was a "invalid" alliance).
-        if (reserveCenterLine1Button.getAsBoolean()) {
-            reserveNote(PointOfInterest.CenterLine1, DriverStation.Alliance.Blue);
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine1, DriverStation.Alliance.Blue);
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine2, DriverStation.Alliance.Blue);
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine3, DriverStation.Alliance.Blue);
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine4, DriverStation.Alliance.Blue);
+        reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine5, DriverStation.Alliance.Blue);
+    }
+
+    public void reserveScoringLocationBasedOnNeoTrellis(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
+        if (oi.getNeoTrellisValue(pointOfInterest)) {
+            reserveScoringLocationForOtherTeams(pointOfInterest, alliance);
         }
-        if (reserveCenterLine2Button.getAsBoolean()) {
-            reserveNote(PointOfInterest.CenterLine2, DriverStation.Alliance.Blue);
-        }
-        if (reserveCenterLine3Button.getAsBoolean()) {
-            reserveNote(PointOfInterest.CenterLine3, DriverStation.Alliance.Blue);
-        }
-        if (reserveCenterLine4Button.getAsBoolean()) {
-            reserveNote(PointOfInterest.CenterLine4, DriverStation.Alliance.Blue);
-        }
-        if (reserveCenterLine5Button.getAsBoolean()) {
-            reserveNote(PointOfInterest.CenterLine5, DriverStation.Alliance.Blue);
+    }
+
+    public void reserveNoteBasedOnNeoTrellis(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
+        if (oi.getNeoTrellisValue(pointOfInterest)) {
+            reserveNote(pointOfInterest, alliance);
         }
     }
 

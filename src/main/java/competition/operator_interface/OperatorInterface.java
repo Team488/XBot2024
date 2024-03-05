@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.subsystems.NeoTrellisGamepadSubsystem;
+import competition.subsystems.pose.PointOfInterest;
 import xbot.common.controls.sensors.XJoystick;
 import xbot.common.controls.sensors.XXboxController;
 import xbot.common.controls.sensors.XXboxController.XXboxControllerFactory;
@@ -68,5 +69,52 @@ public class OperatorInterface {
 
     public double getOperatorGamepadTypicalDeadbandSecond() {
         return operatorDeadbandSecond.get();
+    }
+
+    public boolean getNeoTrellisValue(PointOfInterest pointOfInterest) {
+        switch (pointOfInterest) {
+            case CenterLine1:
+                return neoTrellis.getButton(2);
+            case CenterLine2:
+                return neoTrellis.getButton(3);
+            case CenterLine3:
+                return neoTrellis.getButton(4);
+            case CenterLine4:
+                return neoTrellis.getButton(5);
+            case CenterLine5:
+                return neoTrellis.getButton(6);
+            case SpikeTop:
+                return neoTrellis.getButton(10);
+            case SpikeMiddle:
+                return neoTrellis.getButton(11);
+            case SpikeBottom:
+                return neoTrellis.getButton(12);
+            case AmpFarScoringLocation:
+                return neoTrellis.getButton(17);
+            // Top and Mid spike shot enable/disable needs to be done a different way.
+            case PodiumScoringLocation:
+                return neoTrellis.getButton(20);
+            case SubwooferTopScoringLocation:
+                return neoTrellis.getButton(25);
+            case SubwooferMiddleScoringLocation:
+                return neoTrellis.getButton(26);
+            case SubwooferBottomScoringLocation:
+                return neoTrellis.getButton(27);
+            default:
+                break;
+        }
+        return false;
+    }
+
+    public boolean areRangedShotsAllowedFrom(PointOfInterest pointOfInterest) {
+        switch (pointOfInterest) {
+            case SpikeTop -> {
+                return neoTrellis.getButton(18);
+            }
+            case SpikeMiddle -> {
+                return neoTrellis.getButton(19);
+            }
+        }
+        return false;
     }
 }
