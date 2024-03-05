@@ -66,7 +66,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     }
 
     private boolean shouldFreezeArmSinceEndOfMatch() {
-        return DriverStation.getMatchTime() < 1 && arm.couldPlausiblyBeHanging();
+        return DriverStation.getMatchTime() < 1 && arm.couldPlausiblyBeHanging() && DriverStation.isFMSAttached();
     }
 
     @Override
