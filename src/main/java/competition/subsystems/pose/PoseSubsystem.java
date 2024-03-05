@@ -24,6 +24,7 @@ import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -171,7 +172,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
      * Gets whether the robot should consider vision values for calculating pose.
      * @return Whether the robot pose will be calculated using vision.
      */
-    public boolean isUsingVisionAssistedPose() { return this.useVisionForPoseProp.get(); }
+    public boolean isUsingVisionAssistedPose() {
+        return this.useVisionForPoseProp.get() || DriverStation.isTeleop();
+    }
 
     /**
      * This is a legacy method for tank drive robots, and does not apply to swerve. We should look at
@@ -214,7 +217,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         aKitLog.record("WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
         Translation2d positionSource;
-        if (isUsingVisionAssistedPose() || DriverStation.isTeleop()) {
+        if (isUsingVisionAssistedPose()) {
             // If we trust vision implicitly, use it all the time.
             // If we don't trust it strongly, we still need to use it in teleop as
             // odometry will build up a lot of error quickly.
@@ -257,7 +260,11 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public Command createSetPositionCommand(Supplier<Pose2d> poseSupplier) {
-        return Commands.runOnce(() -> setCurrentPosition(poseSupplier.get()));
+        return Commands.runOnce(() -> setCurrentPosition(poseSupplier.get())).ignoringDisable(true);
+    }
+
+    public Command createSetPositionCommandThatMirrorsIfNeeded(Pose2d bluePose) {
+        return Commands.runOnce(() -> setCurrentPosition(PoseSubsystem.convertBlueToRedIfNeeded(bluePose))).ignoringDisable(true);
     }
 
     private void improveFusedOdometryUsingPhotonLib(Pose2d recentPosition) {

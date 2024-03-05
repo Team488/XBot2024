@@ -401,11 +401,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     /**
      * Forces the brakes on, even if other callers try to free them.
-     * @param enabled if true, brakes will stay permanently engaged until this is called again with false
+     * @param brakesForceEngaged if true, brakes will stay permanently engaged until this is called again with false
      */
-    public void setForceBrakesEngaged(boolean enabled) {
-        brakesForceEngaged = enabled;
-        if (enabled) {
+    public void setForceBrakesEngaged(boolean brakesForceEngaged) {
+        this.brakesForceEngaged = brakesForceEngaged;
+        if (brakesForceEngaged) {
             setBrakeState(true);
         }
     }

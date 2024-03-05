@@ -75,10 +75,7 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
 
     private void fireWhenReady() {
 
-        boolean superStructureReady = arm.isMaintainerAtGoal()
-                && shooter.isMaintainerAtGoal()
-                && shooter.getTargetValue().upperWheelsTargetRPM > 500;
-
+        boolean superStructureReady = arm.isMaintainerAtGoal() && shooter.hasNonIdleTarget();
         boolean sanityChecks = oracle.getHighLevelGoal() != DynamicOracle.HighLevelGoal.CollectNote;
 
         aKitLog.record("SuperstructureReady", superStructureReady);
