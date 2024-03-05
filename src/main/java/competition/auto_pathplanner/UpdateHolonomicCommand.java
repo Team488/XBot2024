@@ -1,4 +1,4 @@
-package competition.auto;
+package competition.auto_pathplanner;
 
 import xbot.common.command.BaseCommand;
 

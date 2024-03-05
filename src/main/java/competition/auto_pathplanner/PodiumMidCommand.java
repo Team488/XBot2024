@@ -1,4 +1,4 @@
-package competition.auto;
+package competition.auto_pathplanner;
 
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;

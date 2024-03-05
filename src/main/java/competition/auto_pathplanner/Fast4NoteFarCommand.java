@@ -1,10 +1,9 @@
-package competition.auto;
+package competition.auto_pathplanner;
 
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import xbot.common.command.BaseCommand;
-import xbot.common.math.WrappedRotation2d;
 
 import javax.inject.Inject;
 

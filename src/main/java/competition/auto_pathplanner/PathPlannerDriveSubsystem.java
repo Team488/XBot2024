@@ -1,4 +1,4 @@
-package competition.auto;
+package competition.auto_pathplanner;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
@@ -12,8 +12,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.math.XYPair;
-import xbot.common.properties.DoubleProperty;
-import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

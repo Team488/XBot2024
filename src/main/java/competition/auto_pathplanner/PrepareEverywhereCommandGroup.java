@@ -1,4 +1,4 @@
-package competition.auto;
+package competition.auto_pathplanner;
 
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.shooter.commands.ContinuouslyWarmUpForSpeakerCommand;

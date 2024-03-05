@@ -1,4 +1,4 @@
-package competition.auto;
+package competition.auto_pathplanner;
 
 import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
@@ -8,13 +8,13 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import javax.inject.Inject;
 
-public class PodiumMidCommandGroup extends SequentialCommandGroup {
+public class Far4NoteCommandGroup extends SequentialCommandGroup {
 
     @Inject
-    public PodiumMidCommandGroup(PoseSubsystem pose,
-                                 FireFromSubwooferCommandGroup firePreload,
-                                 PodiumMidCommand podiumMidCommand,
-                                 ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeakerCommand) {
+    public Far4NoteCommandGroup(PoseSubsystem pose,
+                                FireFromSubwooferCommandGroup firePreload,
+                                Fast4NoteFarCommand fast4NoteFarCommand,
+                                ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeakerCommand) {
 
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
@@ -22,6 +22,6 @@ public class PodiumMidCommandGroup extends SequentialCommandGroup {
 
         this.addCommands(firePreload);
 
-        this.addCommands(Commands.parallel(podiumMidCommand, continuouslyWarmUpForSpeakerCommand));
+        this.addCommands(Commands.parallel(fast4NoteFarCommand, continuouslyWarmUpForSpeakerCommand));
     }
 }
