@@ -247,6 +247,14 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         );
     }
 
+    public boolean hasNonIdleTarget() {
+        return getTargetValue().upperWheelsTargetRPM > 50 || getTargetValue().lowerWheelsTargetRPM > 50;
+    }
+
+    public boolean isReadyToFire() {
+        return isMaintainerAtGoal() && hasNonIdleTarget();
+    }
+
     @Override
     protected boolean areTwoTargetsEquivalent(ShooterWheelTargetSpeeds target1, ShooterWheelTargetSpeeds target2) {
         return BaseSetpointSubsystem.areTwoDoublesEquivalent(target1.upperWheelsTargetRPM, target2.upperWheelsTargetRPM, 100)

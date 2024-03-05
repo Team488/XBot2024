@@ -4,6 +4,7 @@ import xbot.common.injection.electrical_contract.DeviceInfo;
 import xbot.common.injection.swerve.SwerveInstance;
 import xbot.common.math.XYPair;
 
+
 import javax.inject.Inject;
 
 public class PracticeContract extends CompetitionContract {
@@ -95,6 +96,7 @@ public class PracticeContract extends CompetitionContract {
             case "RearRightDrive" -> new XYPair(-15, -15);
             default -> new XYPair(0, 0);
         };
+
     }
 }
 
