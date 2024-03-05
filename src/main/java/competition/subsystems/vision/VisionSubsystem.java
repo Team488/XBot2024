@@ -1,5 +1,6 @@
 package competition.subsystems.vision;
 
+import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -269,9 +270,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         detectedNotes = Arrays.stream(detections)
                 .map(detection -> {
                     var parts = detection.split(",");
-                    return new Pose3d(Double.parseDouble(parts[0]),
-                            Double.parseDouble(parts[1]),
-                            Double.parseDouble(parts[2]),
+                    return new Pose3d(Double.parseDouble(parts[0]) / PoseSubsystem.INCHES_IN_A_METER,
+                            Double.parseDouble(parts[1]) / PoseSubsystem.INCHES_IN_A_METER,
+                            Double.parseDouble(parts[2]) / PoseSubsystem.INCHES_IN_A_METER,
                             new Rotation3d()
                     );
                 })
