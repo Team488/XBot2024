@@ -114,7 +114,9 @@ public class OperatorInterface {
             case SpikeMiddle -> {
                 return neoTrellis.getButton(19);
             }
+            default -> {
+                return false;
+            }
         }
-        return false;
     }
 }
