@@ -78,6 +78,7 @@ public class NoteMap extends ReservableLocationMap<Note> {
     }
 
     public Pose3d getClosestAvailableNote(Pose2d robotPose) {
+        // TODO: Somehow prefer notes that are in the direction of the robot's collector
         double closestDistance = Double.MAX_VALUE;
         Note closestNote = null;
         var allNotes = this.internalMap.values();
