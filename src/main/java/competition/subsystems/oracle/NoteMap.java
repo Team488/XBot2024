@@ -77,6 +77,30 @@ public class NoteMap extends ReservableLocationMap<Note> {
         }
     }
 
+    public Pose3d getClosestAvailableNote(Pose2d robotPose) {
+        double closestDistance = Double.MAX_VALUE;
+        Note closestNote = null;
+        var allNotes = this.internalMap.values();
+        allNotes.addAll(visionSourceNotes.stream().map(VisionSourceNote::getNote).toList());
+        for (Note note : allNotes) {
+            if (note.getAvailability() == Availability.Available) {
+                double distance = note.getLocation().getTranslation().getDistance(robotPose.getTranslation());
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestNote = note;
+                }
+            }
+        }
+        if (closestNote != null) {
+            return new Pose3d(new Translation3d(
+                    closestNote.getLocation().getX(),
+                    closestNote.getLocation().getY(),
+                    0.025),
+                    new Rotation3d(0,0,0));
+        }
+        return null;
+    }
+
     public Pose3d[] getAllKnownNotes() {
         Pose3d[] notes = new Pose3d[internalMap.size() + visionSourceNotes.size()];
         int i = 0;
