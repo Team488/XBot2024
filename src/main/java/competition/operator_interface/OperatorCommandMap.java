@@ -74,11 +74,14 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(alignToNoteCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToCentralSubwooferCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(pointAtSpeaker);
+        //drive to podium
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue();
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(pointAtSpeaker);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(pointAtSource);
+        //drive and orient to hang
+//        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue();
     }
 
 
