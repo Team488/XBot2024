@@ -155,7 +155,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).whileTrue(forceEngageBrakeCommand);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).whileTrue(removeForcedBrakingCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(-180).whileTrue(manualHangingModeCommand);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(manualHangingModeCommand);
     }
 
     @Inject
