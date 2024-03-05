@@ -70,9 +70,6 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
 
     @Override
     public void periodic() {
-        //getPose()
-        Logger.recordOutput(getPrefix() + "CurrentPose", pose.getCurrentPose2d());
-
         //getChassisSpeeds()
         Logger.recordOutput(getPrefix() + "SwerveModuleStates", drive.getSwerveModuleStates());
         Logger.recordOutput(getPrefix() + "Current ChassisSpeeds", getChassisSpeeds());

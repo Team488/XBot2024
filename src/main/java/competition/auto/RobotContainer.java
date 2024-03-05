@@ -71,12 +71,6 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
-
-    public Command getTestPathCommand() {
-        PathPlannerPath path = PathPlannerPath.fromPathFile("TESTPATH");
-        path.preventFlipping = true;
-        return AutoBuilder.followPath(path);
-    }
     public Command getFast4NoteFarCommand() {
         return new PathPlannerAuto("4noteAutoFarBot");
     }
