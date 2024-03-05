@@ -1,5 +1,7 @@
 package competition.operator_interface;
 
+import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
+import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
@@ -21,6 +23,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
