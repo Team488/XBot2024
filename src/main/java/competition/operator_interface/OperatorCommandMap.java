@@ -2,6 +2,7 @@ package competition.operator_interface;
 
 import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
 import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
+import competition.auto_programs.DistanceShotFromMidShootThenShootSpikesThenTwoCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
@@ -285,30 +286,5 @@ public class OperatorCommandMap {
         var setBotThenBotSpikeBotCenter = setAutonomousCommandProvider.get();
         setBotThenBotSpikeBotCenter.setAutoCommand(botThenBotSpikeBotCenter);
         oi.neoTrellis.getifAvailable(24).onTrue(setBotThenBotSpikeBotCenter);
-    }
-
-    @Inject
-    public void autoTesting(OperatorInterface oi,
-                            DistanceShotFromMidShootThenShootNearestThree distanceMidSubMidSpikes,
-                            PointAtSpeakerCommand pointAtSpeakerCommand,
-                            Provider<DriveToGivenNoteCommand> driveNoteProvider,
-                            DriveSubsystem drive,
-                            DistanceShotFromMidShootThenShootMiddleTopThenTopCenter distanceShotMidCenter) {
-        oi.driverGamepad.getPovIfAvailable(45).whileTrue(distanceMidSubMidSpikes);
-        oi.driverGamepad.getPovIfAvailable(135).whileTrue(distanceShotMidCenter);
-        oi.driverGamepad.getPovIfAvailable(225).whileTrue(pointAtSpeakerCommand);
-
-        drive.setTargetNote(PoseSubsystem.BlueSpikeTop);
-        var driveToSpikeTop = driveNoteProvider.get();
-        drive.setTargetNote(PoseSubsystem.BlueSpikeMiddle);
-        var driveToSpikeMid = driveNoteProvider.get();
-        drive.setTargetNote(PoseSubsystem.BlueSpikeTop);
-        var driveToSpikeBot = driveNoteProvider.get();
-
-        oi.driverGamepad.getPovIfAvailable(0).whileTrue(driveToSpikeTop);
-        oi.driverGamepad.getPovIfAvailable(90).whileTrue(driveToSpikeMid);
-        oi.driverGamepad.getPovIfAvailable(180).whileTrue(driveToSpikeBot);
-
-
     }
 }

@@ -22,12 +22,12 @@ import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
+public class DistanceShotFromMidShootThenShootSpikesThenTwoCenter extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
 
     @Inject
-    public DistanceShotFromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
+    public DistanceShotFromMidShootThenShootSpikesThenTwoCenter(AutonomousCommandSelector autoSelector,
                                                          Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                          Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
                                                          Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
@@ -40,7 +40,7 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire note into the speaker from starting position
@@ -48,15 +48,15 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         // Fire preload note into the speaker from starting position
         this.addCommands(fireFromSubwooferCommandGroup);
 
-        // Drive to top spike note and collect
-        queueMessageToAutoSelector("Drive to top spike note, collect and shoot");
-        var driveToTopSpikeNote = driveToListOfPointsCommandProvider.get();
-        driveToTopSpikeNote.addPointsSupplier(this::goToTopSpike);
-        var collectSequenceTop = collectSequenceCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
+        // Drive to bottom spike note and collect
+        queueMessageToAutoSelector("Drive to bottom spike note, collect and shoot");
+        var driveToBotSpikeNote = driveToListOfPointsCommandProvider.get();
+        driveToBotSpikeNote.addPointsSupplier(this::goToBotSpike);
+        var collectSequenceBot = collectSequenceCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(collectSequenceBot, driveToBotSpikeNote));
 
         // this is only used for testing in the sim
-//        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
+//        this.addCommands(Commands.deadline(driveToBotSpikeNote, collectSequenceBot));
 
         // Fire Note into the speaker
         var fireSecondNoteCommand = fireNoteCommandGroupProvider.get();
@@ -76,30 +76,74 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         var fireThirdNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(fireThirdNoteCommand);
 
-        // Drive to bottom spike note and collect
-        queueMessageToAutoSelector("Drive to bottom spike note, collect and shoot");
-        var driveToBotSpikeNote = driveToListOfPointsCommandProvider.get();
-        driveToBotSpikeNote.addPointsSupplier(this::goToBotSpike);
-        var collectSequenceBot = collectSequenceCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(collectSequenceBot, driveToBotSpikeNote));
+        // Drive to top spike note and collect
+        queueMessageToAutoSelector("Drive to top spike note, collect and shoot");
+        var driveToTopSpikeNote = driveToListOfPointsCommandProvider.get();
+        driveToTopSpikeNote.addPointsSupplier(this::goToTopSpike);
+        var collectSequenceTop = collectSequenceCommandGroupProvider.get();
+        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
 
         // this is only used for testing in the sim
-//        this.addCommands(Commands.deadline(driveToBotSpikeNote, collectSequenceBot));
+//        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
 
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireNoteCommandGroupProvider.get();
         this.addCommands(fireFourthNoteCommand);
+
+        // Drive to top center line and collect
+        queueMessageToAutoSelector("Drive to top center line note and collect");
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.CenterLine1);
+                })
+        );
+        var driveToCenterTopNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(driveToCenterTopNoteAndCollect);
+
+        // Drive to back to top spike and shoot
+        queueMessageToAutoSelector("Drive to top spike and shoot");
+        var driveToTopSpike = driveToListOfPointsCommandProvider.get();
+        driveToTopSpike.addPointsSupplier(this::goBackToTopSpike);
+        this.addCommands(driveToTopSpike);
+
+        // Fire Note into the speaker
+        var fireFifthNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(fireFifthNoteCommand);
+
+        // Drive to center line 2 and collect
+        queueMessageToAutoSelector("Drive to center line 2 and collect");
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.CenterLine2);
+                })
+        );
+        var driveToCenterLine2AndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(driveToCenterLine2AndCollect);
+
+        // Drive to back to top spike and shoot
+        queueMessageToAutoSelector("Drive to mid spike and shoot");
+        var driveToMidSpike = driveToListOfPointsCommandProvider.get();
+        driveToMidSpike.addPointsSupplier(this::goBackToMidSpike);
+        this.addCommands(driveToMidSpike);
+
+        // Fire Note into the speaker
+        var fireSixthNoteCommand = fireNoteCommandGroupProvider.get();
+        this.addCommands(fireSixthNoteCommand);
     }
 
     private void queueMessageToAutoSelector(String message) {
         this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
     }
 
-    public List<XbotSwervePoint> goToTopSpike() {
+    public List<XbotSwervePoint> goToBotSpike() {
         var points = new ArrayList<XbotSwervePoint>();
+        var translation = new Translation2d(
+                PoseSubsystem.BlueSpikeBottom.getX() - 0.14478,
+                PoseSubsystem.BlueSpikeBottom.getY() + 0.14478
+        );
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSpikeTop.getTranslation(),
-                Rotation2d.fromDegrees(-153.64394), 10));
+                translation,
+                Rotation2d.fromDegrees(153.64394), 10));
         return points;
     }
 
@@ -107,7 +151,7 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         var points = new ArrayList<XbotSwervePoint>();
         var translation = new Translation2d(
                 PoseSubsystem.BlueSpikeMiddle.getX() - 0.99,
-                PoseSubsystem.BlueSpikeMiddle.getY() + 0.26956);
+                PoseSubsystem.BlueSpikeMiddle.getY() - 0.27556);
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 translation,
                 Rotation2d.fromDegrees(180), 10));
@@ -117,17 +161,40 @@ public class DistanceShotFromMidShootThenShootNearestThree extends SequentialCom
         return points;
     }
 
-    public List<XbotSwervePoint> goToBotSpike() {
+    public List<XbotSwervePoint> goToTopSpike() {
         var points = new ArrayList<XbotSwervePoint>();
         var translation = new Translation2d(
-                PoseSubsystem.BlueSpikeBottom.getX() - 0.97,
-                PoseSubsystem.BlueSpikeBottom.getY() + 0.27556);
+                PoseSubsystem.BlueSpikeTop.getX() - 0.97,
+                PoseSubsystem.BlueSpikeTop.getY() - 0.27556);
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 translation,
-                Rotation2d.fromDegrees(153.64394), 10));
+                Rotation2d.fromDegrees(-153.64394), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSpikeBottom.getTranslation(),
-                Rotation2d.fromDegrees(153.64394), 10));
+                PoseSubsystem.BlueSpikeTop.getTranslation(),
+                Rotation2d.fromDegrees(-153.64394), 10));
+        return points;
+    }
+
+    public List<XbotSwervePoint> goBackToTopSpike() {
+        var points = new ArrayList<XbotSwervePoint>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSpikeTop.getTranslation(),
+                Rotation2d.fromDegrees(-153.64394), 10));
+        return points;
+    }
+
+    public List<XbotSwervePoint> goBackToMidSpike() {
+        var points = new ArrayList<XbotSwervePoint>();
+        var translation = new Translation2d(
+                5.7785,
+                PoseSubsystem.CenterLine2.getY() + 0.5
+        );
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                translation,
+                Rotation2d.fromDegrees(180), 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSpikeMiddle.getTranslation(),
+                Rotation2d.fromDegrees(180), 10));
         return points;
     }
 

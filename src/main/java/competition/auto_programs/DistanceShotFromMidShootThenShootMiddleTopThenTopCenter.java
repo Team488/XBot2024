@@ -69,10 +69,10 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         var driveToTopSpikeNote = driveToListOfPointsCommandProvider.get();
         driveToTopSpikeNote.addPointsSupplier(this::goToTopSpike);
         var collectTop = collectSequenceCommandGroupProvider.get();
-//        this.addCommands(Commands.deadline(collectTop, driveToTopSpikeNote));
+        this.addCommands(Commands.deadline(collectTop, driveToTopSpikeNote));
 
         // this is only used for testing in the sim
-        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectTop));
+//        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectTop));
 
         // Fire Note into the speaker
         var fireThirdNoteCommand = fireNoteCommandGroupProvider.get();
@@ -92,10 +92,10 @@ public class DistanceShotFromMidShootThenShootMiddleTopThenTopCenter extends Seq
         queueMessageToAutoSelector("Drive to top spike note, collect and shoot");
         var driveBackToMiddleSpikeNote = driveToListOfPointsCommandProvider.get();
         driveBackToMiddleSpikeNote.addPointsSupplier(this::goToBackToMidSpike);
-//        this.addCommands(riveBackToMiddleSpikeNote);
+        this.addCommands(driveBackToMiddleSpikeNote);
 
         // this is only used for testing in the sim
-        this.addCommands(driveBackToMiddleSpikeNote);
+//        this.addCommands(driveBackToMiddleSpikeNote);
 
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireNoteCommandGroupProvider.get();
