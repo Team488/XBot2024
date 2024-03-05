@@ -22,12 +22,12 @@ import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DistanceShotFromMidShootThenShootSpikesThenTwoCenter extends SequentialCommandGroup {
+public class DistanceShotFromBotShootThenShootSpikesThenTwoCenter extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
 
     @Inject
-    public DistanceShotFromMidShootThenShootSpikesThenTwoCenter(AutonomousCommandSelector autoSelector,
+    public DistanceShotFromBotShootThenShootSpikesThenTwoCenter(AutonomousCommandSelector autoSelector,
                                                          Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                          Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
                                                          Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
