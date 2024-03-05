@@ -514,6 +514,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         boolean upperHit = false;
         boolean lowerHit = false;
 
+
         if (contract.isArmReady()) {
             upperHit = motor.getForwardLimitSwitchPressed();
             lowerHit = motor.getReverseLimitSwitchPressed();
