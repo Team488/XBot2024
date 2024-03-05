@@ -32,7 +32,7 @@ public class DriveToMidSpikeScoringLocationCommand extends SwerveSimpleTrajector
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.SpikeMiddle.getTranslation(), Rotation2d.fromDegrees(180), 10));
+                PoseSubsystem.BlueSpikeMiddle.getTranslation(), Rotation2d.fromDegrees(180), 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());

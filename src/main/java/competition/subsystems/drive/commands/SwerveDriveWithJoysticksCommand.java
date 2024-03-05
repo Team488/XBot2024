@@ -6,13 +6,9 @@ import competition.operator_interface.OperatorInterface;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseCommand;
-import xbot.common.controls.sensors.XXboxController;
-import xbot.common.controls.sensors.buttons.AdvancedXboxButtonTrigger;
 import xbot.common.logic.HumanVsMachineDecider;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineDeciderFactory;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineMode;
@@ -47,7 +43,6 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
     final DoubleProperty triggerOnlyExponent;
     final HumanVsMachineDecider decider;
     DriverStation.Alliance alliance;
-    AdvancedXboxButtonTrigger pointAtSpeakerButton;
 
     @Inject
     public SwerveDriveWithJoysticksCommand(
@@ -82,9 +77,6 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         });
 
         this.addRequirements(drive);
-
-        this.pointAtSpeakerButton = oi.driverGamepad.getifAvailable(XXboxController.XboxButton.Y);
-
     }
 
     public void setAbsoluteHeadingMode(boolean absoluteHeadingEnabled) {
@@ -206,13 +198,14 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
             suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
             decider.reset();
         }
-        else if (pointAtSpeakerButton.getAsBoolean()) {
-            desiredHeading = getRotationIntentPointAtSpeaker(pose.getCurrentPose2d());
-
+        else if (drive.isSpecialPointAtPositionTargetActive()) {
+            desiredHeading = getRotationIntentPointAtSpecialPoint();
             drive.setDesiredHeading(desiredHeading);
-
             suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
-
+        } else if (drive.isSpecialHeadingTargetActive()) {
+            desiredHeading = drive.getSpecialHeadingTarget().getDegrees();
+            drive.setDesiredHeading(desiredHeading);
+            suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
         }else {
             // If the joystick isn't deflected enough, we use the last known heading or human input.
             HumanVsMachineMode recommendedMode = decider.getRecommendedMode(humanRotatePowerFromTriggers);
@@ -346,8 +339,9 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
 
     }
 
-    private double getRotationIntentPointAtSpeaker(Pose2d currentPose) {
-        Translation2d speakerPosition = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION);
+    private double getRotationIntentPointAtSpecialPoint() {
+        var currentPose = pose.getCurrentPose2d();
+        Translation2d speakerPosition = drive.getSpecialPointAtPositionTarget();
         Translation2d currentXY = new Translation2d(currentPose.getX(), currentPose.getY());
 
         return currentXY.minus(speakerPosition).getAngle().getDegrees() + 180;

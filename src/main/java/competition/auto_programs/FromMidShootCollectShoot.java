@@ -37,13 +37,13 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         this.autoSelector = autoSelector;
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Shoot the pre-loaded note from the subwoofer
         queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer");
         var warmUpForFirstSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         var fireFirstShot = fireWhenReadyCommandProvider.get();
 
         this.addCommands(Commands.deadline(fireFirstShot,
@@ -57,7 +57,7 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         driveToMiddleSpike.logic.setAimAtGoalDuringFinalLeg(true);
         driveToMiddleSpike.logic.setKeyPointsProvider(() -> {
             ArrayList<XbotSwervePoint> points = new ArrayList<>();
-            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SpikeMiddle);
+            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSpikeMiddle);
             points.add(new XbotSwervePoint(target.getTranslation(), target.getRotation(), 10));
             return points;
         });
@@ -74,13 +74,13 @@ public class FromMidShootCollectShoot extends SequentialCommandGroup {
         driveToSubwoofer.logic.setConstantVelocity(1);
         driveToSubwoofer.logic.setKeyPointsProvider(() -> {
             ArrayList<XbotSwervePoint> points = new ArrayList<>();
-            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation);
+            var target = BasePoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation);
             points.add(new XbotSwervePoint(target.getTranslation(), target.getRotation(), 10));
             return points;
         });
 
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
 
         this.addCommands(Commands.deadline(driveToSubwoofer,
                 warmUpForSecondSubwooferShot));

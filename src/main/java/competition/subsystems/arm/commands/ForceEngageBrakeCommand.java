@@ -4,24 +4,20 @@ import competition.subsystems.arm.ArmSubsystem;
 import xbot.common.command.BaseCommand;
 
 import javax.inject.Inject;
+import javax.naming.InitialContext;
 
-public class ManualHangingModeCommand extends BaseCommand {
+public class ForceEngageBrakeCommand extends BaseCommand {
 
     ArmSubsystem arm;
 
     @Inject
-    public ManualHangingModeCommand(ArmSubsystem arm) {
+    public ForceEngageBrakeCommand(ArmSubsystem arm) {
         this.arm = arm;
     }
 
     @Override
     public void initialize() {
         log.info("Initializing");
-        arm.setManualHangingMode(true);
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        arm.setManualHangingMode(false);
+        arm.setForceBrakesEngaged(true);
     }
 }

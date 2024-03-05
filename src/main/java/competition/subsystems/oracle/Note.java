@@ -1,22 +1,9 @@
 package competition.subsystems.oracle;
 
+import competition.subsystems.pose.PointOfInterest;
 import edu.wpi.first.math.geometry.Pose2d;
 
 public class Note implements ReservableLocation {
-
-    public enum KeyNoteNames{
-        BlueSpikeTop,
-        BlueSpikeMiddle,
-        BlueSpikeBottom,
-        RedSpikeTop,
-        RedSpikeMiddle,
-        RedSpikeBottom,
-        CenterLine1,
-        CenterLine2,
-        CenterLine3,
-        CenterLine4,
-        CenterLine5
-    }
 
     private int priority;
 
@@ -24,16 +11,26 @@ public class Note implements ReservableLocation {
 
     private Pose2d location;
 
+    private PointOfInterest pointOfInterest;
+
     public Note(Pose2d location) {
         this.priority = -1;
         this.availability = Availability.Available;
         this.location = location;
     }
 
-    public Note(Pose2d location, int priority, Availability availability) {
+    public Note(Pose2d location, PointOfInterest pointOfInterest) {
+        this.priority = -1;
+        this.availability = Availability.Available;
+        this.location = location;
+        this.pointOfInterest = pointOfInterest;
+    }
+
+    public Note(Pose2d location, int priority, Availability availability, PointOfInterest pointOfInterest) {
         this.priority = priority;
         this.availability = availability;
         this.location = location;
+        this.pointOfInterest = pointOfInterest;
     }
 
     public int getPriority() {
@@ -58,5 +55,9 @@ public class Note implements ReservableLocation {
 
     public void setLocation(Pose2d location) {
         this.location = location;
+    }
+
+    public PointOfInterest getPointOfInterest() {
+        return pointOfInterest;
     }
 }

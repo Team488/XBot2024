@@ -5,23 +5,18 @@ import xbot.common.command.BaseCommand;
 
 import javax.inject.Inject;
 
-public class ManualHangingModeCommand extends BaseCommand {
+public class RemoveForcedBrakingCommand extends BaseCommand {
 
     ArmSubsystem arm;
 
     @Inject
-    public ManualHangingModeCommand(ArmSubsystem arm) {
+    public RemoveForcedBrakingCommand(ArmSubsystem arm) {
         this.arm = arm;
     }
 
     @Override
     public void initialize() {
         log.info("Initializing");
-        arm.setManualHangingMode(true);
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        arm.setManualHangingMode(false);
+        arm.setForceBrakesEngaged(false);
     }
 }
