@@ -644,6 +644,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return manualHangingModeEngaged;
     }
 
+    public boolean couldPlausiblyBeHanging() {
+        return getExtensionDistance() < 15;
+    }
+
     public void setManualHangingMode(boolean enabled) {
         manualHangingModeEngaged = enabled;
     }
