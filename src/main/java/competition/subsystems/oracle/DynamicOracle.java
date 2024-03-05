@@ -173,6 +173,25 @@ public class DynamicOracle extends BaseSubsystem {
         reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine3, DriverStation.Alliance.Blue);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine4, DriverStation.Alliance.Blue);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine5, DriverStation.Alliance.Blue);
+
+        chooseStartingLocationBasedOnReservations();
+    }
+
+    private void chooseStartingLocationBasedOnReservations() {
+        // Set the pose subsystem to whatever location is unreserved. Will prefer the center
+        // if multiple are active.
+        Pose2d chosenLocation = pose.getCurrentPose2d();
+        if (!oi.getNeoTrellisValue(PointOfInterest.SubwooferTopScoringLocation)) {
+            chosenLocation = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation);
+        }
+        if (!oi.getNeoTrellisValue(PointOfInterest.SubwooferBottomScoringLocation)) {
+            chosenLocation = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation);
+        }
+        if (!oi.getNeoTrellisValue(PointOfInterest.SubwooferMiddleScoringLocation)) {
+            chosenLocation = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation);
+        }
+
+        pose.setCurrentPosition(chosenLocation);
     }
 
     public void reserveScoringLocationBasedOnNeoTrellis(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
