@@ -154,13 +154,15 @@ public class DynamicOracle extends BaseSubsystem {
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferTopScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferMiddleScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferBottomScoringLocation, ourAlliance);
+        reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.PodiumScoringLocation, ourAlliance);
+        reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.AmpFarScoringLocation, ourAlliance);
 
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeTop, ourAlliance);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeMiddle, ourAlliance);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeBottom, ourAlliance);
 
         // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
-        if (oi.getNeoTrellisValue(PointOfInterest.SpikeBottom)) {
+        if (!oi.getNeoTrellisValue(PointOfInterest.SpikeBottom)) {
             scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
             field.getNode(PointOfInterest.PodiumScoringLocation.getName(ourAlliance)).setAllWeightsToMax();
         }
@@ -180,7 +182,7 @@ public class DynamicOracle extends BaseSubsystem {
     private void chooseStartingLocationBasedOnReservations() {
         // Set the pose subsystem to whatever location is unreserved. Will prefer the center
         // if multiple are active.
-        Pose2d chosenLocation = pose.getCurrentPose2d();
+        Pose2d chosenLocation = null;
         if (!oi.getNeoTrellisValue(PointOfInterest.SubwooferTopScoringLocation)) {
             chosenLocation = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation);
         }
@@ -189,6 +191,11 @@ public class DynamicOracle extends BaseSubsystem {
         }
         if (!oi.getNeoTrellisValue(PointOfInterest.SubwooferMiddleScoringLocation)) {
             chosenLocation = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation);
+        }
+
+        // Default to middle
+        if (chosenLocation == null) {
+            chosenLocation = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation);
         }
 
         pose.setCurrentPosition(chosenLocation);
@@ -219,10 +226,15 @@ public class DynamicOracle extends BaseSubsystem {
         noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
         if (this.includeVisionNotes.get()) {
             var robotTranslation = pose.getCurrentPose2d().getTranslation();
+            var robotRotation = pose.getCurrentPose2d().getRotation();
             Arrays.stream(vision.getDetectedNotes())
-                    .map(note -> new Pose2d(
-                            new Translation2d(note.getX(), note.getY()).minus(robotTranslation),
-                            new Rotation2d()))
+                    .map(note -> {
+                        var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
+                        var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
+                        return new Pose2d(
+                                robotTranslation.plus(rotatedToFieldRelative),
+                                new Rotation2d());
+                    })
                     .forEach(noteMap::addVisionNote);
         }
 

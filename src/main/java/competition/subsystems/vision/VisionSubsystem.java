@@ -1,5 +1,6 @@
 package competition.subsystems.vision;
 
+import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Singleton
@@ -43,6 +45,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty robotDisplacementThresholdToRejectVisionUpdate;
     final DoubleProperty singleTagStableDistance;
     final DoubleProperty multiTagStableDistance;
+    final DoubleProperty maxNoteRatio;
+    final DoubleProperty minNoteRatio;
     AprilTagFieldLayout aprilTagFieldLayout;
     final ArrayList<AprilTagCamera> aprilTagCameras;
     final ArrayList<NoteCamera> noteCameras;
@@ -62,6 +66,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         yawOffset = pf.createPersistentProperty("Yaw offset", 0);
         singleTagStableDistance = pf.createPersistentProperty("Single tag stable distance", 2.0);
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
+        maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
+        minNoteRatio = pf.createPersistentProperty("Min note size ratio", 3.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
@@ -269,12 +275,17 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         detectedNotes = Arrays.stream(detections)
                 .map(detection -> {
                     var parts = detection.split(",");
-                    return new Pose3d(Double.parseDouble(parts[0]),
-                            Double.parseDouble(parts[1]),
-                            Double.parseDouble(parts[2]),
+                    var ratio = Double.parseDouble(parts[3]);
+                    if (ratio > maxNoteRatio.get() || ratio < minNoteRatio.get()) {
+                        return null;
+                    }
+                    return new Pose3d(Double.parseDouble(parts[0]) / PoseSubsystem.INCHES_IN_A_METER,
+                            Double.parseDouble(parts[1]) / PoseSubsystem.INCHES_IN_A_METER,
+                            Double.parseDouble(parts[2]) / PoseSubsystem.INCHES_IN_A_METER,
                             new Rotation3d()
                     );
                 })
+                .filter(Objects::nonNull)
                 .toArray(Pose3d[]::new);
 
         aKitLog.record("DetectedNotes", detectedNotes);

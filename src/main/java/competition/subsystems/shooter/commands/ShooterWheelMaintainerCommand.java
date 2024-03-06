@@ -84,8 +84,8 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Shooter
         var targets = wheel.getTargetValue();
 
         // Take the average of the two errors for now.
-        return ((targets.upperWheelsTargetRPM - currents.upperWheelsTargetRPM)
-                + (targets.lowerWheelsTargetRPM - currents.lowerWheelsTargetRPM)) / 2;
+        return (Math.abs(targets.upperWheelsTargetRPM - currents.upperWheelsTargetRPM)
+                + Math.abs(targets.lowerWheelsTargetRPM - currents.lowerWheelsTargetRPM)) / 2;
     }
 
     @Override

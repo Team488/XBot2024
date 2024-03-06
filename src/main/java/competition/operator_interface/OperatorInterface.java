@@ -95,11 +95,11 @@ public class OperatorInterface {
             case PodiumScoringLocation:
                 return neoTrellis.getButton(20);
             case SubwooferTopScoringLocation:
-                return neoTrellis.getButton(25);
-            case SubwooferMiddleScoringLocation:
                 return neoTrellis.getButton(26);
-            case SubwooferBottomScoringLocation:
+            case SubwooferMiddleScoringLocation:
                 return neoTrellis.getButton(27);
+            case SubwooferBottomScoringLocation:
+                return neoTrellis.getButton(28);
             default:
                 break;
         }

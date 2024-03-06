@@ -18,9 +18,10 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
@@ -57,7 +58,7 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
             DriveSubsystem drive,
-            AlignToNoteCommand alignToNoteCommand,
+            PointAtNoteCommand alignToNoteCommand,
             DriveToCentralSubwooferCommand driveToCentralSubwooferCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup
@@ -72,16 +73,23 @@ public class OperatorCommandMap {
         var pointAtSource = drive.createSetSpecialHeadingTargetCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.FaceCollectorToBlueSource));
 
+        var cancelSpecialPointAtPosition = drive.createClearAllSpecialTargetsCommand();
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
+      
         //drive to podium
 //        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue();
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(pointAtSpeaker);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(pointAtSource);
         //drive and orient to hang
 //        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).onTrue();
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
+                .onTrue(pointAtSpeaker)
+                .onFalse(cancelSpecialPointAtPosition);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
+                .onTrue(pointAtSource)
+                .onFalse(cancelSpecialPointAtPosition);
     }
 
 

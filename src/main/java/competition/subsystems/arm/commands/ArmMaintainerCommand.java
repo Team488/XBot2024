@@ -56,9 +56,11 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
         // The arms can draw huge currents when trying to move small values, so if we are on target
         // then we need to kill power.
-        if (isMaintainerAtGoal() || shouldFreezeArmSinceEndOfMatch()) {
+        if (shouldFreezeArmSinceEndOfMatch()) {
             arm.setPower(0.0);
             arm.setForceBrakesEngaged(true);
+        } else if (isMaintainerAtGoal()) {
+            arm.setPower(0.0);
         } else {
             double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
             arm.setPower(power);

@@ -33,6 +33,7 @@ public class Robot extends BaseRobot {
         getInjectorComponent().subsystemDefaultCommandMap();
         getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
+        getInjectorComponent().lightSubsystem();
 
         simulator = getInjectorComponent().simulator2024();
         oracle = getInjectorComponent().dynamicOracle();
