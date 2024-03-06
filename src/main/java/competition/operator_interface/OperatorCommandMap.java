@@ -1,8 +1,5 @@
 package competition.operator_interface;
 
-import competition.auto_programs.DistanceShotFromBotShootThenShootSpikesThenTwoCenter;
-import competition.auto_programs.DistanceShotFromMidShootThenShootMiddleTopThenTopCenter;
-import competition.auto_programs.DistanceShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SetShotFromMidShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
@@ -257,15 +254,4 @@ public class OperatorCommandMap {
         command.setRelative(true);
         return command;
     }
-
-    @Inject
-    public void autoTesting(OperatorInterface oi,
-                            SetShotFromMidShootThenShootSpikes setShotFromMidShootThenShootSpikes,
-                            DistanceShotFromBotShootThenShootSpikesThenTwoCenter fromBotShootThenShootSpikesThenTwoCenter) {
-
-        oi.driverGamepad.getPovIfAvailable(0).whileTrue(setShotFromMidShootThenShootSpikes);
-        oi.driverGamepad.getPovIfAvailable(45).whileTrue(fromBotShootThenShootSpikesThenTwoCenter);
-
-    }
-
 }
