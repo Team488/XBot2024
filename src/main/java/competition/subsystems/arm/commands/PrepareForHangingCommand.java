@@ -9,6 +9,7 @@ public class PrepareForHangingCommand extends SetArmExtensionCommand{
     @Inject
     public PrepareForHangingCommand(ArmSubsystem armSubsystem){
         super(armSubsystem);
+        this.armSubsystem = armSubsystem;
     }
     @Override
     public void initialize(){
