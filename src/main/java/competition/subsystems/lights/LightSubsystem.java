@@ -57,9 +57,9 @@ public class LightSubsystem extends BaseSubsystem {
     public void periodic() {
         try {
             // Runs period every 1/10 of a second
-            if (this.loopcount++ % loopMod != 0) {
-                return;
-            }
+//            if (this.loopcount++ % loopMod != 0) {
+//                return;
+//            }
 
             boolean dsEnabled = DriverStation.isEnabled();
             LightsStateMessage currentState;
