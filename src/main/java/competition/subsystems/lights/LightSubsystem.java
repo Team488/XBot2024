@@ -56,49 +56,54 @@ public class LightSubsystem extends BaseSubsystem {
 
     @Override
     public void periodic() {
-        // Runs period every 1/10 of a second
-        if (this.loopcount++ % loopMod != 0) {
-            return;
-        }
-
-        boolean dsEnabled = DriverStation.isEnabled();
-        LightsStateMessage currentState;
-        ShooterWheelTargetSpeeds shooterWheel = shooter.getCurrentValue();
-
-        // Needs to implement vision as well
-        // Not sure about if the way we are checking the shooter is correct (and collector)
-        if (!dsEnabled) {
-            // Check if auto program is set
-            if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
-                currentState = LightsStateMessage.DisabledWithAuto;
-            } else {
-                currentState = LightsStateMessage.DisabledWithoutAuto;
+        try {
+            // Runs period every 1/10 of a second
+            if (this.loopcount++ % loopMod != 0) {
+                return;
             }
 
-        } else {
-            // Try and match enabled states
-            if (ampSignalOn) {
-                currentState = LightsStateMessage.AmpSignal;
+            boolean dsEnabled = DriverStation.isEnabled();
+            LightsStateMessage currentState;
+            ShooterWheelTargetSpeeds shooterWheel = shooter.getCurrentValue();
 
-            } else if (shooter.isMaintainerAtGoal()
-                    && shooterWheel.lowerWheelsTargetRPM != 0
-                    && shooterWheel.upperWheelsTargetRPM != 0) {
-                currentState = LightsStateMessage.ReadyToShoot;
-
-            } else if (collector.getGamePieceReady()) {
-                currentState = LightsStateMessage.RobotContainsNote;
+            // Needs to implement vision as well
+            // Not sure about if the way we are checking the shooter is correct (and collector)
+            if (!dsEnabled) {
+                // Check if auto program is set
+                if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
+                    currentState = LightsStateMessage.DisabledWithAuto;
+                } else {
+                    currentState = LightsStateMessage.DisabledWithoutAuto;
+                }
 
             } else {
-                currentState = LightsStateMessage.RobotEnabled;
+                // Try and match enabled states
+                if (ampSignalOn) {
+                    currentState = LightsStateMessage.AmpSignal;
+
+                } else if (shooter.isMaintainerAtGoal()
+                        && shooterWheel.lowerWheelsTargetRPM != 0
+                        && shooterWheel.upperWheelsTargetRPM != 0
+                        && collector.getGamePieceReady()) {
+                    currentState = LightsStateMessage.ReadyToShoot;
+
+                } else if (collector.getGamePieceReady()) {
+                    currentState = LightsStateMessage.RobotContainsNote;
+
+                } else {
+                    currentState = LightsStateMessage.RobotEnabled;
+                }
             }
+
+            String stateValue = currentState.getValue();
+
+            // Write serial data to lights
+            serialPort.writeString(stateValue + "\n");
+            serialPort.flush();
+
+            aKitLog.record("LightState", currentState.toString());
+        } catch (Exception e) {
+            log.info("There is a problem within LightSubsystem.java. Exception: " + e.toString());
         }
-
-        String stateValue = currentState.getValue();
-
-        // Write serial data to lights
-        serialPort.writeString(stateValue + "\n");
-        serialPort.flush();
-
-        aKitLog.record("LightState", currentState.toString());
     }
 }
