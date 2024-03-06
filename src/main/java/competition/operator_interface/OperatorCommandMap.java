@@ -22,9 +22,9 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.drive.commands.AlignToNoteCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
@@ -62,7 +62,7 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
             DriveSubsystem drive,
-            AlignToNoteCommand alignToNoteCommand,
+            PointAtNoteCommand alignToNoteCommand,
             DriveToCentralSubwooferCommand driveToCentralSubwooferCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup
