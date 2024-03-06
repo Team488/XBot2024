@@ -5,6 +5,8 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import xbot.common.command.BaseCommand;
 import xbot.common.math.XYPair;
 import xbot.common.properties.PropertyFactory;
@@ -35,7 +37,9 @@ public class PointAtNoteCommand extends BaseCommand {
     @Override
     public void initialize() {
         // Find the note we want to point at
-        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(this.pose.getCurrentPose2d());
+        // Project a point in front of the robot's collector to bias preferred notes in that direction
+        var virtualPoint = this.pose.getCurrentPose2d().plus(new Transform2d(-1, 0, new Rotation2d()));
+        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint);
         if (notePosition != null) {
             this.notePosition = notePosition.toPose2d();
         } else {

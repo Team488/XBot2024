@@ -79,9 +79,7 @@ public class NoteMap extends ReservableLocationMap<Note> {
         }
     }
 
-    public Pose3d getClosestAvailableNote(Pose2d robotPose) {
-        // Project a point in front of the robot's collector to bias preferred notes in that direction
-        var virtualPoint = robotPose.plus(new Transform2d(-1, 0, new Rotation2d()));
+    public Pose3d getClosestAvailableNote(Pose2d referencePoint) {
 
         double closestDistance = Double.MAX_VALUE;
         Note closestNote = null;
@@ -89,7 +87,7 @@ public class NoteMap extends ReservableLocationMap<Note> {
         allNotes.addAll(visionSourceNotes.stream().map(VisionSourceNote::getNote).toList());
         for (Note note : allNotes) {
             if (note.getAvailability() == Availability.Available) {
-                double distance = note.getLocation().getTranslation().getDistance(virtualPoint.getTranslation());
+                double distance = note.getLocation().getTranslation().getDistance(referencePoint.getTranslation());
                 if (distance < closestDistance) {
                     closestDistance = distance;
                     closestNote = note;
