@@ -16,12 +16,13 @@ import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 @Singleton
 public class LightSubsystem extends BaseSubsystem {
 
-    SerialPort serialPort;
-    private int loopcount;
-    private final int loopMod = 4;
     AutonomousCommandSelector autonomousCommandSelector;
     ShooterWheelSubsystem shooter;
     CollectorSubsystem collector;
+    SerialPort serialPort;
+    private int loopcount = 1;
+    private final int loopMod = 4;
+    public boolean ampSignalOn = false;
 
     public enum LightsStateMessage{
         DisabledWithoutAuto("32"),
@@ -76,7 +77,10 @@ public class LightSubsystem extends BaseSubsystem {
 
         } else {
             // Try and match enabled states
-            if (shooter.isMaintainerAtGoal()
+            if (ampSignalOn) {
+                currentState = LightsStateMessage.AmpSignal;
+
+            } else if (shooter.isMaintainerAtGoal()
                     && shooterWheel.lowerWheelsTargetRPM != 0
                     && shooterWheel.upperWheelsTargetRPM != 0) {
                 currentState = LightsStateMessage.ReadyToShoot;
