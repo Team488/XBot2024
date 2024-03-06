@@ -4,7 +4,6 @@ import competition.subsystems.arm.ArmSubsystem;
 import xbot.common.command.BaseCommand;
 
 import javax.inject.Inject;
-import java.lang.reflect.Executable;
 
 public class ManipulateArmBrakeCommand extends BaseCommand {
 
@@ -25,7 +24,7 @@ public class ManipulateArmBrakeCommand extends BaseCommand {
     public void initialize() {
         log.info("Initializing");
         log.info("Setting arm brake to " + brakeEngaged);
-        arm.setBrakeEnabled(brakeEngaged);
+        arm.setBrakeState(brakeEngaged);
     }
 
     @Override

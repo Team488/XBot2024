@@ -5,8 +5,6 @@ import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
-import competition.subsystems.shooter.commands.WarmUpShooterCommand;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
@@ -28,7 +26,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Force our location
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         // Fire preload note into the speaker from starting position
@@ -40,7 +38,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeMiddle);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeMiddle);
                 })
         );
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
@@ -58,7 +56,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(middle) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeTop);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeTop);
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
@@ -76,7 +74,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeBottom);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeBottom);
                 })
         );
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();

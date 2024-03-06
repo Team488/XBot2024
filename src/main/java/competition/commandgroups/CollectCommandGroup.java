@@ -1,7 +1,7 @@
 package competition.commandgroups;
 
 import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.arm.commands.SetArmAngleCommand;
+import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.arm.commands.WaitForArmToBeAtGoalCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.collector.commands.WaitForNoteCollectedCommand;
@@ -15,13 +15,13 @@ public class CollectCommandGroup extends ParallelDeadlineGroup {
     @Inject
     public CollectCommandGroup(WaitForNoteCollectedCommand waitForNote,
                                IntakeUntilNoteCollectedCommand intakeUntilNoteCollectedCommand,
-                               Provider<SetArmAngleCommand> setArmAngleProvider,
+                               Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
                                WaitForArmToBeAtGoalCommand waitForArm) {
         super(waitForNote);
 
         // move arm to collecting position
-        var extendToGround = setArmAngleProvider.get();
-        extendToGround.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
+        var extendToGround = setArmExtensionCommandProvider.get();
+        extendToGround.setTargetExtension(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
         this.addCommands(extendToGround.alongWith(waitForArm).andThen(intakeUntilNoteCollectedCommand));
     }

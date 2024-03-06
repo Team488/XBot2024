@@ -2,6 +2,7 @@ package competition.injection.components;
 
 import competition.simulation.Simulator2024;
 import competition.subsystems.NeoTrellisGamepadSubsystem;
+import competition.subsystems.arm.ArmModelBasedCalculator;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ExtendArmCommand;
 import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
@@ -58,4 +59,5 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract Simulator2024 simulator2024();
     public abstract ShooterWheelMaintainerCommand shooterWheelMaintainerCommand();
     public abstract DynamicOracle dynamicOracle();
+    public abstract ArmModelBasedCalculator armModelBasedCalculator();
 }

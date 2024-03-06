@@ -22,6 +22,10 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
         this.targetExtension = targetExtension;
     }
 
+    public void setTargetExtension(ArmSubsystem.UsefulArmPosition position) {
+        setTargetExtension(armSubsystem.getUsefulArmPositionExtensionInMm(position));
+    }
+
     public void setRelative(boolean isRelative) {
         this.isRelative = isRelative;
     }

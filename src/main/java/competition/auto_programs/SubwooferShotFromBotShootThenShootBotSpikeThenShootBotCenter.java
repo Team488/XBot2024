@@ -50,7 +50,7 @@ public class SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter extend
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(bottom) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeBottom);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeBottom);
                 })
         );
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();

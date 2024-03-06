@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.7059762690953959,
+      "y": 4.397837367103306
+    },
+    "rotation": 122.27564431457758
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FarNote1Bot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FarNote2Bot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FarNote3Bot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

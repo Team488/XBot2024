@@ -26,13 +26,6 @@ public class ContinuouslyPointArmAtSpeakerCommand extends BaseSetpointCommand {
 
     @Override
     public void execute() {
-        //arm.setTargetValue(arm.getRecommendedExtension(pose.getDistanceFromSpeaker()));
-        double degrees = arm.getArmAngleFromDistance(pose.getDistanceFromSpeaker());
-        double mmExtension = arm.getArmExtensionForAngle(degrees);
-
-        aKitLog.record("RecommendedDegrees", degrees);
-        aKitLog.record("RecommendedExtension", mmExtension);
-
-        arm.setTargetValue(mmExtension);
+        arm.setTargetValue(arm.getRecommendedExtension(pose.getDistanceFromSpeaker()));
     }
 }

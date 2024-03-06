@@ -3,7 +3,9 @@ package competition.subsystems.drive;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -90,18 +92,18 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         return specialPointAtPositionTargetActive;
     }
 
-    public InstantCommand createSetSpecialHeadingTargetCommand(Supplier<Rotation2d> specialHeadingTarget) {
+    public Command createSetSpecialHeadingTargetCommand(Supplier<Rotation2d> specialHeadingTarget) {
         return new InstantCommand(() -> {
             setSpecialHeadingTarget(specialHeadingTarget.get());
             setSpecialHeadingTargetActive(true);
-        });
+        }).handleInterrupt(this::createClearAllSpecialTargetsCommand);
     }
 
-    public InstantCommand createSetSpecialPointAtPositionTargetCommand(Supplier<Translation2d> specialPointAtPositionTarget) {
-        return new InstantCommand(() -> {
+    public Command createSetSpecialPointAtPositionTargetCommand(Supplier<Translation2d> specialPointAtPositionTarget) {
+        return new RunCommand(() -> {
             setSpecialPointAtPositionTarget(specialPointAtPositionTarget.get());
             setSpecialPointAtPositionTargetActive(true);
-        });
+        }).handleInterrupt(this::createClearAllSpecialTargetsCommand);
     }
 
     public InstantCommand createClearAllSpecialTargetsCommand() {

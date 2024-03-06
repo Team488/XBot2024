@@ -13,6 +13,7 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
     ArmSubsystem arm;
     ShooterWheelSubsystem shooter;
     CollectorSubsystem collector;
+    DynamicOracle.HighLevelGoal lastGoal = DynamicOracle.HighLevelGoal.NoGoal;
 
     @Inject
     public SuperstructureAccordingToOracleCommand(ArmSubsystem arm, ShooterWheelSubsystem shooter, DynamicOracle oracle, CollectorSubsystem collector) {
@@ -36,19 +37,21 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
         boolean tryToScore = false;
         switch (oracle.getHighLevelGoal()) {
             case CollectNote -> {
+                if (lastGoal != DynamicOracle.HighLevelGoal.CollectNote) {
+                    collector.resetCollectionState();
+                }
                 collector.intake();
                 arm.setTargetValue(0.0);
                 tryToScore = false;
             }
             case ScoreInAmp -> {
-                arm.setTargetValue(arm.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP));
+                arm.setTargetValue(ArmSubsystem.UsefulArmPosition.FIRING_FROM_AMP);
                 tryToScore = true;
             }
             case ScoreInSpeaker -> {
-                shooter.setTargetValue(shooter.getSpeedForRange());
-                arm.setTargetValue(arm.getRecommendedExtensionForSpeaker());
+                shooter.setTargetValue(shooter.getRPMForGivenScoringLocation(oracle.getChosenScoringLocation()));
+                arm.setTargetValue(arm.getUsefulArmPositionExtensionInMm(oracle.getChosenScoringLocation()));
                 tryToScore = true;
-
             }
             default -> {
                 collector.stop();
@@ -66,14 +69,13 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
                 collector.stop();
             }
         }
+
+        lastGoal = oracle.getHighLevelGoal();
     }
 
     private void fireWhenReady() {
 
-        boolean superStructureReady = arm.isMaintainerAtGoal()
-                && shooter.isMaintainerAtGoal()
-                && shooter.getTargetValue().upperWheelsTargetRPM > 500;
-
+        boolean superStructureReady = arm.isMaintainerAtGoal() && shooter.hasNonIdleTarget();
         boolean sanityChecks = oracle.getHighLevelGoal() != DynamicOracle.HighLevelGoal.CollectNote;
 
         aKitLog.record("SuperstructureReady", superStructureReady);

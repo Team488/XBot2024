@@ -1,0 +1,31 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.7059762690953959,
+      "y": 6.714031713777714
+    },
+    "rotation": -119.30617263943206
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TopSpikeMid1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TopSpikeMid2"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
