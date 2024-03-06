@@ -21,6 +21,8 @@ public class NoteMap extends ReservableLocationMap<Note> {
 
     private final List<VisionSourceNote> visionSourceNotes;
 
+    public static final int MAX_VISION_SOURCE_NOTE_COUNT = 10;
+
     public NoteMap() {
         initializeNotes();
         visionSourceNotes = new ArrayList<>();
@@ -59,6 +61,9 @@ public class NoteMap extends ReservableLocationMap<Note> {
     }
 
     public void addVisionNote(Pose2d location) {
+        if (visionSourceNotes.size() >= MAX_VISION_SOURCE_NOTE_COUNT) {
+            visionSourceNotes.remove(0);
+        }
         visionSourceNotes.add(new VisionSourceNote(new Note(location), XTimer.getFPGATimestamp()));
     }
 
