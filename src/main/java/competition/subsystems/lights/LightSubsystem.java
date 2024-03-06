@@ -46,8 +46,7 @@ public class LightSubsystem extends BaseSubsystem {
     @Inject
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
-
-        serialPort = new SerialPort(115200, SerialPort.Port.kUSB, 8);
+        serialPort = new SerialPort(115200, SerialPort.Port.kUSB2, 8);
 
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
@@ -97,9 +96,9 @@ public class LightSubsystem extends BaseSubsystem {
 
             String stateValue = currentState.getValue();
 
-            // Write serial data to lights
-            serialPort.writeString(stateValue + "\n");
-            serialPort.flush();
+        // Write serial data to lights
+        serialPort.writeString(stateValue + "\n");
+        serialPort.flush();
 
             aKitLog.record("LightState", currentState.toString());
         } catch (Exception e) {
