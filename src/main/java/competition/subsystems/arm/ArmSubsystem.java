@@ -112,7 +112,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         FIRING_FROM_SUBWOOFER,
         FIRING_FROM_AMP,
         SCOOCH_NOTE,
-        PrepareForHanging2,
         HANGING_POSITION,
         PROTECTED_FAR_AMP_SHOT,
         PROTECTED_PODIUM_SHOT,
