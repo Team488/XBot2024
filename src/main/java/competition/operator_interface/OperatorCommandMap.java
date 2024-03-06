@@ -200,7 +200,8 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromTopShootThenShootSpikes topThenThree,
                                                 SubwooferShotFromBotShootThenShootSpikes botThenThree,
                                                 SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter topThenTopSpikeTopCenter,
-                                                SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter) {
+                                                SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter,
+                                                SetShotFromMidShootThenShootSpikes setShotFromMidShootThenShootSpikes) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
@@ -224,6 +225,10 @@ public class OperatorCommandMap {
         var setBotThenBotSpikeBotCenter = setAutonomousCommandProvider.get();
         setBotThenBotSpikeBotCenter.setAutoCommand(botThenBotSpikeBotCenter);
         oi.neoTrellis.getifAvailable(24).onTrue(setBotThenBotSpikeBotCenter);
+
+        var setShot = setAutonomousCommandProvider.get();
+        setShot.setAutoCommand(setShotFromMidShootThenShootSpikes);
+        oi.neoTrellis.getifAvailable(8).onTrue(setShot);
     }
     
     @Inject

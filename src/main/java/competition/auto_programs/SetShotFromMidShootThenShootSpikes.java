@@ -8,6 +8,8 @@ import competition.commandgroups.FireFromTopBottomSpikeCommandGroup;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
+import competition.subsystems.collector.commands.StopCollectorCommand;
+import competition.subsystems.collector.commands.StopCollectorOnceCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
@@ -48,7 +50,8 @@ public class SetShotFromMidShootThenShootSpikes extends SequentialCommandGroup {
                                               WarmUpShooterCommand warmUpShooterCommand,
                                               Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
                                               Provider<FireWhenReadyCommand> fireWhenReadyCommandProvider,
-                                              Provider<SetArmExtensionCommand> setArmExtensionCommandProvider) {
+                                              Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
+                                              Provider<StopCollectorOnceCommand> stopCollectorCommandProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -79,15 +82,18 @@ public class SetShotFromMidShootThenShootSpikes extends SequentialCommandGroup {
         // this is only used for testing in the sim
         this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
 
+        var stopCollectorTop = stopCollectorCommandProvider.get();
+        this.addCommands(stopCollectorTop);
+
         // Fire Note into the speaker
         var armExtendForTopSpike = setArmExtensionCommandProvider.get();
-        this.addCommands(
-                new InstantCommand(() -> {
+//        this.addCommands(
+//                new InstantCommand(() -> {
                     armExtendForTopSpike.setTargetExtension(ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER);
-                })
-        );
+//                })
+//        );
         var fireSecondNoteCommand = fireWhenReadyCommandProvider.get();
-        this.addCommands(Commands.deadline(fireSecondNoteCommand, armExtendForTopSpike));
+        this.addCommands(fireSecondNoteCommand, armExtendForTopSpike);
 
         // Drive to middle spike note and collect
         queueMessageToAutoSelector("Drive to middle spike note, collect and shoot");
@@ -99,13 +105,16 @@ public class SetShotFromMidShootThenShootSpikes extends SequentialCommandGroup {
         // this is only used for testing in the sim
         this.addCommands(Commands.deadline(driveToMidSpikeNote, collectSequenceMid));
 
+        var stopCollectorMid = stopCollectorCommandProvider.get();
+        this.addCommands(stopCollectorMid);
+
         // Fire Note into the speaker
         var armExtendForMidSpike = setArmExtensionCommandProvider.get();
-        this.addCommands(
-                new InstantCommand(() -> {
+//        this.addCommands(
+//                new InstantCommand(() -> {
                     armExtendForMidSpike.setTargetExtension(ArmSubsystem.UsefulArmPosition.MID_SPIKE_SHOT);
-                })
-        );
+//                })
+//        );
         var fireThirdNoteCommand = fireWhenReadyCommandProvider.get();
         this.addCommands(fireThirdNoteCommand, armExtendForMidSpike);
 
@@ -119,13 +128,16 @@ public class SetShotFromMidShootThenShootSpikes extends SequentialCommandGroup {
         // this is only used for testing in the sim
         this.addCommands(Commands.deadline(driveToBotSpikeNote, collectSequenceBot));
 
+        var stopCollectorBot = stopCollectorCommandProvider.get();
+        this.addCommands(stopCollectorBot);
+
         // Fire Note into the speaker
         var armExtendForBotSpike = setArmExtensionCommandProvider.get();
-        this.addCommands(
-                new InstantCommand(() -> {
+//        this.addCommands(
+//                new InstantCommand(() -> {
                     armExtendForBotSpike.setTargetExtension(ArmSubsystem.UsefulArmPosition.PROTECTED_PODIUM_SHOT);
-                })
-        );
+//                })
+//        );
         var fireFourthNoteCommand = fireWhenReadyCommandProvider.get();
         this.addCommands(fireFourthNoteCommand, armExtendForBotSpike);
     }
