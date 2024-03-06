@@ -92,18 +92,18 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         return specialPointAtPositionTargetActive;
     }
 
-    public Command createSetSpecialHeadingTargetCommand(Supplier<Rotation2d> specialHeadingTarget) {
+    public InstantCommand createSetSpecialHeadingTargetCommand(Supplier<Rotation2d> specialHeadingTarget) {
         return new InstantCommand(() -> {
             setSpecialHeadingTarget(specialHeadingTarget.get());
-            setSpecialHeadingTargetActive(true);
-        }).handleInterrupt(this::createClearAllSpecialTargetsCommand);
+            setSpecialHeadingTargetActive(true);}
+        );
     }
 
-    public Command createSetSpecialPointAtPositionTargetCommand(Supplier<Translation2d> specialPointAtPositionTarget) {
-        return new RunCommand(() -> {
+    public InstantCommand createSetSpecialPointAtPositionTargetCommand(Supplier<Translation2d> specialPointAtPositionTarget) {
+        return new InstantCommand(() -> {
             setSpecialPointAtPositionTarget(specialPointAtPositionTarget.get());
-            setSpecialPointAtPositionTargetActive(true);
-        }).handleInterrupt(this::createClearAllSpecialTargetsCommand);
+            setSpecialPointAtPositionTargetActive(true);}
+        );
     }
 
     public InstantCommand createClearAllSpecialTargetsCommand() {

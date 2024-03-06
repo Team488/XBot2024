@@ -73,13 +73,19 @@ public class OperatorCommandMap {
         var pointAtSource = drive.createSetSpecialHeadingTargetCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.FaceCollectorToBlueSource));
 
+        var cancelSpecialPointAtPosition = drive.createClearAllSpecialTargetsCommand();
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToCentralSubwooferCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(pointAtSpeaker);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(pointAtSource);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
+                .onTrue(pointAtSpeaker)
+                .onFalse(cancelSpecialPointAtPosition);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
+                .onTrue(pointAtSource)
+                .onFalse(cancelSpecialPointAtPosition);
     }
 
 
