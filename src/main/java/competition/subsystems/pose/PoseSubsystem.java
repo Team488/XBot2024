@@ -392,11 +392,11 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public double getAngularErrorToSpeakerInDegrees() {
-        return getAngularErrorToTranslation2dInDegrees(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+        return getAngularErrorToTranslation2dInDegrees(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION), new Rotation2d());
     }
 
-    public double getAngularErrorToTranslation2dInDegrees(Translation2d targetPosition) {
-        var angleFromChassisToTarget =  WrappedRotation2d.fromDegrees(targetPosition.minus(getCurrentPose2d().getTranslation()).getAngle().getDegrees());
+    public double getAngularErrorToTranslation2dInDegrees(Translation2d targetPosition, Rotation2d offset) {
+        var angleFromChassisToTarget = WrappedRotation2d.fromDegrees(targetPosition.minus(getCurrentPose2d().getTranslation()).getAngle().rotateBy(offset).getDegrees());
         return getCurrentHeading().minus(angleFromChassisToTarget).getDegrees();
     }
 
