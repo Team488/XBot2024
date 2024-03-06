@@ -23,6 +23,7 @@ public class LightSubsystem extends BaseSubsystem {
     private int loopcount = 1;
     private final int loopMod = 4;
     public boolean ampSignalOn = false;
+    public boolean lightsWorking = false;
 
     public enum LightsStateMessage{
         DisabledWithoutAuto("32"),
@@ -46,9 +47,13 @@ public class LightSubsystem extends BaseSubsystem {
     @Inject
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
-        
-        serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
-
+        try {
+            serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
+            lightsWorking = true;
+        }
+        catch(Exception ex) {
+            log.error("Lights not working: %s", ex);
+        }
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
@@ -56,6 +61,10 @@ public class LightSubsystem extends BaseSubsystem {
 
     @Override
     public void periodic() {
+        if (!lightsWorking) {
+            return;
+        }
+
         try {
             // Runs period every 1/10 of a second
             if (this.loopcount++ % loopMod != 0) {
