@@ -38,10 +38,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private ShooterWheelTargetSpeeds targetRpms = new ShooterWheelTargetSpeeds(0.0);
     private double trimRpm;
     private final DoubleProperty intoAmpShotRpm;
-    private final DoubleProperty shortRangeErrorToleranceRpm;
-    private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
-    private final DoubleProperty acceptableToleranceRPM;
     private final DoubleProperty typicalShotRpm;
 
     //DEFINING MOTORS
@@ -63,15 +60,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         this.pose = pose;
         this.converter = new DoubleInterpolator();
 
-        // WE WON'T BE NEEDING THESE AS CURRENTLY WE ARE USING A UNIVERSAL ERROR TOLERANCE "acceptableToleranceRPM"
-        shortRangeErrorToleranceRpm = pf.createPersistentProperty("ShortRangeErrorTolerance", 300);
-        longRangeErrorToleranceRpm = pf.createPersistentProperty("LongRangeErrorTolerance", 100);
-
         // NEEDS TUNING TO FIND CORRECT VALUE
         iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
-
-        // THIS IS HOW MUCH RPM WE CAN TOLERATE (needs testing and is UNIVERSAL)
-        acceptableToleranceRPM = pf.createPersistentProperty("AcceptableToleranceRPM", 200);
 
         XCANSparkMaxPIDProperties defaultShooterPidProperties = new XCANSparkMaxPIDProperties(
                 0.00015,
@@ -203,21 +193,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     public void stopWheel() {
         setPower(new ShooterWheelTargetSpeeds(0.0));
     }
-
-
-    // GET ALL THE TOLERANCES
-    public double getShortRangeErrorTolerance() {
-        return shortRangeErrorToleranceRpm.get();
-    }
-
-    public double getLongRangeErrorTolerance() {
-        return longRangeErrorToleranceRpm.get();
-    }
-
-    public double getAcceptableToleranceRPM() {
-        return acceptableToleranceRPM.get();
-    }
-
+    
     public void resetPID() {
         if (contract.isShooterReady()) {
             upperWheelMotor.setIAccum(0);
