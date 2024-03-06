@@ -2,13 +2,13 @@ package competition.subsystems.arm.commands;
 import xbot.common.command.BaseCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import javax.inject.Inject;
-public class PrepareForHangingCommand extends BaseCommand{
+public class PrepareForHangingCommand extends SetArmExtensionCommand{
 
     ArmSubsystem armSubsystem;
 
     @Inject
     public PrepareForHangingCommand(ArmSubsystem armSubsystem){
-        this.armSubsystem = armSubsystem;
+        super(armSubsystem);
     }
     @Override
     public void initialize(){
