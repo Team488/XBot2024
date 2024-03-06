@@ -48,7 +48,7 @@ public class LightSubsystem extends BaseSubsystem {
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
         try {
-            serialPort = new SerialPort(115200, SerialPort.Port.kUSB2, 8);
+            serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
             lightsWorking = true;
         }
         catch(Exception ex) {
