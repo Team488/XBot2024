@@ -27,7 +27,5 @@ public class ContinuouslyPointArmAtSpeakerCommand extends BaseSetpointCommand {
     @Override
     public void execute() {
         arm.setTargetValue(arm.getRecommendedExtension(pose.getDistanceFromSpeaker()));
-        // TODO: if we can improve our confidence in the model, move to that
-        //arm.setTargetValue(arm.getModeledExtensionForGivenSpeakerDistance(pose.getDistanceFromSpeaker()));
     }
 }

@@ -79,7 +79,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .toArray(StringArraySubscriber[]::new);
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
-        robotDisplacementThresholdToRejectVisionUpdate = pf.createPersistentProperty("Robot Displacement Threshold",3);
+        robotDisplacementThresholdToRejectVisionUpdate = pf.createPersistentProperty("Displacement Threshold to reject Vision (m)",3);
 
         // TODO: Add resiliency to this subsystem, so that if the camera is not connected, it doesn't cause a pile
         // of errors. Some sort of VisionReady in the ElectricalContract may also make sense. Similarly,

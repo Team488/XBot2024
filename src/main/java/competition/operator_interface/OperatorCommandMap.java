@@ -21,6 +21,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
@@ -72,19 +73,13 @@ public class OperatorCommandMap {
         var pointAtSource = drive.createSetSpecialHeadingTargetCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.FaceCollectorToBlueSource));
 
-        var clearSpecialTargets = drive.createClearAllSpecialTargetsCommand();
-
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToCentralSubwooferCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
-                .onTrue(pointAtSpeaker)
-                .onFalse(clearSpecialTargets);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
-                .onTrue(pointAtSource)
-                .onFalse(clearSpecialTargets);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(pointAtSpeaker);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.Y).onTrue(pointAtSource);
     }
 
 
@@ -152,8 +147,8 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromFarAmp);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSpeakerFromPodium);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtSubwoofer);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).whileTrue(forceEngageBrakeCommand);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).whileTrue(removeForcedBrakingCommand);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).onTrue(forceEngageBrakeCommand);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(removeForcedBrakingCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(manualHangingModeCommand);
     }
@@ -230,16 +225,13 @@ public class OperatorCommandMap {
     @Inject
     public void setupForceRobotToPositionCommands(PoseSubsystem pose,
                                                   OperatorInterface oi) {
-        var teleportRobotToSubwooferTop = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)).ignoringDisable(true);
+        var teleportRobotToSubwooferTop = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation);
         oi.neoTrellis.getifAvailable(17).onTrue(teleportRobotToSubwooferTop);
 
-        var teleportRobotToSubwooferMid = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation)).ignoringDisable(true);
+        var teleportRobotToSubwooferMid = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation);
         oi.neoTrellis.getifAvailable(18).onTrue(teleportRobotToSubwooferMid);
 
-        var teleportRobotToSubwooferBottom = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation)).ignoringDisable(true);
+        var teleportRobotToSubwooferBottom = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation);
         oi.neoTrellis.getifAvailable(19).onTrue(teleportRobotToSubwooferBottom);
     }
 
