@@ -4,7 +4,9 @@ import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.controls.sensors.XTimer;
@@ -75,6 +77,31 @@ public class NoteMap extends ReservableLocationMap<Note> {
         } else {
             return get(pointOfInterest.getName(alliance));
         }
+    }
+
+    public Pose3d getClosestAvailableNote(Pose2d referencePoint) {
+
+        double closestDistance = Double.MAX_VALUE;
+        Note closestNote = null;
+        var allNotes = this.internalMap.values();
+        allNotes.addAll(visionSourceNotes.stream().map(VisionSourceNote::getNote).toList());
+        for (Note note : allNotes) {
+            if (note.getAvailability() == Availability.Available) {
+                double distance = note.getLocation().getTranslation().getDistance(referencePoint.getTranslation());
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestNote = note;
+                }
+            }
+        }
+        if (closestNote != null) {
+            return new Pose3d(new Translation3d(
+                    closestNote.getLocation().getX(),
+                    closestNote.getLocation().getY(),
+                    0.025),
+                    new Rotation3d(0,0,0));
+        }
+        return null;
     }
 
     public Pose3d[] getAllKnownNotes() {
