@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
+import xbot.common.advantage.AKitLogger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
@@ -238,7 +239,11 @@ public class DynamicOracle extends BaseSubsystem {
                     .forEach(noteMap::addVisionNote);
         }
 
+        aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
+        // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.
+        // We can always set the global log level to debug and replay the inputs to regenerate this data.
         aKitLog.record("NoteMap", noteMap.getAllKnownNotes());
+        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
 
         switch (currentHighLevelGoal) {
             case ScoreInAmp: // For now keeping things simple
@@ -335,10 +340,12 @@ public class DynamicOracle extends BaseSubsystem {
         aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
 
+        aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         if (getTerminatingPoint() != null) {
             aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
             aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
         }
+        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
     }
 
