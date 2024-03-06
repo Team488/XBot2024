@@ -498,7 +498,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     // Returns an angle for the shooter that can be converted into arm position later if needed
     public double getUsefulArmPositionAngle(UsefulArmPosition usefulArmPosition) {
         double angle;
-        switch(usefulArmPosition) {
+        switch (usefulArmPosition) {
             // THESE ARE ALL PLACEHOLDER VALUES!!!
             case STARTING_POSITION -> angle = 40;
             case COLLECTING_FROM_GROUND -> angle = 0;
@@ -509,6 +509,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             default -> angle = 40;
         }
         return angle;
+    }
+
     public double getModeledExtensionForGivenSpeakerDistance(double distanceFromSpeaker) {
         return armModelBasedCalculator.getArmAngleFromDistance(distanceFromSpeaker);
     }
@@ -537,6 +539,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 180;
                 break;
             case HANGING_POSITION:
+                extension = 100; // placeholder value currently
             default:
                 return 0;
         }

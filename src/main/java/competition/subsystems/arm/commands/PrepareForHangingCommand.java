@@ -13,7 +13,7 @@ public class PrepareForHangingCommand extends BaseCommand{
     @Override
     public void initialize(){
         log.info("Preparing Hanging");
-        armSubsystem.setTargetAngle(armSubsystem.getUsefulArmPositionAngle(ArmSubsystem.UsefulArmPosition.HANGING_POSITION));
+        armSubsystem.setTargetValue(armSubsystem.getUsefulArmPositionExtensionInMm(ArmSubsystem.UsefulArmPosition.HANGING_POSITION));
     }
 
 
