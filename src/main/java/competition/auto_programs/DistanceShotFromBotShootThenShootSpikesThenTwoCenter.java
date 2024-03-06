@@ -28,14 +28,14 @@ public class DistanceShotFromBotShootThenShootSpikesThenTwoCenter extends Sequen
 
     @Inject
     public DistanceShotFromBotShootThenShootSpikesThenTwoCenter(AutonomousCommandSelector autoSelector,
-                                                         Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                                         Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
-                                                         Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                         PoseSubsystem pose, DriveSubsystem drive,
-                                                         Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
-                                                         FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup,
-                                                         Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
-                                                         Provider<CollectSequenceCommandGroup> collectSequenceCommandGroupProvider) {
+                                                                Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
+                                                                Provider<FireNoteCommandGroup> fireNoteCommandGroupProvider,
+                                                                Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
+                                                                PoseSubsystem pose, DriveSubsystem drive,
+                                                                Provider<PointAtSpeakerCommand> pointAtSpeakerCommandProvider,
+                                                                FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup,
+                                                                Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
+                                                                Provider<CollectSequenceCommandGroup> collectSequenceCommandGroupProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -53,10 +53,10 @@ public class DistanceShotFromBotShootThenShootSpikesThenTwoCenter extends Sequen
         var driveToBotSpikeNote = driveToListOfPointsCommandProvider.get();
         driveToBotSpikeNote.addPointsSupplier(this::goToBotSpike);
         var collectSequenceBot = collectSequenceCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(collectSequenceBot, driveToBotSpikeNote));
+//        this.addCommands(Commands.deadline(collectSequenceBot, driveToBotSpikeNote));
 
         // this is only used for testing in the sim
-//        this.addCommands(Commands.deadline(driveToBotSpikeNote, collectSequenceBot));
+        this.addCommands(Commands.deadline(driveToBotSpikeNote, collectSequenceBot));
 
         // Fire Note into the speaker
         var fireSecondNoteCommand = fireNoteCommandGroupProvider.get();
@@ -67,10 +67,10 @@ public class DistanceShotFromBotShootThenShootSpikesThenTwoCenter extends Sequen
         var driveToMidSpikeNote = driveToListOfPointsCommandProvider.get();
         driveToMidSpikeNote.addPointsSupplier(this::goToMidSpike);
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(collectSequenceMid, driveToMidSpikeNote));
+//        this.addCommands(Commands.deadline(collectSequenceMid, driveToMidSpikeNote));
 
         // this is only used for testing in the sim
-//        this.addCommands(Commands.deadline(driveToMidSpikeNote, collectSequenceMid));
+        this.addCommands(Commands.deadline(driveToMidSpikeNote, collectSequenceMid));
 
         // Fire Note into the speaker
         var fireThirdNoteCommand = fireNoteCommandGroupProvider.get();
@@ -81,10 +81,10 @@ public class DistanceShotFromBotShootThenShootSpikesThenTwoCenter extends Sequen
         var driveToTopSpikeNote = driveToListOfPointsCommandProvider.get();
         driveToTopSpikeNote.addPointsSupplier(this::goToTopSpike);
         var collectSequenceTop = collectSequenceCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
+//        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
 
         // this is only used for testing in the sim
-//        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
+        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
 
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireNoteCommandGroupProvider.get();

@@ -114,7 +114,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         SCOOCH_NOTE,
         PROTECTED_FAR_AMP_SHOT,
         PROTECTED_PODIUM_SHOT,
-        COLLECT_DIRECTLY_FROM_SOURCE
+        COLLECT_DIRECTLY_FROM_SOURCE,
+        MID_SPIKE_SHOT
     }
 
     private DoubleInterpolator speakerDistanceToExtensionInterpolator;
@@ -483,6 +484,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 break;
             case COLLECT_DIRECTLY_FROM_SOURCE:
                 extension = 180;
+                break;
+            case MID_SPIKE_SHOT:
+                // TODO: find mid spike shot extension
+                // this extension is a guess
+                extension = 55;
                 break;
             default:
                 return 0;

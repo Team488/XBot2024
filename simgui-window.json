@@ -10,8 +10,8 @@
       "style": "0",
       "userScale": "2",
       "width": "1600",
-      "xpos": "849",
-      "ypos": "962"
+      "xpos": "495",
+      "ypos": "856"
     }
   },
   "Window": {
@@ -27,7 +27,7 @@
     },
     "###Keyboard 0 Settings": {
       "Collapsed": "0",
-      "Pos": "295,3",
+      "Pos": "376,60",
       "Size": "300,560"
     },
     "###Keyboard 1 Settings": {
