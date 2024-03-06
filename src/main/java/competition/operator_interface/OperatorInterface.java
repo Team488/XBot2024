@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.subsystems.NeoTrellisGamepadSubsystem;
+import competition.subsystems.pose.PointOfInterest;
 import xbot.common.controls.sensors.XJoystick;
 import xbot.common.controls.sensors.XXboxController;
 import xbot.common.controls.sensors.XXboxController.XXboxControllerFactory;
@@ -23,7 +24,6 @@ public class OperatorInterface {
     public XXboxController operatorFundamentalsGamepad;
     public XXboxController operatorGamepadAdvanced;
 
-    public XXboxController autoGamepad;
     public XJoystick neoTrellis;
     public NeoTrellisGamepadSubsystem neoTrellisLights;
 
@@ -41,17 +41,15 @@ public class OperatorInterface {
         driverGamepad.setLeftInversion(false, true);
         driverGamepad.setRightInversion(true, true);
 
-        operatorFundamentalsGamepad = controllerFactory.create(1);
-        operatorFundamentalsGamepad.setLeftInversion(false, true);
-        operatorFundamentalsGamepad.setRightInversion(false, true);
-
-        operatorGamepadAdvanced = controllerFactory.create(4);
+        operatorGamepadAdvanced = controllerFactory.create(1);
         operatorGamepadAdvanced.setLeftInversion(false, true);
         operatorGamepadAdvanced.setRightInversion(false, true);
 
-        autoGamepad = controllerFactory.create(3);
+        operatorFundamentalsGamepad = controllerFactory.create(2);
+        operatorFundamentalsGamepad.setLeftInversion(false, true);
+        operatorFundamentalsGamepad.setRightInversion(false, true);
 
-        neoTrellis = joystickFactory.create(2, 32);
+        neoTrellis = joystickFactory.create(3, 32);
         neoTrellisLights = neoTrellisSubsystem;
 
         pf.setPrefix("OperatorInterface");
@@ -71,5 +69,54 @@ public class OperatorInterface {
 
     public double getOperatorGamepadTypicalDeadbandSecond() {
         return operatorDeadbandSecond.get();
+    }
+
+    public boolean getNeoTrellisValue(PointOfInterest pointOfInterest) {
+        switch (pointOfInterest) {
+            case CenterLine1:
+                return neoTrellis.getButton(2);
+            case CenterLine2:
+                return neoTrellis.getButton(3);
+            case CenterLine3:
+                return neoTrellis.getButton(4);
+            case CenterLine4:
+                return neoTrellis.getButton(5);
+            case CenterLine5:
+                return neoTrellis.getButton(6);
+            case SpikeTop:
+                return neoTrellis.getButton(10);
+            case SpikeMiddle:
+                return neoTrellis.getButton(11);
+            case SpikeBottom:
+                return neoTrellis.getButton(12);
+            case AmpFarScoringLocation:
+                return neoTrellis.getButton(17);
+            // Top and Mid spike shot enable/disable needs to be done a different way.
+            case PodiumScoringLocation:
+                return neoTrellis.getButton(20);
+            case SubwooferTopScoringLocation:
+                return neoTrellis.getButton(25);
+            case SubwooferMiddleScoringLocation:
+                return neoTrellis.getButton(26);
+            case SubwooferBottomScoringLocation:
+                return neoTrellis.getButton(27);
+            default:
+                break;
+        }
+        return false;
+    }
+
+    public boolean areRangedShotsAllowedFrom(PointOfInterest pointOfInterest) {
+        switch (pointOfInterest) {
+            case SpikeTop -> {
+                return neoTrellis.getButton(18);
+            }
+            case SpikeMiddle -> {
+                return neoTrellis.getButton(19);
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 }

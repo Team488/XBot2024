@@ -1,7 +1,7 @@
 package competition.auto_programs;
 
 import competition.subsystems.arm.ArmSubsystem;
-import competition.subsystems.arm.commands.SetArmAngleCommand;
+import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
@@ -37,7 +37,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
     }
     @Inject
     public TwoNoteGriefAuto(Provider<SwerveSimpleTrajectoryCommand> swerveProvider,
-                            Provider<SetArmAngleCommand> setArmAngleProvider,
+                            Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
                             Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
                             Provider<FireWhenReadyCommand> fireWhenReadyCommandProvider,
                             IntakeScoocherCommand scoochIntake,
@@ -45,26 +45,27 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
                             IntakeUntilNoteCollectedCommand intakeUntilCollected,
                             PoseSubsystem pose,
                             DynamicOracle oracle,
+                            ArmSubsystem arm,
                             AutonomousCommandSelector autoSelector){
         this.autoSelector = autoSelector;
         this.oracle = oracle;
 
         //starts us in front of the subwoofer, to score
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferCentralScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         //fires the note we are holding at the start
         var warmUpForFirstSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForFirstSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         var fireFirstShot = fireWhenReadyCommandProvider.get();
 
         this.addCommands(Commands.deadline(fireFirstShot,
                 warmUpForFirstSubwooferShot));
 
         //gets arm into scooching position and sets up swerve pathing to mess up center notes
-        var setArmToScooch = setArmAngleProvider.get();
-        setArmToScooch.setArmPosition(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
+        var setArmToScooch = setArmExtensionCommandProvider.get();
+        setArmToScooch.setTargetExtension(ArmSubsystem.UsefulArmPosition.SCOOCH_NOTE);
 
         var swerveToEdge = swerveProvider.get();
         setUpLogic(swerveToEdge,KeyPointsForSwerve.CENTERLINE1);
@@ -83,8 +84,8 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         swerveLastNote.logic.setAimAtGoalDuringFinalLeg(true);
         swerveLastNote.logic.setDriveBackwards(true);
 
-        var setArmToCollect = setArmAngleProvider.get();
-        setArmToCollect.setArmPosition(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
+        var setArmToCollect = setArmExtensionCommandProvider.get();
+        setArmToCollect.setTargetExtension(ArmSubsystem.UsefulArmPosition.COLLECTING_FROM_GROUND);
 
         //swap the swerve and the intake later this is just for simulator
         this.addCommands(setArmToCollect.alongWith(Commands.deadline(swerveLastNote,intakeUntilCollected)));
@@ -94,7 +95,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         setUpLogic(driveToSubwoofer,KeyPointsForSwerve.BACKTOSUBWOOFER);
 
         var warmUpForSecondSubwooferShot = warmUpShooterCommandProvider.get();
-        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.SUBWOOFER);
+        warmUpForSecondSubwooferShot.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         var fireSecondShot = fireWhenReadyCommandProvider.get();
 
         this.addCommands(Commands.deadline(driveToSubwoofer, warmUpForSecondSubwooferShot));
@@ -106,7 +107,7 @@ public class TwoNoteGriefAuto extends SequentialCommandGroup {
         swerve.logic.setEnableConstantVelocity(true);
         swerve.logic.setConstantVelocity(4.5);
         swerve.logic.setKeyPoints(getPoints(point));
-        swerve.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        swerve.logic.setWaypointRouter(oracle.getFieldWithObstacles());
     }
     //a key to make this function return different points based on what you need
     private ArrayList<XbotSwervePoint> getPoints(KeyPointsForSwerve point){

@@ -1,6 +1,11 @@
 package competition.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -16,12 +21,18 @@ import xbot.common.subsystems.drive.BaseSwerveDriveSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.function.Supplier;
 
 @Singleton
 public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFrameRefreshable {
     private static final Logger log = LogManager.getLogger(DriveSubsystem.class);
 
     private Pose2d targetNote;
+
+    private boolean specialHeadingTargetActive = false;
+    private boolean specialPointAtPositionTargetActive = false;
+    private Rotation2d specialHeadingTarget = new Rotation2d();
+    private Translation2d specialPointAtPositionTarget = new Translation2d();
 
     @Inject
     public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
@@ -47,6 +58,59 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
 
     public Pose2d getTargetNote() {
         return targetNote;
+    }
+
+    public void setSpecialHeadingTarget(Rotation2d specialHeadingTarget) {
+        this.specialHeadingTarget = specialHeadingTarget;
+    }
+
+    public Rotation2d getSpecialHeadingTarget() {
+        return specialHeadingTarget;
+    }
+
+    public void setSpecialHeadingTargetActive(boolean specialHeadingTargetActive) {
+        this.specialHeadingTargetActive = specialHeadingTargetActive;
+    }
+
+    public boolean isSpecialHeadingTargetActive() {
+        return specialHeadingTargetActive;
+    }
+
+    public void setSpecialPointAtPositionTarget(Translation2d specialPointAtPositionTarget) {
+        this.specialPointAtPositionTarget = specialPointAtPositionTarget;
+    }
+
+    public Translation2d getSpecialPointAtPositionTarget() {
+        return specialPointAtPositionTarget;
+    }
+
+    public void setSpecialPointAtPositionTargetActive(boolean specialPointAtPositionTargetActive) {
+        this.specialPointAtPositionTargetActive = specialPointAtPositionTargetActive;
+    }
+
+    public boolean isSpecialPointAtPositionTargetActive() {
+        return specialPointAtPositionTargetActive;
+    }
+
+    public Command createSetSpecialHeadingTargetCommand(Supplier<Rotation2d> specialHeadingTarget) {
+        return new InstantCommand(() -> {
+            setSpecialHeadingTarget(specialHeadingTarget.get());
+            setSpecialHeadingTargetActive(true);
+        }).handleInterrupt(this::createClearAllSpecialTargetsCommand);
+    }
+
+    public Command createSetSpecialPointAtPositionTargetCommand(Supplier<Translation2d> specialPointAtPositionTarget) {
+        return new RunCommand(() -> {
+            setSpecialPointAtPositionTarget(specialPointAtPositionTarget.get());
+            setSpecialPointAtPositionTargetActive(true);
+        }).handleInterrupt(this::createClearAllSpecialTargetsCommand);
+    }
+
+    public InstantCommand createClearAllSpecialTargetsCommand() {
+        return new InstantCommand(() -> {
+            setSpecialHeadingTargetActive(false);
+            setSpecialPointAtPositionTargetActive(false);
+        });
     }
 
 }

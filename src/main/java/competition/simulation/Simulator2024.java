@@ -124,6 +124,20 @@ public class Simulator2024 {
         leftMockMotor.setPosition(leftMockMotor.getPosition() +  (leftMockMotor.get() * powerToTicksRatio));
         rightMockMotor.setPosition(rightMockMotor.getPosition() +  (rightMockMotor.get() * powerToTicksRatio));
 
+        if (leftMockMotor.getPosition() >  100) {
+            leftMockMotor.setPosition(100);
+        }
+        if (rightMockMotor.getPosition() >  100) {
+            rightMockMotor.setPosition(100);
+        }
+
+        if (leftMockMotor.getPosition() <  -100) {
+            leftMockMotor.setPosition(-100);
+        }
+        if (rightMockMotor.getPosition() <  -100) {
+            rightMockMotor.setPosition(-100);
+        }
+
         // They might be using PID to control the arm. If so, we can use a moving aveage of their setpoint
         // to approximate internal PID.
         leftArmPositionCalculator.add(leftMockMotor.getReference());

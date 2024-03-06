@@ -24,6 +24,7 @@ import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -51,9 +52,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
     public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0, 5.5, Rotation2d.fromDegrees(180));
-    public static Pose2d SpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
-    public static Pose2d SpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
-    public static Pose2d SpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
+    public static Pose2d BlueSpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
+    public static Pose2d BlueSpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
+    public static Pose2d BlueSpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
     public static Pose2d CenterLine1 = new Pose2d(fieldXMidpointInMeters, 7.4584, new Rotation2d());
     public static Pose2d CenterLine2 = new Pose2d(fieldXMidpointInMeters, 5.7820, new Rotation2d());
     public static Pose2d CenterLine3 = new Pose2d(fieldXMidpointInMeters, 4.1056, new Rotation2d());
@@ -72,17 +73,41 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static double SubwooferHeight = 1.1;
     public static Translation2d BlueSubwoofer = new Translation2d(0.415, 5.55);
 
-    public static Pose2d AmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
+    public static Pose2d BlueAmpScoringLocation = new Pose2d(1.83, 7.71, Rotation2d.fromDegrees(90));
 
     // TODO: get good positions
     public static Pose2d BlueSubwooferTopScoringLocation = new Pose2d(0.751, 6.702, Rotation2d.fromDegrees(-120));
-    public static Pose2d BlueSubwooferCentralScoringLocation = new Pose2d(1.383, 5.54, Rotation2d.fromDegrees(180));
+    public static Pose2d BlueSubwooferMiddleScoringLocation = new Pose2d(1.383, 5.54, Rotation2d.fromDegrees(180));
     public static Pose2d BlueSubwooferBottomScoringLocation = new Pose2d(0.758, 4.395, Rotation2d.fromDegrees(120));
+    public static Pose2d BluePodiumScoringLocation = new Pose2d(2.770, 4.389, Rotation2d.fromDegrees(159));
+    public static Pose2d BlueFarAmpScoringLocation = new Pose2d(3.073, 7.597, Rotation2d.fromDegrees(-146.6));
     public static Pose2d BlueSpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());
     public static Pose2d BlueSpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
 
+    public static Rotation2d FaceCollectorToBlueSource = Rotation2d.fromDegrees(120);
 
+    // More navigation points
+    public static Pose2d BluePodiumWaypoint = new Pose2d(2.5, 4.25, new Rotation2d());
+    public static Pose2d BlueTopWingUpper = new Pose2d(5.861, 7.374, new Rotation2d());
+    public static Pose2d BlueTopWingLower = new Pose2d(5.861, 6.413, new Rotation2d());
+    public static Pose2d BlueBottomWing = new Pose2d(5.861, 1.505, new Rotation2d());
 
+    // Navigation in/under/around the stage
+    public static Pose2d BlueStageNW = new Pose2d(4.347, 4.912, new Rotation2d());
+    public static Pose2d BlueStageE = new Pose2d(5.886, 4.132, new Rotation2d());
+    public static Pose2d BlueStageSW = new Pose2d(4.420, 3.239, new Rotation2d());
+    public static Pose2d BlueStageCenter = new Pose2d(4.892, 4.081, new Rotation2d());
+    public static Pose2d BlueSouthOfStage = new Pose2d(4.572, 2.069, new Rotation2d());
+
+    // Slots for the source
+    public static Pose2d BlueSourceNearest = new Pose2d(14.883, 0.684, Rotation2d.fromDegrees(120));
+    public static Pose2d BlueSourceMiddle = new Pose2d(15.437, 0.967, Rotation2d.fromDegrees(120));
+    public static Pose2d BlueSourceFarthest = new Pose2d(15.918, 1.276, Rotation2d.fromDegrees(120));
+
+    // Hanging positions
+    public static Pose2d BlueStageNWHangingPreparationPoint = new Pose2d(3.859, 5.573, Rotation2d.fromDegrees(-60));
+    public static Pose2d BlueStageSWHangingPreparationPoint = new Pose2d(4.071, 2.736, Rotation2d.fromDegrees(60));
+    public static Pose2d BlueStageEHangingPreparationPoint = new Pose2d(6.712, 4.087, Rotation2d.fromDegrees(180));
 
     private DoubleProperty matchTime;
 
@@ -97,7 +122,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
         extremelyConfidentVisionDistanceUpdateInMetersProp = propManager.createPersistentProperty("ExtremelyConfidentVisionDistanceUpdateInMeters", 0.01);
         isVisionPoseExtremelyConfident = false;
         allianceAwareFieldProp = propManager.createPersistentProperty("Alliance Aware Field", true);
-        useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", true);
+        useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", false);
         useForwardCameraForPose = propManager.createPersistentProperty("Use forward april cam", true);
         useRearCameraForPose = propManager.createPersistentProperty("Use rear april cam", true);
 
@@ -147,7 +172,9 @@ public class PoseSubsystem extends BasePoseSubsystem {
      * Gets whether the robot should consider vision values for calculating pose.
      * @return Whether the robot pose will be calculated using vision.
      */
-    public boolean isUsingVisionAssistedPose() { return this.useVisionForPoseProp.get(); }
+    public boolean isUsingVisionAssistedPose() {
+        return this.useVisionForPoseProp.get() || DriverStation.isTeleop();
+    }
 
     /**
      * This is a legacy method for tank drive robots, and does not apply to swerve. We should look at
@@ -184,17 +211,24 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 getSwerveModulePositions()
         );
 
-        if (isUsingVisionAssistedPose()) {
-            improveFusedOdometryUsingPhotonLib(updatedPosition);
-        }
+        improveFusedOdometryUsingPhotonLib(updatedPosition);
 
         aKitLog.record("VisionEstimate", fusedSwerveOdometry.getEstimatedPosition());
         aKitLog.record("WheelsOnlyEstimate", onlyWheelsGyroSwerveOdometry.getEstimatedPosition());
 
-        // For now, we only trust the odometry and the gyro. We will continue to log the vision data,
-        // but the few inches of error we are seeing in the vision system are causing us to miss
+        Translation2d positionSource;
+        if (isUsingVisionAssistedPose()) {
+            // If we trust vision implicitly, use it all the time.
+            // If we don't trust it strongly, we still need to use it in teleop as
+            // odometry will build up a lot of error quickly.
+            positionSource = fusedSwerveOdometry.getEstimatedPosition().getTranslation();
+        } else {
+            // If we don't trust vision, use only odometry. Typically happens in autonomous.
+            positionSource = onlyWheelsGyroSwerveOdometry.getEstimatedPosition().getTranslation();
+        }
+
         var estimatedPosition = new Pose2d(
-                onlyWheelsGyroSwerveOdometry.getEstimatedPosition().getTranslation(),
+                positionSource,
                 getCurrentHeading());
 
         totalDistanceX = estimatedPosition.getX();
@@ -226,7 +260,11 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public Command createSetPositionCommand(Supplier<Pose2d> poseSupplier) {
-        return Commands.runOnce(() -> setCurrentPosition(poseSupplier.get()));
+        return Commands.runOnce(() -> setCurrentPosition(poseSupplier.get())).ignoringDisable(true);
+    }
+
+    public Command createSetPositionCommandThatMirrorsIfNeeded(Pose2d bluePose) {
+        return Commands.runOnce(() -> setCurrentPosition(PoseSubsystem.convertBlueToRedIfNeeded(bluePose))).ignoringDisable(true);
     }
 
     private void improveFusedOdometryUsingPhotonLib(Pose2d recentPosition) {

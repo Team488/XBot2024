@@ -18,10 +18,28 @@ import javax.inject.Singleton;
 
 @Singleton
 public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefreshable, NoteCollectionInfoSource, NoteFiringInfoSource {
+
+    public enum IntakeState {
+        INTAKING,
+        EJECTING,
+        STOPPED,
+        FIRING
+    }
+
+    public enum CollectionSubstate {
+        EvaluationNeeded,
+        EagerCollection,
+        TripwireHit,
+        AggresivelyPauseCollection,
+        MoveNoteCarefullyToReadyPosition,
+        Complete
+    }
+
     public final XCANSparkMax collectorMotor;
     public final DoubleProperty intakePower;
     public final DoubleProperty ejectPower;
     private IntakeState intakeState;
+    private CollectionSubstate collectionSubstate;
     public final XDigitalInput inControlNoteSensor;
     public final XDigitalInput readyToFireNoteSensor;
     private final ElectricalContract contract;
@@ -30,14 +48,17 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     private final TimeStableValidator noteInControlValidator;
     double lastFiredTime = -Double.MAX_VALUE;
     final DoubleProperty waitTimeAfterFiring;
+    boolean lowerTripwireHit = false;
+    boolean upperTripwireHit = false;
+    double lastNoteDetectionTime = -Double.MAX_VALUE;
+
+    final DoubleProperty aggressiveStopPower;
+    final DoubleProperty aggressiveStopDuration;
+    final DoubleProperty carefulAdvancePower;
+    final DoubleProperty carefulAdvanceTimeout;
+    double carefulAdvanceBeginTime = -Double.MAX_VALUE;
 
 
-    public enum IntakeState {
-        INTAKING,
-        EJECTING,
-        STOPPED,
-        FIRING
-    }
 
     @Inject
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
@@ -59,10 +80,23 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
         intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
-        this.waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
+        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
+        aggressiveStopPower = pf.createPersistentProperty("AggressiveStopPower", -0.4);
+        aggressiveStopDuration = pf.createPersistentProperty("AggressiveStopDuration", 0.1);
+        carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
+        carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
+
         this.intakeState = IntakeState.STOPPED;
 
         noteInControlValidator = new TimeStableValidator(() -> 0.1); // Checks for having the note over 0.1 seconds
+    }
+
+    public void resetCollectionState() {
+        collectionSubstate = CollectionSubstate.EvaluationNeeded;
+        lowerTripwireHit = false;
+        upperTripwireHit = false;
+        lastNoteDetectionTime = -Double.MAX_VALUE;
+        carefulAdvanceBeginTime = -Double.MAX_VALUE;
     }
 
     public IntakeState getIntakeState(){
@@ -73,14 +107,80 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return;
         }
 
-        double power = intakePower.get();
-        if (getGamePieceInControl()) {
-            power *= intakePowerInControlMultiplier.get();
+        double suggestedPower = 0;
+
+        // When just starting collection cold, we need to check if any sensors are pressed
+        // before figuring out what to do.
+        if (collectionSubstate == CollectionSubstate.EvaluationNeeded) {
+            if (getGamePieceInControl()) {
+                collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
+            } else if (getGamePieceReady()) {
+                collectionSubstate = CollectionSubstate.Complete;
+            } else {
+                collectionSubstate = CollectionSubstate.EagerCollection;
+            }
         }
-        if (getGamePieceReady()) {
-            power = 0;
+
+        // If we're in the clear, go ahead and start collecting.
+        if (collectionSubstate == CollectionSubstate.EagerCollection) {
+            if (getGamePieceInControl() || getGamePieceReady()) {
+                lowerTripwireHit = getGamePieceInControl();
+                upperTripwireHit = getGamePieceReady();
+                lastNoteDetectionTime = XTimer.getFPGATimestamp();
+                collectionSubstate = CollectionSubstate.AggresivelyPauseCollection;
+            } else {
+                suggestedPower = intakePower.get();
+            }
         }
-        setPower(power);
+
+        // If we've hit a tripwire, we need to bring that note to a sudden and abrupt stop
+        // before it enters the shooter.
+        if (collectionSubstate == CollectionSubstate.AggresivelyPauseCollection) {
+            // If we've already paused collection for a while, time to start advancing the note.
+            if (XTimer.getFPGATimestamp() - lastNoteDetectionTime > aggressiveStopDuration.get()) {
+                collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
+                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
+            } else {
+                suggestedPower = aggressiveStopPower.get();
+            }
+        }
+
+        // Now to carefully advance the note to the ready position. This may involve running the intake backwards
+        // if we went past the ready to fire position.
+        if (collectionSubstate == CollectionSubstate.MoveNoteCarefullyToReadyPosition) {
+            if (getGamePieceInControl()) {
+                // We've backdriven hard enough to see the note again. No need to go further.
+                lowerTripwireHit = true;
+                upperTripwireHit = false;
+            }
+
+            if (getGamePieceReady()) {
+                // The note is where it needs to be. We're done.
+                collectionSubstate = CollectionSubstate.Complete;
+            } else {
+                if (lowerTripwireHit) {
+                    suggestedPower = carefulAdvancePower.get();
+                }
+                if (upperTripwireHit) {
+                    // If the note hit the upper sensor, and we can't see it now,
+                    // try driving backwards until we do
+                    suggestedPower = -carefulAdvancePower.get();
+                }
+
+                if (XTimer.getFPGATimestamp() - carefulAdvanceBeginTime > carefulAdvanceTimeout.get()) {
+                    // If we've been trying to advance the note for a while, and it's not working,
+                    // we need to stop and re-evaluate.
+                    collectionSubstate = CollectionSubstate.EvaluationNeeded;
+                }
+            }
+        }
+
+        aKitLog.record("CollectionSubstate", collectionSubstate);
+        aKitLog.record("LowerTripwireHit", lowerTripwireHit);
+        aKitLog.record("UpperTripwireHit", upperTripwireHit);
+        aKitLog.record("SuggestedPower", suggestedPower);
+
+        setPower(suggestedPower);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){

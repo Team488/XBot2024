@@ -36,6 +36,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.autoSelector = autoSelector;
 
         // Force our location
+        queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer (bottom)");
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
@@ -45,9 +46,10 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.addCommands(fireFirstNoteCommand);
 
         // Drive to bottom spike note and collect
+        queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(bottom) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.SpikeBottom);
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeBottom);
                 })
         );
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
@@ -62,13 +64,14 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.addCommands(fireSecondNoteCommand);
 
         // Drive to middle spike note and collect
+        queueMessageToAutoSelector("Drive to middle spike note, collect, drive back to sub(bottom) and shoot");
         var driveToMiddleSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
         driveToMiddleSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeMiddle);
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
-//        this.addCommands(Commands.deadline(collectSequenceMid, driveToMiddleSpikeNote));
+        this.addCommands(Commands.deadline(collectSequenceMid, driveToMiddleSpikeNote));
 
         // this is only used for testing in the sim
-        this.addCommands(Commands.deadline(driveToMiddleSpikeNote, collectSequenceMid));
+//        this.addCommands(Commands.deadline(driveToMiddleSpikeNote, collectSequenceMid));
 
 
         // Drive back to subwoofer
@@ -81,11 +84,12 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         this.addCommands(fireThirdNoteCommand);
 
         // Drive to top spike note and collect
+        queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(bottom) and shoot");
         var driveToTopSpikeNote = driveToListOfPointsForCollectCommandProvider.get();
         driveToTopSpikeNote.addPointsSupplier(this::goToBottomWhiteLineThenSpikeTop);
         var collectSequenceTop = collectSequenceCommandGroupProvider.get();
-//        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
-        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
+        this.addCommands(Commands.deadline(collectSequenceTop, driveToTopSpikeNote));
+//        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
 
         // Drive back to subwoofer
         var driveBackToBottomSubwooferThird = driveToListOfPointsCommandProvider.get();
@@ -102,7 +106,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeBottomWhiteLine.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeMiddle, 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSpikeMiddle, 10));
         return points;
     }
 
@@ -111,7 +115,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeBottomWhiteLine.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.SpikeTop, 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSpikeTop, 10));
         return points;
     }
 
@@ -124,4 +128,7 @@ public class SubwooferShotFromBotShootThenShootSpikes extends SequentialCommandG
         return points;
     }
 
+    private void queueMessageToAutoSelector(String message) {
+        this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
+    }
 }

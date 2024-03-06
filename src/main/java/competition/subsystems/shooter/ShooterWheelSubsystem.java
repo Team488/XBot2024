@@ -2,6 +2,8 @@ package competition.subsystems.shooter;
 
 import com.revrobotics.CANSparkBase;
 
+import competition.subsystems.oracle.ScoringLocation;
+import competition.subsystems.pose.PointOfInterest;
 import xbot.common.advantage.DataFrameRefreshable;
 import competition.subsystems.pose.PoseSubsystem;
 import xbot.common.command.BaseSetpointSubsystem;
@@ -20,10 +22,8 @@ import javax.inject.Singleton;
 public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTargetSpeeds> implements DataFrameRefreshable {
     public enum TargetRPM {
         STOP,
-        SUBWOOFER,
-        NEARSHOT,
-        DISTANCESHOT,
-        AMP_SHOT
+        TYPICAL,
+        INTO_AMP
     }
 
     //need pose for real time calculations
@@ -37,14 +37,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     // IMPORTANT PROPERTIES
     private ShooterWheelTargetSpeeds targetRpms = new ShooterWheelTargetSpeeds(0.0);
     private double trimRpm;
-    private final DoubleProperty safeRpm;
-    private final DoubleProperty nearShotRpm;
-    private final DoubleProperty distanceShotRpm;
-    private final DoubleProperty ampShotRpm;
+    private final DoubleProperty intoAmpShotRpm;
     private final DoubleProperty shortRangeErrorToleranceRpm;
     private final DoubleProperty longRangeErrorToleranceRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
     private final DoubleProperty acceptableToleranceRPM;
+    private final DoubleProperty typicalShotRpm;
 
     //DEFINING MOTORS
     public XCANSparkMax upperWheelMotor;
@@ -59,11 +57,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         this.contract = contract;
         pf.setPrefix(this);
 
-        safeRpm = pf.createPersistentProperty("SafeRpm", 500);
-        nearShotRpm = pf.createPersistentProperty("NearShotRpm", 1000);
-        distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 3000);
-        // placeholder value for rpm when preparing to score in amp
-        ampShotRpm = pf.createPersistentProperty("AmpShotRpm", 2000);
+        typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
+        intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 2000);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();
@@ -99,6 +94,12 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
             upperWheelMotor.setSmartCurrentLimit(60);
             lowerWheelMotor.setSmartCurrentLimit(60);
+
+            upperWheelMotor.setMeasurementPeriod(8);
+            lowerWheelMotor.setMeasurementPeriod(8);
+
+            upperWheelMotor.setAverageDepth(1);
+            lowerWheelMotor.setAverageDepth(1);
         }
 
         var distanceArray =      new double[]{0,    36,   49.5, 63,   80,   111,  136};
@@ -112,11 +113,28 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     public void setTargetRPM(TargetRPM target) {
         switch (target) {
             case STOP -> setTargetValue(0.0);
-            case SUBWOOFER -> setTargetValue(safeRpm.get());
-            case NEARSHOT -> setTargetValue(nearShotRpm.get());
-            case DISTANCESHOT -> setTargetValue(distanceShotRpm.get());
-            case AMP_SHOT -> setTargetValue(ampShotRpm.get());
+            case TYPICAL -> setTargetValue(typicalShotRpm.get());
+            case INTO_AMP -> setTargetValue(intoAmpShotRpm.get());
             default -> setTargetValue(0.0);
+        }
+    }
+
+    public double getRPMForGivenShotType(TargetRPM target) {
+        switch (target) {
+            case STOP -> {return 0.0;}
+            case TYPICAL -> {return typicalShotRpm.get();}
+            case INTO_AMP -> {return intoAmpShotRpm.get();}
+            default -> {return 0.0;}
+        }
+    }
+
+    public double getRPMForGivenScoringLocation(PointOfInterest pointOfInterest) {
+        switch (pointOfInterest) {
+            // These speeds may be different someday.
+            case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return 4000;}
+            case PodiumScoringLocation -> {return 4000;}
+            case AmpFarScoringLocation -> {return 4000;}
+            default -> {return 0.0;}
         }
     }
 
@@ -227,6 +245,14 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
                 upperWheelDistanceToRpmInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker),
                 lowerWheelDistanceToRpmInterpolator.getInterpolatedOutputVariable(distanceFromSpeaker)
         );
+    }
+
+    public boolean hasNonIdleTarget() {
+        return getTargetValue().upperWheelsTargetRPM > 50 || getTargetValue().lowerWheelsTargetRPM > 50;
+    }
+
+    public boolean isReadyToFire() {
+        return isMaintainerAtGoal() && hasNonIdleTarget();
     }
 
     @Override

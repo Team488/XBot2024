@@ -53,17 +53,31 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     @Override
     protected void calibratedMachineControlAction() {
+
         // The arms can draw huge currents when trying to move small values, so if we are on target
         // then we need to kill power.
-        if (isMaintainerAtGoal()) {
+        if (isMaintainerAtGoal() || shouldFreezeArmSinceEndOfMatch()) {
             arm.setPower(0.0);
+            arm.setForceBrakesEngaged(true);
         } else {
             double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
             arm.setPower(power);
         }
     }
 
+    private boolean shouldFreezeArmSinceEndOfMatch() {
+        return DriverStation.getMatchTime() < 1 && arm.couldPlausiblyBeHanging() && DriverStation.isFMSAttached();
+    }
 
+    @Override
+    protected void humanControlAction() {
+        if (shouldFreezeArmSinceEndOfMatch()) {
+            arm.setPower(0.0);
+            arm.setForceBrakesEngaged(true);
+        } else {
+            super.humanControlAction();
+        }
+    }
 
     @Override
     protected void uncalibratedMachineControlAction() {
@@ -107,12 +121,6 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                 arm.setTargetValue(arm.getCurrentValue());
             }
         } else {
-            /* This runs when we are hanging and there's only 1 second of the match left. We are engaging the brake to
-            not fall off.
-             */
-            if (DriverStation.getMatchTime() < 1 && arm.getManualHangingMode()) {
-                arm.setPower(0.0);
-            }
             humanControlAction();
         }
     }
