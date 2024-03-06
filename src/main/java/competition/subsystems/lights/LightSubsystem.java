@@ -46,7 +46,8 @@ public class LightSubsystem extends BaseSubsystem {
     @Inject
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
-        serialPort = new SerialPort(115200, SerialPort.Port.kUSB2, 8);
+        
+        serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
 
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
