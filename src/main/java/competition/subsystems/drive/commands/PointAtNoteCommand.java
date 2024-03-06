@@ -50,19 +50,14 @@ public class PointAtNoteCommand extends BaseCommand {
             return;
         }
 
-        double rotateIntent = getSuggestedRotateIntent();
+        double rotationError = pose.getAngularErrorToTranslation2dInDegrees(notePosition.getTranslation());
+        double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, rotationError);
 
         if (drive.isRobotOrientedDriveActive()) {
-            drive.move(new XYPair(0,0), rotateIntent);
+            drive.move(new XYPair(0,0), rotationPower);
         } else {
-            drive.fieldOrientedDrive(new XYPair(0,0), rotateIntent, pose.getCurrentHeading().getDegrees(), new XYPair(0,0));
+            drive.fieldOrientedDrive(new XYPair(0,0), rotationPower, pose.getCurrentHeading().getDegrees(), new XYPair(0,0));
         }
-    }
-
-    private double getRotationIntentPointAtNote(Pose2d currentPose) {
-        Translation2d currentXY = new Translation2d(currentPose.getX(), currentPose.getY());
-
-        return currentXY.minus(notePosition.getTranslation()).getAngle().getDegrees() + 180;
     }
 
     @Override
@@ -70,23 +65,7 @@ public class PointAtNoteCommand extends BaseCommand {
         if (this.notePosition == null) {
             return true;
         }
-        return false;
-    }
 
-    private double getSuggestedRotateIntent() {
-        double suggestedRotatePower;
-        // If we are using absolute orientation, we first need get the desired heading from the right joystick.
-        // We need to only do this if the joystick has been moved past the minimumMagnitudeForAbsoluteHeading.
-        // In the future, we might be able to replace the joystick with a dial or other device that can more easily
-        // hold a heading.
-
-        double desiredHeading = 0;
-        desiredHeading = getRotationIntentPointAtNote(pose.getCurrentPose2d());
-
-        drive.setDesiredHeading(desiredHeading);
-
-        suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
-
-        return suggestedRotatePower;
+        return this.drive.getRotateToHeadingPid().isOnTarget();
     }
 }
