@@ -117,9 +117,18 @@ public class Simulator2024 {
     private void simulateArm() {
         // Let's also have a very simple physics mock for the arm and the shooter.
         // Get the power or setpoint for each arm.
-        double powerToTicksRatio = 1;
+        double powerToTicksRatio = 0.5;
         var leftMockMotor = ((MockCANSparkMax)arm.armMotorLeft);
         var rightMockMotor = ((MockCANSparkMax)arm.armMotorRight);
+
+        double leftAppliedOutput = leftMockMotor.getAppliedOutput();
+        double rightAppliedOutput = rightMockMotor.getAppliedOutput();
+        if (Math.abs(leftAppliedOutput) > 0.01) {
+            leftMockMotor.setOutputCurrent(10);
+        }
+        if (Math.abs(rightAppliedOutput) > 0.01) {
+            rightMockMotor.setOutputCurrent(10);
+        }
 
         leftMockMotor.setPosition(leftMockMotor.getPosition() +  (leftMockMotor.get() * powerToTicksRatio));
         rightMockMotor.setPosition(rightMockMotor.getPosition() +  (rightMockMotor.get() * powerToTicksRatio));
@@ -131,11 +140,11 @@ public class Simulator2024 {
             rightMockMotor.setPosition(100);
         }
 
-        if (leftMockMotor.getPosition() <  -100) {
-            leftMockMotor.setPosition(-100);
+        if (leftMockMotor.getPosition() <  -0.25) {
+            leftMockMotor.setPosition(-0.25);
         }
-        if (rightMockMotor.getPosition() <  -100) {
-            rightMockMotor.setPosition(-100);
+        if (rightMockMotor.getPosition() <  -0.25) {
+            rightMockMotor.setPosition(-0.25);
         }
 
         // They might be using PID to control the arm. If so, we can use a moving aveage of their setpoint

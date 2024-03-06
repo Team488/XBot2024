@@ -344,11 +344,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         // Respect overall max/min power limits.
         if (!manualHangingModeEngaged) {
             leftPower = MathUtils.constrainDouble(leftPower, powerMin.get(), powerMax.get());
+            rightPower = MathUtils.constrainDouble(rightPower, powerMin.get(), powerMax.get());
         } else {
             // we need more power to hang
             leftPower = MathUtils.constrainDouble(leftPower, -powerMax.get(), powerMax.get());
+            rightPower = MathUtils.constrainDouble(rightPower, -powerMax.get(), powerMax.get());
         }
-        rightPower = MathUtils.constrainDouble(rightPower, powerMin.get(), powerMax.get());
 
         // Try to ramp power - a smoother start will definitely help reduce high current shock loads,
         // and may reduce instability if both sides can get up to "cruise speed" together
@@ -669,6 +670,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("HasCalibratedLeftArm", hasCalibratedLeft);
         aKitLog.record("HasCalibratedRightArm", hasCalibratedRight);
         aKitLog.record("BrakeEngaged", getBrakeEngaged());
+        aKitLog.record("ForceBrakesEngaged", getForceBrakesEngaged());
         aKitLog.record("Target Extension", targetExtension);
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
