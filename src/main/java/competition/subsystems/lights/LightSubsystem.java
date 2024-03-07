@@ -35,7 +35,7 @@ public class LightSubsystem extends BaseSubsystem {
         ReadyToShoot("2"),
         RobotContainsNote("3"),
         VisionSeesNote("4"),
-        BrakeOn("5");
+        ForceBrakeOn("5");
 
         LightsStateMessage(final String value) {
             this.value = value;
@@ -113,7 +113,7 @@ public class LightSubsystem extends BaseSubsystem {
                     currentState = LightsStateMessage.RobotContainsNote;
 
                 } else if (arm.getForceBrakesEngaged()) {
-                    currentState = LightsStateMessage.BrakeOn;
+                    currentState = LightsStateMessage.ForceBrakeOn;
                 }
                 else {
                     currentState = LightsStateMessage.RobotEnabled;
