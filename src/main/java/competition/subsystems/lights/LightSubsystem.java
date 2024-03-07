@@ -47,18 +47,31 @@ public class LightSubsystem extends BaseSubsystem {
     @Inject
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
-        try {
-            serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
-            lightsWorking = true;
+        if (!connectToPort(SerialPort.Port.kUSB1)) {
+            if (!connectToPort(SerialPort.Port.kUSB2)) {
+                if (!connectToPort(SerialPort.Port.kUSB)) {
+                    log.info("usb connection is failing");
+                }
+            }
         }
-        catch(Exception ex) {
-            log.error("Lights not working: %s", ex);
+        else {
+            lightsWorking = true;
         }
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
     }
 
+    public boolean connectToPort(SerialPort.Port port) {
+        try {
+            serialPort = new SerialPort(115200, port, 8);
+            return true;
+        }
+        catch(Exception ex) {
+            log.error("Lights not working: %s", ex);
+            return false;
+        }
+    }
     @Override
     public void periodic() {
         if (!lightsWorking) {
@@ -90,10 +103,7 @@ public class LightSubsystem extends BaseSubsystem {
                 if (ampSignalOn) {
                     currentState = LightsStateMessage.AmpSignal;
 
-                } else if (shooter.isMaintainerAtGoal()
-                        && shooterWheel.lowerWheelsTargetRPM != 0
-                        && shooterWheel.upperWheelsTargetRPM != 0
-                        && collector.getGamePieceReady()) {
+                } else if (shooter.isReadyToFire()) {
                     currentState = LightsStateMessage.ReadyToShoot;
 
                 } else if (collector.getGamePieceReady()) {
