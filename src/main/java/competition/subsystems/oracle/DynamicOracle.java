@@ -179,6 +179,16 @@ public class DynamicOracle extends BaseSubsystem {
         chooseStartingLocationBasedOnReservations();
     }
 
+    /**
+     * Should be called in AutonomousExit.
+     * By the end of autonomous, the default notes will almost certainly
+     * be unavailable, so we don't want to accidentally have the robot
+     * orient at these predefined notes that have been picked up during auto.
+     */
+    public void clearNoteMapForTeleop() {
+        noteMap.markSpikeNotesUnavailable();
+    }
+
     private void chooseStartingLocationBasedOnReservations() {
         // Set the pose subsystem to whatever location is unreserved. Will prefer the center
         // if multiple are active.
