@@ -5,6 +5,7 @@ package competition.subsystems.lights;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
@@ -19,6 +20,7 @@ public class LightSubsystem extends BaseSubsystem {
     AutonomousCommandSelector autonomousCommandSelector;
     ShooterWheelSubsystem shooter;
     CollectorSubsystem collector;
+    ArmSubsystem arm;
     SerialPort serialPort;
     private int loopcount = 1;
     private final int loopMod = 4;
@@ -32,7 +34,8 @@ public class LightSubsystem extends BaseSubsystem {
         AmpSignal("1"), // TODO: OI team please add a toggle!
         ReadyToShoot("2"),
         RobotContainsNote("3"),
-        VisionSeesNote("4");
+        VisionSeesNote("4"),
+        BrakeOn("5");
 
         LightsStateMessage(final String value) {
             this.value = value;
@@ -46,7 +49,7 @@ public class LightSubsystem extends BaseSubsystem {
 
     @Inject
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
-                          ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
+                          ShooterWheelSubsystem shooter, CollectorSubsystem collector, ArmSubsystem arm) {
         if (!connectToPort(SerialPort.Port.kUSB1)) {
             if (!connectToPort(SerialPort.Port.kUSB2)) {
                 if (!connectToPort(SerialPort.Port.kUSB)) {
@@ -60,6 +63,7 @@ public class LightSubsystem extends BaseSubsystem {
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
+        this.arm = arm;
     }
 
     public boolean connectToPort(SerialPort.Port port) {
@@ -109,7 +113,10 @@ public class LightSubsystem extends BaseSubsystem {
                 } else if (collector.getGamePieceReady()) {
                     currentState = LightsStateMessage.RobotContainsNote;
 
-                } else {
+                } else if (arm.getBrakeEngaged()) {
+                    currentState = LightsStateMessage.BrakeOn;
+                }
+                else {
                     currentState = LightsStateMessage.RobotEnabled;
                 }
             }
