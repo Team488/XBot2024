@@ -3,8 +3,9 @@ package competition.subsystems.vision;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArraySubscriber;
 import org.littletonrobotics.junction.Logger;
+import xbot.common.advantage.DataFrameRefreshable;
 
-public class NoteTracker {
+public class NoteTracker implements DataFrameRefreshable {
     private final StringArraySubscriber networkTablesSubscriber;
     private final String akitName;
     protected NoteTrackerInputsAutoLogged io;
