@@ -6,8 +6,10 @@ import org.littletonrobotics.junction.Logger;
 
 public class NoteTracker {
     private final StringArraySubscriber networkTablesSubscriber;
+    private final String akitName;
 
     public NoteTracker(String networkTablesTopic) {
+        akitName = networkTablesTopic.split("/")[0];
         var table = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var topic = table.getStringArrayTopic(networkTablesTopic);
         networkTablesSubscriber = topic.subscribe(new String[] {});
@@ -25,7 +27,6 @@ public class NoteTracker {
 
     public void refreshDataFrame() {
         updateInputs(io);
-        // TODO: get a name for the gyro so we don't have to use a hardcoded one.
-        Logger.processInputs("NoteTracker", io);
+        Logger.processInputs(akitName, io);
     }
 }
