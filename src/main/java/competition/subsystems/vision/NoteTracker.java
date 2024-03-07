@@ -7,15 +7,15 @@ import org.littletonrobotics.junction.Logger;
 public class NoteTracker {
     private final StringArraySubscriber networkTablesSubscriber;
     private final String akitName;
+    protected NoteTrackerInputsAutoLogged io;
 
     public NoteTracker(String networkTablesTopic) {
         akitName = networkTablesTopic.split("/")[0];
         var table = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var topic = table.getStringArrayTopic(networkTablesTopic);
         networkTablesSubscriber = topic.subscribe(new String[] {});
+        io = new NoteTrackerInputsAutoLogged();
     }
-
-    protected NoteTrackerInputsAutoLogged io;
 
     public String[] getDetections() {
         return io.detectedNotes;
