@@ -11,6 +11,7 @@ import xbot.common.controls.sensors.XDigitalInput;
 import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.TimeStableValidator;
 import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
@@ -44,7 +45,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public final XDigitalInput readyToFireNoteSensor;
     private final ElectricalContract contract;
     private final DoubleProperty firePower;
-    private final DoubleProperty intakePowerInControlMultiplier;
     private final TimeStableValidator noteInControlValidator;
     double lastFiredTime = -Double.MAX_VALUE;
     final DoubleProperty waitTimeAfterFiring;
@@ -79,7 +79,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         intakePower = pf.createPersistentProperty("intakePower",0.8);
         ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
-        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
+        pf.setDefaultLevel(Property.PropertyLevel.Debug);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
         aggressiveStopPower = pf.createPersistentProperty("AggressiveStopPower", -0.4);
         aggressiveStopDuration = pf.createPersistentProperty("AggressiveStopDuration", 0.1);

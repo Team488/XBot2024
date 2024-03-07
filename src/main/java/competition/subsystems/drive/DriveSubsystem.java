@@ -16,6 +16,7 @@ import xbot.common.injection.swerve.RearRightDrive;
 import xbot.common.injection.swerve.SwerveComponent;
 import xbot.common.math.PIDDefaults;
 import xbot.common.math.PIDManager.PIDManagerFactory;
+import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.BaseSwerveDriveSubsystem;
 
@@ -33,6 +34,7 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private boolean specialPointAtPositionTargetActive = false;
     private Rotation2d specialHeadingTarget = new Rotation2d();
     private Translation2d specialPointAtPositionTarget = new Translation2d();
+    private final DoubleProperty suggestedAutonomousMaximumSpeed;
 
     @Inject
     public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
@@ -40,6 +42,14 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
                           @RearLeftDrive SwerveComponent rearLeftSwerve, @RearRightDrive SwerveComponent rearRightSwerve) {
         super(pidFactory, pf, frontLeftSwerve, frontRightSwerve, rearLeftSwerve, rearRightSwerve);
         log.info("Creating DriveSubsystem");
+
+        pf.setPrefix(this.getPrefix());
+        suggestedAutonomousMaximumSpeed =
+                pf.createPersistentProperty("Suggested Autonomous Maximum Speed", 3.0);
+    }
+
+    public double getSuggestedAutonomousMaximumSpeed() {
+        return suggestedAutonomousMaximumSpeed.get();
     }
 
     @Override
