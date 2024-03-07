@@ -248,8 +248,6 @@ public class DynamicOracle extends BaseSubsystem {
                     .forEach(noteMap::addVisionNote);
         }
 
-        aKitLog.record("NoteMap", noteMap.getAllKnownNotes());
-
         switch (currentHighLevelGoal) {
             case ScoreInAmp: // For now keeping things simple
             case ScoreInSpeaker:
