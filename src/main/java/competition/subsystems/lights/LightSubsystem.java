@@ -90,7 +90,6 @@ public class LightSubsystem extends BaseSubsystem {
 
             boolean dsEnabled = DriverStation.isEnabled();
             LightsStateMessage currentState;
-            ShooterWheelTargetSpeeds shooterWheel = shooter.getCurrentValue();
 
             // Needs to implement vision as well
             // Not sure about if the way we are checking the shooter is correct (and collector)
