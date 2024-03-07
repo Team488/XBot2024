@@ -57,6 +57,22 @@ public class OperatorInterface {
         operatorDeadband = pf.createPersistentProperty("Operator Deadband", 0.15);
 
         operatorDeadbandSecond = pf.createPersistentProperty("Operator Deadband Second", 0.15);
+
+        neoTrellis.getifAvailable(2);
+        neoTrellis.getifAvailable(3);
+        neoTrellis.getifAvailable(4);
+        neoTrellis.getifAvailable(5);
+        neoTrellis.getifAvailable(6);
+        neoTrellis.getifAvailable(10);
+        neoTrellis.getifAvailable(11);
+        neoTrellis.getifAvailable(12);
+        neoTrellis.getifAvailable(17);
+        neoTrellis.getifAvailable(18);
+        neoTrellis.getifAvailable(19);
+        neoTrellis.getifAvailable(20);
+        neoTrellis.getifAvailable(26);
+        neoTrellis.getifAvailable(27);
+        neoTrellis.getifAvailable(28);
     }
 
     public double getDriverGamepadTypicalDeadband() {

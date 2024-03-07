@@ -53,8 +53,8 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         this.pose = pose;
         pf.setPrefix(this);
         this.input_exponent = pf.createPersistentProperty("Input Exponent", 2);
-        this.drivePowerFactor = pf.createPersistentProperty("Power Factor", 0.75);
-        this.turnPowerFactor = pf.createPersistentProperty("Turn Power Factor", 0.75);
+        this.drivePowerFactor = pf.createPersistentProperty("Power Factor", 1.0);
+        this.turnPowerFactor = pf.createPersistentProperty("Turn Power Factor", 1.0);
         this.absoluteOrientationMode = pf.createPersistentProperty("Absolute Orientation Mode", true);
         this.minimumMagnitudeForAbsoluteHeading = pf.createPersistentProperty("Min Magnitude For Absolute Heading", 0.75);
         this.decider = hvmFactory.create(this.getPrefix());

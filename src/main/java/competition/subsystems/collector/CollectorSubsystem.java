@@ -44,7 +44,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     public final XDigitalInput readyToFireNoteSensor;
     private final ElectricalContract contract;
     private final DoubleProperty firePower;
-    private final DoubleProperty intakePowerInControlMultiplier;
     private final TimeStableValidator noteInControlValidator;
     double lastFiredTime = -Double.MAX_VALUE;
     final DoubleProperty waitTimeAfterFiring;
@@ -79,7 +78,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         intakePower = pf.createPersistentProperty("intakePower",0.8);
         ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
-        intakePowerInControlMultiplier = pf.createPersistentProperty("intakePowerMultiplier", 1.0);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.5);
         aggressiveStopPower = pf.createPersistentProperty("AggressiveStopPower", -0.4);
         aggressiveStopDuration = pf.createPersistentProperty("AggressiveStopDuration", 0.1);
