@@ -180,6 +180,16 @@ public class DynamicOracle extends BaseSubsystem {
         chooseStartingLocationBasedOnReservations();
     }
 
+    /**
+     * Should be called in AutonomousExit.
+     * By the end of autonomous, the default notes will almost certainly
+     * be unavailable, so we don't want to accidentally have the robot
+     * orient at these predefined notes that have been picked up during auto.
+     */
+    public void clearNoteMapForTeleop() {
+        noteMap.markSpikeNotesUnavailable();
+    }
+
     private void chooseStartingLocationBasedOnReservations() {
         // Set the pose subsystem to whatever location is unreserved. Will prefer the center
         // if multiple are active.
@@ -458,7 +468,7 @@ public class DynamicOracle extends BaseSubsystem {
         }
 
         // TODO: also need to add a check to make sure our angular error is small enough
-        double angularError = Math.abs(pose.getAngularErrorToTranslation2dInDegrees(specialAimTarget.getTranslation()));
+        double angularError = Math.abs(pose.getAngularErrorToTranslation2dInDegrees(specialAimTarget.getTranslation(), new Rotation2d()));
         aKitLog.record("AngularErrorToSpecialTarget", angularError);
         boolean pointingAtSpeaker = angularError < 6.0;
         if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters) && inUnderstoodRange && pointingAtSpeaker) {

@@ -113,6 +113,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         FIRING_FROM_SUBWOOFER,
         FIRING_FROM_AMP,
         SCOOCH_NOTE,
+        HANG_APPROACH,
         PROTECTED_FAR_AMP_SHOT,
         PROTECTED_PODIUM_SHOT,
         COLLECT_DIRECTLY_FROM_SOURCE
@@ -485,6 +486,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 break;
             case COLLECT_DIRECTLY_FROM_SOURCE:
                 extension = 180;
+                break;
+            case HANG_APPROACH:
+                extension = 80;
                 break;
             default:
                 return 0;
