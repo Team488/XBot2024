@@ -88,7 +88,7 @@ public class NoteMap extends ReservableLocationMap<Note> {
 
         double closestDistance = Double.MAX_VALUE;
         Note closestNote = null;
-        var allNotes = this.internalMap.values();
+        var allNotes = new ArrayList<Note>(this.internalMap.values());
         allNotes.addAll(visionSourceNotes.stream().map(VisionSourceNote::getNote).toList());
         for (Note note : allNotes) {
             if (note.getAvailability() == Availability.Available) {
