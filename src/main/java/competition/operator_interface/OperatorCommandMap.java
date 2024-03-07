@@ -21,6 +21,7 @@ import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
@@ -61,6 +62,7 @@ public class OperatorCommandMap {
             DriveSubsystem drive,
             PointAtNoteCommand alignToNoteCommand,
             DriveToCentralSubwooferCommand driveToCentralSubwooferCommand,
+            LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup
             )
@@ -78,7 +80,7 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(lineUpForHangingCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
@@ -167,8 +169,7 @@ public class OperatorCommandMap {
             EjectScoocherCommand scoocherEject,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
-            WarmUpShooterCommand shooterWarmUpTypical,
-            WarmUpShooterCommand shooterWarmUpAmp,
+            Provider<WarmUpShooterCommand> shooterWarmUpSupplier,
             FireCollectorCommand fireCollectorCommand,
             Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
             CalibrateArmsManuallyCommand calibrateArmsManuallyCommand
@@ -176,8 +177,13 @@ public class OperatorCommandMap {
         // Collect
         var rumbleModeFalse = new InstantCommand(() -> oi.operatorFundamentalsGamepad.getRumbleManager().stopGamepadRumble());
 
+        var shooterWarmUpTypicalA = shooterWarmUpSupplier.get();
+        var shooterWarmUpTypicalB = shooterWarmUpSupplier.get();
+        var shooterWarmUpAmp = shooterWarmUpSupplier.get();
+
         // Fire
-        shooterWarmUpTypical.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
+        shooterWarmUpTypicalA.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
+        shooterWarmUpTypicalB.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         shooterWarmUpAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.INTO_AMP);
 
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
@@ -186,9 +192,9 @@ public class OperatorCommandMap {
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpAmp);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUpTypical);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUpTypicalA);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.B).whileTrue(fireCollectorCommand);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpTypical.alongWith(fireCollectorCommand));
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpTypicalB.alongWith(fireCollectorCommand));
 
         oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 20));
         oi.operatorFundamentalsGamepad.getPovIfAvailable(90).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 2));
@@ -212,6 +218,7 @@ public class OperatorCommandMap {
         var setMidThenThree = setAutonomousCommandProvider.get();
         setMidThenThree.setAutoCommand(midThenThree);
         oi.neoTrellis.getifAvailable(23).onTrue(setMidThenThree);
+        setMidThenThree.includeOnSmartDashboard("Standard 4 Note Auto");
 
         var setTopThenThree = setAutonomousCommandProvider.get();
         setTopThenThree.setAutoCommand(topThenThree);
@@ -229,20 +236,6 @@ public class OperatorCommandMap {
         setBotThenBotSpikeBotCenter.setAutoCommand(botThenBotSpikeBotCenter);
         oi.neoTrellis.getifAvailable(24).onTrue(setBotThenBotSpikeBotCenter);
     }
-    
-    @Inject
-    public void setupForceRobotToPositionCommands(PoseSubsystem pose,
-                                                  OperatorInterface oi) {
-        var teleportRobotToSubwooferTop = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation);
-        oi.neoTrellis.getifAvailable(17).onTrue(teleportRobotToSubwooferTop);
-
-        var teleportRobotToSubwooferMid = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation);
-        oi.neoTrellis.getifAvailable(18).onTrue(teleportRobotToSubwooferMid);
-
-        var teleportRobotToSubwooferBottom = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation);
-        oi.neoTrellis.getifAvailable(19).onTrue(teleportRobotToSubwooferBottom);
-    }
-
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {
         var command = commandProvider.get();

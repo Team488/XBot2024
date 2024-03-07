@@ -1,5 +1,6 @@
 package competition.subsystems.arm.commands;
 
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -32,12 +33,12 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                                 HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory,
                                 PIDManager.PIDManagerFactory pidf,
                                 CalibrationDecider.CalibrationDeciderFactory calf, OperatorInterface oi){
-        super(arm, pf, hvmFactory, 1, 0.5);
+        super(arm, pf, hvmFactory, 1, 0.2);
         this.arm = arm;
         this.oi = oi;
         pf.setPrefix(this);
-        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.0125, 0.0, 0);
-
+        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.02, 0.0, 0);
+        positionPid.setIZone(5.0);
         calibrationValidator = new TimeStableValidator(() -> calibrationStallDurationSec);
     }
     @Override
@@ -68,7 +69,11 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     }
 
     private boolean shouldFreezeArmSinceEndOfMatch() {
-        return DriverStation.getMatchTime() < 1 && arm.couldPlausiblyBeHanging() && DriverStation.isFMSAttached();
+        return isAtEndOfMatch() && arm.couldPlausiblyBeHanging();
+    }
+
+    private boolean isAtEndOfMatch() {
+        return DriverStation.getMatchTime() < 1 && DriverStation.isFMSAttached() && DriverStation.isTeleop();
     }
 
     @Override
