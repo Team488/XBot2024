@@ -243,5 +243,4 @@ public class OperatorCommandMap {
         command.setRelative(true);
         return command;
     }
-
 }
