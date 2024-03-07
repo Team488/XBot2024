@@ -77,10 +77,9 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(alignToNoteCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.B).whileTrue(driveToCentralSubwooferCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper)
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
                 .onFalse(cancelSpecialPointAtPosition);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
@@ -183,10 +182,11 @@ public class OperatorCommandMap {
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake).onFalse(rumbleModeFalse);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Back).whileTrue(shooterWarmUpAmp);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpTypical);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpAmp);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUpTypical);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.B).whileTrue(fireCollectorCommand);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpTypical.alongWith(fireCollectorCommand));
 
         oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 20));
         oi.operatorFundamentalsGamepad.getPovIfAvailable(90).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 2));
