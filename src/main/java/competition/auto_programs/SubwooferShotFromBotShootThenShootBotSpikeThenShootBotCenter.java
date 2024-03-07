@@ -33,8 +33,7 @@ public class SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter extend
             Provider<DriveToBottomSubwooferCommand> driveToBottomSubwooferCommandProvider,
             PoseSubsystem pose, DriveSubsystem drive, CollectSequenceCommandGroup collectSequence,
             DriveToListOfPointsForCollectCommand driveToBottomCenterNote,
-            DriveToListOfPointsCommand driveBackToBottomSubwoofer,
-            Provider<StopCollectorCommand> stopCollectorCommandProvider
+            DriveToListOfPointsCommand driveBackToBottomSubwoofer
             ) {
         this.autoSelector = autoSelector;
 
