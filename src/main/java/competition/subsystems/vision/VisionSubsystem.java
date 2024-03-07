@@ -65,7 +65,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         singleTagStableDistance = pf.createPersistentProperty("Single tag stable distance", 2.0);
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
-        minNoteRatio = pf.createPersistentProperty("Min note size ratio", 3.0);
+        minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
