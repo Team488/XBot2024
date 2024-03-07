@@ -112,7 +112,7 @@ public class LightSubsystem extends BaseSubsystem {
                 } else if (collector.getGamePieceReady()) {
                     currentState = LightsStateMessage.RobotContainsNote;
 
-                } else if (arm.getBrakeEngaged()) {
+                } else if (arm.getForceBrakesEngaged()) {
                     currentState = LightsStateMessage.BrakeOn;
                 }
                 else {
