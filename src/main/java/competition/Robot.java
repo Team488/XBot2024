@@ -90,6 +90,12 @@ public class Robot extends BaseRobot {
     }
 
     @Override
+    public void autonomousExit() {
+        super.autonomousExit();
+        oracle.clearNoteMapForTeleop();
+    }
+
+    @Override
     public void simulationInit() {
         super.simulationInit();
         // Automatically enables the robot; remove this line of code if you want the robot
