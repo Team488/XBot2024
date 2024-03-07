@@ -51,7 +51,7 @@ public class LightSubsystem extends BaseSubsystem {
             serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
             lightsWorking = true;
             // the default timeout is 5s, set a much smaller value
-            serialPort.setTimeout(0.1);
+            serialPort.setTimeout(0.05);
         }
         catch(Exception ex) {
             log.error("Lights not working: %s", ex);
