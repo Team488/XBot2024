@@ -459,6 +459,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return extensionMmPerRevolution.get() * revolutions;
     }
 
+    public double getModeledExtensionForGivenSpeakerDistance(double distanceFromSpeaker) {
+        return armModelBasedCalculator.getArmAngleFromDistance(distanceFromSpeaker);
+    }
+
     public double getUsefulArmPositionExtensionInMm(UsefulArmPosition usefulArmPosition) {
         double extension = 0;
         switch (usefulArmPosition) {
