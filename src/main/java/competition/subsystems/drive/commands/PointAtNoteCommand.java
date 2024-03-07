@@ -61,16 +61,14 @@ public class PointAtNoteCommand extends BaseCommand {
             return;
         }
 
+        var movement = -oi.driverGamepad.getLeftStickY();
+
         double rotationError = this.pose.getAngularErrorToTranslation2dInDegrees(
                 notePosition.getTranslation(),
                 Rotation2d.fromDegrees(180)); // point rear of robot
         double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, rotationError);
 
-        if (drive.isRobotOrientedDriveActive()) {
-            drive.move(new XYPair(0,0), rotationPower);
-        } else {
-            drive.fieldOrientedDrive(new XYPair(0,0), rotationPower, pose.getCurrentHeading().getDegrees(), new XYPair(0,0));
-        }
+        drive.move(new XYPair(movement, 0), rotationPower);
     }
 
     @Override
@@ -79,11 +77,11 @@ public class PointAtNoteCommand extends BaseCommand {
             log.warn("Command finished due to no note.");
             return true;
         }
-
-        var isOnTarget =  this.drive.getRotateToHeadingPid().isOnTarget();
-        if (isOnTarget) {
-            log.info("Finished");
-        }
-        return isOnTarget;
+        return false;
+        //var isOnTarget =  this.drive.getRotateToHeadingPid().isOnTarget();
+        //if (isOnTarget) {
+        //    log.info("Finished");
+       // }
+        //return isOnTarget;
     }
 }
