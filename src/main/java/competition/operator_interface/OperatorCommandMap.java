@@ -236,20 +236,6 @@ public class OperatorCommandMap {
         setBotThenBotSpikeBotCenter.setAutoCommand(botThenBotSpikeBotCenter);
         oi.neoTrellis.getifAvailable(24).onTrue(setBotThenBotSpikeBotCenter);
     }
-    
-    @Inject
-    public void setupForceRobotToPositionCommands(PoseSubsystem pose,
-                                                  OperatorInterface oi) {
-        var teleportRobotToSubwooferTop = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation);
-        oi.neoTrellis.getifAvailable(17).onTrue(teleportRobotToSubwooferTop);
-
-        var teleportRobotToSubwooferMid = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation);
-        oi.neoTrellis.getifAvailable(18).onTrue(teleportRobotToSubwooferMid);
-
-        var teleportRobotToSubwooferBottom = pose.createSetPositionCommandThatMirrorsIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation);
-        oi.neoTrellis.getifAvailable(19).onTrue(teleportRobotToSubwooferBottom);
-    }
-
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {
         var command = commandProvider.get();
