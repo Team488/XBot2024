@@ -20,6 +20,7 @@ import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToPodiumCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
@@ -59,10 +60,9 @@ public class OperatorCommandMap {
             SetRobotHeadingCommand resetHeading,
             DriveSubsystem drive,
             PointAtNoteCommand alignToNoteCommand,
-            DriveToCentralSubwooferCommand driveToCentralSubwooferCommand,
             DriveToAmpCommand driveToAmpCommand,
-            ListenToOracleCommandGroup listenToOracleCommandGroup
-            )
+            ListenToOracleCommandGroup listenToOracleCommandGroup,
+            DriveToPodiumCommand driveToPodiumCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -78,6 +78,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToPodiumCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
