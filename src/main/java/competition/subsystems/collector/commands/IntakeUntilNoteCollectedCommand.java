@@ -35,4 +35,9 @@ public class IntakeUntilNoteCollectedCommand extends BaseCommand {
         }
         return false;
     }
+
+    @Override
+    public void end(boolean interrupted) {
+        collector.stop();
+    }
 }

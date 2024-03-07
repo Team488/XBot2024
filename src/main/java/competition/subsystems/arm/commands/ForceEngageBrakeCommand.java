@@ -20,4 +20,9 @@ public class ForceEngageBrakeCommand extends BaseCommand {
         log.info("Initializing");
         arm.setForceBrakesEngaged(true);
     }
+
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 }

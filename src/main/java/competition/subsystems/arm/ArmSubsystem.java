@@ -151,7 +151,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         upperSlowZoneThresholdMm = pf.createPersistentProperty(
                 "UpperSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.85);
         lowerSlowZoneThresholdMm = pf.createPersistentProperty(
-                "LowerSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.15);
+                "LowerSlowZoneThresholdMm", 25.0);
         lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
                 "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
 
@@ -163,7 +163,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "PowerLimitForNotCalibrated", -0.02);
 
         overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.45);
-        maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 0.5);
+        maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 6.0);
 
 
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
