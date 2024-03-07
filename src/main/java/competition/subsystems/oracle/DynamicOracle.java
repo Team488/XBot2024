@@ -451,7 +451,7 @@ public class DynamicOracle extends BaseSubsystem {
         }
 
         // TODO: also need to add a check to make sure our angular error is small enough
-        double angularError = Math.abs(pose.getAngularErrorToTranslation2dInDegrees(specialAimTarget.getTranslation()));
+        double angularError = Math.abs(pose.getAngularErrorToTranslation2dInDegrees(specialAimTarget.getTranslation(), new Rotation2d()));
         aKitLog.record("AngularErrorToSpecialTarget", angularError);
         boolean pointingAtSpeaker = angularError < 6.0;
         if (isTerminatingPointWithinDistance(acceptableRangeBeforeScoringMeters) && inUnderstoodRange && pointingAtSpeaker) {

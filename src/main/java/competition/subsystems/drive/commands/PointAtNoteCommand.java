@@ -43,7 +43,7 @@ public class PointAtNoteCommand extends BaseCommand {
         log.info("Initializing");
         // Find the note we want to point at
         // Project a point in front of the robot's collector to bias preferred notes in that direction
-        var virtualPoint = this.pose.getCurrentPose2d().plus(new Transform2d(-1, 0, new Rotation2d()));
+        var virtualPoint = this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
         var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint);
         if (notePosition != null) {
             this.notePosition = notePosition.toPose2d();
