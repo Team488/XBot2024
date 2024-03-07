@@ -25,6 +25,7 @@ import xbot.common.controls.sensors.XTimer;
 import xbot.common.math.DoubleInterpolator;
 import xbot.common.math.MathUtils;
 import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
@@ -145,19 +146,12 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
       
         powerMax = pf.createPersistentProperty("PowerMax", 0.45);
         powerMin = pf.createPersistentProperty("PowerMin", -0.25);
-
-        extensionMmPerRevolution = pf.createPersistentProperty("ExtensionMmPerRevolution", 5.715352326);
         upperLegalLimitMm = pf.createPersistentProperty("UpperLegalLimitMm", 238);
-
-        absoluteEncoderOffset = pf.createPersistentProperty(
-                "AbsoluteEncoderOffset", 0);
-        absoluteEncoderRevolutionsPerArmDegree = pf.createPersistentProperty(
-                "AbsoluteEncoderRevolutionPerArmDegree", 1);
 
         upperSlowZoneThresholdMm = pf.createPersistentProperty(
                 "UpperSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.85);
         lowerSlowZoneThresholdMm = pf.createPersistentProperty(
-                "LowerSlowZoneThresholdMm", upperLegalLimitMm.get() * 0.15);
+                "LowerSlowZoneThresholdMm", 25.0);
         lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
                 "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
 
@@ -169,9 +163,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "PowerLimitForNotCalibrated", -0.02);
 
         overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.45);
-        maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 0.5);
+        maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 6.0);
 
+
+        pf.setDefaultLevel(Property.PropertyLevel.Debug);
         powerRampDurationSec = pf.createPersistentProperty("PowerRampDurationSec", 0.5);
+        absoluteEncoderOffset = pf.createPersistentProperty(
+                "AbsoluteEncoderOffset", 0);
+        absoluteEncoderRevolutionsPerArmDegree = pf.createPersistentProperty(
+                "AbsoluteEncoderRevolutionPerArmDegree", 1);
+        extensionMmPerRevolution = pf.createPersistentProperty("ExtensionMmPerRevolution", 5.715352326);
 
         hasCalibratedLeft = false;
         hasCalibratedRight = false;
