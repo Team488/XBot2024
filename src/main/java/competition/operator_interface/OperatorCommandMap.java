@@ -12,6 +12,7 @@ import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.arm.commands.ForceEngageBrakeCommand;
 import competition.subsystems.arm.commands.ManualHangingModeCommand;
+import competition.subsystems.arm.commands.PrepareForHangingCommand;
 import competition.subsystems.arm.commands.RemoveForcedBrakingCommand;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
@@ -104,7 +105,8 @@ public class OperatorCommandMap {
             PrepareToFireAtSpeakerFromFarAmpCommand prepareToFireAtSpeakerFromFarAmp,
             ManualHangingModeCommand manualHangingModeCommand,
             ForceEngageBrakeCommand forceEngageBrakeCommand,
-            RemoveForcedBrakingCommand removeForcedBrakingCommand
+            RemoveForcedBrakingCommand removeForcedBrakingCommand,
+            PrepareForHangingCommand prepareForHangingCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -147,7 +149,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftBumper).whileTrue(scoochNote);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightBumper).whileTrue(continuouslyPrepareToFireAtSpeaker);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(ejectScoocher);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(prepareForHangingCommand);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(prepareToFireAtAmp);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromFarAmp);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSpeakerFromPodium);
