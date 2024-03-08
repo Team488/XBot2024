@@ -46,6 +46,11 @@ public class Robot extends BaseRobot {
         dataFrameRefreshables.add(getInjectorComponent().collectorSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().shooterSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().neoTrellisGamepadSubsystem());
+
+        var defaultAuto = getInjectorComponent().subwooferShotFromMidShootThenShootNearestThree();
+        var autoSelector = getInjectorComponent().autonomousCommandSelector();
+
+        autoSelector.setCurrentAutonomousCommand(defaultAuto);
     }
 
     protected BaseRobotComponent createDaggerComponent() {
@@ -82,6 +87,12 @@ public class Robot extends BaseRobot {
     public void autonomousInit() {
         oracle.freezeConfigurationForAutonomous();
         super.autonomousInit();
+    }
+
+    @Override
+    public void autonomousExit() {
+        super.autonomousExit();
+        oracle.clearNoteMapForTeleop();
     }
 
     @Override

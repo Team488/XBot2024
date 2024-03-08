@@ -7,8 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringArraySubscriber;
-import edu.wpi.first.networktables.StringArrayTopic;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -54,7 +52,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     boolean aprilTagsLoaded = false;
     long logCounter = 0;
     Pose3d[] detectedNotes;
-    StringArraySubscriber[] detectionSubscribers;
+    NoteTracker[] noteTrackers;
 
 
     @Inject
@@ -67,7 +65,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         singleTagStableDistance = pf.createPersistentProperty("Single tag stable distance", 2.0);
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
-        minNoteRatio = pf.createPersistentProperty("Min note size ratio", 3.0);
+        minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
@@ -76,12 +74,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
         };
-        var detectionTopics = Arrays.stream(detectionTopicNames)
-                .map(trackingNt::getStringArrayTopic)
-                .toArray(StringArrayTopic[]::new);
-        detectionSubscribers = Arrays.stream(detectionTopics)
-                .map(topic -> topic.subscribe(new String[] {}))
-                .toArray(StringArraySubscriber[]::new);
+        noteTrackers = Arrays.stream(detectionTopicNames)
+                .map(NoteTracker::new)
+                .toArray(NoteTracker[]::new);
 
         waitForStablePoseTime = pf.createPersistentProperty("Pose stable time", 0.0, Property.PropertyLevel.Debug);
         robotDisplacementThresholdToRejectVisionUpdate = pf.createPersistentProperty("Displacement Threshold to reject Vision (m)",3);
@@ -268,8 +263,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
-        var detections = Arrays.stream(detectionSubscribers)
-                .map(StringArraySubscriber::get)
+        Arrays.stream(noteTrackers)
+                .forEach(NoteTracker::refreshDataFrame);
+        var detections = Arrays.stream(noteTrackers)
+                .map(NoteTracker::getDetections)
                 .flatMap(Arrays::stream)
                 .toArray(String[]::new);
         detectedNotes = Arrays.stream(detections)

@@ -207,11 +207,11 @@ public class CompetitionContract extends ElectricalContract {
         return true;
     }
 
-    private static double aprilCameraXDisplacement = 13.48 / PoseSubsystem.INCHES_IN_A_METER;
-    private static double aprilCameraYDisplacement = 13.09 / PoseSubsystem.INCHES_IN_A_METER;
-    private static double aprilCameraZDisplacement = 9.25 / PoseSubsystem.INCHES_IN_A_METER;
-    private static double aprilCameraPitch = Math.toRadians(-30.5);
-    private static double aprilCameraYaw = Math.toRadians(14);
+    private static double aprilCameraXDisplacement = 13.153 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraYDisplacement = 12.972 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraZDisplacement = 9.014 / PoseSubsystem.INCHES_IN_A_METER;
+    private static double aprilCameraPitch = Math.toRadians(-55.5);
+    private static double aprilCameraYaw = Math.toRadians(10);
 
     @Override
     public CameraInfo[] getCameraInfo() {

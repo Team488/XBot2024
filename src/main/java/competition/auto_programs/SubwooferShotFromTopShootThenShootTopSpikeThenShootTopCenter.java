@@ -1,11 +1,8 @@
 package competition.auto_programs;
 
-import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
-import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
-import competition.subsystems.drive.commands.DriveToListOfPointsForCollectCommand;
 import competition.subsystems.drive.commands.DriveToTopSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -25,9 +22,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter extend
             Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
             Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
             Provider<DriveToTopSubwooferCommand> driveToTopSubwooferCommandProvider,
-            PoseSubsystem pose, DriveSubsystem drive, CollectSequenceCommandGroup collectSequence,
-            DriveToListOfPointsForCollectCommand driveToBottomCenterNote,
-            DriveToListOfPointsCommand driveBackToBottomSubwoofer
+            PoseSubsystem pose, DriveSubsystem drive
     ) {
         this.autoSelector = autoSelector;
 

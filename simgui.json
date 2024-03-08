@@ -3,7 +3,8 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto Mode": "String Chooser",
-      "/SmartDashboard/Scheduler": "Scheduler"
+      "/SmartDashboard/Scheduler": "Scheduler",
+      "/SmartDashboard/Standard 4 Note Auto": "Command"
     }
   },
   "NetworkTables Info": {
