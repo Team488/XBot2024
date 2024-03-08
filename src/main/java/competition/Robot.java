@@ -90,8 +90,8 @@ public class Robot extends BaseRobot {
     }
 
     @Override
-    public void autonomousExit() {
-        super.autonomousExit();
+    public void teleopInit() {
+        super.teleopInit();
         oracle.clearNoteMapForTeleop();
     }
 

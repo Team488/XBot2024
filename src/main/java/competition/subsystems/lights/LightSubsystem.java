@@ -47,18 +47,31 @@ public class LightSubsystem extends BaseSubsystem {
     @Inject
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
-        try {
-            serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
-            lightsWorking = true;
-            // the default timeout is 5s, set a much smaller value
-            serialPort.setTimeout(0.05);
-        }
-        catch(Exception ex) {
-            log.error("Lights not working: %s", ex);
-        }
+
+//        if(usbIsNotConnected(SerialPort.Port.kUSB1)) {
+//            if(usbIsNotConnected(SerialPort.Port.kUSB2)) {
+//                if(usbIsNotConnected(SerialPort.Port.kUSB)) {
+//                    log.error("Lights not working");
+//                }
+//            }
+//        }
+        // the default timeout is 5s, set a much smaller value
+        //serialPort.setTimeout(0.05);
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
+    }
+
+    public boolean usbIsNotConnected(SerialPort.Port port) {
+        try {
+            //serialPort = new SerialPort(9600, port, 8);
+            //serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
+            return false;
+        }
+        catch (Exception e) {
+            log.error("Lights not working: %s", e);
+            return true;
+        }
     }
 
     @Override
@@ -68,6 +81,7 @@ public class LightSubsystem extends BaseSubsystem {
         }
 
         try {
+            serialPort.reset();
             // Runs period every 1/10 of a second
             if (this.loopcount++ % loopMod != 0) {
                 return;
@@ -92,10 +106,7 @@ public class LightSubsystem extends BaseSubsystem {
                 if (ampSignalOn) {
                     currentState = LightsStateMessage.AmpSignal;
 
-                } else if (shooter.isMaintainerAtGoal()
-                        && shooterWheel.lowerWheelsTargetRPM != 0
-                        && shooterWheel.upperWheelsTargetRPM != 0
-                        && collector.getGamePieceReady()) {
+                } else if (shooter.isReadyToFire()) {
                     currentState = LightsStateMessage.ReadyToShoot;
 
                 } else if (collector.getGamePieceReady()) {
@@ -108,9 +119,9 @@ public class LightSubsystem extends BaseSubsystem {
 
             String stateValue = currentState.getValue();
 
-        // Write serial data to lights
-        serialPort.writeString(stateValue + "\n");
-        serialPort.flush();
+            // Write serial data to lights
+            //serialPort.writeString(stateValue + "\n");
+            //serialPort.flush();
 
             aKitLog.record("LightState", currentState.toString());
         } catch (Exception e) {

@@ -3,6 +3,7 @@ package competition.auto_programs;
 import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
+import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToBottomSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
@@ -68,9 +69,6 @@ public class SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter extend
         queueMessageToAutoSelector("Drive to bottom center note, collect, drive back to sub(bottom) and shoot");
         driveToBottomCenterNote.addPointsSupplier(this::goToBottomCenterLine);
         this.addCommands(Commands.deadline(collectSequence, driveToBottomCenterNote));
-
-        // only used for testing in sim
-//        this.addCommands(Commands.deadline(driveToBottomCenterNote, collectSequence));
 
         // Drive back to subwoofer
         driveBackToBottomSubwoofer.addPointsSupplier(this::goBackToSubwoofer);

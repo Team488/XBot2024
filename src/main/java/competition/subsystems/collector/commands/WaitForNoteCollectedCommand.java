@@ -27,4 +27,6 @@ public class WaitForNoteCollectedCommand extends BaseCommand {
     public boolean isFinished() {
         return collector.confidentlyHasControlOfNote();
     }
+
+
 }
