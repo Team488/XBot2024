@@ -47,19 +47,31 @@ public class LightSubsystem extends BaseSubsystem {
     @Inject
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
-        try {
-            serialPort = new SerialPort(9600, SerialPort.Port.kUSB1, 8);
-            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
-            lightsWorking = true;
-            // the default timeout is 5s, set a much smaller value
-            serialPort.setTimeout(0.05);
+
+        if(USBIsNotConnected(SerialPort.Port.kUSB1)) {
+            if(USBIsNotConnected(SerialPort.Port.kUSB2)) {
+                if(USBIsNotConnected(SerialPort.Port.kUSB)) {
+                    log.error("Lights not working");
+                }
+            }
         }
-        catch(Exception ex) {
-            log.error("Lights not working: %s", ex);
-        }
+        // the default timeout is 5s, set a much smaller value
+        serialPort.setTimeout(0.05);
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
+    }
+
+    public boolean USBIsNotConnected(SerialPort.Port port) {
+        try {
+            serialPort = new SerialPort(9600, port, 8);
+            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
+            return false;
+        }
+        catch (Exception e) {
+            log.error("Lights not working: %s", e);
+            return true;
+        }
     }
 
     @Override
