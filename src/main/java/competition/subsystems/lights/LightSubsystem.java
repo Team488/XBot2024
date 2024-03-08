@@ -48,7 +48,8 @@ public class LightSubsystem extends BaseSubsystem {
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
         try {
-            serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
+            serialPort = new SerialPort(9600, SerialPort.Port.kUSB1, 8);
+            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushWhenFull);
             lightsWorking = true;
         }
         catch(Exception ex) {
@@ -90,10 +91,7 @@ public class LightSubsystem extends BaseSubsystem {
                 if (ampSignalOn) {
                     currentState = LightsStateMessage.AmpSignal;
 
-                } else if (shooter.isMaintainerAtGoal()
-                        && shooterWheel.lowerWheelsTargetRPM != 0
-                        && shooterWheel.upperWheelsTargetRPM != 0
-                        && collector.getGamePieceReady()) {
+                } else if (shooter.isReadyToFire()) {
                     currentState = LightsStateMessage.ReadyToShoot;
 
                 } else if (collector.getGamePieceReady()) {
