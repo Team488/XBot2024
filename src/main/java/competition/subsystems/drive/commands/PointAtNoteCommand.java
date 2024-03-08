@@ -78,10 +78,5 @@ public class PointAtNoteCommand extends BaseCommand {
             return true;
         }
         return false;
-        //var isOnTarget =  this.drive.getRotateToHeadingPid().isOnTarget();
-        //if (isOnTarget) {
-        //    log.info("Finished");
-       // }
-        //return isOnTarget;
     }
 }
