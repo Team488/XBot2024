@@ -1,16 +1,23 @@
 package competition.auto_programs;
 
+import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
+import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
 
@@ -21,7 +28,9 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                                                           Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                          PoseSubsystem pose, DriveSubsystem drive) {
+                                                          PoseSubsystem pose, DriveSubsystem drive,
+                                                          DriveToListOfPointsCommand driveToBottomNote,
+                                                          CollectSequenceCommandGroup collectBottomNote) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -72,13 +81,8 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Drive to bottom spike note and collect
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
-        this.addCommands(
-                new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.BlueSpikeBottom);
-                })
-        );
-        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(driveToBottomSpikeNoteAndCollect);
+        driveToBottomNote.addPointsSupplier(this::goToBotSpike);
+        this.addCommands(Commands.deadline(collectBottomNote, driveToBottomNote));
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferThird = driveToCentralSubwooferCommandProvider.get();
@@ -91,5 +95,16 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
     private void queueMessageToAutoSelector(String message) {
         this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
+    }
+
+    public List<XbotSwervePoint> goToBotSpike() {
+        var points = new ArrayList<XbotSwervePoint>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSpikeBottomWhiteLine.getTranslation(),
+                Rotation2d.fromDegrees(180), 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSpikeBottom.getTranslation(),
+                Rotation2d.fromDegrees(180), 10));
+        return points;
     }
 }
