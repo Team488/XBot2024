@@ -4,6 +4,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
@@ -31,8 +32,11 @@ public class DriveToBottomSubwooferCommand extends SwerveSimpleTrajectoryCommand
     public void initialize() {
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
+        Translation2d translation = new Translation2d(
+                PoseSubsystem.BlueSubwooferBottomScoringLocation.getX() + 0.0762,
+                PoseSubsystem.BlueSubwooferBottomScoringLocation.getY());
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSubwooferBottomScoringLocation, 10));
+                translation, PoseSubsystem.BlueSubwooferBottomScoringLocation.getRotation(), 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
