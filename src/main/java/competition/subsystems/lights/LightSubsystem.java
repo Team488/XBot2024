@@ -48,9 +48,9 @@ public class LightSubsystem extends BaseSubsystem {
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
 
-        if(USBIsNotConnected(SerialPort.Port.kUSB1)) {
-            if(USBIsNotConnected(SerialPort.Port.kUSB2)) {
-                if(USBIsNotConnected(SerialPort.Port.kUSB)) {
+        if(usbIsNotConnected(SerialPort.Port.kUSB1)) {
+            if(usbIsNotConnected(SerialPort.Port.kUSB2)) {
+                if(usbIsNotConnected(SerialPort.Port.kUSB)) {
                     log.error("Lights not working");
                 }
             }
@@ -62,7 +62,7 @@ public class LightSubsystem extends BaseSubsystem {
         this.shooter = shooter;
     }
 
-    public boolean USBIsNotConnected(SerialPort.Port port) {
+    public boolean usbIsNotConnected(SerialPort.Port port) {
         try {
             serialPort = new SerialPort(9600, port, 8);
             serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
