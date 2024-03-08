@@ -119,9 +119,9 @@ public class LightSubsystem extends BaseSubsystem {
 
             String stateValue = currentState.getValue();
 
-        // Write serial data to lights
-        serialPort.writeString(stateValue + "\n");
-        //serialPort.flush();
+            // Write serial data to lights
+            serialPort.writeString(stateValue + "\n");
+            //serialPort.flush();
 
             aKitLog.record("LightState", currentState.toString());
         } catch (Exception e) {
