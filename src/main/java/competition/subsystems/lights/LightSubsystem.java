@@ -64,8 +64,8 @@ public class LightSubsystem extends BaseSubsystem {
 
     public boolean usbIsNotConnected(SerialPort.Port port) {
         try {
-            serialPort = new SerialPort(9600, port, 8);
-            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
+            //serialPort = new SerialPort(9600, port, 8);
+            //serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
             return false;
         }
         catch (Exception e) {
@@ -120,7 +120,7 @@ public class LightSubsystem extends BaseSubsystem {
             String stateValue = currentState.getValue();
 
             // Write serial data to lights
-            serialPort.writeString(stateValue + "\n");
+            //serialPort.writeString(stateValue + "\n");
             //serialPort.flush();
 
             aKitLog.record("LightState", currentState.toString());
