@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.command.BaseCommand;
 import xbot.common.math.XYPair;
+import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
 
@@ -19,12 +20,13 @@ import javax.inject.Inject;
 public class PointAtNoteCommand extends BaseCommand {
     Logger log = LogManager.getLogger(this);
 
-    Pose2d notePosition;
+    Pose2d notePosition = null;
     DriveSubsystem drive;
     HeadingModule headingModule;
     PoseSubsystem pose;
     OperatorInterface oi;
     DynamicOracle oracle;
+    DoubleProperty maxNoteJump;
 
     @Inject
     public PointAtNoteCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
@@ -35,6 +37,9 @@ public class PointAtNoteCommand extends BaseCommand {
         this.oi = oi;
         this.oracle = oracle;
 
+        pf.setPrefix(this);
+        this.maxNoteJump = pf.createPersistentProperty("Maximum position jump meters", 1.0);
+
         this.addRequirements(drive);
     }
 
@@ -42,11 +47,9 @@ public class PointAtNoteCommand extends BaseCommand {
     public void initialize() {
         log.info("Initializing");
         // Find the note we want to point at
-        // Project a point in front of the robot's collector to bias preferred notes in that direction
-        var virtualPoint = this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
-        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint);
+        var notePosition = getClosestAvailableNote();
         if (notePosition != null) {
-            this.notePosition = notePosition.toPose2d();
+            this.notePosition = notePosition;
             log.info("Rotating to note");
         } else {
             this.notePosition = null;
@@ -61,10 +64,16 @@ public class PointAtNoteCommand extends BaseCommand {
             return;
         }
 
+        // If we can still see the note, update the target
+        var newTarget = getClosestAvailableNote();
+        if (newTarget != null && newTarget != this.notePosition) {
+            this.notePosition = newTarget;
+        }
+
         var movement = -oi.driverGamepad.getLeftStickY();
 
         double rotationError = this.pose.getAngularErrorToTranslation2dInDegrees(
-                notePosition.getTranslation(),
+                this.notePosition.getTranslation(),
                 Rotation2d.fromDegrees(180)); // point rear of robot
         double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, rotationError);
 
@@ -78,5 +87,26 @@ public class PointAtNoteCommand extends BaseCommand {
             return true;
         }
         return false;
+    }
+
+    private Pose2d getClosestAvailableNote() {
+        var virtualPoint = getProjectedPoint();
+        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint);
+
+        if (notePosition != null) {
+            if (this.notePosition == null
+                    || this.notePosition
+                        .getTranslation()
+                        .getDistance(notePosition.toPose2d().getTranslation()) < this.maxNoteJump.get()) {
+                log.info("Updating target");
+                return notePosition.toPose2d();
+            }
+        }
+
+        return this.notePosition;
+    }
+
+    private Pose2d getProjectedPoint() {
+        return this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
     }
 }
