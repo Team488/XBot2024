@@ -16,15 +16,16 @@ import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
 @Singleton
 public class LightSubsystem extends BaseSubsystem {
+    // based on the number of bits we have, this is the highest number we can send
+    final static int numBits = 4;
+    final static int maxValue = (int)(Math.pow(2, numBits) - 1);
+
     final AutonomousCommandSelector autonomousCommandSelector;
     final ShooterWheelSubsystem shooter;
     final CollectorSubsystem collector;
     final XDigitalOutput[] outputs;
 
     boolean ampSignalOn = false;
-    // based on the number of bits we have, this is the highest number we can send
-    final static int numBits = 4;
-    final static int maxValue = (int)(Math.pow(2, numBits) - 1);
 
     public enum LightsStateMessage{
         NoCode(15), // we never send this one, it's implicit when the robot is off
