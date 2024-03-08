@@ -48,15 +48,15 @@ public class LightSubsystem extends BaseSubsystem {
     public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
 
-        if(usbIsNotConnected(SerialPort.Port.kUSB1)) {
-            if(usbIsNotConnected(SerialPort.Port.kUSB2)) {
-                if(usbIsNotConnected(SerialPort.Port.kUSB)) {
-                    log.error("Lights not working");
-                }
-            }
-        }
+//        if(usbIsNotConnected(SerialPort.Port.kUSB1)) {
+//            if(usbIsNotConnected(SerialPort.Port.kUSB2)) {
+//                if(usbIsNotConnected(SerialPort.Port.kUSB)) {
+//                    log.error("Lights not working");
+//                }
+//            }
+//        }
         // the default timeout is 5s, set a much smaller value
-        serialPort.setTimeout(0.05);
+        //serialPort.setTimeout(0.05);
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
@@ -64,8 +64,8 @@ public class LightSubsystem extends BaseSubsystem {
 
     public boolean usbIsNotConnected(SerialPort.Port port) {
         try {
-            serialPort = new SerialPort(9600, port, 8);
-            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
+            //serialPort = new SerialPort(9600, port, 8);
+            //serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
             return false;
         }
         catch (Exception e) {
@@ -120,7 +120,7 @@ public class LightSubsystem extends BaseSubsystem {
             String stateValue = currentState.getValue();
 
             // Write serial data to lights
-            serialPort.writeString(stateValue + "\n");
+            //serialPort.writeString(stateValue + "\n");
             //serialPort.flush();
 
             aKitLog.record("LightState", currentState.toString());

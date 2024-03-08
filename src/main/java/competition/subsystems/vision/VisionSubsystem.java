@@ -217,19 +217,30 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     int loopCounter = 0;
 
     public double getNoteYaw(NoteCamera camera) {
-        var targets = camera.getCamera().getLatestResult().getTargets();
-        if (targets.size() == 0) {
+        var result = camera.getCamera().getLatestResult();
+        if (result == null) {
             return 0;
         }
-        return camera.getCamera().getLatestResult().getTargets().get(0).getYaw();
+
+        var targets = result.getTargets();
+        if (targets == null || targets.size() == 0) {
+            return 0;
+        }
+
+        return targets.get(0).getYaw();
     }
 
     public double getNoteArea(NoteCamera camera) {
-        var targets = camera.getCamera().getLatestResult().getTargets();
-        if (targets.size() == 0) {
+        var result = camera.getCamera().getLatestResult();
+        if (result == null) {
             return -1;
         }
-        return camera.getCamera().getLatestResult().getTargets().get(0).getArea();
+
+        var targets = result.getTargets();
+        if (targets == null || targets.size() == 0) {
+            return -1;
+        }
+        return targets.get(0).getArea();
     }
 
     public Pose3d[] getDetectedNotes() {

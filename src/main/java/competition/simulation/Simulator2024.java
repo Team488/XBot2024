@@ -54,6 +54,9 @@ public class Simulator2024 {
         this.shooter = shooter;
         this.collector = collector;
         this.oracle = oracle;
+
+        // Start with a note in simulator
+        ((MockDigitalInput)collector.readyToFireNoteSensor).setValue(true);
     }
 
 

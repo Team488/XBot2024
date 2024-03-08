@@ -75,7 +75,7 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
 
     private void fireWhenReady() {
 
-        boolean superStructureReady = arm.isMaintainerAtGoal() && shooter.hasNonIdleTarget();
+        boolean superStructureReady = arm.isMaintainerAtGoal() && shooter.hasNonIdleTarget() && shooter.isMaintainerAtGoal();
         boolean sanityChecks = oracle.getHighLevelGoal() != DynamicOracle.HighLevelGoal.CollectNote;
 
         aKitLog.record("SuperstructureReady", superStructureReady);
