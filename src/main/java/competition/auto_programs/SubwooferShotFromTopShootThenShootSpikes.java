@@ -9,6 +9,7 @@ import competition.subsystems.drive.commands.DriveToListOfPointsForCollectComman
 import competition.subsystems.drive.commands.DriveToTopSubwooferCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -72,10 +73,6 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         var collectSequenceMid = collectSequenceCommandGroupProvider.get();
         this.addCommands(Commands.deadline(collectSequenceMid, driveToMiddleSpikeNote));
 
-        // this is only used for testing in the sim
-//        this.addCommands(Commands.deadline(driveToMiddleSpikeNote, collectSequenceMid));
-
-
         // Drive back to subwoofer
         var driveBackToBottomSubwooferSecond = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferSecond.addPointsSupplier(this::goBackToSubwoofer);
@@ -91,11 +88,10 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         driveToBottomSpikeNote.addPointsSupplier(this::goToTopWhiteLineThenSpikeBottom);
         var collectSequenceTop = collectSequenceCommandGroupProvider.get();
         this.addCommands(Commands.deadline(collectSequenceTop, driveToBottomSpikeNote));
-//        this.addCommands(Commands.deadline(driveToTopSpikeNote, collectSequenceTop));
 
         // Drive back to subwoofer
         var driveBackToBottomSubwooferThird = driveToListOfPointsCommandProvider.get();
-        driveBackToBottomSubwooferThird.addPointsSupplier(this::goBackToSubwoofer);
+        driveBackToBottomSubwooferThird.addPointsSupplier(this::goBackToSubwooferFromBot);
         this.addCommands(driveBackToBottomSubwooferThird);
 
         // Fire Note into the speaker
@@ -117,12 +113,33 @@ public class SubwooferShotFromTopShootThenShootSpikes extends SequentialCommandG
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
+        var translation = new Translation2d(
+                PoseSubsystem.BlueSpikeMiddle.getX() - 0.32,
+                PoseSubsystem.BlueSpikeMiddle.getY());
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                translation,
+                Rotation2d.fromDegrees(180), 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSpikeBottomWhiteLine.getTranslation(),
+                Rotation2d.fromDegrees(180), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSpikeBottom, 10));
         return points;
     }
 
     public List<XbotSwervePoint> goBackToSubwoofer() {
         var points = new ArrayList<XbotSwervePoint>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
+                PoseSubsystem.BlueSubwooferTopScoringLocation.getRotation(), 10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferTopScoringLocation, 10));
+        return points;
+    }
+
+    public List<XbotSwervePoint> goBackToSubwooferFromBot() {
+        var points = new ArrayList<XbotSwervePoint>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSpikeMiddle.getTranslation(),
+                Rotation2d.fromDegrees(180), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeTopWhiteLine.getTranslation(),
                 PoseSubsystem.BlueSubwooferTopScoringLocation.getRotation(), 10));

@@ -1,6 +1,5 @@
 package competition.commandgroups;
 
-import competition.subsystems.collector.commands.WaitForNoteCollectedCommand;
 import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 
@@ -11,15 +10,9 @@ public class DriveToGivenNoteAndCollectCommandGroup extends ParallelDeadlineGrou
 
     @Inject
     public DriveToGivenNoteAndCollectCommandGroup(DriveToGivenNoteCommand driveToGivenNoteCommand,
-                                                  CollectSequenceCommandGroup collectSequenceCommandGroup,
-                                                  WaitForNoteCollectedCommand waitForNoteCollectedCommand) {
+                                                  CollectSequenceCommandGroup collectSequenceCommandGroup) {
         super(collectSequenceCommandGroup);
 
         this.addCommands(driveToGivenNoteCommand);
-
-        // use this for testing in simulator
-//        super(driveToGivenNoteCommand);
-//
-//        this.addCommands(collectSequenceCommandGroup);
     }
 }
