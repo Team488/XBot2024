@@ -49,7 +49,7 @@ public class LightSubsystem extends BaseSubsystem {
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
         try {
             serialPort = new SerialPort(9600, SerialPort.Port.kUSB1, 8);
-            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushWhenFull);
+            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
             lightsWorking = true;
             // the default timeout is 5s, set a much smaller value
             serialPort.setTimeout(0.05);
@@ -69,6 +69,7 @@ public class LightSubsystem extends BaseSubsystem {
         }
 
         try {
+            serialPort.reset();
             // Runs period every 1/10 of a second
             if (this.loopcount++ % loopMod != 0) {
                 return;
@@ -108,7 +109,7 @@ public class LightSubsystem extends BaseSubsystem {
 
         // Write serial data to lights
         serialPort.writeString(stateValue + "\n");
-        serialPort.flush();
+        //serialPort.flush();
 
             aKitLog.record("LightState", currentState.toString());
         } catch (Exception e) {
