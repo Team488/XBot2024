@@ -151,19 +151,23 @@ public class DynamicOracle extends BaseSubsystem {
         noteMap.get(PointOfInterest.SpikeBottom, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
         scoringLocationMap.markAllianceScoringLocationsAsUnavailable(allianceToMarkAsUnavailable);
 
-        // Disable subwoofer positions the driver has told us to avoid
+        // Disable Scoring positions the driver has told us to avoid
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferTopScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferMiddleScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferBottomScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.PodiumScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.AmpFarScoringLocation, ourAlliance);
 
+        // Disable Spike notes the driver told us to avoid
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeTop, ourAlliance);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeMiddle, ourAlliance);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeBottom, ourAlliance);
 
-        // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
-        if (!oi.getNeoTrellisValue(PointOfInterest.SpikeBottom)) {
+        // If the bottom spike is available, and we are allowed to shoot from the podium
+        // then we need to suppress the podium scoring location there until the note is collected.
+        // (otherwise, we might collect the midline note first, then drive right over the podium note since
+        // the podium scoring location is very close).
+        if (!oi.getNeoTrellisValue(PointOfInterest.SpikeBottom) && !oi.getNeoTrellisValue(PointOfInterest.PodiumScoringLocation)) {
             scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
             field.getNode(PointOfInterest.PodiumScoringLocation.getName(ourAlliance)).setAllWeightsToMax();
         }
