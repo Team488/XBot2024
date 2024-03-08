@@ -4,6 +4,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
@@ -31,8 +32,13 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
     public void initialize() {
         log.info("Intitializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
+
+        // When the robot goes to the central subwoofer to score, it can score further back. This saves time.
+        Translation2d translation = new Translation2d(
+                PoseSubsystem.BlueSubwooferMiddleScoringLocation.getX() + 0.0762,
+                PoseSubsystem.BlueSubwooferMiddleScoringLocation.getY());
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSubwooferMiddleScoringLocation.getTranslation(), Rotation2d.fromDegrees(180), 10));
+                translation, Rotation2d.fromDegrees(180), 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());

@@ -24,4 +24,9 @@ public class EjectCollectorCommand extends BaseCommand {
     public void execute() {
         collector.eject();
     }
+
+    @Override
+    public void end(boolean interrupted) {
+        collector.stop();
+    }
 }

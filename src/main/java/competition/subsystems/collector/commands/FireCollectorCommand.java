@@ -21,4 +21,8 @@ public class FireCollectorCommand extends BaseCommand{
         collector.fire();
     }
 
+    @Override
+    public void end(boolean interrupted) {
+        collector.stop();
+    }
 }

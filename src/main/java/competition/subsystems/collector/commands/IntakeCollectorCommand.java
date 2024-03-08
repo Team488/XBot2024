@@ -41,5 +41,7 @@ public class IntakeCollectorCommand extends BaseCommand {
         oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(0, 0.7);
         oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(0, 0.7);
         oi.driverGamepad.getRumbleManager().rumbleGamepad(0, 0.7);
+
+        collector.stop();
     }
 }

@@ -76,6 +76,12 @@ public class NoteMap extends ReservableLocationMap<Note> {
         visionSourceNotes.clear();
     }
 
+    public void markSpikeNotesUnavailable() {
+        for (var note: this.internalMap.values()) {
+            note.setAvailability(Availability.Unavailable);
+        }
+    }
+
     public Note get(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         if (pointOfInterest.isUnique()) {
             return get(pointOfInterest.getName());

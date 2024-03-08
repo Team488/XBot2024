@@ -19,4 +19,9 @@ public class RemoveForcedBrakingCommand extends BaseCommand {
         log.info("Initializing");
         arm.setForceBrakesEngaged(false);
     }
+
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 }

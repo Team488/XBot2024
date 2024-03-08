@@ -23,7 +23,7 @@ public class ShooterWheelMaintainerCommand extends BaseMaintainerCommand<Shooter
     @Inject
     public ShooterWheelMaintainerCommand(OperatorInterface oi, ShooterWheelSubsystem wheel, PropertyFactory pf,
                                          HumanVsMachineDecider.HumanVsMachineDeciderFactory hvmFactory, ArmSubsystem arm) {
-        super(wheel, pf, hvmFactory, 150, 0.5);
+        super(wheel, pf, hvmFactory, 150, 0.1);
         this.oi = oi;
         this.wheel = wheel;
         this.arm = arm;
