@@ -16,7 +16,7 @@ public class AmpSignalToggleCommand extends BaseCommand {
 
     @Override
     public void initialize() {
-        light.ampSignalOn = !light.ampSignalOn;;
+        light.toggleAmpSignal();
     }
 
     @Override

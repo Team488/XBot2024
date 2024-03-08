@@ -158,16 +158,6 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getLightsDio4() {
-        return new DeviceInfo("Lights4", 9); // something on the navX, just out of the way
-    }
-
-    @Override
-    public DeviceInfo getLightsCubeDio() {
-        return new DeviceInfo("LightsCube", 4);
-    }
-
-    @Override
     public DeviceInfo getInControlNoteSensorDio() {
         return new DeviceInfo("InControlNoteSensor", 8, true);
     }
