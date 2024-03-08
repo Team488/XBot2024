@@ -8,6 +8,7 @@ import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -99,8 +100,11 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
     public List<XbotSwervePoint> goToBotSpike() {
         var points = new ArrayList<XbotSwervePoint>();
+        Translation2d translation = new Translation2d(
+                PoseSubsystem.BlueSpikeBottomWhiteLine.getX(),
+                PoseSubsystem.BlueSpikeBottomWhiteLine.getY() + 0.0889);
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSpikeBottomWhiteLine.getTranslation(),
+                translation,
                 Rotation2d.fromDegrees(180), 10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeBottom.getTranslation(),
