@@ -37,7 +37,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         this.arm = arm;
         this.oi = oi;
         pf.setPrefix(this);
-        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.02, 0.0, 0);
+        positionPid = pidf.create(getPrefix() + "PoisitionPID", 0.02, 0.0001, 0);
         positionPid.setIZone(5.0);
         calibrationValidator = new TimeStableValidator(() -> calibrationStallDurationSec);
     }
