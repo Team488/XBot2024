@@ -1,5 +1,6 @@
 package competition.operator_interface;
 
+import competition.auto_programs.DistanceShotFromBotThenThreeCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
@@ -64,7 +65,8 @@ public class OperatorCommandMap {
             DriveToCentralSubwooferCommand driveToCentralSubwooferCommand,
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
-            ListenToOracleCommandGroup listenToOracleCommandGroup
+            ListenToOracleCommandGroup listenToOracleCommandGroup,
+            DistanceShotFromBotThenThreeCenter centerlineAuto
             )
     {
         // Rotation calibration routine
@@ -81,7 +83,9 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(lineUpForHangingCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(centerlineAuto);
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
                 .onFalse(cancelSpecialPointAtPosition);
