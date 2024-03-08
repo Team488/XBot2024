@@ -49,7 +49,6 @@ public class LightSubsystem extends BaseSubsystem {
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
         try {
             serialPort = new SerialPort(115200, SerialPort.Port.kUSB1, 8);
-            serialPort.setTimeout(0.05);
             lightsWorking = true;
         }
         catch(Exception ex) {
