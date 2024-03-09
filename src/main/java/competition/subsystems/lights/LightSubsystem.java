@@ -43,13 +43,16 @@ public class LightSubsystem extends BaseSubsystem {
                 // it should be okay to have this throw because it will happen immediately on robot startup
                 // so we'll see failures here in CI before deploying to the robot. 
                 // Getting the RobotAssertionManager in here was proving tricky
-                throw new IllegalArgumentException("Values must be between 0 and " + maxValue + " inclusive. Got " + value + " instead.");
+                System.out.println("Values must be between 0 and " + maxValue + " inclusive. Got " + value + " instead. Will always return 0 for safety.");
             }
             this.value = value;
         }
 
         private int value;
         public int getValue() {
+            if (value < 0 || value > maxValue) {
+                return 0;
+            }
             return value;
         }
     }
