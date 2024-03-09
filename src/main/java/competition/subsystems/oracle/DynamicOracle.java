@@ -39,7 +39,7 @@ public class DynamicOracle extends BaseSubsystem {
 
     public enum ScoringSubGoals {
         IngestNote,
-        IngestNoteAgainstObstacle,
+        IngestFromSource,
         MoveToScoringRange,
         EarnestlyLaunchNote
     }
@@ -311,7 +311,12 @@ public class DynamicOracle extends BaseSubsystem {
 
                     if (suggestedNote == null) {
                         // No notes on the field! Let's suggest going to the source and hope something turns up.
-                        setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.NearbySource));
+                        // However, if we are in autonomous, we should instead just go to the line.
+                        if (DriverStation.isAutonomous()) {
+                            setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.CenterLine5));
+                        } else {
+                            setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSourceMiddle));
+                        }
                     }/*
                     else if (suggestedNote.getAvailability() == Availability.AgainstObstacle) {
                         // Take the note's pose2d and extend it in to the super far distance so the robot
