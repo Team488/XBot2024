@@ -255,15 +255,17 @@ public class DynamicOracle extends BaseSubsystem {
         if (this.includeVisionNotes.get()) {
             var robotTranslation = pose.getCurrentPose2d().getTranslation();
             var robotRotation = pose.getCurrentPose2d().getRotation();
-            Arrays.stream(vision.getDetectedNotes())
-                    .map(note -> {
-                        var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
-                        var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
-                        return new Pose2d(
-                                robotTranslation.plus(rotatedToFieldRelative),
-                                new Rotation2d());
-                    })
-                    .forEach(noteMap::addVisionNote);
+            if (vision.getDetectedNotes() != null) {
+                Arrays.stream(vision.getDetectedNotes())
+                        .map(note -> {
+                            var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
+                            var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
+                            return new Pose2d(
+                                    robotTranslation.plus(rotatedToFieldRelative),
+                                    new Rotation2d());
+                        })
+                        .forEach(noteMap::addVisionNote);
+            }
         }
 
         aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
