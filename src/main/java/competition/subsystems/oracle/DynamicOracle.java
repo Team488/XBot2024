@@ -1,11 +1,13 @@
 package competition.subsystems.oracle;
 
 import competition.navigation.GraphField;
+import competition.navigation.Pose2dNode;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -23,6 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Singleton
 public class DynamicOracle extends BaseSubsystem {
@@ -81,7 +84,7 @@ public class DynamicOracle extends BaseSubsystem {
         this.includeVisionNotes = pf.createPersistentProperty("IncludeVisionNotes", true);
         this.maxVisionNoteAge = pf.createPersistentProperty("MaxVisionNoteAge", 1.0);
 
-        this.currentHighLevelGoal = HighLevelGoal.CollectNote;
+        this.currentHighLevelGoal = HighLevelGoal.ScoreInSpeaker;
         this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         firstRunInNewGoal = true;
     }
@@ -182,6 +185,14 @@ public class DynamicOracle extends BaseSubsystem {
         reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine5, DriverStation.Alliance.Blue);
 
         chooseStartingLocationBasedOnReservations();
+
+        /*
+        if (field != null) {
+            for (Pair<String,Trajectory> labelAndTrajectory : field.visualizeNodesAndEdges()) {
+                aKitLog.record("Graph" + labelAndTrajectory.getFirst(), labelAndTrajectory.getSecond());
+            }
+        }
+        */
     }
 
     /**
@@ -343,12 +354,7 @@ public class DynamicOracle extends BaseSubsystem {
                 break;
         }
 
-        /*
-        if (field != null) {
-            for (Pair<String,Trajectory> labelAndTrajectory : field.visualizeNodesAndEdges()) {
-                aKitLog.record("Graph" + labelAndTrajectory.getFirst(), labelAndTrajectory.getSecond());
-            }
-        }*/
+
 
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
@@ -490,5 +496,17 @@ public class DynamicOracle extends BaseSubsystem {
 
     public void resetNoteMap() {
         noteMap = new NoteMap();
+    }
+
+    public Trajectory getTrajectoryRepresentationOfGraph() {
+        List<Pose2dNode> eulerianPathInNodes = field.getListOfConnectedNodes();
+
+        var wpiStates = new ArrayList<edu.wpi.first.math.trajectory.Trajectory.State>();
+        for (Pose2dNode node : eulerianPathInNodes) {
+            var state = new edu.wpi.first.math.trajectory.Trajectory.State();
+            state.poseMeters = node.getPose();
+            wpiStates.add(state);
+        }
+        return new Trajectory(wpiStates);
     }
 }
