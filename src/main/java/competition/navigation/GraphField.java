@@ -175,6 +175,9 @@ public class GraphField implements ProvidesWaypoints {
         connectRedToBlue(bottomWing, sourceNearest);
         connectRedToBlue(bottomWing, sourceMiddle);
         connectRedToBlue(bottomWing, sourceFarthest);
+
+        // extra connections for speed:
+        connectRedAndBlue(subwooferBottom, southOfStage);
     }
 
     //CHECKSTYLE:ON
@@ -274,5 +277,9 @@ public class GraphField implements ProvidesWaypoints {
         wpiStates.add(bottomLeft);
         wpiStates.add(bottomRight);
         return new edu.wpi.first.math.trajectory.Trajectory(wpiStates);
+    }
+
+    public List<Pose2dNode> getListOfConnectedNodes() {
+        return graph.dfsTraversal();
     }
 }

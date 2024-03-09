@@ -105,18 +105,4 @@ public class OperatorInterface {
         }
         return false;
     }
-
-    public boolean areRangedShotsAllowedFrom(PointOfInterest pointOfInterest) {
-        switch (pointOfInterest) {
-            case SpikeTop -> {
-                return neoTrellis.getButton(18);
-            }
-            case SpikeMiddle -> {
-                return neoTrellis.getButton(19);
-            }
-            default -> {
-                return false;
-            }
-        }
-    }
 }
