@@ -12,7 +12,6 @@ public class ListenToOracleCommandGroup extends ParallelCommandGroup {
     public ListenToOracleCommandGroup(SwerveAccordingToOracleCommand swerveAccordingToOracleCommand,
                                       SuperstructureAccordingToOracleCommand superstructureAccordingToOracleCommand) {
         swerveAccordingToOracleCommand.logic.setEnableConstantVelocity(true);
-        swerveAccordingToOracleCommand.logic.setConstantVelocity(1.8);
         this.addCommands(swerveAccordingToOracleCommand, superstructureAccordingToOracleCommand);
     }
 }
