@@ -230,12 +230,14 @@ public class DynamicOracle extends BaseSubsystem {
     public void reserveScoringLocationBasedOnNeoTrellis(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         if (oi.getNeoTrellisValue(pointOfInterest)) {
             reserveScoringLocationForOtherTeams(pointOfInterest, alliance);
+            field.getNode(pointOfInterest.getName(alliance)).setAllWeightsToMax();
         }
     }
 
     public void reserveNoteBasedOnNeoTrellis(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         if (oi.getNeoTrellisValue(pointOfInterest)) {
             reserveNote(pointOfInterest, alliance);
+            field.getNode(pointOfInterest.getName(alliance)).setAllWeightsToMax();
         }
     }
 
