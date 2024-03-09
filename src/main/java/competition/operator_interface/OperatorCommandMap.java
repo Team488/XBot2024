@@ -172,7 +172,7 @@ public class OperatorCommandMap {
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
             Provider<WarmUpShooterCommand> shooterWarmUpSupplier,
-            FireCollectorCommand fireCollectorCommand,
+            Provider<FireCollectorCommand> fireCollectorCommandProvider,
             Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
             CalibrateArmsManuallyCommand calibrateArmsManuallyCommand
     ) {
@@ -195,8 +195,8 @@ public class OperatorCommandMap {
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpAmp);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.X).whileTrue(shooterWarmUpTypicalA);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.B).whileTrue(fireCollectorCommand);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpTypicalB.alongWith(fireCollectorCommand));
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.B).whileTrue(fireCollectorCommandProvider.get());
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpTypicalB.alongWith(fireCollectorCommandProvider.get()));
 
         oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 20));
         oi.operatorFundamentalsGamepad.getPovIfAvailable(90).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 2));
