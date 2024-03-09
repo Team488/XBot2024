@@ -1,11 +1,13 @@
 package competition.subsystems.oracle;
 
 import competition.navigation.GraphField;
+import competition.navigation.Pose2dNode;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -23,6 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Singleton
 public class DynamicOracle extends BaseSubsystem {
@@ -36,7 +39,7 @@ public class DynamicOracle extends BaseSubsystem {
 
     public enum ScoringSubGoals {
         IngestNote,
-        IngestNoteAgainstObstacle,
+        IngestFromSource,
         MoveToScoringRange,
         EarnestlyLaunchNote
     }
@@ -81,7 +84,7 @@ public class DynamicOracle extends BaseSubsystem {
         this.includeVisionNotes = pf.createPersistentProperty("IncludeVisionNotes", true);
         this.maxVisionNoteAge = pf.createPersistentProperty("MaxVisionNoteAge", 1.0);
 
-        this.currentHighLevelGoal = HighLevelGoal.CollectNote;
+        this.currentHighLevelGoal = HighLevelGoal.ScoreInSpeaker;
         this.currentScoringSubGoal = ScoringSubGoals.EarnestlyLaunchNote;
         firstRunInNewGoal = true;
     }
@@ -151,19 +154,23 @@ public class DynamicOracle extends BaseSubsystem {
         noteMap.get(PointOfInterest.SpikeBottom, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
         scoringLocationMap.markAllianceScoringLocationsAsUnavailable(allianceToMarkAsUnavailable);
 
-        // Disable subwoofer positions the driver has told us to avoid
+        // Disable Scoring positions the driver has told us to avoid
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferTopScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferMiddleScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferBottomScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.PodiumScoringLocation, ourAlliance);
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.AmpFarScoringLocation, ourAlliance);
 
+        // Disable Spike notes the driver told us to avoid
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeTop, ourAlliance);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeMiddle, ourAlliance);
         reserveNoteBasedOnNeoTrellis(PointOfInterest.SpikeBottom, ourAlliance);
 
-        // If the bottom spike is available, then we need to suppress the scoring location there until it is collected.
-        if (!oi.getNeoTrellisValue(PointOfInterest.SpikeBottom)) {
+        // If the bottom spike is available, and we are allowed to shoot from the podium
+        // then we need to suppress the podium scoring location there until the note is collected.
+        // (otherwise, we might collect the midline note first, then drive right over the podium note since
+        // the podium scoring location is very close).
+        if (!oi.getNeoTrellisValue(PointOfInterest.SpikeBottom) && !oi.getNeoTrellisValue(PointOfInterest.PodiumScoringLocation)) {
             scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
             field.getNode(PointOfInterest.PodiumScoringLocation.getName(ourAlliance)).setAllWeightsToMax();
         }
@@ -178,6 +185,14 @@ public class DynamicOracle extends BaseSubsystem {
         reserveNoteBasedOnNeoTrellis(PointOfInterest.CenterLine5, DriverStation.Alliance.Blue);
 
         chooseStartingLocationBasedOnReservations();
+
+        /*
+        if (field != null) {
+            for (Pair<String,Trajectory> labelAndTrajectory : field.visualizeNodesAndEdges()) {
+                aKitLog.record("Graph" + labelAndTrajectory.getFirst(), labelAndTrajectory.getSecond());
+            }
+        }
+        */
     }
 
     /**
@@ -215,12 +230,14 @@ public class DynamicOracle extends BaseSubsystem {
     public void reserveScoringLocationBasedOnNeoTrellis(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         if (oi.getNeoTrellisValue(pointOfInterest)) {
             reserveScoringLocationForOtherTeams(pointOfInterest, alliance);
+            field.getNode(pointOfInterest.getName(alliance)).setAllWeightsToMax();
         }
     }
 
     public void reserveNoteBasedOnNeoTrellis(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         if (oi.getNeoTrellisValue(pointOfInterest)) {
             reserveNote(pointOfInterest, alliance);
+            field.getNode(pointOfInterest.getName(alliance)).setAllWeightsToMax();
         }
     }
 
@@ -294,7 +311,12 @@ public class DynamicOracle extends BaseSubsystem {
 
                     if (suggestedNote == null) {
                         // No notes on the field! Let's suggest going to the source and hope something turns up.
-                        setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.NearbySource));
+                        // However, if we are in autonomous, we should instead just go to the line.
+                        if (DriverStation.isAutonomous()) {
+                            setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.CenterLine5));
+                        } else {
+                            setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSourceMiddle));
+                        }
                     }/*
                     else if (suggestedNote.getAvailability() == Availability.AgainstObstacle) {
                         // Take the note's pose2d and extend it in to the super far distance so the robot
@@ -339,12 +361,7 @@ public class DynamicOracle extends BaseSubsystem {
                 break;
         }
 
-        /*
-        if (field != null) {
-            for (Pair<String,Trajectory> labelAndTrajectory : field.visualizeNodesAndEdges()) {
-                aKitLog.record("Graph" + labelAndTrajectory.getFirst(), labelAndTrajectory.getSecond());
-            }
-        }*/
+
 
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
@@ -486,5 +503,17 @@ public class DynamicOracle extends BaseSubsystem {
 
     public void resetNoteMap() {
         noteMap = new NoteMap();
+    }
+
+    public Trajectory getTrajectoryRepresentationOfGraph() {
+        List<Pose2dNode> eulerianPathInNodes = field.getListOfConnectedNodes();
+
+        var wpiStates = new ArrayList<edu.wpi.first.math.trajectory.Trajectory.State>();
+        for (Pose2dNode node : eulerianPathInNodes) {
+            var state = new edu.wpi.first.math.trajectory.Trajectory.State();
+            state.poseMeters = node.getPose();
+            wpiStates.add(state);
+        }
+        return new Trajectory(wpiStates);
     }
 }

@@ -70,6 +70,9 @@ public enum PointOfInterest {
     }
 
     public String getName(DriverStation.Alliance alliance) {
+        if (isUnique()) {
+            return name();
+        }
         if (alliance == DriverStation.Alliance.Red) {
             return getRedName();
         } else {

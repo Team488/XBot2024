@@ -3,6 +3,7 @@ package competition.subsystems.oracle;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseCommand;
 import xbot.common.math.XYPair;
 import xbot.common.properties.PropertyFactory;
@@ -67,6 +68,12 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
         var goalPosition = oracle.getTerminatingPoint();
 
         logic.setPrioritizeRotationIfCloseToGoal(true);
+
+        double maxVelocity = drive.getMaxTargetSpeedMetersPerSecond();
+        if (DriverStation.isAutonomous()) {
+            maxVelocity = 1.8;
+        }
+        logic.setConstantVelocity(maxVelocity);
 
         if (oracle.getHighLevelGoal() == DynamicOracle.HighLevelGoal.CollectNote) {
             // Since we're going to grab a note, point the front end of our robot towards the goal,
