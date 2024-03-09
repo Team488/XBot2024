@@ -10,7 +10,7 @@ import javax.inject.Inject;
 public class IntakeCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
-    double intensity = 0.1;
+    double intensity = 0.15;
 
     @Inject
     public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi) {
