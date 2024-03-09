@@ -5,127 +5,142 @@ package competition.subsystems.lights;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
-import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.SerialPort;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.controls.actuators.XDigitalOutput;
+import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
 @Singleton
 public class LightSubsystem extends BaseSubsystem {
+    // based on the number of bits we have, this is the highest number we can send
+    static final int numBits = 4;
+    static final int maxValue = (int)(Math.pow(2, numBits) - 1);
 
-    AutonomousCommandSelector autonomousCommandSelector;
-    ShooterWheelSubsystem shooter;
-    CollectorSubsystem collector;
-    SerialPort serialPort;
-    private int loopcount = 1;
-    private final int loopMod = 4;
-    public boolean ampSignalOn = false;
-    public boolean lightsWorking = false;
+    final AutonomousCommandSelector autonomousCommandSelector;
+    final ShooterWheelSubsystem shooter;
+    final CollectorSubsystem collector;
+    final XDigitalOutput[] outputs;
+
+    boolean ampSignalOn = false;
 
     public enum LightsStateMessage{
-        DisabledWithoutAuto("32"),
-        DisabledWithAuto("33"),
-        RobotEnabled("34"),
-        AmpSignal("1"), // TODO: OI team please add a toggle!
-        ReadyToShoot("2"),
-        RobotContainsNote("3"),
-        VisionSeesNote("4");
+        NoCode(15), // we never send this one, it's implicit when the robot is off
+        // and all of the DIOs float high
+        DisabledWithoutAuto(7),
+        DisabledWithAuto(6),
+        RobotEnabled(5),
+        AmpSignal(1),
+        ReadyToShoot(2),
+        RobotContainsNote(3),
+        VisionSeesNote(4);
 
-        LightsStateMessage(final String value) {
+        LightsStateMessage(final int value) {
+            if(value > maxValue || value < 0) {
+                // it should be okay to have this throw because it will happen immediately on robot startup
+                // so we'll see failures here in CI before deploying to the robot. 
+                // Getting the RobotAssertionManager in here was proving tricky
+                System.out.println("Values must be between 0 and " + maxValue + " inclusive. Got " + value + " instead. Will always return 0 for safety.");
+            }
             this.value = value;
         }
 
-        private String value;
-        public String getValue() {
+        private int value;
+        public int getValue() {
+            if (value < 0 || value > maxValue) {
+                return 0;
+            }
             return value;
         }
     }
 
     @Inject
-    public LightSubsystem(AutonomousCommandSelector autonomousCommandSelector,
-                          ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
-
-//        if(usbIsNotConnected(SerialPort.Port.kUSB1)) {
-//            if(usbIsNotConnected(SerialPort.Port.kUSB2)) {
-//                if(usbIsNotConnected(SerialPort.Port.kUSB)) {
-//                    log.error("Lights not working");
-//                }
-//            }
-//        }
-        // the default timeout is 5s, set a much smaller value
-        //serialPort.setTimeout(0.05);
+    public LightSubsystem(XDigitalOutputFactory digitalOutputFactory,
+    ElectricalContract contract,
+            AutonomousCommandSelector autonomousCommandSelector,
+            ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
+        this.outputs = new XDigitalOutput[numBits];
+        this.outputs[0] = digitalOutputFactory.create(contract.getLightsDio0().channel);
+        this.outputs[1] = digitalOutputFactory.create(contract.getLightsDio1().channel);
+        this.outputs[2] = digitalOutputFactory.create(contract.getLightsDio2().channel);
+        this.outputs[3] = digitalOutputFactory.create(contract.getLightsDio3().channel);
     }
 
-    public boolean usbIsNotConnected(SerialPort.Port port) {
-        try {
-            //serialPort = new SerialPort(9600, port, 8);
-            //serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
-            return false;
+    public LightsStateMessage getCurrentState() {
+        boolean dsEnabled = DriverStation.isEnabled();
+        LightsStateMessage currentState;
+
+        // Needs to implement vision as well
+        // Not sure about if the way we are checking the shooter is correct (and collector)
+        if (!dsEnabled) {
+            // Check if auto program is set
+            if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
+                currentState = LightsStateMessage.DisabledWithAuto;
+            } else {
+                currentState = LightsStateMessage.DisabledWithoutAuto;
+            }
+
+        } else {
+            // Try and match enabled states
+            if (ampSignalOn) {
+                currentState = LightsStateMessage.AmpSignal;
+
+            } else if (shooter.isReadyToFire()) {
+                currentState = LightsStateMessage.ReadyToShoot;
+
+            } else if (collector.getGamePieceReady()) {
+                currentState = LightsStateMessage.RobotContainsNote;
+
+            } else {
+                currentState = LightsStateMessage.RobotEnabled;
+            }
         }
-        catch (Exception e) {
-            log.error("Lights not working: %s", e);
-            return true;
+
+        return currentState;
+    }
+
+    public void sendState(LightsStateMessage state) {
+        var bits = convertIntToBits(state.getValue());
+        for(int i = 0; i < numBits; i++) {
+            outputs[i].set(bits[i]);
         }
+    }
+
+    /**
+     * Convert an integer to a boolean array representing the bits of the integer.
+     * The leftmost bit in the result is the least significant bit of the integer.
+     * This was chosen so we could add new bits onto the end of the array easily without changing
+     * how earlier numbers were represented.
+     * Eg: 
+     * 0 -> [false, false, false, false]
+     * 1 -> [true, false, false, false]
+     * 14 -> [false, true, true, true]
+     * 15 -> [true, true, true, true]
+     */
+    public static boolean[] convertIntToBits(int value) {
+        boolean[] bits = new boolean[numBits];
+        for(int i = 0; i < numBits; i++) {
+            bits[i] = (value & (1 << i)) != 0;
+        }
+        return bits;
     }
 
     @Override
     public void periodic() {
-        if (!lightsWorking) {
-            return;
-        }
+        var currentState = getCurrentState();
+        aKitLog.record("LightState", currentState.toString());
+        sendState(currentState);
 
-        try {
-            serialPort.reset();
-            // Runs period every 1/10 of a second
-            if (this.loopcount++ % loopMod != 0) {
-                return;
-            }
-
-            boolean dsEnabled = DriverStation.isEnabled();
-            LightsStateMessage currentState;
-            ShooterWheelTargetSpeeds shooterWheel = shooter.getCurrentValue();
-
-            // Needs to implement vision as well
-            // Not sure about if the way we are checking the shooter is correct (and collector)
-            if (!dsEnabled) {
-                // Check if auto program is set
-                if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
-                    currentState = LightsStateMessage.DisabledWithAuto;
-                } else {
-                    currentState = LightsStateMessage.DisabledWithoutAuto;
-                }
-
-            } else {
-                // Try and match enabled states
-                if (ampSignalOn) {
-                    currentState = LightsStateMessage.AmpSignal;
-
-                } else if (shooter.isReadyToFire()) {
-                    currentState = LightsStateMessage.ReadyToShoot;
-
-                } else if (collector.getGamePieceReady()) {
-                    currentState = LightsStateMessage.RobotContainsNote;
-
-                } else {
-                    currentState = LightsStateMessage.RobotEnabled;
-                }
-            }
-
-            String stateValue = currentState.getValue();
-
-            // Write serial data to lights
-            //serialPort.writeString(stateValue + "\n");
-            //serialPort.flush();
-
-            aKitLog.record("LightState", currentState.toString());
-        } catch (Exception e) {
-            log.info("There is a problem within LightSubsystem.java. Exception: " + e.toString());
-        }
     }
+
+    public void toggleAmpSignal() {
+        ampSignalOn = !ampSignalOn;
+    }
+   
 }
