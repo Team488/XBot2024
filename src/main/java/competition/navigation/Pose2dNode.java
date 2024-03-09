@@ -69,4 +69,19 @@ public class Pose2dNode {
         }
         return new Trajectory(wpiStates);
     }
+
+    // Method to check if there are any unused edges
+    public boolean hasUnusedEdges() {
+        return edges.stream().anyMatch(edge -> !edge.isUsed());
+    }
+
+    // Method to get an unused edge
+    public Edge getUnusedEdge() {
+        return edges.stream().filter(edge -> !edge.isUsed()).findFirst().orElse(null);
+    }
+
+    // Method to get the degree of the node
+    public int getDegree() {
+        return edges.size();
+    }
 }

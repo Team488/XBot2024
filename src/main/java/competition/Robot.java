@@ -86,6 +86,7 @@ public class Robot extends BaseRobot {
     @Override
     public void autonomousInit() {
         oracle.freezeConfigurationForAutonomous();
+        oracle.requestReevaluation();
         super.autonomousInit();
     }
 
