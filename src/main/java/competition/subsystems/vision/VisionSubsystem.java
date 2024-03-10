@@ -53,6 +53,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     long logCounter = 0;
     Pose3d[] detectedNotes;
     NoteTracker[] noteTrackers;
+    final DoubleProperty noteLocalizationInfo;
 
 
     @Inject
@@ -117,6 +118,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         allCameras = new ArrayList<SimpleCamera>();
         allCameras.addAll(aprilTagCameras);
         allCameras.addAll(noteCameras);
+
+        pf.setPrefix("NoteLocalizationInfo/");
+        noteLocalizationInfo = pf.createPersistentProperty("ScalingFactor", 0.8);
     }
 
     public List<Optional<EstimatedRobotPose>> getPhotonVisionEstimatedPoses(Pose2d previousEstimatedRobotPose) {
