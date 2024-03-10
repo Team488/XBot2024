@@ -1,11 +1,13 @@
 package competition.subsystems.vision;
 
+import competition.electrical_contract.CompetitionContract;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
@@ -54,6 +56,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     Pose3d[] detectedNotes;
     NoteTracker[] noteTrackers;
     final DoubleProperty noteLocalizationInfo;
+    NoteCamera rearLeftNoteCamera;
+    NoteCamera rearRightNoteCamera;
 
 
     @Inject
@@ -112,7 +116,14 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .filter(info -> info.capabilities().contains(CameraCapabilities.GAME_SPECIFIC))
                 .toArray(CameraInfo[]::new);
         for (var camera : noteTrackingCapableCameras) {
-            noteCameras.add(new NoteCamera(camera, this.getPrefix()));
+            NoteCamera noteCamera = new NoteCamera(camera, this.getPrefix());
+            noteCameras.add(noteCamera);
+            if (noteCamera.getName().equals(CompetitionContract.rearRightNoteCameraName)){
+                rearRightNoteCamera = noteCamera;
+            }
+            if (noteCamera.getName().equals(CompetitionContract.rearLeftNoteCameraName)){
+                rearLeftNoteCamera = noteCamera;
+            }
         }
 
         allCameras = new ArrayList<SimpleCamera>();
@@ -249,6 +260,36 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     public Pose3d[] getDetectedNotes() {
         return detectedNotes;
+    }
+
+    private Translation2d triangulateNote() {
+        double rearRightyaw = getNoteYaw(rearRightNoteCamera);
+        double rearLeftYaw = getNoteYaw(rearLeftNoteCamera);
+
+        if (Math.abs(rearRightyaw) < 0.001 || Math.abs(rearLeftYaw) < 0.001) {
+            return null;
+        }
+
+        // At this point, we have a note that was detected by both cameras. We should be able to triangulate the note
+        // just based on the two yaws and the known positions & angles of the cameras
+
+        double distanceBetweenCameras = 12.853*2 / PoseSubsystem.INCHES_IN_A_METER;
+        //each camera is pointed at a relative 125 degrees to the line connecting them
+        double leftCameraAdjusted = 35 + rearLeftYaw;
+        double rightCameraAdjusted = 35 - rearRightyaw;
+        double noteAngle = 180 - leftCameraAdjusted - rightCameraAdjusted;
+
+        // Now we can apply the law of sines, where a = b * (sin(A)/(sin(B))
+        // Let's use the rear left camera as our A, so we can find the length between rearRight and the target
+        double leftCameraRads = Math.toRadians(leftCameraAdjusted);
+        double rightCameraRads = Math.toRadians(rightCameraAdjusted);
+        double sideLengthOppositeFromRearLeft = distanceBetweenCameras * (Math.sin(leftCameraRads) / Math.sin(noteAngle));
+
+        // rear left, when the note was on the right, saw positive values.
+        // That suggests that camear
+
+
+        return null;
     }
 
     @Override
