@@ -203,6 +203,9 @@ public class CompetitionContract extends ElectricalContract {
     private static double aprilCameraPitch = Math.toRadians(-55.5);
     private static double aprilCameraYaw = Math.toRadians(10);
 
+    public static String rearLeftNoteCameraName = "NoteRearLeft";
+    public static String rearRightNoteCameraName = "NoteRearRight";
+
     @Override
     public CameraInfo[] getCameraInfo() {
         return new CameraInfo[] {
@@ -247,11 +250,11 @@ public class CompetitionContract extends ElectricalContract {
                     new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_RearLeft_Camera",
-                "NoteRearLeft",
+                rearLeftNoteCameraName,
                 new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_RearRight_Camera",
-                    "NoteRearRight",
+                    rearRightNoteCameraName,
                     new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC))
         };
