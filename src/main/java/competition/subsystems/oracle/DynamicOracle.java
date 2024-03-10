@@ -9,8 +9,11 @@ import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.advantage.AKitLogger;
@@ -267,6 +270,21 @@ public class DynamicOracle extends BaseSubsystem {
                         .forEach(noteMap::addVisionNote);
             }
         }
+
+        // add an extra special note from triangulation
+        var triangulatedNoteRelativeToRobot = vision.getTriangulatedNote();
+        Translation2d triangulatedNoteVisualized = pose.getCurrentPose2d().getTranslation();
+        if (triangulatedNoteRelativeToRobot != null) {
+            var robotTranslation = pose.getCurrentPose2d().getTranslation();
+            var rotatedToFieldRelative = triangulatedNoteRelativeToRobot.rotateBy(pose.getCurrentPose2d().getRotation());
+            triangulatedNoteVisualized = robotTranslation.plus(rotatedToFieldRelative);
+        }
+
+        aKitLog.record("TriangulatedNote", new Pose3d(new Translation3d(
+                triangulatedNoteVisualized.getX(),
+                triangulatedNoteVisualized.getY(),
+                0.15),
+                new Rotation3d()));
 
         aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.

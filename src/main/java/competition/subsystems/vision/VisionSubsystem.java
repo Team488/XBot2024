@@ -18,6 +18,7 @@ import xbot.common.injection.electrical_contract.CameraInfo;
 import xbot.common.injection.electrical_contract.XCameraElectricalContract;
 import xbot.common.logging.RobotAssertionManager;
 import xbot.common.logic.TimeStableValidator;
+import xbot.common.math.MathUtils;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
@@ -262,7 +263,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return detectedNotes;
     }
 
-    private Translation2d triangulateNote() {
+    public Translation2d getTriangulatedNote() {
         double rearRightyaw = getNoteYaw(rearRightNoteCamera);
         double rearLeftYaw = getNoteYaw(rearLeftNoteCamera);
 
@@ -277,19 +278,15 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         //each camera is pointed at a relative 125 degrees to the line connecting them
         double leftCameraAdjusted = 35 + rearLeftYaw;
         double rightCameraAdjusted = 35 - rearRightyaw;
-        double noteAngle = 180 - leftCameraAdjusted - rightCameraAdjusted;
+        Translation2d triangulatedLocation = MathUtils.triangulate(distanceBetweenCameras, rightCameraAdjusted, leftCameraAdjusted);
+        // We have to handle X being forwards, Y being side
+        Translation2d shiftIntoRobotRelative = new Translation2d(
+                triangulatedLocation.getY(),
+                -triangulatedLocation.getX()-(12.853/PoseSubsystem.INCHES_IN_A_METER )
+        );
 
-        // Now we can apply the law of sines, where a = b * (sin(A)/(sin(B))
-        // Let's use the rear left camera as our A, so we can find the length between rearRight and the target
-        double leftCameraRads = Math.toRadians(leftCameraAdjusted);
-        double rightCameraRads = Math.toRadians(rightCameraAdjusted);
-        double sideLengthOppositeFromRearLeft = distanceBetweenCameras * (Math.sin(leftCameraRads) / Math.sin(noteAngle));
-
-        // rear left, when the note was on the right, saw positive values.
-        // That suggests that camear
-
-
-        return null;
+        aKitLog.record("TriangulatedNoteRobotRelative", shiftIntoRobotRelative);
+        return shiftIntoRobotRelative;
     }
 
     @Override
@@ -340,6 +337,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 })
                 .filter(Objects::nonNull)
                 .toArray(Pose3d[]::new);
+
+        getTriangulatedNote();
 
         aKitLog.record("DetectedNotes", detectedNotes);
     }
