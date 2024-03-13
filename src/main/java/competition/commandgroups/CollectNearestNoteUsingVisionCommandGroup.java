@@ -1,6 +1,7 @@
 package competition.commandgroups;
 
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,7 +17,8 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
     @Inject
     CollectNearestNoteUsingVisionCommandGroup(VisionSubsystem vision, PoseSubsystem pose,
                                               SwerveSimpleTrajectoryCommand swerveSimpleTrajectoryCommand,
-                                              DriveToGivenNoteAndCollectCommandGroup driveAndCollect, DriveSubsystem drive) {
+                                              DriveToGivenNoteAndCollectCommandGroup driveAndCollect, DriveSubsystem drive,
+                                              DynamicOracle oracle) {
 
         // We are assuming that our position and everything else has already been initialized by the auto
 
@@ -26,9 +28,9 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
         Pose2d[] notePositions = new Pose2d[unprocessedNotePositions.length];
 
         // Potential problem: what if our notePositions are empty?
-        if (unprocessedNotePositions.length <= 0) {
+        /*if (unprocessedNotePositions.length <= 0) {
             return;
-        }
+        }*/
 
         // Process all our Pose3d to 2d
         for (int i = 0; i < unprocessedNotePositions.length; i++) {
@@ -38,6 +40,10 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
         // Find closest note
         // Get our currentPosition
         Pose2d currentPosition = pose.getVisionAssistedPositionInMeters();
+
+        Pose2d closestNote = oracle.getNoteMap().getClosestAvailableNote(currentPosition).toPose2d();
+
+        /*
         Pose2d nearestNotePosition = notePositions[0];
         double leastDistance = PoseSubsystem.convertBlueToRedIfNeeded(
                 notePositions[0]).getTranslation().getDistance(currentPosition.getTranslation());
@@ -51,13 +57,14 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
                 nearestNotePosition = notePositions[i];
                 leastDistance = distance;
             }
-        }
+        }*/
 
         // Drive and also intake
-        final Pose2d finalNearestNotePosition = nearestNotePosition;
+        //final Pose2d finalNearestNotePosition = nearestNotePosition;
+        final Pose2d finalPosition = closestNote;
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(finalNearestNotePosition);
+                    drive.setTargetNote(closestNote);
                 })
         );
         this.addCommands(driveAndCollect);
