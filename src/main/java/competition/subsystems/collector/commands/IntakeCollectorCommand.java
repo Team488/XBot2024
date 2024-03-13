@@ -11,7 +11,7 @@ public class IntakeCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
     double intensity = 0.2;
-
+    private boolean isToggledOnce = false;
     @Inject
     public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi) {
         this.collector = collector;
@@ -28,7 +28,15 @@ public class IntakeCollectorCommand extends BaseCommand {
     @Override
     public void execute() {
         collector.intake();
-        if (collector.confidentlyHasControlOfNote()) {
+        if(collector.getGamePieceInControl()) {
+            isToggledOnce = true;
+            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity, 0.7);
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
+        }
+
+        if (collector.confidentlyHasControlOfNote() && !isToggledOnce) {
+
             oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity, 0.7);
             oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
             oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
@@ -43,5 +51,6 @@ public class IntakeCollectorCommand extends BaseCommand {
         oi.driverGamepad.getRumbleManager().rumbleGamepad(0, 0.7);
 
         collector.stop();
+        isToggledOnce = false;
     }
 }
