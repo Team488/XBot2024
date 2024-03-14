@@ -35,7 +35,7 @@ public class Robot extends BaseRobot {
         getInjectorComponent().operatorCommandMap();
         getInjectorComponent().lightSubsystem();
 
-        if (!BaseRobot.isSimulation()) {
+        if (BaseRobot.isSimulation()) {
             simulator = getInjectorComponent().simulator2024();
         }
         oracle = getInjectorComponent().dynamicOracle();
@@ -96,11 +96,11 @@ public class Robot extends BaseRobot {
     public void teleopInit() {
         super.teleopInit();
         oracle.clearNoteMapForTeleop();
-    }
+            }
 
     @Override
     public void simulationInit() {
-        super.simulationInit();
+                super.simulationInit();
         // Automatically enables the robot; remove this line of code if you want the robot
         // to start in a disabled state (as it would on the field). However, this does save you the 
         // hassle of navigating to the DS window and re-enabling the simulated robot.
