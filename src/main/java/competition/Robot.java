@@ -11,6 +11,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
@@ -26,6 +27,7 @@ public class Robot extends BaseRobot {
 
     Simulator2024 simulator;
     DynamicOracle oracle;
+    PoseSubsystem poseSubsystem;
 
     @Override
     protected void initializeSystems() {
@@ -41,6 +43,7 @@ public class Robot extends BaseRobot {
         oracle = getInjectorComponent().dynamicOracle();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
+        poseSubsystem = (PoseSubsystem) getInjectorComponent().poseSubsystem();
         dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().visionSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().armSubsystem());
@@ -96,6 +99,10 @@ public class Robot extends BaseRobot {
     public void teleopInit() {
         super.teleopInit();
         oracle.clearNoteMapForTeleop();
+        // if we're testing (not on real field), trust the vision at the start of teleop init
+        if(!DriverStation.isFMSAttached()) {
+            poseSubsystem.setCurrentPoseToVision();
+        }
     }
 
     @Override

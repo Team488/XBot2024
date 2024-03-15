@@ -244,6 +244,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
         this.totalVelocity = (Math.sqrt(Math.pow(velocityX, 2.0) + Math.pow(velocityY, 2.0)));
     }
 
+    public void setCurrentPoseToVision() {
+        setCurrentPoseInMeters(getVisionAssistedPositionInMeters());
+    }
+
     public void copyFusedOdometryToWheelsOdometry() {
         onlyWheelsGyroSwerveOdometry.resetPosition(
             fusedSwerveOdometry.getEstimatedPosition().getRotation(),
