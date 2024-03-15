@@ -38,6 +38,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private ShooterWheelTargetSpeeds targetRpms = new ShooterWheelTargetSpeeds(0.0);
     private double trimRpm;
     private final DoubleProperty intoAmpShotRpm;
+    private final DoubleProperty intoAmpShotBottomRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
     private final DoubleProperty typicalShotRpm;
 
@@ -56,6 +57,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
         typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
         intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 2000);
+        intoAmpShotBottomRpm = pf.createPersistentProperty("IntoAmpShotBottomRpm", 2000);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();
@@ -104,7 +106,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         switch (target) {
             case STOP -> setTargetValue(0.0);
             case TYPICAL -> setTargetValue(typicalShotRpm.get());
-            case INTO_AMP -> setTargetValue(intoAmpShotRpm.get());
+            case INTO_AMP -> setTargetValue(new ShooterWheelTargetSpeeds(intoAmpShotRpm.get(), intoAmpShotBottomRpm.get()));
             default -> setTargetValue(0.0);
         }
     }
