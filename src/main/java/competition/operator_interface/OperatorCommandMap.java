@@ -92,7 +92,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(visionCollect);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(visionCollect);
     }
 
 

@@ -248,6 +248,7 @@ public class DynamicOracle extends BaseSubsystem {
      */
     @Override
     public void periodic() {
+
         checkForPodiumShotBecomingAvailable();
 
         // Populate the field with notes from vision
@@ -376,6 +377,11 @@ public class DynamicOracle extends BaseSubsystem {
         }
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
+
+        noteMap.clearVisionNotes();
+        noteMap.addVisionNote(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSpikeTop));
+        noteMap.addVisionNote(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSpikeMiddle));
+        noteMap.addVisionNote(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSpikeBottom));
     }
 
     private void checkForPodiumShotBecomingAvailable() {
