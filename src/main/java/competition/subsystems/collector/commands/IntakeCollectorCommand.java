@@ -19,6 +19,7 @@ public class IntakeCollectorCommand extends BaseCommand {
         this.collector = collector;
         this.oi = oi;
         addRequirements(collector);
+        pf.setPrefix(this);
         intensity = pf.createPersistentProperty("intensity",1);
     }
 
