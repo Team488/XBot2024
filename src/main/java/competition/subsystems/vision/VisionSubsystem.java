@@ -79,7 +79,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
                 //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs",
+                "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
                 .map(NoteTracker::new)
