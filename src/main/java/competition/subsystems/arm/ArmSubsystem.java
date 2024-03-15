@@ -510,6 +510,16 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case AmpFarScoringLocation:
                 extension = 71.1;
                 break;
+            case SpikeMiddle:
+                extension = 57;
+                break;
+            case BottomSpikeCloserToSpeakerScoringLocation:
+            case TopSpikeCloserToSpeakerScoringLocation:
+                extension = 57; // TODO - what are the real numbers?
+                break;
+            case OneRobotAwayFromCenterSubwooferScoringLocation:
+                extension = 44.8;
+                break;
             default:
                 return 0;
         }
