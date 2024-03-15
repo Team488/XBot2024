@@ -94,7 +94,7 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (shooter.isReadyToFire()) {
                 currentState = LightsStateMessage.ReadyToShoot;
 
-            } else if (collector.confidentlyHasControlOfNote()) {
+            } else if (collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.RobotContainsNote;
 
             } else {

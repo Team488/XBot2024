@@ -51,11 +51,13 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     boolean lowerTripwireHit = false;
     boolean upperTripwireHit = false;
     double lastNoteDetectionTime = -Double.MAX_VALUE;
+    double lightTimeStamp = 0;
 
     final DoubleProperty aggressiveStopPower;
     final DoubleProperty aggressiveStopDuration;
     final DoubleProperty carefulAdvancePower;
     final DoubleProperty carefulAdvanceTimeout;
+    final DoubleProperty lightToleranceTimeInterval;
     double carefulAdvanceBeginTime = -Double.MAX_VALUE;
 
 
@@ -85,6 +87,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         aggressiveStopDuration = pf.createPersistentProperty("AggressiveStopDuration", 0.1);
         carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
+        lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1000000);
 
         this.intakeState = IntakeState.STOPPED;
 
@@ -239,6 +242,17 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return false;
     }
 
+    public boolean checkSensorForLights() {
+        if (getGamePieceInControl() || getGamePieceReady()) {
+            lightTimeStamp = XTimer.getFPGATimestamp();
+        }
+        else {
+            if (XTimer.getFPGATimestamp() - lightTimeStamp > lightToleranceTimeInterval.get()) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @Override
     public boolean confidentlyHasControlOfNote() {
