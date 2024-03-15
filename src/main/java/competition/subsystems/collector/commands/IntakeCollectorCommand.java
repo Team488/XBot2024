@@ -3,6 +3,8 @@ package competition.subsystems.collector.commands;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 
@@ -10,19 +12,21 @@ import javax.inject.Inject;
 public class IntakeCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
-    double intensity = 0.2;
+    private final DoubleProperty intensity;
     private boolean isToggledOnce = false;
     @Inject
-    public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi) {
+    public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi, PropertyFactory pf) {
         this.collector = collector;
         this.oi = oi;
         addRequirements(collector);
+        intensity = pf.createPersistentProperty("intensity",1);
     }
 
     @Override
     public void initialize() {
         collector.resetCollectionState();
         log.info("Initializing");
+        isToggledOnce = false;
     }
 
     @Override
@@ -30,16 +34,20 @@ public class IntakeCollectorCommand extends BaseCommand {
         collector.intake();
         if(collector.getGamePieceInControl()) {
             isToggledOnce = true;
-            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity, 0.7);
-            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
+            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
         }
 
-        if (collector.confidentlyHasControlOfNote() && !isToggledOnce) {
+        if (collector.confidentlyHasControlOfNote()) {
 
-            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity, 0.7);
-            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity, 0.7);
+            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+        } else if (isToggledOnce) {
+            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
         }
     }
 
@@ -51,6 +59,6 @@ public class IntakeCollectorCommand extends BaseCommand {
         oi.driverGamepad.getRumbleManager().rumbleGamepad(0, 0.7);
 
         collector.stop();
-        isToggledOnce = false;
+
     }
 }
