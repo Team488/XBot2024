@@ -12,7 +12,8 @@ import javax.inject.Inject;
 public class IntakeCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
-    private final DoubleProperty intensity;
+    private final DoubleProperty higherIntensity;
+    private final DoubleProperty lowerIntensity;
     private boolean isToggledOnce = false;
     @Inject
     public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi, PropertyFactory pf) {
@@ -20,7 +21,8 @@ public class IntakeCollectorCommand extends BaseCommand {
         this.oi = oi;
         addRequirements(collector);
         pf.setPrefix(this);
-        intensity = pf.createPersistentProperty("intensity",1);
+        higherIntensity = pf.createPersistentProperty("higher intensity",1);
+        lowerIntensity = pf.createPersistentProperty("lower intensity", 1);
     }
 
     @Override
@@ -35,20 +37,15 @@ public class IntakeCollectorCommand extends BaseCommand {
         collector.intake();
         if(collector.getGamePieceInControl()) {
             isToggledOnce = true;
-            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
-            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
         }
-
         if (collector.confidentlyHasControlOfNote()) {
-
-            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
-            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(higherIntensity.get(), 0.7);
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(higherIntensity.get(), 0.7);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(higherIntensity.get(), 0.7);
         } else if (isToggledOnce) {
-            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
-            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(intensity.get(), 0.7);
+            oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(lowerIntensity.get(), 0.7);
+            oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(lowerIntensity.get(), 0.7);
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(lowerIntensity.get(), 0.7);
         }
     }
 
