@@ -47,6 +47,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty multiTagStableDistance;
     final DoubleProperty maxNoteRatio;
     final DoubleProperty minNoteRatio;
+    final DoubleProperty minNoteConfidence;
     AprilTagFieldLayout aprilTagFieldLayout;
     final ArrayList<AprilTagCamera> aprilTagCameras;
     final ArrayList<NoteCamera> noteCameras;
@@ -71,11 +72,12 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
+        minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
-                "DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
+                //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
+                //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
         };
@@ -329,6 +331,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .map(detection -> {
                     var parts = detection.split(",");
                     var ratio = Double.parseDouble(parts[3]);
+                    var confidence = Double.parseDouble(parts[4]);
+                    if (confidence < minNoteConfidence.get()) {
+                        return null;
+                    }
                     if (ratio > maxNoteRatio.get() || ratio < minNoteRatio.get()) {
                         return null;
                     }
