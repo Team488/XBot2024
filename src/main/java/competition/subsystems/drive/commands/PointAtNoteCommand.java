@@ -91,7 +91,7 @@ public class PointAtNoteCommand extends BaseCommand {
 
     private Pose2d getClosestAvailableNote() {
         var virtualPoint = getProjectedPoint();
-        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint);
+        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
 
         if (notePosition != null) {
             if (this.notePosition == null
