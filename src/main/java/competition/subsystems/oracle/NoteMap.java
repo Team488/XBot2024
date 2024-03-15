@@ -72,6 +72,10 @@ public class NoteMap extends ReservableLocationMap<Note> {
         visionSourceNotes.removeIf(note -> currentTime - note.getTimestamp() > maxAgeInSeconds);
     }
 
+    public boolean hasVisionNotes() {
+        return !visionSourceNotes.isEmpty();
+    }
+
     public void clearVisionNotes() {
         visionSourceNotes.clear();
     }

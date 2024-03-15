@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.collector.CollectorSubsystem;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
@@ -23,6 +24,7 @@ public class LightSubsystem extends BaseSubsystem {
     final AutonomousCommandSelector autonomousCommandSelector;
     final ShooterWheelSubsystem shooter;
     final CollectorSubsystem collector;
+    final DynamicOracle oracle;
     final XDigitalOutput[] outputs;
 
     boolean ampSignalOn = false;
@@ -59,12 +61,14 @@ public class LightSubsystem extends BaseSubsystem {
 
     @Inject
     public LightSubsystem(XDigitalOutputFactory digitalOutputFactory,
-    ElectricalContract contract,
-            AutonomousCommandSelector autonomousCommandSelector,
-            ShooterWheelSubsystem shooter, CollectorSubsystem collector) {
+                          ElectricalContract contract,
+                          AutonomousCommandSelector autonomousCommandSelector,
+                          ShooterWheelSubsystem shooter, CollectorSubsystem collector,
+                          DynamicOracle oracle) {
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
+        this.oracle = oracle;
         this.outputs = new XDigitalOutput[numBits];
         this.outputs[0] = digitalOutputFactory.create(contract.getLightsDio0().channel);
         this.outputs[1] = digitalOutputFactory.create(contract.getLightsDio1().channel);
@@ -96,6 +100,9 @@ public class LightSubsystem extends BaseSubsystem {
 
             } else if (collector.confidentlyHasControlOfNote()) {
                 currentState = LightsStateMessage.RobotContainsNote;
+
+            } else if (oracle.getNoteMap().hasVisionNotes()) {
+                currentState = LightsStateMessage.VisionSeesNote;
 
             } else {
                 currentState = LightsStateMessage.RobotEnabled;
