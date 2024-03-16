@@ -198,7 +198,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         // If this is way too far from our current location, then it's probably a bad estimate.
         double distance = previousEstimatedPose.getTranslation().getDistance(estimatedPose.estimatedPose.toPose2d().getTranslation());
-        if(distance > robotDisplacementThresholdToRejectVisionUpdate.get()) {
+        var visionDistanceTooLarge = distance > robotDisplacementThresholdToRejectVisionUpdate.get();
+        // Unless we're near zero which means we've never set a pose before, use vision even if we're far away
+
+        var isNearZero = previousEstimatedPose.getTranslation().getNorm() < 0.1;
+        if(!isNearZero && visionDistanceTooLarge) {
             if (logCounter++ % 20 == 0) {
                 log.warn(String.format("Ignoring vision pose because distance is %f from our previous pose. Current pose: %s, vision pose: %s.",
                         distance,

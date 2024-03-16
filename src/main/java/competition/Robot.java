@@ -44,7 +44,7 @@ public class Robot extends BaseRobot {
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
         poseSubsystem = (PoseSubsystem) getInjectorComponent().poseSubsystem();
-        dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
+        dataFrameRefreshables.add(poseSubsystem);
         dataFrameRefreshables.add(getInjectorComponent().visionSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().armSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().scoocherSubsystem());
@@ -99,10 +99,6 @@ public class Robot extends BaseRobot {
     public void teleopInit() {
         super.teleopInit();
         oracle.clearNoteMapForTeleop();
-        // if we're testing (not on real field), trust the vision at the start of teleop init
-        if(!DriverStation.isFMSAttached()) {
-            poseSubsystem.setCurrentPoseToVision();
-        }
     }
 
     @Override
