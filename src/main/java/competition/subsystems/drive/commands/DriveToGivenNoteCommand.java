@@ -39,7 +39,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
         // this is commented out because we want our autonomous to be very basic right now
-//        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        //this.logic.setWaypointRouter(oracle.getFieldWithObstacles());
         super.initialize();
     }
 
