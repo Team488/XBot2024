@@ -33,6 +33,8 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
         this.pose = pose;
         this.noteMap = oracle.getNoteMap();
 
+
+        /* Delete at the VERY end once we know for sure that everything else is for sure working.
         // Set our starting position to be at red top subwoofer
         var startAtTopOfSubwoofer = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)
@@ -44,6 +46,7 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
                 this::getClosestNote
         );
         this.addCommands(goToClosest);
+        */
     }
 
     private Pose2d getClosestNote() {
