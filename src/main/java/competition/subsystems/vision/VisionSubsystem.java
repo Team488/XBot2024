@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -59,6 +60,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty noteLocalizationInfo;
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
+    NoteCamera rearCenterNoteCamera;
 
 
     @Inject
@@ -79,7 +81,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
                 //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs",
+                "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
                 .map(NoteTracker::new)
@@ -126,9 +129,12 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             if (noteCamera.getName().equals(CompetitionContract.rearLeftNoteCameraName)){
                 rearLeftNoteCamera = noteCamera;
             }
+            if (noteCamera.getName().equals(CompetitionContract.rearCenterNoteCameraName)){
+                rearCenterNoteCamera = noteCamera;
+            }
         }
 
-        allCameras = new ArrayList<SimpleCamera>();
+        allCameras = new ArrayList<>();
         allCameras.addAll(aprilTagCameras);
         allCameras.addAll(noteCameras);
 
@@ -262,6 +268,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     public Pose3d[] getDetectedNotes() {
         return detectedNotes;
+    }
+
+    public double getNoteYawFromCentralCamera() {
+        return getNoteYaw(rearCenterNoteCamera);
     }
 
     private Translation2d triangulateNote() {

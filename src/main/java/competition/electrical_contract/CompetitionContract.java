@@ -205,6 +205,7 @@ public class CompetitionContract extends ElectricalContract {
 
     public static String rearLeftNoteCameraName = "NoteRearLeft";
     public static String rearRightNoteCameraName = "NoteRearRight";
+    public static String rearCenterNoteCameraName= "NoteRearCenter"; //TODO - one of these cameras
 
     @Override
     public CameraInfo[] getCameraInfo() {
@@ -242,7 +243,7 @@ public class CompetitionContract extends ElectricalContract {
                             new Rotation3d(0, aprilCameraPitch, Math.toRadians(180) + aprilCameraYaw)),
                     EnumSet.of(CameraCapabilities.APRIL_TAG)),
             new CameraInfo("GamePiece_FrontLeft_Camera",
-                    "NoteFrontLeft",
+                    rearCenterNoteCameraName,
                     new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_FrontRight_Camera",
@@ -250,7 +251,7 @@ public class CompetitionContract extends ElectricalContract {
                     new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_RearLeft_Camera",
-                rearLeftNoteCameraName,
+                    rearLeftNoteCameraName,
                 new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_RearRight_Camera",
