@@ -67,7 +67,6 @@ public class OperatorCommandMap {
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
-            DriveToPodiumCommand driveToPodiumCommand,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand
     )
     {
