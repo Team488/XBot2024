@@ -30,7 +30,6 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
     public void initialize() {
         log.info("Intitializing");
         prepareToDriveAtGivenNote();
-        reset();
     }
 
     public void prepareToDriveAtGivenNote() {
@@ -42,9 +41,10 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         this.logic.setAimAtGoalDuringFinalLeg(true);
         this.logic.setDriveBackwards(true);
         this.logic.setEnableConstantVelocity(true);
-        this.logic.setConstantVelocity(2.5);
+        this.logic.setConstantVelocity(1.5);
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
+        reset();
     }
 
     @Override

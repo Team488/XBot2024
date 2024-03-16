@@ -40,6 +40,7 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
             // check if we're close to the note.
             if (pose.getCurrentPose2d().getTranslation().getDistance(
                     drive.getTargetNote().getTranslation()) < visionCheckDistance) {
+                log.info("Checking to see if we have a vision note.");
                 assignClosestVisionNoteToDriveSubsystemIfYouSeeANoteAndReplanPath();
                 hasDoneVisionCheckYet = true;
             }
@@ -54,16 +55,21 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
 
         // If no notes, don't do anything
         if (noteLocation == null) {
+            log.info("No notes found");
             return;
         }
 
-        // If note is too far away, don't do aything
+        // If note is too far away, don't do anything
         if (noteLocation.toPose2d().getTranslation().getDistance(
                 pose.getCurrentPose2d().getTranslation()) > visionCheckDistance*2) {
+            log.info("Note too far away");
             return;
         }
 
+        log.info("Found note at " + noteLocation.toPose2d().getTranslation());
+        log.info("Assigning note to drive subsystem");
         drive.setTargetNote(noteLocation.toPose2d());
-        reset();
+
+        prepareToDriveAtGivenNote();
     }
 }
