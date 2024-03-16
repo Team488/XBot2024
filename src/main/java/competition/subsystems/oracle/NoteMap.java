@@ -94,11 +94,15 @@ public class NoteMap extends ReservableLocationMap<Note> {
         }
     }
 
-    public Pose3d getClosestAvailableNote(Pose2d referencePoint) {
-
+    public Pose3d getClosestAvailableNote(Pose2d referencePoint, boolean includeStaticNotes) {
         double closestDistance = Double.MAX_VALUE;
         Note closestNote = null;
-        var allNotes = new ArrayList<Note>(this.internalMap.values());
+        ArrayList<Note> allNotes;
+        if (includeStaticNotes) {
+            allNotes = new ArrayList<Note>(this.internalMap.values());
+        } else {
+            allNotes = new ArrayList<Note>();
+        }
         allNotes.addAll(visionSourceNotes.stream().map(VisionSourceNote::getNote).toList());
         for (Note note : allNotes) {
             if (note.getAvailability() == Availability.Available) {
