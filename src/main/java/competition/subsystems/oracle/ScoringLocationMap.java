@@ -17,6 +17,10 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         addForBothAlliances(PointOfInterest.SubwooferBottomScoringLocation);
         addForBothAlliances(PointOfInterest.PodiumScoringLocation);
         addForBothAlliances(PointOfInterest.AmpFarScoringLocation);
+        addForBothAlliances(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation);
+        addForBothAlliances(PointOfInterest.MiddleSpikeScoringLocation);
+        addForBothAlliances(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation);
+        addForBothAlliances(PointOfInterest.OneRobotAwayFromCenterSubwooferScoringLocation);
     }
 
     private void addForBothAlliances(PointOfInterest pointOfInterest) {
@@ -24,12 +28,16 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         add(pointOfInterest.getRedName(), new ScoringLocation(pointOfInterest.getRedLocation(), Availability.Available, pointOfInterest));
     }
 
-    public void markAllianceScoringLocationsAsUnavailable(DriverStation.Alliance alliance) {
-        get(PointOfInterest.SubwooferTopScoringLocation, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.SubwooferMiddleScoringLocation, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.SubwooferBottomScoringLocation, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.PodiumScoringLocation, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.AmpFarScoringLocation, alliance).setAvailability(Availability.Unavailable);
+    public void markAllianceScoringLocationsWithAvailability(DriverStation.Alliance alliance, Availability availability) {
+        get(PointOfInterest.SubwooferTopScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.SubwooferMiddleScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.SubwooferBottomScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.PodiumScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.AmpFarScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.MiddleSpikeScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, alliance).setAvailability(availability);
+        get(PointOfInterest.OneRobotAwayFromCenterSubwooferScoringLocation, alliance).setAvailability(availability);
     }
 
     public ScoringLocation get(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
