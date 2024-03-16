@@ -96,6 +96,7 @@ public class Robot extends BaseRobot {
     public void teleopInit() {
         super.teleopInit();
         oracle.clearNoteMapForTeleop();
+        oracle.clearScoringLocationsForTeleop();
     }
 
     @Override
