@@ -84,13 +84,14 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
 //        );
 //        var driveToCollectNote = driveAndCollectProvider.get();
 //        this.addCommands(driveToCollectNote);
-        var goToNote = pose.createSetPositionCommand(getClosestNote());
-        this.addCommands(goToNote);
-//        ArrayList<XbotSwervePoint> points = new ArrayList<>();
-//        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(getClosestNote(),10));
-//        swerveSimpleTrajectoryCommand.logic.setEnableConstantVelocity(true);
-//        swerveSimpleTrajectoryCommand.logic.setConstantVelocity(4.5);
-//        swerveSimpleTrajectoryCommand.logic.setKeyPoints(points);
+//        var goToNote = pose.createSetPositionCommand(getClosestNote());
+//        this.addCommands(goToNote);
+        ArrayList<XbotSwervePoint> points = new ArrayList<>();
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(getClosestNote(),10));
+        swerveSimpleTrajectoryCommand.logic.setKeyPoints(points);
+        swerveSimpleTrajectoryCommand.logic.setEnableConstantVelocity(true);
+        swerveSimpleTrajectoryCommand.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
+
    }
    private Pose2d getClosestNote(){
         // DynamicOracle is not meant to work, we have to put mock code to fake it
