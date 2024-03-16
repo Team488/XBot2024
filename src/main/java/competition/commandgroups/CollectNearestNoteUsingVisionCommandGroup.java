@@ -26,23 +26,27 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
         this.pose = pose;
         this.noteMap = oracle.getNoteMap();
 
-        // Testing
-//        var startAtTopOfSubwoofer = pose.createSetPositionCommand(
-//                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)
-//        );
-//        this.addCommands(startAtTopOfSubwoofer);
-//
-//        // Go to the closest position
-//        var goToClosest = pose.createSetPositionCommand(
-//                this::getClosestNote
-//        );
-//        this.addCommands(goToClosest);
+
         //do we need to wrap getClosestNote() in another layer of lambda?
         this.addCommands(new InstantCommand(
                 () -> drive.setTargetNote(getClosestNote())
         ));
         var driveToNearestNoteAndCollect = driveAndCollectProvider.get();
         this.addCommands(driveToNearestNoteAndCollect);
+
+        /* Delete at the VERY end once we know for sure that everything else is for sure working.
+        // Set our starting position to be at red top subwoofer
+        var startAtTopOfSubwoofer = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)
+        );
+        this.addCommands(startAtTopOfSubwoofer);
+
+        // Go to the closest position
+        var goToClosest = pose.createSetPositionCommand(
+                this::getClosestNote
+        );
+        this.addCommands(goToClosest);
+        */
     }
 
     private Pose2d getClosestNote() {
