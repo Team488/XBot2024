@@ -50,7 +50,8 @@ public class PointAtNoteCommand extends BaseCommand {
         var notePosition = getClosestAvailableNote();
         if (notePosition != null) {
             this.notePosition = notePosition;
-            log.info("Rotating to note");
+            log.info("Rotating to note at [{}, {}], current rotation error: {}",
+                    notePosition.getX(), notePosition.getY(), getRotationError());
         } else {
             this.notePosition = null;
             log.warn("No note found to rotate to");
@@ -72,10 +73,7 @@ public class PointAtNoteCommand extends BaseCommand {
 
         var movement = -oi.driverGamepad.getLeftStickY();
 
-        double rotationError = this.pose.getAngularErrorToTranslation2dInDegrees(
-                this.notePosition.getTranslation(),
-                Rotation2d.fromDegrees(180)); // point rear of robot
-        double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, rotationError);
+        double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
 
         drive.move(new XYPair(movement, 0), rotationPower);
     }
@@ -91,13 +89,16 @@ public class PointAtNoteCommand extends BaseCommand {
 
     private Pose2d getClosestAvailableNote() {
         var virtualPoint = getProjectedPoint();
-        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint);
+        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
 
         if (notePosition != null) {
-            if (this.notePosition == null
-                    || this.notePosition
-                        .getTranslation()
-                        .getDistance(notePosition.toPose2d().getTranslation()) < this.maxNoteJump.get()) {
+            if (this.notePosition == null) {
+                this.notePosition = notePosition.toPose2d();
+            };
+            var distance = this.notePosition
+                    .getTranslation()
+                    .getDistance(notePosition.toPose2d().getTranslation());
+            if (distance < this.maxNoteJump.get() && distance > 0.05) {
                 log.info("Updating target");
                 return notePosition.toPose2d();
             }
@@ -108,5 +109,11 @@ public class PointAtNoteCommand extends BaseCommand {
 
     private Pose2d getProjectedPoint() {
         return this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
+    }
+
+    private double getRotationError() {
+        return this.pose.getAngularErrorToTranslation2dInDegrees(
+                this.notePosition.getTranslation(),
+                Rotation2d.fromDegrees(180)); // point rear of robot
     }
 }
