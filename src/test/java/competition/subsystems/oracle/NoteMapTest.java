@@ -56,11 +56,11 @@ public class NoteMapTest extends BaseCompetitionTest {
 
     @Test
     public void testGetClosestAvailableNote() {
-        var notePose = noteMap.getClosestAvailableNote(PoseSubsystem.BlueSpikeMiddle);
+        var notePose = noteMap.getClosestAvailableNote(PoseSubsystem.BlueSpikeMiddle, true);
         assertEquals(PoseSubsystem.BlueSpikeMiddle, notePose.toPose2d());
 
         noteMap.addVisionNote(new Pose2d());
-        notePose = noteMap.getClosestAvailableNote(PoseSubsystem.BlueSpikeMiddle);
+        notePose = noteMap.getClosestAvailableNote(PoseSubsystem.BlueSpikeMiddle, true);
         assertEquals(PoseSubsystem.BlueSpikeMiddle, notePose.toPose2d());
     }
 }
