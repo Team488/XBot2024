@@ -29,7 +29,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
                                                           PoseSubsystem pose, DriveSubsystem drive,
-                                                          DriveToListOfPointsCommand driveToBottomNote,
+                                                          DriveToListOfPointsCommand driveToBottomWhiteLine,
                                                           CollectSequenceCommandGroup collectBottomNote) {
         this.autoSelector = autoSelector;
 
@@ -81,8 +81,21 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Drive to bottom spike note and collect
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
-        driveToBottomNote.addPointsSupplier(this::goToBotSpike);
-        this.addCommands(Commands.deadline(collectBottomNote, driveToBottomNote));
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeBottom);
+                })
+        );
+
+        // Need to drive to an interstitial point first
+        driveToBottomWhiteLine.addPointsSupplier(this::goToBottomWhiteLine);
+        driveToBottomWhiteLine.logic.setStopWhenFinished(false);
+
+        this.addCommands(driveToBottomWhiteLine);
+
+        // Now, go get the bottom spike note
+        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(driveToBottomSpikeNoteAndCollect.withTimeout(3.5));
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferThird = driveToCentralSubwooferCommandProvider.get();
@@ -97,13 +110,10 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
     }
 
-    public List<XbotSwervePoint> goToBotSpike() {
+    public List<XbotSwervePoint> goToBottomWhiteLine() {
         var points = new ArrayList<XbotSwervePoint>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeBottomWhiteLine.getTranslation(),
-                Rotation2d.fromDegrees(180), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSpikeBottom.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
         return points;
     }
