@@ -33,74 +33,22 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
         this.pose = pose;
         this.noteMap = oracle.getNoteMap();
 
-        // We are assuming that our position and everything else has already been initialized by the auto
+        // Set our starting position to be at red top subwoofer
+        var startAtTopOfSubwoofer = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)
+        );
+        this.addCommands(startAtTopOfSubwoofer);
 
-        // Obtain notes position data
-        // vision.periodic(); // Update detectedNotes?
-        //Pose3d[] unprocessedNotePositions = vision.getDetectedNotes();
-        //Pose2d[] notePositions = new Pose2d[unprocessedNotePositions.length];
+        // Go to the closest position
+        var goToClosest = pose.createSetPositionCommand(
+                this::getClosestNote
+        );
+        this.addCommands(goToClosest);
+    }
 
-        // Potential problem: what if our notePositions are empty?
-        /*if (unprocessedNotePositions.length <= 0) {
-            return;
-        }*/
-
-        // Process all our Pose3d to 2d
-//        for (int i = 0; i < unprocessedNotePositions.length; i++) {
-//            notePositions[i] = unprocessedNotePositions[i].toPose2d();
-//        }
-
-        // Find closest note
-        // Get our currentPosition
-        var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
-        this.addCommands(startInFrontOfSpeaker);
-//        Pose2d currentPosition = pose.getVisionAssistedPositionInMeters();
-        /*
-        Pose2d nearestNotePosition = notePositions[0];
-        double leastDistance = PoseSubsystem.convertBlueToRedIfNeeded(
-                notePositions[0]).getTranslation().getDistance(currentPosition.getTranslation());
-
-        // Get closest note
-        for (int i = 1; i < notePositions.length; i++) {
-            double distance =  PoseSubsystem.convertBlueToRedIfNeeded(
-                    notePositions[i]).getTranslation().getDistance(currentPosition.getTranslation());
-
-            if (distance < leastDistance) {
-                nearestNotePosition = notePositions[i];
-                leastDistance = distance;
-            }
-        }*/
-
-        // Drive and also intake
-        //final Pose2d finalNearestNotePosition = nearestNotePosition;
-        //final Pose2d finalPosition = closestNote;
-
-
-//        this.addCommands(
-//                new InstantCommand(() -> {
-//                    drive.setTargetNote(getClosestNote());
-//                })
-//        );
-//        var driveToCollectNote = driveAndCollectProvider.get();
-//        this.addCommands(driveToCollectNote);
-//        var goToNote = pose.createSetPositionCommand(getClosestNote());
-//        this.addCommands(goToNote);
-        ArrayList<XbotSwervePoint> points = new ArrayList<>();
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(getClosestNote(),10));
-        swerveSimpleTrajectoryCommand.logic.setKeyPoints(points);
-        swerveSimpleTrajectoryCommand.logic.setEnableConstantVelocity(true);
-        swerveSimpleTrajectoryCommand.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
-
-   }
-   private Pose2d getClosestNote(){
-        // DynamicOracle is not meant to work, we have to put mock code to fake it
-        // (Said by Alex the mentor)
-
-        var noteLocation = noteMap.getClosestAvailableNote(PoseSubsystem.convertBluetoRed(PoseSubsystem.BlueSubwooferTopScoringLocation));
-            return noteLocation.toPose2d();
-//       var noteLocation = noteMap.getClosestAvailableNote(
-//               PoseSubsystem.convertBlueToRedIfNeeded(pose.getCurrentPose2d())).toPose2d();
-//       return noteLocation;
-   }
+    private Pose2d getClosestNote() {
+        var noteLocation = noteMap.getClosestAvailableNote(
+                PoseSubsystem.convertBlueToRedIfNeeded(pose.getCurrentPose2d()), true);
+        return noteLocation.toPose2d();
+    }
 }
