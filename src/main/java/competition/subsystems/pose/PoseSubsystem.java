@@ -194,6 +194,55 @@ public class PoseSubsystem extends BasePoseSubsystem {
         return drive.getRightTotalDistance();
     }
 
+    public Pose2d getNearestGoodScoringPosition() {
+        //Gets current location in the form of X and Y coordinates
+        Pose2d currentPose = getCurrentPose2d();
+
+        // Gets distance between our current location and the good scoring locations
+        double distanceSubwooferTopScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded(BlueSubwooferTopScoringLocation)
+                .getTranslation().getDistance(currentPose.getTranslation());
+        double distanceSubwooferMiddleScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded
+                (BlueSubwooferMiddleScoringLocation).getTranslation().getDistance(currentPose.getTranslation());
+        double distanceSubwooferBottomScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded
+                (BlueSubwooferBottomScoringLocation).getTranslation().getDistance(currentPose.getTranslation());
+
+        double distanceSpikeTop = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeTop).getTranslation().
+                getDistance(currentPose.getTranslation());
+        double distanceSpikeMiddle = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeMiddle).getTranslation().
+                getDistance(currentPose.getTranslation());
+        double distanceSpikeBottom = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeBottom).getTranslation().
+                getDistance(currentPose.getTranslation());
+
+        Pose2d closestGoodScoringPosition = BlueSubwooferTopScoringLocation;
+        double leastDistance = distanceSubwooferTopScoringPosition;
+
+        if (distanceSubwooferMiddleScoringPosition < leastDistance) {
+            leastDistance = distanceSubwooferMiddleScoringPosition;
+            closestGoodScoringPosition = BlueSubwooferMiddleScoringLocation;
+        }
+
+        if (distanceSubwooferBottomScoringPosition < leastDistance) {
+            leastDistance = distanceSubwooferBottomScoringPosition;
+            closestGoodScoringPosition = BlueSubwooferBottomScoringLocation;
+        }
+
+        if (distanceSpikeTop < leastDistance) {
+            leastDistance = distanceSpikeTop;
+            closestGoodScoringPosition = BlueSpikeTop;
+        }
+
+        if (distanceSpikeMiddle < leastDistance) {
+            leastDistance = distanceSpikeMiddle;
+            closestGoodScoringPosition = BlueSpikeMiddle;
+        }
+
+        if (distanceSpikeBottom < leastDistance) {
+            closestGoodScoringPosition = BlueSpikeBottom;
+        }
+
+        return closestGoodScoringPosition;
+    }
+
     @Override
     protected void updateOdometry() {
         // The swerve modules return units in meters, which is what the swerve odometry expects.
