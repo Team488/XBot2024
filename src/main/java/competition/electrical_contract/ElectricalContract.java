@@ -36,8 +36,8 @@ public abstract class ElectricalContract
 
     public abstract DeviceInfo getLightsDio3();
 
-    public abstract DeviceInfo getInControlNoteSensorDio();
-    public abstract DeviceInfo getReadyToFireNoteSensorDio();
+    public abstract DeviceInfo getLowerNoteSensorDio();
+    public abstract DeviceInfo getUpperNoteSensorDio();
 
     // ArmSubsystem
     public abstract boolean isArmReady();
