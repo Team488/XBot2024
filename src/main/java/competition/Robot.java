@@ -24,7 +24,7 @@ public class Robot extends BaseRobot {
     public Robot() {
     }
 
-    //Simulator2024 simulator;
+    Simulator2024 simulator;
     DynamicOracle oracle;
 
     @Override
@@ -35,7 +35,9 @@ public class Robot extends BaseRobot {
         getInjectorComponent().operatorCommandMap();
         getInjectorComponent().lightSubsystem();
 
-        //simulator = getInjectorComponent().simulator2024();
+        if (BaseRobot.isSimulation()) {
+            simulator = getInjectorComponent().simulator2024();
+        }
         oracle = getInjectorComponent().dynamicOracle();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
@@ -94,6 +96,7 @@ public class Robot extends BaseRobot {
     public void teleopInit() {
         super.teleopInit();
         oracle.clearNoteMapForTeleop();
+        oracle.clearScoringLocationsForTeleop();
     }
 
     @Override
@@ -133,9 +136,9 @@ public class Robot extends BaseRobot {
     public void simulationPeriodic() {
         super.simulationPeriodic();
 
-        //if (simulator != null) {
-        //    simulator.update();
-        //}
+        if (simulator != null) {
+           simulator.update();
+        }
     }
 }
 

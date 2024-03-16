@@ -45,6 +45,10 @@ public class GraphField implements ProvidesWaypoints {
         // Special Shots
         var podiumShot = createBlueAndRedVariants(PointOfInterest.PodiumScoringLocation);
         var ampFarShot = createBlueAndRedVariants(PointOfInterest.AmpFarScoringLocation);
+        var bottomSpikeCloserToSpeaker = createBlueAndRedVariants(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation);
+        var topSpikeCloserToSpeaker = createBlueAndRedVariants(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation);
+        var oneRobotAwayFromCenterSubwoofer = createBlueAndRedVariants(PointOfInterest.OneRobotAwayFromCenterSubwooferScoringLocation);
+        var shotFromMiddleSpike = createBlueAndRedVariants(PointOfInterest.MiddleSpikeScoringLocation);
 
         // Source
         var sourceNearest = createBlueAndRedVariants(PointOfInterest.SourceNearest);
@@ -108,7 +112,7 @@ public class GraphField implements ProvidesWaypoints {
 
         connectRedAndBlue(spikeMiddle, topWingLower);
         connectRedAndBlue(spikeMiddle, stageNW);
-        connectRedAndBlue(spikeMiddle, podiumShot);
+        //connectRedAndBlue(spikeMiddle, podiumShot); // Try forcing the podium shot only reasonably available from the bottom spike.
         connectRedAndBlue(spikeMiddle, podiumWaypoint);
 
         connectRedAndBlue(podiumShot, podiumWaypoint);
@@ -178,6 +182,12 @@ public class GraphField implements ProvidesWaypoints {
 
         // extra connections for speed:
         connectRedAndBlue(subwooferBottom, southOfStage);
+
+        // New scoring locations added
+        connectRedAndBlue(topSpikeCloserToSpeaker, spikeTop);
+        connectRedAndBlue(bottomSpikeCloserToSpeaker, podiumWaypoint);
+        connectRedAndBlue(oneRobotAwayFromCenterSubwoofer, spikeMiddle);
+        connectRedAndBlue(shotFromMiddleSpike, spikeMiddle);
     }
 
     //CHECKSTYLE:ON
@@ -281,5 +291,9 @@ public class GraphField implements ProvidesWaypoints {
 
     public List<Pose2dNode> getListOfConnectedNodes() {
         return graph.dfsTraversal();
+    }
+
+    public Graph getGraph() {
+        return graph;
     }
 }

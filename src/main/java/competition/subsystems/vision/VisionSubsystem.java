@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -47,6 +48,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty multiTagStableDistance;
     final DoubleProperty maxNoteRatio;
     final DoubleProperty minNoteRatio;
+    final DoubleProperty minNoteConfidence;
     AprilTagFieldLayout aprilTagFieldLayout;
     final ArrayList<AprilTagCamera> aprilTagCameras;
     final ArrayList<NoteCamera> noteCameras;
@@ -58,6 +60,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty noteLocalizationInfo;
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
+    NoteCamera rearCenterNoteCamera;
 
 
     @Inject
@@ -71,13 +74,15 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         multiTagStableDistance = pf.createPersistentProperty("Multi tag stable distance", 4.0);
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
+        minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
-                "DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
+                //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
+                //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs",
+                "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
                 .map(NoteTracker::new)
@@ -124,9 +129,12 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             if (noteCamera.getName().equals(CompetitionContract.rearLeftNoteCameraName)){
                 rearLeftNoteCamera = noteCamera;
             }
+            if (noteCamera.getName().equals(CompetitionContract.rearCenterNoteCameraName)){
+                rearCenterNoteCamera = noteCamera;
+            }
         }
 
-        allCameras = new ArrayList<SimpleCamera>();
+        allCameras = new ArrayList<>();
         allCameras.addAll(aprilTagCameras);
         allCameras.addAll(noteCameras);
 
@@ -262,6 +270,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return detectedNotes;
     }
 
+    public double getNoteYawFromCentralCamera() {
+        return getNoteYaw(rearCenterNoteCamera);
+    }
+
     private Translation2d triangulateNote() {
         double rearRightyaw = getNoteYaw(rearRightNoteCamera);
         double rearLeftYaw = getNoteYaw(rearLeftNoteCamera);
@@ -329,6 +341,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .map(detection -> {
                     var parts = detection.split(",");
                     var ratio = Double.parseDouble(parts[3]);
+                    var confidence = Double.parseDouble(parts[4]);
+                    if (confidence < minNoteConfidence.get()) {
+                        return null;
+                    }
                     if (ratio > maxNoteRatio.get() || ratio < minNoteRatio.get()) {
                         return null;
                     }
