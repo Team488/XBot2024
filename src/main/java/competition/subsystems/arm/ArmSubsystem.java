@@ -461,7 +461,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getModeledExtensionForGivenSpeakerDistance(double distanceFromSpeaker) {
-        return armModelBasedCalculator.getArmAngleFromDistance(distanceFromSpeaker);
+        return armModelBasedCalculator.getExtensionForSpeakerDistance(distanceFromSpeaker);
     }
 
     public double getUsefulArmPositionExtensionInMm(UsefulArmPosition usefulArmPosition) {
