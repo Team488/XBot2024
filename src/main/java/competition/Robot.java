@@ -34,6 +34,7 @@ public class Robot extends BaseRobot {
         getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
         getInjectorComponent().lightSubsystem();
+        getInjectorComponent().flipperSubsystem();
 
         if (BaseRobot.isSimulation()) {
             simulator = getInjectorComponent().simulator2024();
