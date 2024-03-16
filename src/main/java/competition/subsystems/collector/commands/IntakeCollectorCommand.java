@@ -22,7 +22,7 @@ public class IntakeCollectorCommand extends BaseCommand {
         addRequirements(collector);
         pf.setPrefix(this);
         higherIntensity = pf.createPersistentProperty("higher intensity",1);
-        lowerIntensity = pf.createPersistentProperty("lower intensity", 1);
+        lowerIntensity = pf.createPersistentProperty("lower intensity", 0.2);
     }
 
     @Override
