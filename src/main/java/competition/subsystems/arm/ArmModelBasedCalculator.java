@@ -12,10 +12,28 @@ public class ArmModelBasedCalculator {
     }
 
     public double getExtensionForSpeakerDistance(double distanceFromSpeaker) {
-        return getArmExtensionForAngle(getArmAngleFromDistance(distanceFromSpeaker));
+        return getEmpiricalArmExtensionFromDistance(distanceFromSpeaker);
     }
 
-    public double getArmAngleFromDistance(double distanceFromSpeaker) {
+    public double getEmpiricalArmExtensionFromDistance(double distanceFromSpeaker) {
+        // Get arm linear actuator extension (in mm) from distance from speaker (in meters)
+        // This uses coefficients determined from empirical measurements using the robot
+        // The extension value is constrained between 0.0 and 84.24 (which corresponds to a distance of 5 meters).
+
+        double z0 = -57.172;
+        double z1 = 56.496;
+        double z2 = -5.643;
+
+        double extension = (z0 + z1 * distanceFromSpeaker + z2 * Math.pow(distanceFromSpeaker, 2));
+        if (extension < 0.0 ){
+            extension = 0.0; // clip at zero extension
+        }
+        if (distanceFromSpeaker > 5.0 ){
+            extension = 84.24; // clips at the 5 meter extension value
+        }
+        return (extension) ;
+    }
+    public double getArmSLAngleFromDistance(double distanceFromSpeaker) {
         // Get arm angle (in degrees) from distance from speaker (in meters)
         double k0 = 9.085E+01 ;
         double k1 = -3.922E+01 ;
