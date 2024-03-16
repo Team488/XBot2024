@@ -226,7 +226,8 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     public void clearScoringLocationsForTeleop() {
-        scoringLocationMap.markAllianceScoringLocationsWithAvailability(DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue), Availability.Available);
+        scoringLocationMap.markAllianceScoringLocationsWithAvailability(
+                DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue), Availability.Available);
     }
 
     private void chooseStartingLocationBasedOnReservations() {
@@ -411,17 +412,20 @@ public class DynamicOracle extends BaseSubsystem {
 
     private void checkForMaskedShotsOnSpecificAllianceBecomingAvailable(DriverStation.Alliance alliance) {
         // Shots blocked by bottom spike
-        //checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(PointOfInterest.PodiumScoringLocation, PointOfInterest.SpikeBottom, alliance);
-        checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, PointOfInterest.SpikeBottom, alliance);
+        checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(
+                PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, PointOfInterest.SpikeBottom, alliance);
 
         // Shots blocked by middle spike
-        checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(PointOfInterest.MiddleSpikeScoringLocation, PointOfInterest.SpikeMiddle, alliance);
+        checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(
+                PointOfInterest.MiddleSpikeScoringLocation, PointOfInterest.SpikeMiddle, alliance);
 
         // Shots blocked ty top spike
-        checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, PointOfInterest.SpikeTop, alliance);
+        checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(
+                PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, PointOfInterest.SpikeTop, alliance);
     }
 
-    private void checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(PointOfInterest scoringLocation, PointOfInterest note, DriverStation.Alliance alliance) {
+    private void checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(
+            PointOfInterest scoringLocation, PointOfInterest note, DriverStation.Alliance alliance) {
         if (scoringLocationMap.get(scoringLocation, alliance).getAvailability() == Availability.MaskedByNote
                 && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == alliance
                 && noteMap.get(note, alliance).getAvailability() == Availability.Unavailable) {
