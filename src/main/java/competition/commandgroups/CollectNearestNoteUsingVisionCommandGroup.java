@@ -4,18 +4,12 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.NoteMap;
 import competition.subsystems.pose.PoseSubsystem;
-import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
-import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 
 public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommandGroup {
 
@@ -24,8 +18,7 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
     NoteMap noteMap;
 
     @Inject
-    CollectNearestNoteUsingVisionCommandGroup(VisionSubsystem vision, PoseSubsystem pose,
-                                              SwerveSimpleTrajectoryCommand swerveSimpleTrajectoryCommand,
+    CollectNearestNoteUsingVisionCommandGroup(PoseSubsystem pose,
                                               Provider<DriveToGivenNoteAndCollectCommandGroup> driveAndCollectProvider,
                                               DriveSubsystem drive, DynamicOracle oracle) {
 
@@ -33,17 +26,23 @@ public class CollectNearestNoteUsingVisionCommandGroup extends SequentialCommand
         this.pose = pose;
         this.noteMap = oracle.getNoteMap();
 
-        // Set our starting position to be at red top subwoofer
-        var startAtTopOfSubwoofer = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)
-        );
-        this.addCommands(startAtTopOfSubwoofer);
-
-        // Go to the closest position
-        var goToClosest = pose.createSetPositionCommand(
-                this::getClosestNote
-        );
-        this.addCommands(goToClosest);
+        // Testing
+//        var startAtTopOfSubwoofer = pose.createSetPositionCommand(
+//                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation)
+//        );
+//        this.addCommands(startAtTopOfSubwoofer);
+//
+//        // Go to the closest position
+//        var goToClosest = pose.createSetPositionCommand(
+//                this::getClosestNote
+//        );
+//        this.addCommands(goToClosest);
+        //do we need to wrap getClosestNote() in another layer of lambda?
+        this.addCommands(new InstantCommand(
+                () -> drive.setTargetNote(getClosestNote())
+        ));
+        var driveToNearestNoteAndCollect = driveAndCollectProvider.get();
+        this.addCommands(driveToNearestNoteAndCollect);
     }
 
     private Pose2d getClosestNote() {
