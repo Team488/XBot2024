@@ -74,8 +74,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             this.collectorMotor = null;
         }
 
-        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio(), this.getPrefix());
-        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio(), this.getPrefix());
+        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getLowerNoteSensorDio(), this.getPrefix());
+        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getUpperNoteSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.8);
