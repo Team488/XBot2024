@@ -29,6 +29,11 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
     @Override
     public void initialize() {
         log.info("Intitializing");
+        prepareToDriveAtGivenNote();
+        reset();
+    }
+
+    public void prepareToDriveAtGivenNote() {
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 drive.getTargetNote(), 10));
@@ -40,7 +45,6 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         this.logic.setConstantVelocity(2.5);
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
-        super.initialize();
     }
 
     @Override
