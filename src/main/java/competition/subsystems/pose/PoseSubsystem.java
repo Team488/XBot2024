@@ -209,12 +209,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
         double distanceSubwooferBottomScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded
                 (BlueSubwooferBottomScoringLocation).getTranslation().getDistance(currentPose.getTranslation());
 
-        double distanceSpikeTop = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeTop).getTranslation().
-                getDistance(currentPose.getTranslation());
-        double distanceSpikeMiddle = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeMiddle).getTranslation().
-                getDistance(currentPose.getTranslation());
-        double distanceSpikeBottom = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeBottom).getTranslation().
-                getDistance(currentPose.getTranslation());
+        double distanceSpikeTop = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeTop).getTranslation()
+                .getDistance(currentPose.getTranslation());
+        double distanceSpikeMiddle = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeMiddle).getTranslation()
+                .getDistance(currentPose.getTranslation());
+        double distanceSpikeBottom = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeBottom).getTranslation()
+                .getDistance(currentPose.getTranslation());
 
         Pose2d closestGoodScoringPosition = BlueSubwooferTopScoringLocation;
         double leastDistance = distanceSubwooferTopScoringPosition;
