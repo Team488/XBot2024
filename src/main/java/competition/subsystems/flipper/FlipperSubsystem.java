@@ -16,7 +16,7 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
     final XServo servo;
     final DoubleProperty inactivePosition;
     final DoubleProperty activePosition;
-    boolean active;
+    private boolean active;
 
     @Inject
     public FlipperSubsystem(XServo.XServoFactory servoFactory, ElectricalContract contract,
@@ -44,5 +44,9 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
     @Override
     public void refreshDataFrame() {
         servo.refreshDataFrame();
+    }
+
+    public boolean getActive() {
+        return active;
     }
 }
