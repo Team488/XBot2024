@@ -29,6 +29,9 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
     public void setRelative(boolean isRelative) {
         this.isRelative = isRelative;
     }
+    public double getArmExtensionForDistance(double distanceFromSpeaker){
+        return armSubsystem.getRecommendedExtension(distanceFromSpeaker);
+    }
 
     @Override
     public void initialize() {
