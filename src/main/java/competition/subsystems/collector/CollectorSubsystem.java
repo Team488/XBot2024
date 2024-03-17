@@ -51,11 +51,13 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     boolean lowerTripwireHit = false;
     boolean upperTripwireHit = false;
     double lastNoteDetectionTime = -Double.MAX_VALUE;
+    double timeOfLastNoteSensorTriggered = 0;
 
     final DoubleProperty aggressiveStopPower;
     final DoubleProperty aggressiveStopDuration;
     final DoubleProperty carefulAdvancePower;
     final DoubleProperty carefulAdvanceTimeout;
+    final DoubleProperty lightToleranceTimeInterval;
     double carefulAdvanceBeginTime = -Double.MAX_VALUE;
 
 
@@ -72,8 +74,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             this.collectorMotor = null;
         }
 
-        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getInControlNoteSensorDio(), this.getPrefix());
-        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getReadyToFireNoteSensorDio(), this.getPrefix());
+        this.inControlNoteSensor = xDigitalInputFactory.create(contract.getLowerNoteSensorDio(), this.getPrefix());
+        this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getUpperNoteSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.8);
@@ -85,6 +87,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         aggressiveStopDuration = pf.createPersistentProperty("AggressiveStopDuration", 0.1);
         carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
+        lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1);
 
         this.intakeState = IntakeState.STOPPED;
 
@@ -210,6 +213,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             lastFiredTime = XTimer.getFPGATimestamp();
         }
         intakeState = IntakeState.FIRING;
+        timeOfLastNoteSensorTriggered = 0;
     }
 
     public double getSecondsSinceFiringBegan() {
@@ -239,6 +243,17 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return false;
     }
 
+    public boolean checkSensorForLights() {
+        if (getGamePieceInControl() || getGamePieceReady()) {
+            timeOfLastNoteSensorTriggered = XTimer.getFPGATimestamp();
+        }
+        else {
+            if (XTimer.getFPGATimestamp() - timeOfLastNoteSensorTriggered > lightToleranceTimeInterval.get()) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @Override
     public boolean confidentlyHasControlOfNote() {

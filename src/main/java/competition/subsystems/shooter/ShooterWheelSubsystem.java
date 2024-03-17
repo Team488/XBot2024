@@ -122,9 +122,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         switch (pointOfInterest) {
             // These speeds may be different someday.
             case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return 4000;}
-            case PodiumScoringLocation -> {return 4000;}
-            case AmpFarScoringLocation -> {return 4000;}
-            default -> {return 0.0;}
+            case PodiumScoringLocation, AmpFarScoringLocation, BottomSpikeCloserToSpeakerScoringLocation, SpikeMiddle,
+                     TopSpikeCloserToSpeakerScoringLocation, OneRobotAwayFromCenterSubwooferScoringLocation -> {return 4000;}
+            default -> {return 4000;}
         }
     }
 

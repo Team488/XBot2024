@@ -84,4 +84,8 @@ public class Pose2dNode {
     public int getDegree() {
         return edges.size();
     }
+
+    public String getName() {
+        return name;
+    }
 }

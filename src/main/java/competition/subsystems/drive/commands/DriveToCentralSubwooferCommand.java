@@ -41,7 +41,7 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
                 translation, Rotation2d.fromDegrees(180), 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
-        this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
+        this.logic.setConstantVelocity(2.5);
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         super.initialize();
