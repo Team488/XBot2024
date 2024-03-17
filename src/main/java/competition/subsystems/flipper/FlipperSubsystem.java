@@ -36,9 +36,9 @@ public class FlipperSubsystem extends BaseSubsystem {
         active = !active;
         System.out.println("Mode: " + active);
         if (active) {
-            leftServo.set(0.51);
+            leftServo.set(activePosition.get());
         } else {
-            leftServo.set(0.16);
+            leftServo.set(inactivePosition.get());
         }
     }
 }
