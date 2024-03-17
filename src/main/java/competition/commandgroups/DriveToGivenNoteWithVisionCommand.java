@@ -7,10 +7,13 @@ import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
+import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 
 public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
 
@@ -68,7 +71,8 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
                 if (super.isFinished()) {
                     // we've hit our target, but no note! Back away and try again.
                     log.info("Switching to back away mode");
-                    // TODO: Set target to 1 meter "forwards", since the robot drives backwards
+                    setBackingAwayFromNoteTarget();
+                    noteAcquisitionMode = NoteAcquisitionMode.BackAwayToTryAgain;
                 }
                 break;
             case BackAwayToTryAgain:
@@ -110,6 +114,20 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
             return notePose.toPose2d();
         }
         return null;
+    }
+
+    private void setBackingAwayFromNoteTarget() {
+        var newTarget = pose.transformRobotCoordinateToFieldCoordinate(new Translation2d(1,0));
+
+        ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
+        swervePoints.add(new XbotSwervePoint(newTarget, pose.getCurrentHeading(), 10));
+        // when driving to a note, the robot must face backwards, as the robot's intake is on the back
+        this.logic.setKeyPoints(swervePoints);
+        this.logic.setAimAtGoalDuringFinalLeg(false);
+        this.logic.setDriveBackwards(false);
+        this.logic.setEnableConstantVelocity(true);
+        this.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
+        reset();
     }
 
     private void assignClosestVisionNoteToDriveSubsystemIfYouSeeANoteAndReplanPath() {
