@@ -78,15 +78,18 @@ public class PointAtNoteCommand extends BaseCommand {
 
         var toNoteTranslation = newTarget.getTranslation().minus(this.pose.getCurrentPose2d().getTranslation());
         var movement = MathUtils.deadband(getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector()), oi.getDriverGamepadTypicalDeadband(), (x) -> x);
-
+        aKitLog.record("toNoteTranslation", toNoteTranslation);
+        aKitLog.record("driveJoystic", oi.driverGamepad.getLeftVector());
+        aKitLog.record("movement", movement);
         double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
 
-        drive.move(new XYPair(movement, 0), rotationPower);
+        // negative movement because we want to drive the robot 'backwards', collector towards the note
+        drive.move(new XYPair(-movement, 0), rotationPower);
     }
 
     public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick) {
         var toNoteVector = fieldTranslationToTarget.toVector().unit();
-        var driverVector = VecBuilder.fill(driveJoystick.x, -driveJoystick.y);
+        var driverVector = VecBuilder.fill(driveJoystick.x, driveJoystick.y);
         var dot = toNoteVector.dot(driverVector);
 
         return dot;
