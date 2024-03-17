@@ -5,10 +5,11 @@ import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
 
-public class PrepareToFireNearestGoodScoringPositionCommand extends BaseCommand {
+public class PrepareToFireNearestGoodScoringPositionCommand extends BaseSetpointCommand {
     ArmSubsystem arm;
     DynamicOracle oracle;
     ShooterWheelSubsystem shooter;
@@ -16,6 +17,7 @@ public class PrepareToFireNearestGoodScoringPositionCommand extends BaseCommand 
     @Inject
     public PrepareToFireNearestGoodScoringPositionCommand(ArmSubsystem arm, DynamicOracle oracle,
                                                           ShooterWheelSubsystem shooter) {
+        super(shooter);
         this.arm = arm;
         this.oracle = oracle;
         this.shooter = shooter;
@@ -25,6 +27,16 @@ public class PrepareToFireNearestGoodScoringPositionCommand extends BaseCommand 
         PointOfInterest nearestScoringLocation = oracle.getNearestScoringLocation();
         shooter.setTargetValue(shooter.getRPMForGivenScoringLocation(nearestScoringLocation));
         arm.setTargetValue(arm.getUsefulArmPositionExtensionInMm(nearestScoringLocation)) ;
+    }
+
+    @Override
+    public void execute() {
+        // No-op. Wait for the arms to get to the target.
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
     }
 
 }
