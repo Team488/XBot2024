@@ -63,7 +63,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         } else if (isMaintainerAtGoal()) {
             arm.setPower(0.0);
         } else {
-            double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
+            double power = positionPid.calculate(arm.getSafeTargetValue(), arm.getCurrentValue());
             arm.setPower(power);
         }
     }

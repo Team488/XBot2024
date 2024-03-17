@@ -66,6 +66,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedRight;
     private final DoubleProperty maximumExtensionDesyncMm;
 
+    public final DoubleProperty maxExtensionForUnderStageMm;
+    boolean limitToUnderStage = false;
+
     private double targetExtension;
     private final DoubleProperty overallPowerClampForTesting;
 
@@ -154,6 +157,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "LowerSlowZoneThresholdMm", 25.0);
         lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
                 "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
+
+        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 52.0);
 
         upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
         lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
@@ -594,6 +599,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
          this.targetExtension = targetExtension;
     }
 
+    public Double getSafeTargetValue() {
+        if(getLimitToUnderStage()) {
+            return Math.min(getTargetValue(), maxExtensionForUnderStageMm.get());
+        }
+        return getTargetValue();
+    }
+
     public void setTargetValue(UsefulArmPosition usefulArmPosition) {
         setTargetValue(getUsefulArmPositionExtensionInMm(usefulArmPosition));
     }
@@ -704,5 +716,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.refreshDataFrame();
             armAbsoluteEncoder.refreshDataFrame();
         }
+    }
+
+    public void setLimitToUnderStage(boolean limitToUnderStage) {
+        this.limitToUnderStage = limitToUnderStage;
+    }
+
+    public boolean getLimitToUnderStage() {
+        return limitToUnderStage;
     }
 }
