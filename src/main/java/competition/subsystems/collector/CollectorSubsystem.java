@@ -213,9 +213,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
 
     public void fire(){
-        if (!flipper.getActive()) {
-            setPower(firePower.get());
-        }
+        setPower(firePower.get());
         if (intakeState != IntakeState.FIRING) {
             lastFiredTime = XTimer.getFPGATimestamp();
         }
@@ -232,7 +230,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     public void setPower(double power) {
         if (contract.isCollectorReady()) {
-            collectorMotor.set(power);
+            if (flipper.getActive()) {
+                collectorMotor.set(0);
+            }
+            else {
+                collectorMotor.set(power);
+            }
         }
     }
 

@@ -41,6 +41,16 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
         }
     }
 
+    public void servoActive() {
+        servo.set(activePosition.get());
+        active = true;
+    }
+
+    public void servoInactive() {
+        servo.set(inactivePosition.get());
+        active = false;
+    }
+
     @Override
     public void refreshDataFrame() {
         servo.refreshDataFrame();

@@ -16,11 +16,16 @@ public class ToggleFlipperCommand extends BaseCommand {
 
     @Override
     public void initialize() {
-        flipper.toggleServo();
+        log.info("Initializing");
     }
 
     @Override
-    public boolean isFinished() {
-        return true;
+    public void execute() {
+        flipper.servoActive();
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        flipper.servoInactive();
     }
 }
