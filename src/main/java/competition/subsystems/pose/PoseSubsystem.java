@@ -81,7 +81,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Pose2d BlueSubwooferBottomScoringLocation = new Pose2d(0.758, 4.395, Rotation2d.fromDegrees(120));
     public static Pose2d BluePodiumScoringLocation = new Pose2d(2.770, 4.389, Rotation2d.fromDegrees(159));
     public static Pose2d BlueFarAmpScoringLocation = new Pose2d(3.073, 7.597, Rotation2d.fromDegrees(-146.6));
-    public static Pose2d BlueBottomSpikeCloserToSpeakerScoringLocation = new Pose2d(2.237,4.355, Rotation2d.fromDegrees(0));
+    public static Pose2d BlueBottomSpikeCloserToSpeakerScoringLocation = new Pose2d(2.237,4.355, Rotation2d.fromDegrees(152));
+    public static Pose2d BlueMiddleSpikeScoringLocation = new Pose2d(2.8956, 5.5478, Rotation2d.fromDegrees(180));
     public static Pose2d BlueTopSpikeCloserToSpeakerScoringLocation = new Pose2d(2.239,6.738, Rotation2d.fromDegrees(-153));
     public static Pose2d BlueOneRobotAwayFromCenterSubwooferScoringLocation = new Pose2d(2.312,5.561, Rotation2d.fromDegrees(180));
     public static Pose2d BlueSpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());

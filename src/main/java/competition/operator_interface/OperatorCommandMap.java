@@ -70,6 +70,7 @@ public class OperatorCommandMap {
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand
     )
+
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
