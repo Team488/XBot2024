@@ -213,7 +213,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
                 .getDistance(currentPose.getTranslation());
         double distanceSpikeMiddle = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeMiddle).getTranslation()
                 .getDistance(currentPose.getTranslation());
-        double distanceSpikeBottom = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeBottom).getTranslation()
+        double distancePodium = PoseSubsystem.convertBlueToRedIfNeeded(BluePodiumScoringLocation).getTranslation()
                 .getDistance(currentPose.getTranslation());
 
         Pose2d closestGoodScoringPosition = BlueSubwooferTopScoringLocation;
@@ -245,11 +245,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
                     );
         }
 
-        if (distanceSpikeBottom < leastDistance) {
-            closestGoodScoringPosition = new Pose2d(
-                    BlueSpikeBottom.getTranslation(),
-                    Rotation2d.fromDegrees(153.64394)
-                    );
+        if (distancePodium < leastDistance) {
+            closestGoodScoringPosition = BluePodiumScoringLocation;
         }
 
         return closestGoodScoringPosition;
