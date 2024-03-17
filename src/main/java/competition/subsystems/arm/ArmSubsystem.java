@@ -591,6 +591,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return targetExtension;
     }
 
+    public void setTargetValue(UsefulArmPosition usefulArmPosition) {
+        setTargetValue(getUsefulArmPositionExtensionInMm(usefulArmPosition));
+    }
+
     /**
      * the current target extension distance the arm is trying to reach via PID
      */
@@ -604,10 +608,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             return Math.min(getTargetValue(), maxExtensionForUnderStageMm.get());
         }
         return getTargetValue();
-    }
-
-    public void setTargetValue(UsefulArmPosition usefulArmPosition) {
-        setTargetValue(getUsefulArmPositionExtensionInMm(usefulArmPosition));
     }
 
     @Override
