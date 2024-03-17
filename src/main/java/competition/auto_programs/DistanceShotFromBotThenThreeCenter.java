@@ -5,6 +5,7 @@ import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
+import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
@@ -38,9 +39,9 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
         SetArmExtensionCommand setArmForShot3 = setArmExtensionCommandProvider.get();
 
         //this is the distance i calculated, could be replaced with the exact extension later on to optimize
-        setArmForShot1.setTargetExtension(setArmForShot1.getArmExtensionForDistance(1.976882));
-        setArmForShot2.setTargetExtension(setArmForShot2.getArmExtensionForDistance(1.976882));
-        setArmForShot3.setTargetExtension(setArmForShot3.getArmExtensionForDistance(1.976882));
+        setArmForShot1.setTargetExtension(setArmForShot1.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
+        setArmForShot2.setTargetExtension(setArmForShot2.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
+        setArmForShot3.setTargetExtension(setArmForShot3.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
 
         WarmUpShooterCommand warmupForShot1 = warmUpShooterCommandProvider.get();
         WarmUpShooterCommand warmupForShot2 = warmUpShooterCommandProvider.get();

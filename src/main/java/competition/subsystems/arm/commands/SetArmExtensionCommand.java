@@ -3,6 +3,7 @@ package competition.subsystems.arm.commands;
 import javax.inject.Inject;
 
 import competition.subsystems.arm.ArmSubsystem;
+import competition.subsystems.pose.PointOfInterest;
 import xbot.common.command.BaseSetpointCommand;
 
 public class SetArmExtensionCommand extends BaseSetpointCommand {
@@ -29,8 +30,8 @@ public class SetArmExtensionCommand extends BaseSetpointCommand {
     public void setRelative(boolean isRelative) {
         this.isRelative = isRelative;
     }
-    public double getArmExtensionForDistance(double distanceFromSpeaker){
-        return armSubsystem.getRecommendedExtension(distanceFromSpeaker);
+    public double getArmExtensionForDistanceInmm(PointOfInterest pointOfInterest){
+        return armSubsystem.getUsefulArmPositionExtensionInMm(pointOfInterest);
     }
 
     @Override
