@@ -1,6 +1,7 @@
 package competition.subsystems.flipper;
 
 import competition.electrical_contract.ElectricalContract;
+import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XServo;
 import xbot.common.properties.DoubleProperty;
@@ -10,23 +11,21 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class FlipperSubsystem extends BaseSubsystem {
+public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
-    final XServo leftServo;
-    //final XServo rightServo;
-    DoubleProperty inactivePosition;
-    DoubleProperty activePosition;
+    final XServo servo;
+    final DoubleProperty inactivePosition;
+    final DoubleProperty activePosition;
     boolean active;
 
     @Inject
     public FlipperSubsystem(XServo.XServoFactory servoFactory, ElectricalContract contract,
                             PropertyFactory pf) {
         pf.setPrefix(this);
-        inactivePosition = pf.createPersistentProperty("FlipperInactivePosition", 0);
+        inactivePosition = pf.createPersistentProperty("FlipperInactivePosition", 0.8);
         activePosition = pf.createPersistentProperty("FlipperActivePosition", 0.3);
 
-        this.leftServo = servoFactory.create(contract.getFlipperServoLeft().channel);
-        // this.rightServo = servoFactory.create(contract.getFlipperServoRight().channel);
+        this.servo = servoFactory.create(contract.getFlipperServo().channel, getName() + "/Servo");
 
         active = false;
     }
@@ -36,9 +35,14 @@ public class FlipperSubsystem extends BaseSubsystem {
         active = !active;
         System.out.println("Mode: " + active);
         if (active) {
-            leftServo.set(activePosition.get());
+            servo.set(activePosition.get());
         } else {
-            leftServo.set(inactivePosition.get());
+            servo.set(inactivePosition.get());
         }
+    }
+
+    @Override
+    public void refreshDataFrame() {
+        servo.refreshDataFrame();
     }
 }

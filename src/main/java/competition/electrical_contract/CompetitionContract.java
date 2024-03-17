@@ -158,13 +158,9 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
-    public DeviceInfo getFlipperServoLeft() {
+    public DeviceInfo getFlipperServo() {
         return new DeviceInfo("FlipperLeft", 5);
     }
-//    @Override
-//    public DeviceInfo getFlipperServoRight() {
-//        return new DeviceInfo("FlipperRight", 5);
-//    }
 
     @Override
     public DeviceInfo getInControlNoteSensorDio() {
