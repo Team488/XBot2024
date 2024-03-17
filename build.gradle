@@ -181,7 +181,12 @@ task checkstyle(type: Checkstyle) {
 test {
     reports {
         junitXml.required = true
-    }               
+    }
+    
+    testLogging {
+		events "failed"
+		exceptionFormat "full"
+	}    
 }
 
 tasks.withType(Test) {

@@ -77,23 +77,16 @@ public class PointAtNoteCommand extends BaseCommand {
         }
 
         var toNoteTranslation = newTarget.getTranslation().minus(this.pose.getCurrentPose2d().getTranslation());
-        var movement = getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector());
+        var movement = MathUtils.deadband(getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector()), oi.getDriverGamepadTypicalDeadband(), (x) -> x);
 
         double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
 
         drive.move(new XYPair(movement, 0), rotationPower);
     }
 
-    public double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick) {
-        var toNoteVector = fieldTranslationToTarget.toVector();
-        var driverVector = VecBuilder.fill(MathUtils.deadband(
-                oi.driverGamepad.getLeftVector().x,
-                oi.getDriverGamepadTypicalDeadband(),
-                (x) -> x),
-                -MathUtils.deadband(
-                        oi.driverGamepad.getLeftVector().y,
-                        oi.getDriverGamepadTypicalDeadband(),
-                        (y) -> y));
+    public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick) {
+        var toNoteVector = fieldTranslationToTarget.toVector().unit();
+        var driverVector = VecBuilder.fill(driveJoystick.x, -driveJoystick.y).unit();
         var dot = toNoteVector.dot(driverVector);
 
         return dot;
