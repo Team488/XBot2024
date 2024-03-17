@@ -83,14 +83,13 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToPodiumCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(lineUpForHangingCommand);
-        //operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
                 .onFalse(cancelSpecialPointAtPosition);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(visionCollect);
     }
 
 
