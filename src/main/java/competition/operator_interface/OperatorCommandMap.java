@@ -7,6 +7,7 @@ import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
 import competition.commandgroups.PrepareToFireAtSpeakerFromFarAmpCommand;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
+import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
@@ -110,7 +111,7 @@ public class OperatorCommandMap {
             ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeaker,
             FireWhenReadyCommand fireWhenReady,
             PrepareToFireAtSpeakerFromPodiumCommand prepareToFireAtSpeakerFromPodium,
-            PrepareToFireAtSpeakerFromFarAmpCommand prepareToFireAtSpeakerFromFarAmp,
+            PrepareToFireNearestGoodScoringPositionCommand prepareToFireNearestGoodScoringPositionCommand,
             ManualHangingModeCommand manualHangingModeCommand,
             ForceEngageBrakeCommand forceEngageBrakeCommand,
             RemoveForcedBrakingCommand removeForcedBrakingCommand,
@@ -159,7 +160,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(prepareForHangingCommand);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(prepareToFireAtAmp);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromFarAmp);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireNearestGoodScoringPositionCommand);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSpeakerFromPodium);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtSubwoofer);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).onTrue(forceEngageBrakeCommand);
