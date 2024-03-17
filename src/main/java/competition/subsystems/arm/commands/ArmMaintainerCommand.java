@@ -63,7 +63,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         } else if (isMaintainerAtGoal()) {
             arm.setPower(0.0);
         } else {
-            double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
+            double power = positionPid.calculate(arm.getSafeTargetValue(), arm.getCurrentValue());
             arm.setPower(power);
         }
     }
@@ -138,6 +138,15 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
             double target = arm.getTargetValue();
             double armError = Math.abs(target - current);
             return armError;
+    }
+
+    @Override
+    protected boolean additionalAtGoalChecks() {
+        // if the safe arm value is preventing us from reaching our goal, say we're not at goal
+        if (Math.abs(arm.getTargetValue() - arm.getSafeTargetValue()) > 0.001) {
+            return false;
+        }
+        return true;
     }
 
     @Override
