@@ -559,7 +559,7 @@ public class DynamicOracle extends BaseSubsystem {
         return new Trajectory(wpiStates);
     }
 
-    public PointOfInterest getNearestScoringLocationcl() {
+    public PointOfInterest getNearestScoringLocation() {
         return scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
                 Availability.Available).getPointOfInterest();
     }

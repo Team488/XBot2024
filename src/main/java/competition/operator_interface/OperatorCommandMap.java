@@ -22,10 +22,11 @@ import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
-import competition.subsystems.drive.commands.DriveToNearestGoodScoringLocationCommand;
+import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.DriveToPodiumCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
@@ -67,7 +68,9 @@ public class OperatorCommandMap {
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
-            DriveToNearestGoodScoringLocationCommand driveToNearestGoodScoringLocationCommand)
+            DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand
+    )
+
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -83,7 +86,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringLocationCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(lineUpForHangingCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
@@ -92,6 +95,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
+
     }
 
 

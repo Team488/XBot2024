@@ -14,15 +14,15 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 
 
-public class DriveToNearestGoodScoringLocationCommand extends SwerveSimpleTrajectoryCommand {
+public class DriveToNearestGoodScoringPositionCommand extends SwerveSimpleTrajectoryCommand {
 
     DynamicOracle oracle;
     DriveSubsystem drive;
 
     @Inject
-    public DriveToNearestGoodScoringLocationCommand(DriveSubsystem drive, DynamicOracle oracle,
-                                PoseSubsystem pose, PropertyFactory pf,
-                                HeadingModule.HeadingModuleFactory headingModuleFactory) {
+    public DriveToNearestGoodScoringPositionCommand(DriveSubsystem drive, DynamicOracle oracle,
+                                                    PoseSubsystem pose, PropertyFactory pf,
+                                                    HeadingModule.HeadingModuleFactory headingModuleFactory) {
         super(drive, pose, pf, headingModuleFactory);
         this.oracle = oracle;
         this.drive = drive;
