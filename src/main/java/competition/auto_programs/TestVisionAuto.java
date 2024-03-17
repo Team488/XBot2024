@@ -19,7 +19,7 @@ public class TestVisionAuto extends SequentialCommandGroup {
 
 
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferTopScoringLocation));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         this.addCommands(startInFrontOfSpeaker);
 
         this.addCommands(
