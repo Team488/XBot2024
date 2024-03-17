@@ -1,6 +1,7 @@
 package competition.subsystems.drive;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -26,6 +27,9 @@ public class PointAtNoteCommandTest extends BaseCompetitionTest {
         assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(-1, 0)), 0.001);
 
         // 45 degrees should be half power
-        assertEquals(1 / Math.sqrt(2), PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(1, 1)), 0.001);
+        assertEquals(0.5, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0.5, 0.5)), 0.001);
+
+        // small floating joystick number
+        assertTrue(Math.abs(PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0.01, 0.01))) < 0.02);
     }
 }

@@ -86,7 +86,7 @@ public class PointAtNoteCommand extends BaseCommand {
 
     public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick) {
         var toNoteVector = fieldTranslationToTarget.toVector().unit();
-        var driverVector = VecBuilder.fill(driveJoystick.x, -driveJoystick.y).unit();
+        var driverVector = VecBuilder.fill(driveJoystick.x, -driveJoystick.y);
         var dot = toNoteVector.dot(driverVector);
 
         return dot;
