@@ -11,6 +11,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import xbot.common.command.BaseRobot;
@@ -26,6 +27,7 @@ public class Robot extends BaseRobot {
 
     Simulator2024 simulator;
     DynamicOracle oracle;
+    PoseSubsystem poseSubsystem;
 
     @Override
     protected void initializeSystems() {
@@ -42,7 +44,8 @@ public class Robot extends BaseRobot {
         oracle = getInjectorComponent().dynamicOracle();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
-        dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
+        poseSubsystem = (PoseSubsystem) getInjectorComponent().poseSubsystem();
+        dataFrameRefreshables.add(poseSubsystem);
         dataFrameRefreshables.add(getInjectorComponent().visionSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().armSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().scoocherSubsystem());
