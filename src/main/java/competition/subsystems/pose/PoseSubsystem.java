@@ -176,7 +176,8 @@ public class PoseSubsystem extends BasePoseSubsystem {
      * @return Whether the robot pose will be calculated using vision.
      */
     public boolean isUsingVisionAssistedPose() {
-        return this.useVisionForPoseProp.get() || DriverStation.isTeleop();
+        return false;
+        //return this.useVisionForPoseProp.get() || DriverStation.isTeleop();
     }
 
     /**

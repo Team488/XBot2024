@@ -20,6 +20,7 @@ import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.drive.commands.CalibrateDriveCommand;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToPodiumCommand;
@@ -66,7 +67,8 @@ public class OperatorCommandMap {
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
-            DriveToPodiumCommand driveToPodiumCommand)
+            DriveToPodiumCommand driveToPodiumCommand,
+            CalibrateDriveCommand calibrateDriveCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -84,7 +86,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToPodiumCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(lineUpForHangingCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(calibrateDriveCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
                 .onFalse(cancelSpecialPointAtPosition);
