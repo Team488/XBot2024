@@ -1,6 +1,7 @@
 package competition.injection.components;
 
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
+import competition.auto_programs.TestVisionAuto;
 import competition.simulation.Simulator2024;
 import competition.subsystems.NeoTrellisGamepadSubsystem;
 import competition.subsystems.arm.ArmModelBasedCalculator;
@@ -67,4 +68,5 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract ArmModelBasedCalculator armModelBasedCalculator();
     public abstract SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree();
     public abstract ListenToOracleCommandGroup listenToOracleCommandGroup();
+    public abstract TestVisionAuto testVisionAuto();
 }

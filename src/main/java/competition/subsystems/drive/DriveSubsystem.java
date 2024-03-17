@@ -17,6 +17,7 @@ import xbot.common.injection.swerve.SwerveComponent;
 import xbot.common.math.PIDDefaults;
 import xbot.common.math.PIDManager.PIDManagerFactory;
 import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.BaseSwerveDriveSubsystem;
 
@@ -44,6 +45,7 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         log.info("Creating DriveSubsystem");
 
         pf.setPrefix(this.getPrefix());
+        pf.setDefaultLevel(Property.PropertyLevel.Important);
         suggestedAutonomousMaximumSpeed =
                 pf.createPersistentProperty("Suggested Autonomous Maximum Speed", 3.0);
     }
