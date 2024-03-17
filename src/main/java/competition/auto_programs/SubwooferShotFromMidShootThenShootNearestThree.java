@@ -29,9 +29,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                                                           Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                          PoseSubsystem pose, DriveSubsystem drive,
-                                                          DriveToListOfPointsCommand driveToBottomWhiteLine,
-                                                          CollectSequenceCommandGroup collectBottomNote) {
+                                                          PoseSubsystem pose, DriveSubsystem drive) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -89,10 +87,10 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         );
 
         // Need to drive to an interstitial point first
-        driveToBottomWhiteLine.addPointsSupplier(this::goToBottomWhiteLine);
-        driveToBottomWhiteLine.logic.setStopWhenFinished(false);
+        //driveToBottomWhiteLine.addPointsSupplier(this::goToBottomWhiteLine);
+        //driveToBottomWhiteLine.logic.setStopWhenFinished(false);
 
-        this.addCommands(driveToBottomWhiteLine);
+        //this.addCommands(driveToBottomWhiteLine);
 
         // Now, go get the bottom spike note
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
