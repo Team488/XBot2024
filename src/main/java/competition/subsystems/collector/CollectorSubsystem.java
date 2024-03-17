@@ -213,7 +213,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
 
     public void fire(){
-        if (flipper.getActive()) {
+        if (!flipper.getActive()) {
             setPower(firePower.get());
         }
         if (intakeState != IntakeState.FIRING) {
