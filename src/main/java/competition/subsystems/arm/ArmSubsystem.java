@@ -599,11 +599,6 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
          this.targetExtension = targetExtension;
     }
 
-    @Override
-    public boolean isCalibrated() {
-        return hasCalibratedLeft && hasCalibratedRight;
-    }
-
     public Double getSafeTargetValue() {
         if(getLimitToUnderStage()) {
             return Math.min(getTargetValue(), maxExtensionForUnderStageMm.get());
@@ -613,6 +608,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public void setTargetValue(UsefulArmPosition usefulArmPosition) {
         setTargetValue(getUsefulArmPositionExtensionInMm(usefulArmPosition));
+    }
+
+    @Override
+    public boolean isCalibrated() {
+        return hasCalibratedLeft && hasCalibratedRight;
     }
 
     public double getLeftArmOffset() {
