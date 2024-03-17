@@ -16,15 +16,15 @@ public class PointAtNoteCommandTest extends BaseCompetitionTest {
     public void testGetDriveIntent() {
         // completely aligned with the direction we want to go
         // exact y
-        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new XYPair(0, 1)), 0.001);
+        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new XYPair(-1, 0)), 0.001);
         // exact x
-        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(1, 0)), 0.001);
+        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0, 1)), 0.001);
 
 
         // exact opposite y
-        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new XYPair(0, -1)), 0.001);
+        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new XYPair(1, 0)), 0.001);
         // exact opposite x
-        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(-1, 0)), 0.001);
+        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0, -1)), 0.001);
 
         // 45 degrees should be half power
         assertEquals(0.5, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0.5, 0.5)), 0.001);
