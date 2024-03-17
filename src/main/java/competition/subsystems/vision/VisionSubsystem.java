@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCameraExtended;
 import org.photonvision.PhotonPoseEstimator;
@@ -61,6 +60,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
     NoteCamera rearCenterNoteCamera;
+    final DoubleProperty bestRangeFromStaticNoteToSearchForNote;
+    final DoubleProperty maxNoteSearchingDistanceForSpikeNotes;
 
 
     @Inject
@@ -75,6 +76,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
+
+        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
+        maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
@@ -306,6 +310,14 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
 
         return null;
+    }
+
+    public double getBestRangeFromStaticNoteToSearchForNote() {
+        return bestRangeFromStaticNoteToSearchForNote.get();
+    }
+
+    public double getMaxNoteSearchingDistanceForSpikeNotes() {
+        return maxNoteSearchingDistanceForSpikeNotes.get();
     }
 
     @Override
