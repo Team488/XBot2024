@@ -91,6 +91,10 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
             case GiveUp:
                 // Do nothing. Command will exit momentarily.
                 break;
+            default:
+                log.info("Unknown mode: " + noteAcquisitionMode);
+                noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
+                break;
         }
 
         /*

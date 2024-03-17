@@ -5,9 +5,8 @@ import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
-import competition.commandgroups.DriveToGivenNoteWithVisionCommand;
-import competition.commandgroups.PrepareToFireAtSpeakerFromFarAmpCommand;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
+import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
@@ -21,7 +20,7 @@ import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
-import competition.subsystems.drive.commands.DriveToPodiumCommand;
+import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
@@ -64,8 +63,8 @@ public class OperatorCommandMap {
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
-            DriveToPodiumCommand driveToPodiumCommand,
-            DriveToGivenNoteWithVisionCommand visionCollect)
+            DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand
+    )
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -81,7 +80,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToPodiumCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(lineUpForHangingCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
@@ -90,6 +89,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
+
     }
 
 
@@ -106,7 +106,7 @@ public class OperatorCommandMap {
             ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeaker,
             FireWhenReadyCommand fireWhenReady,
             PrepareToFireAtSpeakerFromPodiumCommand prepareToFireAtSpeakerFromPodium,
-            PrepareToFireAtSpeakerFromFarAmpCommand prepareToFireAtSpeakerFromFarAmp,
+            PrepareToFireNearestGoodScoringPositionCommand prepareToFireNearestGoodScoringPositionCommand,
             ManualHangingModeCommand manualHangingModeCommand,
             ForceEngageBrakeCommand forceEngageBrakeCommand,
             RemoveForcedBrakingCommand removeForcedBrakingCommand,
@@ -155,7 +155,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Back).whileTrue(ejectCollector);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Start).whileTrue(prepareForHangingCommand);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.A).whileTrue(prepareToFireAtAmp);
-        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireAtSpeakerFromFarAmp);
+        oi.operatorGamepadAdvanced.getXboxButton(XboxButton.B).whileTrue(prepareToFireNearestGoodScoringPositionCommand);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.X).whileTrue(prepareToFireAtSpeakerFromPodium);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtSubwoofer);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).onTrue(forceEngageBrakeCommand);
