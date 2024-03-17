@@ -5,6 +5,7 @@ import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
@@ -16,16 +17,22 @@ import java.util.ArrayList;
 
 public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryCommand {
 
-    DynamicOracle oracle;
-    DriveSubsystem drive;
+    final DynamicOracle oracle;
+    final DriveSubsystem drive;
+    final PoseSubsystem pose;
+    XbotSwervePoint goalPoint;
+    final DoubleProperty distanceThresholdMm;
 
     @Inject
     public DriveToCentralSubwooferCommand(DriveSubsystem drive, DynamicOracle oracle,
                                    PoseSubsystem pose, PropertyFactory pf,
-                                   HeadingModule.HeadingModuleFactory headingModuleFactory) {
+                                   HeadingModule.HeadingModuleFactory headingModuleFactory,
+                                   PoseSubsystem poseSubsystem) {
         super(drive, pose, pf, headingModuleFactory);
         this.oracle = oracle;
         this.drive = drive;
+        this.pose = poseSubsystem;
+        this.distanceThresholdMm = pf.createPersistentProperty("distanceThresholdMm", 0.3);
     }
 
     @Override
@@ -37,8 +44,9 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
         Translation2d translation = new Translation2d(
                 PoseSubsystem.BlueSubwooferMiddleScoringLocation.getX() + 0.0762,
                 PoseSubsystem.BlueSubwooferMiddleScoringLocation.getY());
-        swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                translation, Rotation2d.fromDegrees(180), 10));
+        this.goalPoint = XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                translation, Rotation2d.fromDegrees(180), 10);
+        swervePoints.add(goalPoint);
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
@@ -54,7 +62,8 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
 
     @Override
     public boolean isFinished() {
-        return super.isFinished();
+        var distance = this.goalPoint.keyPose.getTranslation().getDistance(pose.getCurrentPose2d().getTranslation());
+        return distance < this.distanceThresholdMm.get();
     }
 
 }
