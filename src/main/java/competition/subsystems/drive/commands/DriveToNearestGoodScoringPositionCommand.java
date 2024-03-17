@@ -39,8 +39,7 @@ public class DriveToNearestGoodScoringPositionCommand extends SwerveSimpleTrajec
         }
 
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
-        swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                nearestScoringLocation, 10));
+        swervePoints.add(new XbotSwervePoint(nearestScoringLocation, 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
