@@ -24,7 +24,7 @@ import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.sql.Driver;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -200,59 +200,29 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public Pose2d getNearestGoodScoringPosition() {
         //Gets current location in the form of X and Y coordinates
         Pose2d currentPose = getCurrentPose2d();
+        //List to iterate through each location('s distance) to determine which is closest
+        ArrayList<Pose2d> list = new ArrayList<>();
 
-        // Gets distance between our current location and the good scoring locations
-        double distanceSubwooferTopScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded(BlueSubwooferTopScoringLocation)
+        list.add(BlueSubwooferTopScoringLocation);
+        list.add(BlueSubwooferMiddleScoringLocation);
+        list.add(BlueSubwooferBottomScoringLocation);
+        list.add(BlueSpikeTop);
+        list.add(BlueSpikeMiddle);
+        list.add(BlueSpikeBottom);
+
+        double leastDistance = PoseSubsystem.convertBlueToRedIfNeeded(list.get(0))
                 .getTranslation().getDistance(currentPose.getTranslation());
-        double distanceSubwooferMiddleScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded
-                (BlueSubwooferMiddleScoringLocation).getTranslation().getDistance(currentPose.getTranslation());
-        double distanceSubwooferBottomScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded
-                (BlueSubwooferBottomScoringLocation).getTranslation().getDistance(currentPose.getTranslation());
+        Pose2d nearestPosition = list.get(0);
 
-        double distanceSpikeTop = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeTop).getTranslation()
-                .getDistance(currentPose.getTranslation());
-        double distanceSpikeMiddle = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeMiddle).getTranslation()
-                .getDistance(currentPose.getTranslation());
-        double distanceSpikeBottom = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeBottom).getTranslation()
-                .getDistance(currentPose.getTranslation());
-
-        Pose2d closestGoodScoringPosition = BlueSubwooferTopScoringLocation;
-        double leastDistance = distanceSubwooferTopScoringPosition;
-
-        if (distanceSubwooferMiddleScoringPosition < leastDistance) {
-            leastDistance = distanceSubwooferMiddleScoringPosition;
-            closestGoodScoringPosition = BlueSubwooferMiddleScoringLocation;
+        for (int i = 0; i < list.size(); i++) {
+            if (PoseSubsystem.convertBlueToRedIfNeeded(list.get(i)).getTranslation()
+                    .getDistance(currentPose.getTranslation()) < leastDistance) {
+                leastDistance = PoseSubsystem.convertBlueToRedIfNeeded(list.get(i)).getTranslation()
+                        .getDistance(currentPose.getTranslation());
+                nearestPosition = list.get(i);
+            }
         }
-
-        if (distanceSubwooferBottomScoringPosition < leastDistance) {
-            leastDistance = distanceSubwooferBottomScoringPosition;
-            closestGoodScoringPosition = BlueSubwooferBottomScoringLocation;
-        }
-
-        if (distanceSpikeTop < leastDistance) {
-            leastDistance = distanceSpikeTop;
-            closestGoodScoringPosition = new Pose2d(
-                    BlueSpikeTop.getTranslation(),
-                    Rotation2d.fromDegrees(-153.64394)
-                    );
-        }
-
-        if (distanceSpikeMiddle < leastDistance) {
-            leastDistance = distanceSpikeMiddle;
-            closestGoodScoringPosition = new Pose2d(
-                    BlueSpikeMiddle.getTranslation(),
-                    Rotation2d.fromDegrees(180)
-                    );
-        }
-
-        if (distanceSpikeBottom < leastDistance) {
-            closestGoodScoringPosition = new Pose2d(
-                    BlueSpikeBottom.getTranslation(),
-                    Rotation2d.fromDegrees(153.64394)
-                    );
-        }
-
-        return closestGoodScoringPosition;
+        return nearestPosition;
     }
 
     @Override
