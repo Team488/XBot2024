@@ -693,6 +693,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("BrakeEngaged", getBrakeEngaged());
         aKitLog.record("ForceBrakesEngaged", getForceBrakesEngaged());
         aKitLog.record("Target Extension", targetExtension);
+        aKitLog.record("LimitToUnderStage", getLimitToUnderStage());
+        aKitLog.record("Safe Target Extension", getSafeTargetValue());
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
