@@ -70,9 +70,9 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
 
         logic.setPrioritizeRotationIfCloseToGoal(true);
 
-        double maxVelocity = drive.getMaxTargetSpeedMetersPerSecond();
+        double maxVelocity = drive.getSuggestedAutonomousMaximumSpeed();
         if (DriverStation.isAutonomous()) {
-            maxVelocity = 2.4;
+            maxVelocity = drive.getSuggestedAutonomousMaximumSpeed();
         }
         logic.setConstantVelocity(maxVelocity);
 
