@@ -141,6 +141,15 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     }
 
     @Override
+    protected boolean additionalAtGoalChecks() {
+        // if the safe arm value is preventing us from reaching our goal, say we're not at goal
+        if (arm.getTargetValue() != arm.getSafeTargetValue()) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     protected Double getHumanInput() {
         double fundamentalInput = MathUtils.deadband(
                 oi.operatorFundamentalsGamepad.getLeftVector().y,
