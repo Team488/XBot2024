@@ -68,8 +68,7 @@ public class OperatorCommandMap {
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
-            DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
-            ToggleFlipperCommand toggleFlipperCommand)
+            DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand)
 
     {
         // Rotation calibration routine
@@ -88,8 +87,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(lineUpForHangingCommand);
-        //operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).onTrue(toggleFlipperCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
@@ -118,7 +116,8 @@ public class OperatorCommandMap {
             ManualHangingModeCommand manualHangingModeCommand,
             ForceEngageBrakeCommand forceEngageBrakeCommand,
             RemoveForcedBrakingCommand removeForcedBrakingCommand,
-            PrepareForHangingCommand prepareForHangingCommand
+            PrepareForHangingCommand prepareForHangingCommand,
+            ToggleFlipperCommand toggleFlipperCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -170,6 +169,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(removeForcedBrakingCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(manualHangingModeCommand);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(90).onTrue(toggleFlipperCommand);
     }
 
     @Inject
