@@ -20,7 +20,7 @@ import javax.inject.Inject;
 public class PointAtNoteCommand extends BaseCommand {
     Logger log = LogManager.getLogger(this);
 
-    Pose2d notePosition = null;
+    Pose2d savedNotePosition = null;
     DriveSubsystem drive;
     HeadingModule headingModule;
     PoseSubsystem pose;
@@ -46,43 +46,42 @@ public class PointAtNoteCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
+        savedNotePosition = null;
         // Find the note we want to point at
         var notePosition = getClosestAvailableNote();
         if (notePosition != null) {
-            this.notePosition = notePosition;
-            log.info("Rotating to note");
+            this.savedNotePosition = notePosition;
+            log.info("Rotating to note at [{}, {}], current rotation error: {}",
+                    notePosition.getX(), notePosition.getY(), getRotationError());
         } else {
-            this.notePosition = null;
+            this.savedNotePosition = null;
             log.warn("No note found to rotate to");
         }
     }
 
     @Override
     public void execute() {
-        if (notePosition == null) {
+        if (savedNotePosition == null) {
             log.warn("Skipping execute due to no target.");
             return;
         }
 
         // If we can still see the note, update the target
         var newTarget = getClosestAvailableNote();
-        if (newTarget != null && newTarget != this.notePosition) {
-            this.notePosition = newTarget;
+        if (newTarget != null && newTarget != this.savedNotePosition) {
+            this.savedNotePosition = newTarget;
         }
 
         var movement = -oi.driverGamepad.getLeftStickY();
 
-        double rotationError = this.pose.getAngularErrorToTranslation2dInDegrees(
-                this.notePosition.getTranslation(),
-                Rotation2d.fromDegrees(180)); // point rear of robot
-        double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, rotationError);
+        double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
 
         drive.move(new XYPair(movement, 0), rotationPower);
     }
 
     @Override
     public boolean isFinished() {
-        if (this.notePosition == null) {
+        if (this.savedNotePosition == null) {
             log.warn("Command finished due to no note.");
             return true;
         }
@@ -91,22 +90,31 @@ public class PointAtNoteCommand extends BaseCommand {
 
     private Pose2d getClosestAvailableNote() {
         var virtualPoint = getProjectedPoint();
-        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint);
+        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
 
         if (notePosition != null) {
-            if (this.notePosition == null
-                    || this.notePosition
-                        .getTranslation()
-                        .getDistance(notePosition.toPose2d().getTranslation()) < this.maxNoteJump.get()) {
+            if (this.savedNotePosition == null) {
+                this.savedNotePosition = notePosition.toPose2d();
+            };
+            var distance = this.savedNotePosition
+                    .getTranslation()
+                    .getDistance(notePosition.toPose2d().getTranslation());
+            if (distance < this.maxNoteJump.get() && distance > 0.05) {
                 log.info("Updating target");
                 return notePosition.toPose2d();
             }
         }
 
-        return this.notePosition;
+        return this.savedNotePosition;
     }
 
     private Pose2d getProjectedPoint() {
         return this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
+    }
+
+    private double getRotationError() {
+        return this.pose.getAngularErrorToTranslation2dInDegrees(
+                this.savedNotePosition.getTranslation(),
+                Rotation2d.fromDegrees(180)); // point rear of robot
     }
 }

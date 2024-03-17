@@ -12,6 +12,7 @@ import competition.subsystems.arm.commands.StopArmCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.lights.LightSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
+import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
@@ -62,4 +63,5 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract DynamicOracle dynamicOracle();
     public abstract ArmModelBasedCalculator armModelBasedCalculator();
     public abstract SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree();
+    public abstract ListenToOracleCommandGroup listenToOracleCommandGroup();
 }

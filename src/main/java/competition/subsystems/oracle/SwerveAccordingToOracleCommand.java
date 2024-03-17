@@ -1,6 +1,7 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -71,7 +72,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
 
         double maxVelocity = drive.getMaxTargetSpeedMetersPerSecond();
         if (DriverStation.isAutonomous()) {
-            maxVelocity = 1.8;
+            maxVelocity = 2.4;
         }
         logic.setConstantVelocity(maxVelocity);
 
@@ -116,9 +117,21 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
             // This "special aim" mode instructs the robot to aim at a point that isn't the goal point. For example,
             // we could aim directly at the Speaker aperture regardless of where the robot is, causing the robot to
             // "track" the speaker as it moves towards a nice firing point.
-            logic.setEnableSpecialAimTarget(false);
-            logic.setEnableSpecialAimDuringFinalLeg(false);
-            //logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
+
+            // When doing subwoofer operations, it makes sense to choose a fixed angle. However, for ranged shots,
+            // we want to aim more precisely at the speaker at any time.
+            if (oracle.chosenScoringLocation == PointOfInterest.SubwooferBottomScoringLocation
+            || oracle.chosenScoringLocation == PointOfInterest.SubwooferMiddleScoringLocation
+            || oracle.chosenScoringLocation == PointOfInterest.SubwooferTopScoringLocation) {
+                // Melee shot - set up angle in advance
+                logic.setEnableSpecialAimTarget(false);
+                logic.setEnableSpecialAimDuringFinalLeg(false);
+            } else {
+                // Ranged shot - aim at the speaker at all times
+                logic.setEnableSpecialAimTarget(true);
+                logic.setEnableSpecialAimDuringFinalLeg(true);
+                logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
+            }
 
             // TODO: split the score in speaker and score in Amp into two independent sections. It's likely
             // they will want different behavior.
