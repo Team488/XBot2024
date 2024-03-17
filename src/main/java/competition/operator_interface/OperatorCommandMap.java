@@ -70,7 +70,7 @@ public class OperatorCommandMap {
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
 
         var pointAtSpeaker = drive.createSetSpecialPointAtPositionTargetCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION));
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION_FORWARD));
 
         var pointAtSource = drive.createSetSpecialHeadingTargetCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.FaceCollectorToBlueSource));
