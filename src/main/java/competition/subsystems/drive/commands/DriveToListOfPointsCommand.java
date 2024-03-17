@@ -40,7 +40,7 @@ public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
         this.logic.setKeyPointsProvider(pointsSupplier);
 //        this.logic.setAimAtGoalDuringFinalLeg(true);
         this.logic.setEnableConstantVelocity(true);
-        this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
+        this.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         super.initialize();
