@@ -5,6 +5,7 @@ import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -24,7 +25,6 @@ import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -461,6 +461,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
         var angleFromChassisToTarget = WrappedRotation2d.fromDegrees(
                 targetPosition.minus(getCurrentPose2d().getTranslation()).getAngle().rotateBy(offset).getDegrees());
         return getCurrentHeading().minus(angleFromChassisToTarget).getDegrees();
+    }
+
+    public Translation2d transformRobotCoordinateToFieldCoordinate(Translation2d robotCoordinates) {
+            return getCurrentPose2d().plus(new Transform2d(robotCoordinates, new Rotation2d())).getTranslation();
     }
 
     @Override
