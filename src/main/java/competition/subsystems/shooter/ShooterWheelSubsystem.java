@@ -23,6 +23,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     public enum TargetRPM {
         STOP,
         TYPICAL,
+        MELEE,
         INTO_AMP
     }
 
@@ -40,6 +41,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private final DoubleProperty intoAmpShotRpm;
     private final DoubleProperty iMaxAccumValueForShooter;
     private final DoubleProperty typicalShotRpm;
+    private final DoubleProperty meleeShotRpm;
 
     //DEFINING MOTORS
     public XCANSparkMax upperWheelMotor;
@@ -55,6 +57,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         pf.setPrefix(this);
 
         typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
+        meleeShotRpm = pf.createPersistentProperty("MeeleShotRpm", 3500);
         intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 800);
 
         this.pose = pose;
@@ -104,26 +107,18 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         switch (target) {
             case STOP -> setTargetValue(0.0);
             case TYPICAL -> setTargetValue(typicalShotRpm.get());
+            case MELEE -> setTargetValue(meleeShotRpm.get());
             case INTO_AMP -> setTargetValue(intoAmpShotRpm.get());
             default -> setTargetValue(0.0);
-        }
-    }
-
-    public double getRPMForGivenShotType(TargetRPM target) {
-        switch (target) {
-            case STOP -> {return 0.0;}
-            case TYPICAL -> {return typicalShotRpm.get();}
-            case INTO_AMP -> {return intoAmpShotRpm.get();}
-            default -> {return 0.0;}
         }
     }
 
     public double getRPMForGivenScoringLocation(PointOfInterest pointOfInterest) {
         switch (pointOfInterest) {
             // These speeds may be different someday.
-            case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return 4000;}
+            case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return meleeShotRpm.get();}
             case PodiumScoringLocation, AmpFarScoringLocation, BottomSpikeCloserToSpeakerScoringLocation, SpikeMiddle,
-                     TopSpikeCloserToSpeakerScoringLocation, OneRobotAwayFromCenterSubwooferScoringLocation -> {return 4000;}
+                     TopSpikeCloserToSpeakerScoringLocation, OneRobotAwayFromCenterSubwooferScoringLocation -> {return typicalShotRpm.get();}
             default -> {return 4000;}
         }
     }
