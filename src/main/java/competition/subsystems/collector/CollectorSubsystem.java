@@ -2,6 +2,7 @@ package competition.subsystems.collector;
 
 import com.revrobotics.CANSparkBase;
 import competition.electrical_contract.ElectricalContract;
+import competition.subsystems.flipper.FlipperSubsystem;
 import competition.subsystems.oracle.NoteCollectionInfoSource;
 import competition.subsystems.oracle.NoteFiringInfoSource;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -60,11 +61,13 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     final DoubleProperty lightToleranceTimeInterval;
     double carefulAdvanceBeginTime = -Double.MAX_VALUE;
 
+    FlipperSubsystem flipper;
 
 
     @Inject
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
-                              ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory) {
+                              ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory,
+                              FlipperSubsystem flipper) {
         this.contract = electricalContract;
         if (contract.isCollectorReady()) {
             this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
@@ -92,6 +95,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         this.intakeState = IntakeState.STOPPED;
 
         noteInControlValidator = new TimeStableValidator(() -> 0.1); // Checks for having the note over 0.1 seconds
+
+        this.flipper = flipper;
     }
 
     public void resetCollectionState() {
@@ -225,7 +230,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     public void setPower(double power) {
         if (contract.isCollectorReady()) {
-            collectorMotor.set(power);
+            if (flipper.getActive()) {
+                collectorMotor.set(0);
+            }
+            else {
+                collectorMotor.set(power);
+            }
         }
     }
 

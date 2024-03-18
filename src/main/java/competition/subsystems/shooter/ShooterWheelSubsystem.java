@@ -58,7 +58,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
         typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
         meleeShotRpm = pf.createPersistentProperty("MeeleShotRpm", 3500);
-        intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 2000);
+        intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 800);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();

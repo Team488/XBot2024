@@ -478,7 +478,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 0;
                 break;
             case FIRING_FROM_AMP:
-                extension = upperLegalLimitMm.get();
+                extension = 150.80;
                 break;
             case SCOOCH_NOTE:
                 extension = 30;
