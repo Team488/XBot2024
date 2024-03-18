@@ -17,7 +17,7 @@ public class FireFromSubwooferCommandGroup extends ParallelDeadlineGroup {
                                          SetArmExtensionCommand setArmExtensionCommand) {
         super(fireWhenReadyCommand);
 
-        warmUpShooterCommand.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
+        warmUpShooterCommand.setTargetRpm(ShooterWheelSubsystem.TargetRPM.MELEE);
         setArmExtensionCommand.setTargetExtension(ArmSubsystem.UsefulArmPosition.FIRING_FROM_SUBWOOFER);
 
         this.addCommands(setArmExtensionCommand, warmUpShooterCommand);
