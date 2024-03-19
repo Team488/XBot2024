@@ -5,13 +5,13 @@ import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
-import competition.commandgroups.PrepareToFireAtSpeakerFromFarAmpCommand;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
 import competition.subsystems.arm.commands.ForceEngageBrakeCommand;
+import competition.subsystems.arm.commands.LimitArmToUnderStage;
 import competition.subsystems.arm.commands.ManualHangingModeCommand;
 import competition.subsystems.arm.commands.PrepareForHangingCommand;
 import competition.subsystems.arm.commands.RemoveForcedBrakingCommand;
@@ -21,10 +21,10 @@ import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
-import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
-import competition.subsystems.drive.commands.DriveToPodiumCommand;
+import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.flipper.commands.ToggleFlipperCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
@@ -66,7 +66,8 @@ public class OperatorCommandMap {
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
-            DriveToPodiumCommand driveToPodiumCommand)
+            DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
+            LimitArmToUnderStage limitArmToUnderStageCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -82,15 +83,19 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToPodiumCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(lineUpForHangingCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(limitArmToUnderStageCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
                 .onFalse(cancelSpecialPointAtPosition);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Y)
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
+
+        operatorInterface.driverGamepad.getPovIfAvailable(90).whileTrue(lineUpForHangingCommand);
+
     }
 
 
@@ -111,7 +116,8 @@ public class OperatorCommandMap {
             ManualHangingModeCommand manualHangingModeCommand,
             ForceEngageBrakeCommand forceEngageBrakeCommand,
             RemoveForcedBrakingCommand removeForcedBrakingCommand,
-            PrepareForHangingCommand prepareForHangingCommand
+            PrepareForHangingCommand prepareForHangingCommand,
+            ToggleFlipperCommand toggleFlipperCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -163,6 +169,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(removeForcedBrakingCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(manualHangingModeCommand);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(toggleFlipperCommand);
     }
 
     @Inject

@@ -22,15 +22,14 @@ import java.util.List;
 public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
+    double interstageTimeout = 3.5;
 
     @Inject
     public SubwooferShotFromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
                                                           Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                          PoseSubsystem pose, DriveSubsystem drive,
-                                                          DriveToListOfPointsCommand driveToBottomNote,
-                                                          CollectSequenceCommandGroup collectBottomNote) {
+                                                          PoseSubsystem pose, DriveSubsystem drive) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -51,11 +50,11 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                 })
         );
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(driveToMiddleSpikeNoteAndCollect.withTimeout(3.5));
+        this.addCommands(driveToMiddleSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferFirst = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(driveBackToCentralSubwooferFirst.withTimeout(3.5));
+        this.addCommands(driveBackToCentralSubwooferFirst.withTimeout(interstageTimeout));
 
         // Fire second note into the speaker
         var fireSecondNoteCommand = fireFromSubwooferCommandGroup.get();
@@ -69,11 +68,11 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(driveToTopSpikeNoteAndCollect.withTimeout(3.5));
+        this.addCommands(driveToTopSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferSecond = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(driveBackToCentralSubwooferSecond.withTimeout(3.5));
+        this.addCommands(driveBackToCentralSubwooferSecond.withTimeout(interstageTimeout));
 
         // Fire Note into the speaker
         var fireThirdNoteCommand = fireFromSubwooferCommandGroup.get();
@@ -81,12 +80,25 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Drive to bottom spike note and collect
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
-        driveToBottomNote.addPointsSupplier(this::goToBotSpike);
-        this.addCommands(Commands.deadline(collectBottomNote, driveToBottomNote));
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.BlueSpikeBottom);
+                })
+        );
+
+        // Need to drive to an interstitial point first
+        //driveToBottomWhiteLine.addPointsSupplier(this::goToBottomWhiteLine);
+        //driveToBottomWhiteLine.logic.setStopWhenFinished(false);
+
+        //this.addCommands(driveToBottomWhiteLine);
+
+        // Now, go get the bottom spike note
+        var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        this.addCommands(driveToBottomSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
         // Drive back to subwoofer
         var driveBackToCentralSubwooferThird = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(driveBackToCentralSubwooferThird.withTimeout(3.5));
+        this.addCommands(driveBackToCentralSubwooferThird.withTimeout(interstageTimeout));
 
         // Fire Note into the speaker
         var fireFourthNoteCommand = fireFromSubwooferCommandGroup.get();
@@ -97,13 +109,10 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
     }
 
-    public List<XbotSwervePoint> goToBotSpike() {
+    public List<XbotSwervePoint> goToBottomWhiteLine() {
         var points = new ArrayList<XbotSwervePoint>();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 PoseSubsystem.BlueSpikeBottomWhiteLine.getTranslation(),
-                Rotation2d.fromDegrees(180), 10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSpikeBottom.getTranslation(),
                 Rotation2d.fromDegrees(180), 10));
         return points;
     }

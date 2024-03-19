@@ -24,7 +24,7 @@ public enum PointOfInterest {
     PodiumScoringLocation(false, PoseSubsystem.BluePodiumScoringLocation),
     AmpFarScoringLocation(false, PoseSubsystem.BlueFarAmpScoringLocation),
     BottomSpikeCloserToSpeakerScoringLocation(false, PoseSubsystem.BlueBottomSpikeCloserToSpeakerScoringLocation),
-    MiddleSpikeScoringLocation(false, PoseSubsystem.BlueSpikeMiddle),
+    MiddleSpikeScoringLocation(false, PoseSubsystem.BlueMiddleSpikeScoringLocation),
     TopSpikeCloserToSpeakerScoringLocation(false, PoseSubsystem.BlueTopSpikeCloserToSpeakerScoringLocation),
     OneRobotAwayFromCenterSubwooferScoringLocation(false, PoseSubsystem.BlueOneRobotAwayFromCenterSubwooferScoringLocation),
 

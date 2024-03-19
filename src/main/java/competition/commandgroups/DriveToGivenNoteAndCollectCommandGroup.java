@@ -9,7 +9,7 @@ public class DriveToGivenNoteAndCollectCommandGroup extends ParallelDeadlineGrou
 
 
     @Inject
-    public DriveToGivenNoteAndCollectCommandGroup(DriveToGivenNoteCommand driveToGivenNoteCommand,
+    public DriveToGivenNoteAndCollectCommandGroup(DriveToGivenNoteWithVisionCommand driveToGivenNoteCommand,
                                                   CollectSequenceCommandGroup collectSequenceCommandGroup) {
         super(collectSequenceCommandGroup);
 
