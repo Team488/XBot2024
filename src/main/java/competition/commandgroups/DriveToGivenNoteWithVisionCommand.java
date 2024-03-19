@@ -157,7 +157,7 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         log.info("Assigning note to drive subsystem");
         drive.setTargetNote(noteLocation);
         noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
-        prepareToDriveAtGivenNote();
+        prepareToDriveAtGivenNoteWithWaypoints();
     }
 
     @Override
