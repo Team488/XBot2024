@@ -82,7 +82,7 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
 
         var collectSequence1 = collectSequenceCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(driveToCenterline4,collectSequence1).withTimeout(3.5));
+        this.addCommands(Commands.deadline(collectSequence1,driveToCenterline4).withTimeout(3.5));
 
         //drives back to shooting position and fire note
         var driveToShootingPosition1 = driveToListOfPointsCommandProvider.get();
@@ -104,7 +104,7 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
 
         var collectSequence2 = collectSequenceCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(driveToCenterline3,collectSequence2).withTimeout(3.5));
+        this.addCommands(Commands.deadline(collectSequence2,driveToCenterline3).withTimeout(3.5));
 
         queueMessageToAutoSelector("Drive to Centerline3 collect and shoot");
 
@@ -127,7 +127,7 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
 
         var collectSequence3 = collectSequenceCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(collectSequence3,driveToCenterline2).withTimeout(3.5));
+        this.addCommands(Commands.deadline(driveToCenterline2,collectSequence3).withTimeout(3.5));
 
         //drives and collects the third note
         queueMessageToAutoSelector("Drive to Centerline2 collect and shoot");
