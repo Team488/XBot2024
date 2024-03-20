@@ -6,7 +6,6 @@ import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.Availability;
 import competition.subsystems.oracle.DynamicOracle;
-import competition.subsystems.oracle.Note;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -76,7 +75,7 @@ public class Simulator2024 {
 
     private void visualizeNotes() {
         // Visualize the notes in the oracle.
-        Logger.recordOutput("Simulator2024/OracleNotes", oracle.getNoteMap().getAllKnownNotes());
+        Logger.recordOutput("Simulator2024/OracleNotes", oracle.getNoteMap().getAllKnownNotePoses());
     }
 
     private void simulateCollector() {

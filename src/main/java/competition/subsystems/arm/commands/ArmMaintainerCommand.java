@@ -63,7 +63,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         } else if (isMaintainerAtGoal()) {
             arm.setPower(0.0);
         } else {
-            double power = positionPid.calculate(arm.getTargetValue(), arm.getCurrentValue());
+            double power = positionPid.calculate(arm.getSafeTargetValue(), arm.getCurrentValue());
             arm.setPower(power);
         }
     }
@@ -141,6 +141,15 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     }
 
     @Override
+    protected boolean additionalAtGoalChecks() {
+        // if the safe arm value is preventing us from reaching our goal, say we're not at goal
+        if (Math.abs(arm.getTargetValue() - arm.getSafeTargetValue()) > 0.001) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     protected Double getHumanInput() {
         double fundamentalInput = MathUtils.deadband(
                 oi.operatorFundamentalsGamepad.getLeftVector().y,
@@ -153,6 +162,21 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
                 (x) -> x);
 
         return fundamentalInput + advancedInput;
+    }
+
+    @Override
+    protected boolean getErrorWithinTolerance() {
+        double tolerance = errorToleranceProp.get();
+
+        // Allow for greater tolerances if we are raising the arm up high
+        if (arm.getTargetValue() > 100) {
+            tolerance = 5;
+        }
+
+        if (Math.abs(getErrorMagnitude()) < tolerance) {
+            return true;
+        }
+        return false;
     }
 
     @Override

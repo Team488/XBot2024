@@ -2,6 +2,9 @@ package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PointOfInterest;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public class Note implements ReservableLocation {
 
@@ -14,8 +17,12 @@ public class Note implements ReservableLocation {
     private PointOfInterest pointOfInterest;
 
     public Note(Pose2d location) {
+        this(location, Availability.Available);
+    }
+
+    public Note(Pose2d location, Availability availability) {
         this.priority = -1;
-        this.availability = Availability.Available;
+        this.availability = availability;
         this.location = location;
     }
 
@@ -43,6 +50,10 @@ public class Note implements ReservableLocation {
 
     public Pose2d getLocation() {
         return location;
+    }
+
+    public Pose3d get3dLocation() {
+        return new Pose3d(new Translation3d(location.getX(), location.getY(), 0.25), new Rotation3d());
     }
 
     public void setPriority(int priority) {

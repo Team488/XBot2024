@@ -8,6 +8,7 @@ import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -37,7 +38,9 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     public enum ScoringSubGoals {
-        IngestNote,
+        IngestNoteBlindly,
+        IngestNoteVisionTerminalApproach,
+        IngestNoteBlindTerminalApproach,
         IngestFromSource,
         MoveToScoringRange,
         EarnestlyLaunchNote
@@ -278,25 +281,14 @@ public class DynamicOracle extends BaseSubsystem {
         // Populate the field with notes from vision
         noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
         if (this.includeVisionNotes.get()) {
-            var robotTranslation = pose.getCurrentPose2d().getTranslation();
-            var robotRotation = pose.getCurrentPose2d().getRotation();
-            if (vision.getDetectedNotes() != null) {
-                Arrays.stream(vision.getDetectedNotes())
-                        .map(note -> {
-                            var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
-                            var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
-                            return new Pose2d(
-                                    robotTranslation.plus(rotatedToFieldRelative),
-                                    new Rotation2d());
-                        })
-                        .forEach(noteMap::addVisionNote);
-            }
+            handleVisionDetectedNotes();
         }
 
         aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.
         // We can always set the global log level to debug and replay the inputs to regenerate this data.
-        aKitLog.record("NoteMap", noteMap.getAllKnownNotes());
+        aKitLog.record("NoteMap", noteMap.getAllAvailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
+        aKitLog.record("UnavailableNoteMap", noteMap.getAllUnavailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
 
         switch (currentHighLevelGoal) {
@@ -344,21 +336,7 @@ public class DynamicOracle extends BaseSubsystem {
                         } else {
                             setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSourceMiddle));
                         }
-                    }/*
-                    else if (suggestedNote.getAvailability() == Availability.AgainstObstacle) {
-                        // Take the note's pose2d and extend it in to the super far distance so the robot
-                        // will effectively aim at the "wall" of the obstacle as it approaches the note.
-                        Pose2d superExtendedIntoTheDistancePose = new Pose2d(
-                                new Translation2d(
-                                        suggestedNote.getLocation().getTranslation().getX()
-                                                + Math.cos(suggestedNote.getLocation().getRotation().getRadians()) * 10000000,
-                                        suggestedNote.getLocation().getTranslation().getY()
-                                                + Math.sin(suggestedNote.getLocation().getRotation().getRadians()) * 10000000),
-                                suggestedNote.getLocation().getRotation()
-                                );
-                        setSpecialAimTarget(superExtendedIntoTheDistancePose);
-                        setTerminatingPoint(suggestedNote.getLocation());
-                    }*/
+                    }
                     else {
                         setTerminatingPoint(getTargetNote().getLocation());
                         setSpecialAimTarget(getTargetNote().getLocation());
@@ -367,13 +345,15 @@ public class DynamicOracle extends BaseSubsystem {
                     // Publish a route from current position to that location
                     firstRunInNewGoal = false;
                     reevaluationRequested = false;
+
+                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindly;
                 }
 
-                currentScoringSubGoal = ScoringSubGoals.IngestNote;
+                determineCollectionSubgoal();
 
                 if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
-                    Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.0);
+                    Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.5);
                     if (nearestNote != null) {
                         nearestNote.setAvailability(Availability.Unavailable);
                     }
@@ -388,8 +368,6 @@ public class DynamicOracle extends BaseSubsystem {
                 break;
         }
 
-
-
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
                 targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
@@ -401,6 +379,52 @@ public class DynamicOracle extends BaseSubsystem {
         }
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
+    }
+
+    private void handleVisionDetectedNotes() {
+        var robotTranslation = pose.getCurrentPose2d().getTranslation();
+        var robotRotation = pose.getCurrentPose2d().getRotation();
+        if (vision.getDetectedNotes() != null) {
+            Arrays.stream(vision.getDetectedNotes())
+                    .map(note -> transformRelativeNotePoseToFieldPose(note, robotRotation, robotTranslation))
+                    .forEach(noteMap::addVisionNote);
+        }
+        if (vision.getPassiveDetectedNotes() != null) {
+            Arrays.stream(vision.getPassiveDetectedNotes())
+                    .map(note -> transformRelativeNotePoseToFieldPose(note, robotRotation, robotTranslation))
+                    .forEach(noteMap::addPassiveVisionNote);
+        }
+    }
+
+    private static Pose2d transformRelativeNotePoseToFieldPose(Pose3d note, Rotation2d robotRotation, Translation2d robotTranslation) {
+        var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
+        var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
+        return new Pose2d(
+                robotTranslation.plus(rotatedToFieldRelative),
+                new Rotation2d());
+    }
+
+    private void determineCollectionSubgoal() {
+        if (currentScoringSubGoal == ScoringSubGoals.IngestNoteBlindly) {
+            if (isTerminatingPointWithinDistance(vision.getBestRangeFromStaticNoteToSearchForNote())) {
+                // look for a vision note.
+                var visionNote = noteMap.getClosestAvailableNote(pose.getCurrentPose2d(), false);
+                if (visionNote == null) {
+                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindTerminalApproach;
+                    return;
+                }
+                if (pose.getCurrentPose2d().getTranslation().getDistance(
+                        visionNote.toPose2d().getTranslation()) > vision.getMaxNoteSearchingDistanceForSpikeNotes()) {
+                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindTerminalApproach;
+                    return;
+                }
+
+                // We found a vision note nearby.
+                currentScoringSubGoal = ScoringSubGoals.IngestNoteVisionTerminalApproach;
+                setTerminatingPoint(visionNote.toPose2d());
+                setSpecialAimTarget(visionNote.toPose2d());
+            }
+        }
     }
 
     private void checkForMaskedShotsBecomingAvailable() {
