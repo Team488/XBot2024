@@ -80,7 +80,7 @@ public class Simulator2024 {
 
     private void simulateCollector() {
         // If we are running the collector and near a note,
-        var nearestNote = oracle.getNoteMap().getClosest(pose.getCurrentPose2d().getTranslation(), 0.1, Availability.Available, Availability.AgainstObstacle);
+        var nearestNote = oracle.getNoteMap().getClosest(pose.getCurrentPose2d().getTranslation(), 0.1, Availability.Available);
         if (nearestNote != null && collector.collectorMotor.getAppliedOutput() > 0.05) {
             // Trigger our sensors to say we have one.
             ((MockDigitalInput)collector.inControlNoteSensor).setValue(true);
