@@ -165,6 +165,21 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     }
 
     @Override
+    protected boolean getErrorWithinTolerance() {
+        double tolerance = errorToleranceProp.get();
+
+        // Allow for greater tolerances if we are raising the arm up high
+        if (arm.getTargetValue() > 100) {
+            tolerance = 5;
+        }
+
+        if (Math.abs(getErrorMagnitude()) < tolerance) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     protected double getHumanInputMagnitude() {
         return Math.abs(getHumanInput());
     }

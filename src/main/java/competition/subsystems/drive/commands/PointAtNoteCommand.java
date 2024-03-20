@@ -4,12 +4,16 @@ import competition.operator_interface.OperatorInterface;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.command.BaseCommand;
+import xbot.common.math.MathUtils;
 import xbot.common.math.XYPair;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
@@ -72,11 +76,20 @@ public class PointAtNoteCommand extends BaseCommand {
             this.savedNotePosition = newTarget;
         }
 
-        var movement = -oi.driverGamepad.getLeftStickY();
-
+        var toNoteTranslation = newTarget.getTranslation().minus(this.pose.getCurrentPose2d().getTranslation());
+        var movement = MathUtils.deadband(getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector()), oi.getDriverGamepadTypicalDeadband(), (x) -> x);
         double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
 
-        drive.move(new XYPair(movement, 0), rotationPower);
+        // negative movement because we want to drive the robot 'backwards', collector towards the note
+        drive.move(new XYPair(-movement, 0), rotationPower);
+    }
+
+    public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick) {
+        var toNoteVector = fieldTranslationToTarget.toVector().unit();
+        var driverVector = VecBuilder.fill(driveJoystick.y, -driveJoystick.x);
+        var dot = toNoteVector.dot(driverVector);
+
+        return dot;
     }
 
     @Override

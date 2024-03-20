@@ -11,6 +11,7 @@ import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.arm.commands.RetractArmCommand;
 import competition.subsystems.arm.commands.StopArmCommand;
 import competition.subsystems.collector.CollectorSubsystem;
+import competition.subsystems.flipper.FlipperSubsystem;
 import competition.subsystems.lights.LightSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
@@ -40,6 +41,8 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract OperatorInterface operatorInterface();
 
     public abstract SwerveComponentHolder swerveComponents();
+
+    public abstract FlipperSubsystem flipperSubsystem();
 
     public abstract VisionSubsystem visionSubsystem();
 

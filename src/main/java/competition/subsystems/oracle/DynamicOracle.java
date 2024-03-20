@@ -38,7 +38,9 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     public enum ScoringSubGoals {
-        IngestNote,
+        IngestNoteBlindly,
+        IngestNoteVisionTerminalApproach,
+        IngestNoteBlindTerminalApproach,
         IngestFromSource,
         MoveToScoringRange,
         EarnestlyLaunchNote
@@ -334,21 +336,7 @@ public class DynamicOracle extends BaseSubsystem {
                         } else {
                             setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSourceMiddle));
                         }
-                    }/*
-                    else if (suggestedNote.getAvailability() == Availability.AgainstObstacle) {
-                        // Take the note's pose2d and extend it in to the super far distance so the robot
-                        // will effectively aim at the "wall" of the obstacle as it approaches the note.
-                        Pose2d superExtendedIntoTheDistancePose = new Pose2d(
-                                new Translation2d(
-                                        suggestedNote.getLocation().getTranslation().getX()
-                                                + Math.cos(suggestedNote.getLocation().getRotation().getRadians()) * 10000000,
-                                        suggestedNote.getLocation().getTranslation().getY()
-                                                + Math.sin(suggestedNote.getLocation().getRotation().getRadians()) * 10000000),
-                                suggestedNote.getLocation().getRotation()
-                                );
-                        setSpecialAimTarget(superExtendedIntoTheDistancePose);
-                        setTerminatingPoint(suggestedNote.getLocation());
-                    }*/
+                    }
                     else {
                         setTerminatingPoint(getTargetNote().getLocation());
                         setSpecialAimTarget(getTargetNote().getLocation());
@@ -357,13 +345,15 @@ public class DynamicOracle extends BaseSubsystem {
                     // Publish a route from current position to that location
                     firstRunInNewGoal = false;
                     reevaluationRequested = false;
+
+                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindly;
                 }
 
-                currentScoringSubGoal = ScoringSubGoals.IngestNote;
+                determineCollectionSubgoal();
 
                 if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
-                    Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.0);
+                    Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.5);
                     if (nearestNote != null) {
                         nearestNote.setAvailability(Availability.Unavailable);
                     }
@@ -377,8 +367,6 @@ public class DynamicOracle extends BaseSubsystem {
             default:
                 break;
         }
-
-
 
         aKitLog.record("Current Goal", currentHighLevelGoal);
         aKitLog.record("Current Note",
@@ -414,6 +402,29 @@ public class DynamicOracle extends BaseSubsystem {
         return new Pose2d(
                 robotTranslation.plus(rotatedToFieldRelative),
                 new Rotation2d());
+    }
+
+    private void determineCollectionSubgoal() {
+        if (currentScoringSubGoal == ScoringSubGoals.IngestNoteBlindly) {
+            if (isTerminatingPointWithinDistance(vision.getBestRangeFromStaticNoteToSearchForNote())) {
+                // look for a vision note.
+                var visionNote = noteMap.getClosestAvailableNote(pose.getCurrentPose2d(), false);
+                if (visionNote == null) {
+                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindTerminalApproach;
+                    return;
+                }
+                if (pose.getCurrentPose2d().getTranslation().getDistance(
+                        visionNote.toPose2d().getTranslation()) > vision.getMaxNoteSearchingDistanceForSpikeNotes()) {
+                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindTerminalApproach;
+                    return;
+                }
+
+                // We found a vision note nearby.
+                currentScoringSubGoal = ScoringSubGoals.IngestNoteVisionTerminalApproach;
+                setTerminatingPoint(visionNote.toPose2d());
+                setSpecialAimTarget(visionNote.toPose2d());
+            }
+        }
     }
 
     private void checkForMaskedShotsBecomingAvailable() {
