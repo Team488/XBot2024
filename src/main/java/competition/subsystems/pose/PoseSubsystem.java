@@ -51,7 +51,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final Latch useVisionToUpdateGyroLatch;
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
-    public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0, 5.5, Rotation2d.fromDegrees(180));
+    public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(-0.0381, 5.547868, Rotation2d.fromDegrees(180));
     public static Pose2d BlueSpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
     public static Pose2d BlueSpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d BlueSpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
