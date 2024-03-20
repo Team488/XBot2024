@@ -56,6 +56,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     long logCounter = 0;
     Pose3d[] detectedNotes;
     NoteTracker[] noteTrackers;
+    Pose3d[] passiveDetectedNotes;
+    NoteTracker[] passiveNoteTrackers;
     final DoubleProperty noteLocalizationInfo;
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
@@ -85,10 +87,15 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
                 //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs",
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+        };
+        var passiveDetectionTopicNames = new String[]{
                 "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
+                .map(NoteTracker::new)
+                .toArray(NoteTracker[]::new);
+        passiveNoteTrackers = Arrays.stream(passiveDetectionTopicNames)
                 .map(NoteTracker::new)
                 .toArray(NoteTracker[]::new);
 
@@ -278,6 +285,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return detectedNotes;
     }
 
+    public Pose3d[] getPassiveDetectedNotes() {
+        return passiveDetectedNotes;
+    }
+
     public double getNoteYawFromCentralCamera() {
         return getNoteYaw(rearCenterNoteCamera);
     }
@@ -347,13 +358,28 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
-        Arrays.stream(noteTrackers)
-                .forEach(NoteTracker::refreshDataFrame);
-        var detections = Arrays.stream(noteTrackers)
+        detectedNotes = getNotesFromTrackers(noteTrackers);
+        passiveDetectedNotes = getNotesFromTrackers(passiveNoteTrackers);
+
+        aKitLog.record("DetectedNotes", detectedNotes);
+        aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
+    }
+
+    private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
+        Arrays.stream(noteTrackers).forEach(NoteTracker::refreshDataFrame);
+        var detections = getDetections(noteTrackers);
+        return processDetections(detections);
+    }
+
+    private String[] getDetections(NoteTracker[] noteTrackers) {
+        return Arrays.stream(noteTrackers)
                 .map(NoteTracker::getDetections)
                 .flatMap(Arrays::stream)
                 .toArray(String[]::new);
-        detectedNotes = Arrays.stream(detections)
+    }
+
+    private Pose3d[] processDetections(String[] detections) {
+        return Arrays.stream(detections)
                 .map(detection -> {
                     var parts = detection.split(",");
                     var ratio = Double.parseDouble(parts[3]);
@@ -372,8 +398,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 })
                 .filter(Objects::nonNull)
                 .toArray(Pose3d[]::new);
-
-        aKitLog.record("DetectedNotes", detectedNotes);
     }
 
     @Override

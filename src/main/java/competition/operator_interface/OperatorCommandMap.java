@@ -26,6 +26,7 @@ import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.lights.commands.AmpSignalToggleCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
+import competition.subsystems.flipper.commands.ToggleFlipperCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
@@ -68,8 +69,7 @@ public class OperatorCommandMap {
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
-            LimitArmToUnderStage limitArmToUnderStageCommand
-    )
+            LimitArmToUnderStage limitArmToUnderStageCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -88,6 +88,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(limitArmToUnderStageCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
                 .onFalse(cancelSpecialPointAtPosition);
@@ -118,7 +119,8 @@ public class OperatorCommandMap {
             ForceEngageBrakeCommand forceEngageBrakeCommand,
             RemoveForcedBrakingCommand removeForcedBrakingCommand,
             PrepareForHangingCommand prepareForHangingCommand,
-            AmpSignalToggleCommand ampSignalCommand
+            AmpSignalToggleCommand ampSignalCommand,
+            ToggleFlipperCommand toggleFlipperCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -170,7 +172,8 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(removeForcedBrakingCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(manualHangingModeCommand);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(ampSignalCommand);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(ampSignalCommand);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(toggleFlipperCommand);
     }
 
     @Inject
