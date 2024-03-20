@@ -61,7 +61,7 @@ public class Note implements ReservableLocation {
     }
 
     public Pose3d get3dLocation() {
-        return new Pose3d(new Translation3d(location.getX(), location.getY(), 0.25), new Rotation3d());
+        return new Pose3d(new Translation3d(location.getX(), location.getY(), 0.025), new Rotation3d());
     }
 
     public DataSource getDataSource() {
