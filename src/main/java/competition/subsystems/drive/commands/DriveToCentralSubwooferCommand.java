@@ -78,6 +78,6 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
 
         boolean nearVelocityThreshold = speed < velocityThreshold.get();
 
-        return (nearPositionThreshold && nearVelocityThreshold) || super.isFinished();
+        return nearPositionThreshold && nearVelocityThreshold;
     }
 }
