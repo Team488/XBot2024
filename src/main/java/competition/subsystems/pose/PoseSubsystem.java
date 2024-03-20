@@ -468,7 +468,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public double getRobotCurrentSpeed() {
-        XYPair robotVelocity = super.getCurrentVelocity();
+        XYPair robotVelocity = this.getCurrentVelocity();
         return Math.abs(Math.sqrt(
                 Math.pow(robotVelocity.x, 2) + Math.pow(robotVelocity.y, 2)
         ));
