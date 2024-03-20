@@ -1,16 +1,12 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PointOfInterest;
-import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.controls.sensors.XTimer;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -65,6 +61,13 @@ public class NoteMap extends ReservableLocationMap<Note> {
             visionSourceNotes.remove(0);
         }
         visionSourceNotes.add(new VisionSourceNote(new Note(location), XTimer.getFPGATimestamp()));
+    }
+
+    public void addPassiveVisionNote(Pose2d location) {
+        if (visionSourceNotes.size() >= MAX_VISION_SOURCE_NOTE_COUNT) {
+            visionSourceNotes.remove(0);
+        }
+        visionSourceNotes.add(new VisionSourceNote(new Note(location, Availability.Unavailable), XTimer.getFPGATimestamp()));
     }
 
     public void clearStaleVisionNotes(double maxAgeInSeconds) {
@@ -123,7 +126,37 @@ public class NoteMap extends ReservableLocationMap<Note> {
         return null;
     }
 
-    public Pose3d[] getAllKnownNotes() {
+    public List<Note> getAllAvailableNotes() {
+        ArrayList<Note> allNotes = new ArrayList<Note>();
+        allNotes.addAll(this.internalMap
+                .values()
+                .stream()
+                .filter(note -> note.getAvailability() == Availability.Available)
+                .toList());
+        allNotes.addAll(this.visionSourceNotes
+                .stream()
+                .map(VisionSourceNote::getNote)
+                .filter(note -> note.getAvailability() == Availability.Available)
+                .toList());
+        return allNotes;
+    }
+
+    List<Note> getAllUnavailableNotes() {
+        ArrayList<Note> allNotes = new ArrayList<Note>();
+        allNotes.addAll(this.internalMap
+                .values()
+                .stream()
+                .filter(note -> note.getAvailability() != Availability.Available)
+                .toList());
+        allNotes.addAll(this.visionSourceNotes
+                .stream()
+                .map(VisionSourceNote::getNote)
+                .filter(note -> note.getAvailability() != Availability.Available)
+                .toList());
+        return allNotes;
+    }
+
+    public Pose3d[] getAllKnownNotePoses() {
         Pose3d[] notes = new Pose3d[internalMap.size() + visionSourceNotes.size()];
         int i = 0;
         for (Note note : this.internalMap.values()) {

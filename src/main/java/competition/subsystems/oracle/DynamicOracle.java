@@ -8,6 +8,7 @@ import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -280,25 +281,14 @@ public class DynamicOracle extends BaseSubsystem {
         // Populate the field with notes from vision
         noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
         if (this.includeVisionNotes.get()) {
-            var robotTranslation = pose.getCurrentPose2d().getTranslation();
-            var robotRotation = pose.getCurrentPose2d().getRotation();
-            if (vision.getDetectedNotes() != null) {
-                Arrays.stream(vision.getDetectedNotes())
-                        .map(note -> {
-                            var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
-                            var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
-                            return new Pose2d(
-                                    robotTranslation.plus(rotatedToFieldRelative),
-                                    new Rotation2d());
-                        })
-                        .forEach(noteMap::addVisionNote);
-            }
+            handleVisionDetectedNotes();
         }
 
         aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.
         // We can always set the global log level to debug and replay the inputs to regenerate this data.
-        aKitLog.record("NoteMap", noteMap.getAllKnownNotes());
+        aKitLog.record("NoteMap", noteMap.getAllAvailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
+        aKitLog.record("UnavailableNoteMap", noteMap.getAllUnavailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
 
         switch (currentHighLevelGoal) {
@@ -389,6 +379,29 @@ public class DynamicOracle extends BaseSubsystem {
         }
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
+    }
+
+    private void handleVisionDetectedNotes() {
+        var robotTranslation = pose.getCurrentPose2d().getTranslation();
+        var robotRotation = pose.getCurrentPose2d().getRotation();
+        if (vision.getDetectedNotes() != null) {
+            Arrays.stream(vision.getDetectedNotes())
+                    .map(note -> transformRelativeNotePoseToFieldPose(note, robotRotation, robotTranslation))
+                    .forEach(noteMap::addVisionNote);
+        }
+        if (vision.getPassiveDetectedNotes() != null) {
+            Arrays.stream(vision.getPassiveDetectedNotes())
+                    .map(note -> transformRelativeNotePoseToFieldPose(note, robotRotation, robotTranslation))
+                    .forEach(noteMap::addPassiveVisionNote);
+        }
+    }
+
+    private static Pose2d transformRelativeNotePoseToFieldPose(Pose3d note, Rotation2d robotRotation, Translation2d robotTranslation) {
+        var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
+        var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
+        return new Pose2d(
+                robotTranslation.plus(rotatedToFieldRelative),
+                new Rotation2d());
     }
 
     private void determineCollectionSubgoal() {
