@@ -52,6 +52,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
 
+    //Speaker position that is forward 9.5 inches for better aiming
     public static final  Translation2d SPEAKER_TARGET_FORWARD = new Translation2d(0.2032,5.547868);
     public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0, 5.5, Rotation2d.fromDegrees(180));
     public static Pose2d BlueSpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
