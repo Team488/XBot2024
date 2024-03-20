@@ -68,7 +68,6 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
 
     @Override
     public boolean isFinished() {
-        // Get velocity
         XYPair robotVelocity = pose.getCurrentVelocity();
         double speed = Math.abs(Math.sqrt(
                 Math.pow(robotVelocity.x, 2) + Math.pow(robotVelocity.y, 2)
@@ -76,6 +75,7 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
 
         Translation2d robotLocation = pose.getCurrentPose2d().getTranslation();
 
+        // Returns finished if both position and velocity are under threshold
         boolean nearPositionThreshold = PoseSubsystem.convertBlueToRedIfNeeded(
                 goal).getDistance(robotLocation) < positionMmThreshold.get();
 
