@@ -67,6 +67,7 @@ public class ArmSubsystemTest extends BaseCompetitionTest {
 
         ((MockCANSparkMax)arm.armMotorLeft).setPosition(20);
         ((MockCANSparkMax)arm.armMotorRight).setPosition(20);
+        arm.refreshDataFrame();
 
         assertNotEquals(arm.retractPower, 0, 0.0001); // Check if retract power == 0
         checkMotorPower(0); // Make sure motor not moving
