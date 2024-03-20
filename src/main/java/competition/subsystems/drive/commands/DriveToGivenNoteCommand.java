@@ -4,6 +4,8 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
@@ -17,7 +19,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
 
     DynamicOracle oracle;
     DriveSubsystem drive;
-    Pose2d[] waypoints = null;
+    public Translation2d[] waypoints = null;
 
     @Inject
     public DriveToGivenNoteCommand(DriveSubsystem drive, DynamicOracle oracle,
@@ -31,7 +33,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
     @Override
     public void initialize() {
         log.info("Intitializing");
-        prepareToDriveAtGivenNoteWithWaypoints();
+        prepareToDriveAtGivenNoteWithWaypoints(getWaypoints());
     }
 
     public void prepareToDriveAtGivenNote() {
@@ -49,14 +51,14 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         reset();
     }
     //allows for driving not in a straight line
-    public void prepareToDriveAtGivenNoteWithWaypoints(Pose2d... waypoints){
+    public void prepareToDriveAtGivenNoteWithWaypoints(Translation2d... waypoints){
         if (waypoints == null){
             prepareToDriveAtGivenNote();
             return;
         }
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
-        for (Pose2d waypoint : waypoints){
-            swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(waypoint,10));
+        for (Translation2d waypoint : waypoints){
+            swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(waypoint,new Rotation2d(),10));
         }
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 drive.getTargetNote(), 10));
@@ -70,11 +72,11 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         reset();
     }
-    public void setWaypoints(Pose2d... waypoints){
+    public void setWaypoints(Translation2d... waypoints){
         this.waypoints = waypoints;
     }
 
-    public Pose2d[] getWaypoints() {
+    public Translation2d[] getWaypoints() {
         return waypoints;
     }
 

@@ -7,6 +7,7 @@ import competition.commandgroups.DriveToNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
+import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PointOfInterest;
@@ -14,9 +15,11 @@ import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.FireWhenReadyCommand;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 import xbot.common.trajectory.XbotSwervePoint;
@@ -29,13 +32,14 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
     final AutonomousCommandSelector autoSelector;
     @Inject
     public DistanceShotFromBotThenThreeCenter(AutonomousCommandSelector autoSelector, PoseSubsystem pose,
+                                              DriveSubsystem drive,
                                               Provider<FireWhenReadyCommand> fireNoteCommandGroupProvider,
                                               Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
                                               Provider<CollectSequenceCommandGroup> collectSequenceCommandGroupProvider,
                                               Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
                                               Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
                                               FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup,
-                                              DriveToGivenNoteWithVisionCommand driveToNote){
+                                              Provider<DriveToGivenNoteWithVisionCommand> driveToNoteProvider){
         this.autoSelector = autoSelector;
 
         //getting all the warmup and preaiming arm out of the way
@@ -67,9 +71,15 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
 
         //swap drive and collect sequence for testing
         queueMessageToAutoSelector("Drive to Centerline4 collect and shoot");
-        var driveToCenterline4 = driveToListOfPointsCommandProvider.get();
-        driveToCenterline4.addPointsSupplier(this::goToFirstNote);
-        driveBackwards(driveToCenterline4);
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.CenterLine4);
+                })
+        );
+        var driveToCenterline4 = driveToNoteProvider.get();
+        driveToCenterline4.setWaypoints(goToFirstNote());
+//        driveToCenterline4.addPointsSupplier(this::goToFirstNote);
+//        driveBackwards(driveToCenterline4);
         var collectSequence1 = collectSequenceCommandGroupProvider.get();
 
         this.addCommands(Commands.deadline(collectSequence1,driveToCenterline4));
@@ -144,16 +154,10 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(translation, Rotation2d.fromDegrees(180),10));
         return points;
     }
-    private ArrayList<XbotSwervePoint> goToFirstNote(){
-        var points = new ArrayList<XbotSwervePoint>();
-        var translation = new Translation2d(5.8674,1.5);
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                translation,
-                Rotation2d.fromDegrees(180),10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.CenterLine4.getTranslation(),
-                new Rotation2d(),10));
-        return points;
+    private Translation2d[] goToFirstNote(){
+        return new Translation2d[]{
+                new Translation2d(5.8674,1.5)
+        };
     }
     private ArrayList<XbotSwervePoint> goToSecondNote(){
         var points = new ArrayList<XbotSwervePoint>();
