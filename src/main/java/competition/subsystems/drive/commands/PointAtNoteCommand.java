@@ -82,7 +82,10 @@ public class PointAtNoteCommand extends BaseCommand {
         var toNoteTranslation = newTarget.getTranslation().minus(this.pose.getCurrentPose2d().getTranslation());
         // if we're very close to the note, stop trying to rotate, it gets wonky
 
-        var movement = MathUtils.deadband(getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)), oi.getDriverGamepadTypicalDeadband(), (x) -> x);
+        var movement = MathUtils.deadband(
+                getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector(),
+                        DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)),
+                oi.getDriverGamepadTypicalDeadband(), (x) -> x);
         double rotationPower = 0;
         // if we're far enough away, rotate towards the note (if we're too close, the )
         if (toNoteTranslation.getNorm() > this.minDistanceToNoteToRotateMm.get()) {
