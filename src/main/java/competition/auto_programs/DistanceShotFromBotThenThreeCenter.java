@@ -78,11 +78,10 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
         );
         var driveToCenterline4 = driveToNoteProvider.get();
         driveToCenterline4.setWaypoints(goToFirstNote());
-//        driveToCenterline4.addPointsSupplier(this::goToFirstNote);
-//        driveBackwards(driveToCenterline4);
+
         var collectSequence1 = collectSequenceCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(collectSequence1,driveToCenterline4));
+        this.addCommands(Commands.deadline(driveToCenterline4,collectSequence1).withTimeout(3.5));
 
         //drives back to shooting position and fire note
         var driveToShootingPosition1 = driveToListOfPointsCommandProvider.get();
@@ -94,11 +93,17 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
         this.addCommands(driveToShootingPosition1,Commands.deadline(shootFirstNote,warmupForShot1,setArmForShot1));
 
         //swap drive and collect for testing
-        var driveToCenterline3 = driveToListOfPointsCommandProvider.get();
-        driveToCenterline3.addPointsSupplier(this::goToSecondNote);
-        driveBackwards(driveToCenterline3);
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.CenterLine3);
+                })
+        );
+        var driveToCenterline3 = driveToNoteProvider.get();
+        driveToCenterline3.setWaypoints(goToSecondNote());
+
         var collectSequence2 = collectSequenceCommandGroupProvider.get();
-        this.addCommands(Commands.deadline(collectSequence2,driveToCenterline3));
+
+        this.addCommands(Commands.deadline(driveToCenterline3,collectSequence2).withTimeout(3.5));
 
         queueMessageToAutoSelector("Drive to Centerline3 collect and shoot");
 
@@ -111,12 +116,17 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
         this.addCommands(driveToShootingPosition2,Commands.deadline(shootSecondNote,warmupForShot2,setArmForShot2));
 
         //swap drive and collect for testing
-        var driveToCenterline2 = driveToListOfPointsCommandProvider.get();
-        driveToCenterline2.addPointsSupplier(this::goToThirdNote);
-        driveBackwards(driveToCenterline2);
+        this.addCommands(
+                new InstantCommand(() -> {
+                    drive.setTargetNote(PoseSubsystem.CenterLine2);
+                })
+        );
+        var driveToCenterline2 = driveToNoteProvider.get();
+        driveToCenterline2.setWaypoints(goToThirdNote());
+
         var collectSequence3 = collectSequenceCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(collectSequence3,driveToCenterline2));
+        this.addCommands(Commands.deadline(collectSequence3,driveToCenterline2).withTimeout(3.5));
 
         //drives and collects the third note
         queueMessageToAutoSelector("Drive to Centerline2 collect and shoot");
@@ -159,19 +169,15 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
                 new Translation2d(5.8674,1.5)
         };
     }
-    private ArrayList<XbotSwervePoint> goToSecondNote(){
-        var points = new ArrayList<XbotSwervePoint>();
-        var translation = new Translation2d(5.8674,PoseSubsystem.CenterLine3.getY());
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(translation,Rotation2d.fromDegrees(180),10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine3.getTranslation(),new Rotation2d(),10));
-        return points;
+    private Translation2d[] goToSecondNote(){
+        return new Translation2d[]{
+                new Translation2d(5.8674,PoseSubsystem.CenterLine3.getY())
+        };
     }
-    private ArrayList<XbotSwervePoint> goToThirdNote(){
-        var points = new ArrayList<XbotSwervePoint>();
-        var translation = new Translation2d(5.8674,6.4);
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(translation,Rotation2d.fromDegrees(180),10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.CenterLine2.getTranslation(),new Rotation2d(),10));
-        return points;
+    private Translation2d[] goToThirdNote() {
+        return new Translation2d[]{
+                new Translation2d(5.8674, 6.4)
+        };
     }
 
 }
