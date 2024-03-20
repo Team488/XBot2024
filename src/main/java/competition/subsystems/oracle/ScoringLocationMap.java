@@ -16,7 +16,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         addForBothAlliances(PointOfInterest.SubwooferMiddleScoringLocation);
         addForBothAlliances(PointOfInterest.SubwooferBottomScoringLocation);
         addForBothAlliances(PointOfInterest.PodiumScoringLocation);
-        addForBothAlliances(PointOfInterest.AmpFarScoringLocation);
+//        addForBothAlliances(PointOfInterest.AmpFarScoringLocation);
         addForBothAlliances(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation);
         addForBothAlliances(PointOfInterest.MiddleSpikeScoringLocation);
         addForBothAlliances(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation);
@@ -33,7 +33,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         get(PointOfInterest.SubwooferMiddleScoringLocation, alliance).setAvailability(availability);
         get(PointOfInterest.SubwooferBottomScoringLocation, alliance).setAvailability(availability);
         get(PointOfInterest.PodiumScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.AmpFarScoringLocation, alliance).setAvailability(availability);
+//        get(PointOfInterest.AmpFarScoringLocation, alliance).setAvailability(availability);
         get(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, alliance).setAvailability(availability);
         get(PointOfInterest.MiddleSpikeScoringLocation, alliance).setAvailability(availability);
         get(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, alliance).setAvailability(availability);
