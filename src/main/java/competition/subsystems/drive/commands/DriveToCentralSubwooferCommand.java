@@ -22,7 +22,7 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
     DynamicOracle oracle;
     DriveSubsystem drive;
     PoseSubsystem pose;
-    DoubleProperty positionMmThreshold;
+    DoubleProperty meterThreshold;
     DoubleProperty velocityThreshold;
     Translation2d goal;
 
@@ -33,8 +33,8 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
         super(drive, pose, pf, headingModuleFactory);
 
         // TODO: Potentially adjust the values?
-        positionMmThreshold = pf.createPersistentProperty("DriveToSubwooferPositionMmThreshold", 0.05);
-        velocityThreshold = pf.createPersistentProperty("DriveToSubwooferVelocityThreshold", 0.05);
+        meterThreshold = pf.createPersistentProperty("DriveToSubwooferMeterThreshold", 0.3048);
+        velocityThreshold = pf.createPersistentProperty("DriveToSubwooferVelocityThreshold", 0.2);
 
         this.oracle = oracle;
         this.drive = drive;
@@ -68,16 +68,13 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
 
     @Override
     public boolean isFinished() {
-        XYPair robotVelocity = pose.getCurrentVelocity();
-        double speed = Math.abs(Math.sqrt(
-                Math.pow(robotVelocity.x, 2) + Math.pow(robotVelocity.y, 2)
-        ));
+        double speed = pose.getRobotCurrentSpeed();
 
         Translation2d robotLocation = pose.getCurrentPose2d().getTranslation();
 
         // Returns finished if both position and velocity are under threshold
         boolean nearPositionThreshold = PoseSubsystem.convertBlueToRedIfNeeded(
-                goal).getDistance(robotLocation) < positionMmThreshold.get();
+                goal).getDistance(robotLocation) < meterThreshold.get();
 
         boolean nearVelocityThreshold = speed < velocityThreshold.get();
 
