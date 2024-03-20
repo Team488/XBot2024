@@ -33,7 +33,7 @@ public class PointAtNoteCommand extends BaseCommand {
     final OperatorInterface oi;
     final DynamicOracle oracle;
     final DoubleProperty maxNoteJump;
-    final DoubleProperty minDistanceToNoteToRotateMm;
+    final DoubleProperty minDistanceToNoteToRotateMeters;
 
     @Inject
     public PointAtNoteCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
@@ -46,7 +46,7 @@ public class PointAtNoteCommand extends BaseCommand {
 
         pf.setPrefix(this);
         this.maxNoteJump = pf.createPersistentProperty("Maximum position jump meters", 1.0);
-        this.minDistanceToNoteToRotateMm = pf.createPersistentProperty("Minimum distance to note to rotate mm", 1000.0);
+        this.minDistanceToNoteToRotateMeters = pf.createPersistentProperty("Minimum distance to note to rotate meter", 0.7);
         this.addRequirements(drive);
     }
 
@@ -88,7 +88,7 @@ public class PointAtNoteCommand extends BaseCommand {
                 oi.getDriverGamepadTypicalDeadband(), (x) -> x);
         double rotationPower = 0;
         // if we're far enough away, rotate towards the note (if we're too close, the )
-        if (toNoteTranslation.getNorm() > this.minDistanceToNoteToRotateMm.get()) {
+        if (toNoteTranslation.getNorm() > this.minDistanceToNoteToRotateMeters.get()) {
             rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
         }
 
