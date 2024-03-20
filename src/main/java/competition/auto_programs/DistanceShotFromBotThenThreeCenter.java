@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
 
+//This auto is a bottom start auto, which directly goes for the 2 (maybe 3 if we optimize) centernotes.
 public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
     final AutonomousCommandSelector autoSelector;
     @Inject
@@ -42,12 +43,11 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
                                               Provider<DriveToGivenNoteWithVisionCommand> driveToNoteProvider){
         this.autoSelector = autoSelector;
 
-        //getting all the warmup and preaiming arm out of the way
+        //just making the commands here to keep things neat
         SetArmExtensionCommand setArmForShot1 = setArmExtensionCommandProvider.get();
         SetArmExtensionCommand setArmForShot2 = setArmExtensionCommandProvider.get();
         SetArmExtensionCommand setArmForShot3 = setArmExtensionCommandProvider.get();
 
-        //this is the distance i calculated, could be replaced with the exact extension later on to optimize
         setArmForShot1.setTargetExtension(setArmForShot1.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
         setArmForShot2.setTargetExtension(setArmForShot2.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
         setArmForShot3.setTargetExtension(setArmForShot3.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
@@ -60,9 +60,10 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
         warmupForShot2.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
         warmupForShot3.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
 
-        var startInFrontOfSpeaker = pose.createSetPositionCommand(
+        //starts us in the bottom of the speaker
+        var startBotOfSpeaker = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));
-        this.addCommands(startInFrontOfSpeaker);
+        this.addCommands(startBotOfSpeaker);
 
         // Fire note into the speaker from starting position
         queueMessageToAutoSelector("Shoot pre-loaded note from subwoofer (center)");
@@ -141,10 +142,6 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
     }
     private void queueMessageToAutoSelector(String message) {
         this.addCommands(autoSelector.createAutonomousStateMessageCommand(message));
-    }
-    private void driveBackwards(DriveToListOfPointsCommand drive){
-        drive.logic.setAimAtGoalDuringFinalLeg(true);
-        drive.logic.setDriveBackwards(true);
     }
     private ArrayList<XbotSwervePoint> goToCenterSpike(){
         var points = new ArrayList<XbotSwervePoint>();
