@@ -43,7 +43,7 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
 
     @Override
     public void initialize() {
-        log.info("Intitializing");
+        log.info("Initializing");
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
 
         // When the robot goes to the central subwoofer to score, it can score further back. This saves time.
