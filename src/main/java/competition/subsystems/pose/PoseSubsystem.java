@@ -470,6 +470,13 @@ public class PoseSubsystem extends BasePoseSubsystem {
             return getCurrentPose2d().plus(new Transform2d(robotCoordinates, new Rotation2d())).getTranslation();
     }
 
+    public double getRobotCurrentSpeed() {
+        XYPair robotVelocity = this.getCurrentVelocity();
+        return Math.abs(Math.sqrt(
+                Math.pow(robotVelocity.x, 2) + Math.pow(robotVelocity.y, 2)
+        ));
+    }
+
     @Override
     public void periodic() {
         super.periodic();
