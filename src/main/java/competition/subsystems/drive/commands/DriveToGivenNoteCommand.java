@@ -17,6 +17,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
 
     DynamicOracle oracle;
     DriveSubsystem drive;
+    Pose2d[] waypoints = null;
 
     @Inject
     public DriveToGivenNoteCommand(DriveSubsystem drive, DynamicOracle oracle,
@@ -47,6 +48,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         reset();
     }
+    //allows for driving not in a straight line
     public void prepareToDriveAtGivenNoteWithWaypoints(Pose2d... waypoints){
         if (waypoints == null){
             prepareToDriveAtGivenNote();
@@ -67,6 +69,13 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         reset();
+    }
+    public void setWaypoints(Pose2d... waypoints){
+        this.waypoints = waypoints;
+    }
+
+    public Pose2d[] getWaypoints() {
+        return waypoints;
     }
 
     @Override
