@@ -7,6 +7,7 @@ public class ScoringLocation implements ReservableLocation {
 
     private Pose2d location;
     private Availability availability;
+    private UnavailableReason unavailableReason;
     private PointOfInterest pointOfInterest;
 
     public ScoringLocation(Pose2d location, Availability availability, PointOfInterest pointOfInterest) {
@@ -23,11 +24,21 @@ public class ScoringLocation implements ReservableLocation {
         return availability;
     }
 
+    public UnavailableReason getUnavailableReason() {
+        return unavailableReason;
+    }
+
     public PointOfInterest getPointOfInterest() {
         return pointOfInterest;
     }
 
-    public void setAvailability(Availability availability) {
-        this.availability = availability;
+    public void setAvailable() {
+        this.availability = Availability.Available;
+        this.unavailableReason = null;
+    }
+
+    public void setUnavailable(UnavailableReason reason) {
+        this.availability = Availability.Unavailable;
+        this.unavailableReason = reason;
     }
 }

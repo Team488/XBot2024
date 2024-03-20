@@ -35,10 +35,10 @@ public class NoteMap extends ReservableLocationMap<Note> {
         add(PointOfInterest.CenterLine5);
     }
 
-    public void markAllianceNotesAsUnavailable(DriverStation.Alliance alliance) {
-        get(PointOfInterest.SpikeTop, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.SpikeMiddle, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.SpikeBottom, alliance).setAvailability(Availability.Unavailable);
+    public void markAllianceNotesAsUnavailable(DriverStation.Alliance alliance, UnavailableReason reason) {
+        getByPointOfInterest(PointOfInterest.SpikeTop, alliance).setUnavailable(reason);
+        getByPointOfInterest(PointOfInterest.SpikeMiddle, alliance).setUnavailable(reason);
+        getByPointOfInterest(PointOfInterest.SpikeBottom, alliance).setUnavailable(reason);
     }
 
     private void add(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
@@ -60,14 +60,18 @@ public class NoteMap extends ReservableLocationMap<Note> {
         if (visionSourceNotes.size() >= MAX_VISION_SOURCE_NOTE_COUNT) {
             visionSourceNotes.remove(0);
         }
-        visionSourceNotes.add(new VisionSourceNote(new Note(location), XTimer.getFPGATimestamp()));
+        visionSourceNotes.add(
+                new VisionSourceNote(
+                        new Note(location, DataSource.Vision), XTimer.getFPGATimestamp()));
     }
 
     public void addPassiveVisionNote(Pose2d location) {
         if (visionSourceNotes.size() >= MAX_VISION_SOURCE_NOTE_COUNT) {
             visionSourceNotes.remove(0);
         }
-        visionSourceNotes.add(new VisionSourceNote(new Note(location, Availability.Unavailable), XTimer.getFPGATimestamp()));
+        visionSourceNotes.add(
+                new VisionSourceNote(
+                        new Note(location, Availability.Unavailable, DataSource.Vision), XTimer.getFPGATimestamp()));
     }
 
     public void clearStaleVisionNotes(double maxAgeInSeconds) {
@@ -85,11 +89,11 @@ public class NoteMap extends ReservableLocationMap<Note> {
 
     public void markSpikeNotesUnavailable() {
         for (var note: this.internalMap.values()) {
-            note.setAvailability(Availability.Unavailable);
+            note.setUnavailable(UnavailableReason.Gone);
         }
     }
 
-    public Note get(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
+    public Note getByPointOfInterest(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         if (pointOfInterest.isUnique()) {
             return get(pointOfInterest.getName());
         } else {
@@ -162,7 +166,7 @@ public class NoteMap extends ReservableLocationMap<Note> {
         for (Note note : this.internalMap.values()) {
 
             double noteZ = 0.025;
-            if (note.getAvailability() != Availability.Available && note.getAvailability() != Availability.AgainstObstacle) {
+            if (note.getAvailability() != Availability.Available) {
                 noteZ = -3.0;
             }
 
