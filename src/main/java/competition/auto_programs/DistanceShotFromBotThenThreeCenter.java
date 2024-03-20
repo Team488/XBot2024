@@ -1,9 +1,13 @@
 package competition.auto_programs;
 
 import competition.commandgroups.CollectSequenceCommandGroup;
+import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
+import competition.commandgroups.DriveToGivenNoteWithVisionCommand;
+import competition.commandgroups.DriveToNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.commandgroups.FireNoteCommandGroup;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
+import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
@@ -24,13 +28,14 @@ import java.util.ArrayList;
 public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
     final AutonomousCommandSelector autoSelector;
     @Inject
-    public DistanceShotFromBotThenThreeCenter(AutonomousCommandSelector autoSelector,PoseSubsystem pose,
+    public DistanceShotFromBotThenThreeCenter(AutonomousCommandSelector autoSelector, PoseSubsystem pose,
                                               Provider<FireWhenReadyCommand> fireNoteCommandGroupProvider,
                                               Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
                                               Provider<CollectSequenceCommandGroup> collectSequenceCommandGroupProvider,
                                               Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
                                               Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
-                                              FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup){
+                                              FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup,
+                                              DriveToGivenNoteWithVisionCommand driveToNote){
         this.autoSelector = autoSelector;
 
         //getting all the warmup and preaiming arm out of the way
@@ -75,8 +80,8 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
 
         var shootFirstNote = fireNoteCommandGroupProvider.get();
 
-        //preaims arm, warms up shooter, drives to the spike scoring position and fires
-        this.addCommands(Commands.deadline(driveToShootingPosition1,warmupForShot1,setArmForShot1),shootFirstNote);
+        //drives then aims and shoots (could possibly be optimized later)
+        this.addCommands(driveToShootingPosition1,Commands.deadline(shootFirstNote,warmupForShot1,setArmForShot1));
 
         //swap drive and collect for testing
         var driveToCenterline3 = driveToListOfPointsCommandProvider.get();
@@ -92,9 +97,8 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
 
         var shootSecondNote = fireNoteCommandGroupProvider.get();
 
-        //preaims arm, warms up shooter, drives to the spike scoring position and fires
-        this.addCommands(Commands.deadline(driveToShootingPosition2,warmupForShot2,setArmForShot2),shootSecondNote);
 
+        this.addCommands(driveToShootingPosition2,Commands.deadline(shootSecondNote,warmupForShot2,setArmForShot2));
 
         //swap drive and collect for testing
         var driveToCenterline2 = driveToListOfPointsCommandProvider.get();
@@ -111,8 +115,8 @@ public class DistanceShotFromBotThenThreeCenter extends SequentialCommandGroup {
 
         var shootThirdNote = fireNoteCommandGroupProvider.get();
 
-        //preaims arm, warms up shooter, drives to the spike scoring position and fires
-        this.addCommands(Commands.deadline(driveToShootingPosition3,warmupForShot3,setArmForShot3),shootThirdNote);
+        //drives then aims and shoots (could possibly be optimized later)
+        this.addCommands(driveToShootingPosition3,Commands.deadline(shootThirdNote,warmupForShot3,setArmForShot3));
 
     }
     private void queueMessageToAutoSelector(String message) {
