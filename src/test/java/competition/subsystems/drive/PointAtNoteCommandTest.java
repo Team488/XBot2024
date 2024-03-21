@@ -14,46 +14,24 @@ import xbot.common.math.XYPair;
 public class PointAtNoteCommandTest extends BaseCompetitionTest {
     
     @Test
-    public void testGetDriveIntentBlue() {
-        var alliance = Alliance.Blue;
+    public void testGetDriveIntent() {
         // completely aligned with the direction we want to go
         // exact y
-        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new XYPair(-1, 0), alliance), 0.001);
+        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new Translation2d(0, 1)), 0.001);
         // exact x
-        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0, 1), alliance), 0.001);
+        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new Translation2d(1, 0)), 0.001);
 
 
         // exact opposite y
-        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new XYPair(1, 0), alliance), 0.001);
+        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(0, 5), new Translation2d(0, -1)), 0.001);
         // exact opposite x
-        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0, -1), alliance), 0.001);
+        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new Translation2d(-1, 0)), 0.001);
 
         // 45 degrees should be half power
-        assertEquals(0.5, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0.5, 0.5), alliance), 0.001);
+        assertEquals(0.5, PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new Translation2d(0.5, 0.5)), 0.001);
 
         // small floating joystick number
-        assertTrue(Math.abs(PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new XYPair(0.01, 0.01), alliance)) < 0.02);
+        assertTrue(Math.abs(PointAtNoteCommand.getDriveIntent(new Translation2d(5, 0), new Translation2d(0.01, 0.01))) < 0.02);
     }
 
-    @Test
-    public void testGetDriveIntentRed() {
-        var alliance = Alliance.Red;
-        // completely aligned with the direction we want to go
-        // exact y
-        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(0, -5), new XYPair(-1, 0), alliance), 0.001);
-        // exact x
-        assertEquals( 1.0, PointAtNoteCommand.getDriveIntent(new Translation2d(-5, 0), new XYPair(0, 1), alliance), 0.001);
-
-
-        // exact opposite y
-        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(0, -5), new XYPair(1, 0), alliance), 0.001);
-        // exact opposite x
-        assertEquals(-1, PointAtNoteCommand.getDriveIntent(new Translation2d(-5, 0), new XYPair(0, -1), alliance), 0.001);
-
-        // 45 degrees should be half power
-        assertEquals(0.5, PointAtNoteCommand.getDriveIntent(new Translation2d(-5, 0), new XYPair(0.5, 0.5), alliance), 0.001);
-
-        // small floating joystick number
-        assertTrue(Math.abs(PointAtNoteCommand.getDriveIntent(new Translation2d(-5, 0), new XYPair(0.01, 0.01), alliance)) < 0.02);
-    }
 }
