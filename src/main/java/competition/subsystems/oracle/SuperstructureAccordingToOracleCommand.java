@@ -49,6 +49,15 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
                 tryToScore = true;
             }
             case ScoreInSpeaker -> {
+                if (oracle.isTerminatingPointWithinDistance(1)) {
+                    // If we're close to our terminating point, then we can "unlock" the arm to go to any height
+                    // it wants
+                    arm.setLimitToUnderStage(false);
+                } else {
+                    // If we're far away from a scoring location, there's a risk that we may drive under the stage.
+                    // Just in case, limit the arm height.
+                    arm.setLimitToUnderStage(true);
+                }
                 shooter.setTargetValue(shooter.getRPMForGivenScoringLocation(oracle.getChosenScoringLocation()));
                 arm.setTargetValue(arm.getUsefulArmPositionExtensionInMm(oracle.getChosenScoringLocation()));
                 tryToScore = true;
