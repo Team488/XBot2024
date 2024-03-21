@@ -112,7 +112,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
 
         var collectSequence3 = collectSequenceCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(driveToCenterline2,collectSequence3).withTimeout(3.5));
+        this.addCommands(Commands.deadline(collectSequence3,driveToCenterline2).withTimeout(3.5));
 
         var driveToShootingPosition2 = driveToListOfPointsCommandProvider.get();
         driveToShootingPosition2.addPointsSupplier(this::goToCenterSpike);
