@@ -1,8 +1,6 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PointOfInterest;
-import competition.subsystems.pose.PoseSubsystem;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 
 public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
@@ -28,16 +26,30 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         add(pointOfInterest.getRedName(), new ScoringLocation(pointOfInterest.getRedLocation(), Availability.Available, pointOfInterest));
     }
 
-    public void markAllianceScoringLocationsWithAvailability(DriverStation.Alliance alliance, Availability availability) {
-        get(PointOfInterest.SubwooferTopScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.SubwooferMiddleScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.SubwooferBottomScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.PodiumScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.AmpFarScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.MiddleSpikeScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, alliance).setAvailability(availability);
-        get(PointOfInterest.OneRobotAwayFromCenterSubwooferScoringLocation, alliance).setAvailability(availability);
+    public void markAllianceScoringLocationsAvailable(DriverStation.Alliance alliance) {
+        for (var location : getAllianceScoringLocations(alliance)) {
+            location.setAvailable();
+        }
+    }
+
+    public void markAllianceScoringLocationsUnavailable(DriverStation.Alliance alliance, UnavailableReason reason) {
+        for (var location : getAllianceScoringLocations(alliance)) {
+            location.setUnavailable(reason);
+        }
+    }
+
+    public ScoringLocation[] getAllianceScoringLocations(DriverStation.Alliance alliance) {
+        return new ScoringLocation[]{
+            get(PointOfInterest.SubwooferTopScoringLocation, alliance),
+            get(PointOfInterest.SubwooferMiddleScoringLocation, alliance),
+            get(PointOfInterest.SubwooferBottomScoringLocation, alliance),
+            get(PointOfInterest.PodiumScoringLocation, alliance),
+            get(PointOfInterest.AmpFarScoringLocation, alliance),
+            get(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, alliance),
+            get(PointOfInterest.MiddleSpikeScoringLocation, alliance),
+            get(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, alliance),
+            get(PointOfInterest.OneRobotAwayFromCenterSubwooferScoringLocation, alliance),
+        };
     }
 
     public ScoringLocation get(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {

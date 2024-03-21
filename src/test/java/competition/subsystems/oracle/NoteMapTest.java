@@ -22,21 +22,21 @@ public class NoteMapTest extends BaseCompetitionTest {
 
     @Test
     public void testGetAllKnownNotes() {
-        var knownNotes = noteMap.getAllKnownNotes();
+        var knownNotes = noteMap.getAllKnownNotePoses();
         assertEquals(11, knownNotes.length);
 
         noteMap.addVisionNote(new Pose2d());
-        knownNotes = noteMap.getAllKnownNotes();
+        knownNotes = noteMap.getAllKnownNotePoses();
         assertEquals(12, knownNotes.length);
 
         noteMap.clearVisionNotes();
-        knownNotes = noteMap.getAllKnownNotes();
+        knownNotes = noteMap.getAllKnownNotePoses();
         assertEquals(11, knownNotes.length);
     }
 
     @Test
     public void testAddVisionNote() {
-        var knownNotes = noteMap.getAllKnownNotes();
+        var knownNotes = noteMap.getAllKnownNotePoses();
         assertEquals(11, knownNotes.length);
 
         // Only last 10 should be kept, add more than that
@@ -45,7 +45,7 @@ public class NoteMapTest extends BaseCompetitionTest {
         }
 
         // Make sure only the last 10 are kept
-        knownNotes = noteMap.getAllKnownNotes();
+        knownNotes = noteMap.getAllKnownNotePoses();
         assertEquals(21, knownNotes.length);
 
         // Check that the last 10 are the ones we still have
