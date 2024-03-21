@@ -4,7 +4,7 @@ import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenS
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
-import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
+import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.subsystems.arm.ArmSubsystem;
@@ -95,6 +95,7 @@ public class OperatorCommandMap {
                 .onFalse(cancelSpecialPointAtPosition);
 
         operatorInterface.driverGamepad.getPovIfAvailable(90).whileTrue(lineUpForHangingCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(test1);
 
     }
 
@@ -219,7 +220,7 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromMidShootThenShootNearestThree midThenThree,
                                                 SubwooferShotFromTopShootThenShootSpikes topThenThree,
                                                 SubwooferShotFromBotShootThenShootSpikes botThenThree,
-                                                SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter topThenTopSpikeTopCenter,
+                                                SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter topThenTopSpikeTopCenter,
                                                 SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
