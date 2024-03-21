@@ -8,6 +8,7 @@ import competition.subsystems.pose.PointOfInterest;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -93,8 +94,8 @@ public class DynamicOracle extends BaseSubsystem {
     Pose2d activeScoringPosition;
 
     private void reserveNote(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
-        Note reserved = noteMap.get(pointOfInterest, alliance);
-        reserved.setAvailability(Availability.ReservedByOthersInAuto);
+        Note reserved = noteMap.getByPointOfInterest(pointOfInterest, alliance);
+        reserved.setUnavailable(UnavailableReason.ReservedByOthersInAuto);
     }
 
     /**
@@ -103,7 +104,7 @@ public class DynamicOracle extends BaseSubsystem {
      */
     public void reserveScoringLocationForOtherTeams(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         // Mark it as reserved in the map, so we don't try to navigate there
-        scoringLocationMap.get(pointOfInterest, alliance).setAvailability(Availability.ReservedByOthersInAuto);
+        scoringLocationMap.get(pointOfInterest, alliance).setUnavailable(UnavailableReason.ReservedByOthersInAuto);
         // create the relevant obstacle so we path around any robot chilling there
     }
 
@@ -150,12 +151,12 @@ public class DynamicOracle extends BaseSubsystem {
         }
 
         // Disable things that aren't possible in autonomous
-        noteMap.get(PointOfInterest.SpikeTop, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
-        noteMap.get(PointOfInterest.SpikeMiddle, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
-        noteMap.get(PointOfInterest.SpikeBottom, allianceToMarkAsUnavailable).setAvailability(Availability.Unavailable);
+        noteMap.getByPointOfInterest(PointOfInterest.SpikeTop, allianceToMarkAsUnavailable).setUnavailable(UnavailableReason.Unreachable);
+        noteMap.getByPointOfInterest(PointOfInterest.SpikeMiddle, allianceToMarkAsUnavailable).setUnavailable(UnavailableReason.Unreachable);
+        noteMap.getByPointOfInterest(PointOfInterest.SpikeBottom, allianceToMarkAsUnavailable).setUnavailable(UnavailableReason.Unreachable);
 
         // Disable scoring locations for the other alliance - no reason to score in their stuff.
-        scoringLocationMap.markAllianceScoringLocationsWithAvailability(allianceToMarkAsUnavailable, Availability.Unavailable);
+        scoringLocationMap.markAllianceScoringLocationsUnavailable(allianceToMarkAsUnavailable, UnavailableReason.Unreachable);
 
         // Disable Scoring positions the driver has specifically told us to avoid
         reserveScoringLocationBasedOnNeoTrellis(PointOfInterest.SubwooferTopScoringLocation, ourAlliance);
@@ -175,27 +176,27 @@ public class DynamicOracle extends BaseSubsystem {
         // (otherwise, we might collect the midline note first, then drive over the podium note since
         // the podium scoring location is very close).
         if (!oi.getNeoTrellisValue(PointOfInterest.SpikeBottom) && !oi.getNeoTrellisValue(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation)) {
-            scoringLocationMap.get(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
+            scoringLocationMap.get(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation, ourAlliance).setUnavailable(UnavailableReason.MaskedByNote);
             field.getNode(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation.getName(ourAlliance)).setAllWeightsToMax();
         }
 
         // We also need to do this for the top spike
         if (!oi.getNeoTrellisValue(PointOfInterest.SpikeTop) && !oi.getNeoTrellisValue(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation)) {
-            scoringLocationMap.get(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
+            scoringLocationMap.get(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation, ourAlliance).setUnavailable(UnavailableReason.MaskedByNote);
             field.getNode(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation.getName(ourAlliance)).setAllWeightsToMax();
         }
 
         // For completeness, we'd need to do this for the center note as well, even though the note and scoring position share the same node.
         if (!oi.getNeoTrellisValue(PointOfInterest.SpikeMiddle) && !oi.getNeoTrellisValue(PointOfInterest.MiddleSpikeScoringLocation)) {
-            scoringLocationMap.get(PointOfInterest.MiddleSpikeScoringLocation, ourAlliance).setAvailability(Availability.MaskedByNote);
+            scoringLocationMap.get(PointOfInterest.MiddleSpikeScoringLocation, ourAlliance).setUnavailable(UnavailableReason.MaskedByNote);
             // In this case, don't set any weights to max, as we need to be able to go to that location to collect the note.
         }
 
         // In general, disable the "one robot length away" shot as it should only be used in teleop.
         // Also, the podium shot, and the far amp shot
-        scoringLocationMap.get(PointOfInterest.OneRobotAwayFromCenterSubwooferScoringLocation, ourAlliance).setAvailability(Availability.Unavailable);
-        scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, ourAlliance).setAvailability(Availability.Unavailable);
-        scoringLocationMap.get(PointOfInterest.AmpFarScoringLocation, ourAlliance).setAvailability(Availability.Unavailable);
+        scoringLocationMap.get(PointOfInterest.OneRobotAwayFromCenterSubwooferScoringLocation, ourAlliance).setUnavailable(UnavailableReason.Unreachable);
+        scoringLocationMap.get(PointOfInterest.PodiumScoringLocation, ourAlliance).setUnavailable(UnavailableReason.Unreachable);
+        scoringLocationMap.get(PointOfInterest.AmpFarScoringLocation, ourAlliance).setUnavailable(UnavailableReason.Unreachable);
 
         // Disable center line notes the driver told us to avoid
         // This says we are reserving for blue, but the underlying layer will detect
@@ -228,8 +229,8 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     public void clearScoringLocationsForTeleop() {
-        scoringLocationMap.markAllianceScoringLocationsWithAvailability(
-                DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue), Availability.Available);
+        scoringLocationMap.markAllianceScoringLocationsAvailable(
+                DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
     }
 
     private void chooseStartingLocationBasedOnReservations() {
@@ -280,25 +281,14 @@ public class DynamicOracle extends BaseSubsystem {
         // Populate the field with notes from vision
         noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
         if (this.includeVisionNotes.get()) {
-            var robotTranslation = pose.getCurrentPose2d().getTranslation();
-            var robotRotation = pose.getCurrentPose2d().getRotation();
-            if (vision.getDetectedNotes() != null) {
-                Arrays.stream(vision.getDetectedNotes())
-                        .map(note -> {
-                            var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
-                            var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
-                            return new Pose2d(
-                                    robotTranslation.plus(rotatedToFieldRelative),
-                                    new Rotation2d());
-                        })
-                        .forEach(noteMap::addVisionNote);
-            }
+            handleVisionDetectedNotes();
         }
 
         aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.
         // We can always set the global log level to debug and replay the inputs to regenerate this data.
-        aKitLog.record("NoteMap", noteMap.getAllKnownNotes());
+        aKitLog.record("NoteMap", noteMap.getAllAvailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
+        aKitLog.record("UnavailableNoteMap", noteMap.getAllUnavailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
 
         switch (currentHighLevelGoal) {
@@ -332,10 +322,7 @@ public class DynamicOracle extends BaseSubsystem {
                 if (firstRunInNewGoal || reevaluationRequested) {
                     // Choose a good note collection location
                     Note suggestedNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(),
-                            Availability.Available,
-                            Availability.AgainstObstacle,
-                            Availability.SuggestedByDriver,
-                            Availability.SuggestedByVision);
+                            Availability.Available);
                     setTargetNote(suggestedNote);
 
                     if (suggestedNote == null) {
@@ -365,7 +352,7 @@ public class DynamicOracle extends BaseSubsystem {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
                     Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.5);
                     if (nearestNote != null) {
-                        nearestNote.setAvailability(Availability.Unavailable);
+                        nearestNote.setUnavailable(UnavailableReason.Gone);
                     }
 
                     // Since we have a note, let's go score it.
@@ -389,6 +376,29 @@ public class DynamicOracle extends BaseSubsystem {
         }
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
         aKitLog.record("Current SubGoal", currentScoringSubGoal);
+    }
+
+    private void handleVisionDetectedNotes() {
+        var robotTranslation = pose.getCurrentPose2d().getTranslation();
+        var robotRotation = pose.getCurrentPose2d().getRotation();
+        if (vision.getDetectedNotes() != null) {
+            Arrays.stream(vision.getDetectedNotes())
+                    .map(note -> transformRelativeNotePoseToFieldPose(note, robotRotation, robotTranslation))
+                    .forEach(noteMap::addVisionNote);
+        }
+        if (vision.getPassiveDetectedNotes() != null) {
+            Arrays.stream(vision.getPassiveDetectedNotes())
+                    .map(note -> transformRelativeNotePoseToFieldPose(note, robotRotation, robotTranslation))
+                    .forEach(noteMap::addPassiveVisionNote);
+        }
+    }
+
+    private static Pose2d transformRelativeNotePoseToFieldPose(Pose3d note, Rotation2d robotRotation, Translation2d robotTranslation) {
+        var noteRelativeToRobot = new Translation2d(note.getX(), note.getY());
+        var rotatedToFieldRelative = noteRelativeToRobot.rotateBy(robotRotation);
+        return new Pose2d(
+                robotTranslation.plus(rotatedToFieldRelative),
+                new Rotation2d());
     }
 
     private void determineCollectionSubgoal() {
@@ -437,10 +447,10 @@ public class DynamicOracle extends BaseSubsystem {
 
     private void checkForAllianceSpecificScoringLocationBecomingAvailabileDueToNoteCollection(
             PointOfInterest scoringLocation, PointOfInterest note, DriverStation.Alliance alliance) {
-        if (scoringLocationMap.get(scoringLocation, alliance).getAvailability() == Availability.MaskedByNote
+        if (scoringLocationMap.get(scoringLocation, alliance).getUnavailableReason() == UnavailableReason.MaskedByNote
                 && DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == alliance
-                && noteMap.get(note, alliance).getAvailability() == Availability.Unavailable) {
-            scoringLocationMap.get(scoringLocation, alliance).setAvailability(Availability.Available);
+                && noteMap.getByPointOfInterest(note, alliance).getAvailability() == Availability.Unavailable) {
+            scoringLocationMap.get(scoringLocation, alliance).setAvailable();
             field.getNode(scoringLocation.getName(alliance)).restoreWeights();
         }
     }

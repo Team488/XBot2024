@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,15 +24,16 @@ import xbot.common.subsystems.drive.control_logic.HeadingModule;
 import javax.inject.Inject;
 
 public class PointAtNoteCommand extends BaseCommand {
-    Logger log = LogManager.getLogger(this);
+    final Logger log = LogManager.getLogger(this);
 
     Pose2d savedNotePosition = null;
-    DriveSubsystem drive;
-    HeadingModule headingModule;
-    PoseSubsystem pose;
-    OperatorInterface oi;
-    DynamicOracle oracle;
-    DoubleProperty maxNoteJump;
+    final DriveSubsystem drive;
+    final HeadingModule headingModule;
+    final PoseSubsystem pose;
+    final OperatorInterface oi;
+    final DynamicOracle oracle;
+    final DoubleProperty maxNoteJump;
+    final DoubleProperty minDistanceToNoteToRotateMeters;
 
     @Inject
     public PointAtNoteCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
@@ -43,7 +46,7 @@ public class PointAtNoteCommand extends BaseCommand {
 
         pf.setPrefix(this);
         this.maxNoteJump = pf.createPersistentProperty("Maximum position jump meters", 1.0);
-
+        this.minDistanceToNoteToRotateMeters = pf.createPersistentProperty("Minimum distance to note to rotate meter", 0.7);
         this.addRequirements(drive);
     }
 
@@ -77,16 +80,29 @@ public class PointAtNoteCommand extends BaseCommand {
         }
 
         var toNoteTranslation = newTarget.getTranslation().minus(this.pose.getCurrentPose2d().getTranslation());
-        var movement = MathUtils.deadband(getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector()), oi.getDriverGamepadTypicalDeadband(), (x) -> x);
-        double rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
+        // if we're very close to the note, stop trying to rotate, it gets wonky
+
+        var movement = MathUtils.deadband(
+                getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector(),
+                        DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)),
+                oi.getDriverGamepadTypicalDeadband(), (x) -> x);
+        double rotationPower = 0;
+        // if we're far enough away, rotate towards the note (if we're too close, the )
+        if (toNoteTranslation.getNorm() > this.minDistanceToNoteToRotateMeters.get()) {
+            rotationPower = this.drive.getRotateToHeadingPid().calculate(0, getRotationError());
+        }
 
         // negative movement because we want to drive the robot 'backwards', collector towards the note
         drive.move(new XYPair(-movement, 0), rotationPower);
     }
 
-    public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick) {
+    public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick, Alliance alliance) {
         var toNoteVector = fieldTranslationToTarget.toVector().unit();
         var driverVector = VecBuilder.fill(driveJoystick.y, -driveJoystick.x);
+        if(alliance == DriverStation.Alliance.Red) {
+            // invert both axis
+            driverVector = driverVector.div(-1);
+        }
         var dot = toNoteVector.dot(driverVector);
 
         return dot;

@@ -1,16 +1,12 @@
 package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PointOfInterest;
-import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.controls.sensors.XTimer;
-import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -39,10 +35,10 @@ public class NoteMap extends ReservableLocationMap<Note> {
         add(PointOfInterest.CenterLine5);
     }
 
-    public void markAllianceNotesAsUnavailable(DriverStation.Alliance alliance) {
-        get(PointOfInterest.SpikeTop, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.SpikeMiddle, alliance).setAvailability(Availability.Unavailable);
-        get(PointOfInterest.SpikeBottom, alliance).setAvailability(Availability.Unavailable);
+    public void markAllianceNotesAsUnavailable(DriverStation.Alliance alliance, UnavailableReason reason) {
+        getByPointOfInterest(PointOfInterest.SpikeTop, alliance).setUnavailable(reason);
+        getByPointOfInterest(PointOfInterest.SpikeMiddle, alliance).setUnavailable(reason);
+        getByPointOfInterest(PointOfInterest.SpikeBottom, alliance).setUnavailable(reason);
     }
 
     private void add(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
@@ -64,7 +60,18 @@ public class NoteMap extends ReservableLocationMap<Note> {
         if (visionSourceNotes.size() >= MAX_VISION_SOURCE_NOTE_COUNT) {
             visionSourceNotes.remove(0);
         }
-        visionSourceNotes.add(new VisionSourceNote(new Note(location), XTimer.getFPGATimestamp()));
+        visionSourceNotes.add(
+                new VisionSourceNote(
+                        new Note(location, DataSource.Vision), XTimer.getFPGATimestamp()));
+    }
+
+    public void addPassiveVisionNote(Pose2d location) {
+        if (visionSourceNotes.size() >= MAX_VISION_SOURCE_NOTE_COUNT) {
+            visionSourceNotes.remove(0);
+        }
+        visionSourceNotes.add(
+                new VisionSourceNote(
+                        new Note(location, Availability.Unavailable, DataSource.Vision), XTimer.getFPGATimestamp()));
     }
 
     public void clearStaleVisionNotes(double maxAgeInSeconds) {
@@ -82,11 +89,11 @@ public class NoteMap extends ReservableLocationMap<Note> {
 
     public void markSpikeNotesUnavailable() {
         for (var note: this.internalMap.values()) {
-            note.setAvailability(Availability.Unavailable);
+            note.setUnavailable(UnavailableReason.Gone);
         }
     }
 
-    public Note get(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
+    public Note getByPointOfInterest(PointOfInterest pointOfInterest, DriverStation.Alliance alliance) {
         if (pointOfInterest.isUnique()) {
             return get(pointOfInterest.getName());
         } else {
@@ -123,13 +130,43 @@ public class NoteMap extends ReservableLocationMap<Note> {
         return null;
     }
 
-    public Pose3d[] getAllKnownNotes() {
+    public List<Note> getAllAvailableNotes() {
+        ArrayList<Note> allNotes = new ArrayList<Note>();
+        allNotes.addAll(this.internalMap
+                .values()
+                .stream()
+                .filter(note -> note.getAvailability() == Availability.Available)
+                .toList());
+        allNotes.addAll(this.visionSourceNotes
+                .stream()
+                .map(VisionSourceNote::getNote)
+                .filter(note -> note.getAvailability() == Availability.Available)
+                .toList());
+        return allNotes;
+    }
+
+    List<Note> getAllUnavailableNotes() {
+        ArrayList<Note> allNotes = new ArrayList<Note>();
+        allNotes.addAll(this.internalMap
+                .values()
+                .stream()
+                .filter(note -> note.getAvailability() != Availability.Available)
+                .toList());
+        allNotes.addAll(this.visionSourceNotes
+                .stream()
+                .map(VisionSourceNote::getNote)
+                .filter(note -> note.getAvailability() != Availability.Available)
+                .toList());
+        return allNotes;
+    }
+
+    public Pose3d[] getAllKnownNotePoses() {
         Pose3d[] notes = new Pose3d[internalMap.size() + visionSourceNotes.size()];
         int i = 0;
         for (Note note : this.internalMap.values()) {
 
             double noteZ = 0.025;
-            if (note.getAvailability() != Availability.Available && note.getAvailability() != Availability.AgainstObstacle) {
+            if (note.getAvailability() != Availability.Available) {
                 noteZ = -3.0;
             }
 
