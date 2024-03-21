@@ -95,7 +95,6 @@ public class OperatorCommandMap {
                 .onFalse(cancelSpecialPointAtPosition);
 
         operatorInterface.driverGamepad.getPovIfAvailable(90).whileTrue(lineUpForHangingCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(test1);
 
     }
 
