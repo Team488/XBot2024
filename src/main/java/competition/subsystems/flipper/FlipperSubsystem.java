@@ -16,6 +16,7 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
     final XServo servo;
     final DoubleProperty inactivePosition;
     final DoubleProperty activePosition;
+    final DoubleProperty hangingPosition;
     private boolean active;
 
     @Inject
@@ -24,21 +25,11 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
         pf.setPrefix(this);
         inactivePosition = pf.createPersistentProperty("FlipperInactivePosition", 0.8);
         activePosition = pf.createPersistentProperty("FlipperActivePosition", 0.3);
+        hangingPosition = pf.createPersistentProperty("FlipperHangingPosition", 0.55);
 
         this.servo = servoFactory.create(contract.getFlipperServo().channel, getName() + "/Servo");
 
         active = false;
-    }
-
-    public void toggleServo() {
-        System.out.println("Servo mode toggled.");
-        active = !active;
-        System.out.println("Mode: " + active);
-        if (active) {
-            servo.set(activePosition.get());
-        } else {
-            servo.set(inactivePosition.get());
-        }
     }
 
     public void servoActive() {
@@ -49,6 +40,10 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
     public void servoInactive() {
         servo.set(inactivePosition.get());
         active = false;
+    }
+
+    public void servoHangingPosition() {
+        servo.set(hangingPosition.get());
     }
 
     @Override
