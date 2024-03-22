@@ -26,9 +26,6 @@ public class LightSubsystem extends BaseSubsystem {
     final CollectorSubsystem collector;
     final DynamicOracle oracle;
     final XDigitalOutput[] outputs;
-    //public DoubleProperty isDefault;
-
-    //PropertyFactory pf;
 
     boolean ampSignalOn = false;
 
@@ -90,19 +87,8 @@ public class LightSubsystem extends BaseSubsystem {
             // Check if auto program is set
             //isDefault = pf.createPersistentProperty("IsDefaultAuto", autonomousCommandSelector.getIsDefault()?1.0:2.0);
             if (autonomousCommandSelector.getIsDefault()) {
-                System.out.println("====================================================");
-                System.out.println("====================================================");
-                System.out.println("====================================================");
-                System.out.println("====================================================");
-                System.out.println("====================================================");
-
                 currentState = LightsStateMessage.WithDefaultAuto;
             } else {
-                System.out.println("////////////////////////////////////////////////////");
-                System.out.println("////////////////////////////////////////////////////");
-                System.out.println("////////////////////////////////////////////////////");
-                System.out.println("////////////////////////////////////////////////////");
-
                 currentState = LightsStateMessage.WithCustomAuto;
             }
 
