@@ -77,8 +77,9 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
             if (oracle.getScoringSubgoal() == DynamicOracle.ScoringSubGoals.EarnestlyLaunchNote) {
                 fireWhenReady();
             } else {
-                // probably driving to goal now
-                collector.stop();
+                // probably driving to goal now.
+                // Intake will automatically stop once the note is fully collected.
+                collector.intake();
             }
         }
 

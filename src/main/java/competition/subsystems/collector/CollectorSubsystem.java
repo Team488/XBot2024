@@ -98,6 +98,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
 
     public void resetCollectionState() {
+        log.info("Resetting collection state.");
         collectionSubstate = CollectionSubstate.EvaluationNeeded;
         lowerTripwireHit = false;
         upperTripwireHit = false;
