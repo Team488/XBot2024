@@ -32,7 +32,7 @@ public class PointAtNoteCommand extends BaseCommand {
     final PoseSubsystem pose;
     final OperatorInterface oi;
     final DynamicOracle oracle;
-    final DoubleProperty maxNoteJump;
+    final double maxNoteJump = 1.0;
     final DoubleProperty minDistanceToNoteToRotateMeters;
 
     @Inject
@@ -45,7 +45,6 @@ public class PointAtNoteCommand extends BaseCommand {
         this.oracle = oracle;
 
         pf.setPrefix(this);
-        this.maxNoteJump = pf.createPersistentProperty("Maximum position jump meters", 1.0);
         this.minDistanceToNoteToRotateMeters = pf.createPersistentProperty("Minimum distance to note to rotate meter", 0.7);
         this.addRequirements(drive);
     }
@@ -128,7 +127,7 @@ public class PointAtNoteCommand extends BaseCommand {
             var distance = this.savedNotePosition
                     .getTranslation()
                     .getDistance(notePosition.toPose2d().getTranslation());
-            if (distance < this.maxNoteJump.get() && distance > 0.05) {
+            if (distance < this.maxNoteJump && distance > 0.05) {
                 log.info("Updating target");
                 return notePosition.toPose2d();
             }

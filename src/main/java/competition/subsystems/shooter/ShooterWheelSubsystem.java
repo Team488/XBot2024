@@ -39,7 +39,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private ShooterWheelTargetSpeeds targetRpms = new ShooterWheelTargetSpeeds(0.0);
     private double trimRpm;
     private final DoubleProperty intoAmpShotRpm;
-    private final DoubleProperty iMaxAccumValueForShooter;
+    private double iMaxAccumValueForShooter;
     private final DoubleProperty typicalShotRpm;
     private final DoubleProperty meleeShotRpm;
 
@@ -64,7 +64,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         this.converter = new DoubleInterpolator();
 
         // NEEDS TUNING TO FIND CORRECT VALUE
-        iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
+        iMaxAccumValueForShooter = 0;
 
         XCANSparkMaxPIDProperties defaultShooterPidProperties = new XCANSparkMaxPIDProperties(
                 0.00015,
@@ -205,7 +205,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
     public void configurePID() {
         if (contract.isShooterReady()) {
-            upperWheelMotor.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
+            upperWheelMotor.setIMaxAccum(iMaxAccumValueForShooter, 0);
         }
     }
 
