@@ -24,6 +24,8 @@ import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.lights.commands.AmpSignalToggleCommand;
+import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.flipper.commands.ToggleFlipperCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
@@ -117,6 +119,7 @@ public class OperatorCommandMap {
             ForceEngageBrakeCommand forceEngageBrakeCommand,
             RemoveForcedBrakingCommand removeForcedBrakingCommand,
             PrepareForHangingCommand prepareForHangingCommand,
+            AmpSignalToggleCommand ampSignalCommand,
             ToggleFlipperCommand toggleFlipperCommand
     ) {
         //Useful arm positions
@@ -169,6 +172,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(removeForcedBrakingCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(manualHangingModeCommand);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(ampSignalCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(toggleFlipperCommand);
     }
 
