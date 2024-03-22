@@ -42,6 +42,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
             Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
             Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
             Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
+            Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroupProvider,
             PoseSubsystem pose, DriveSubsystem drive
     ) {
         this.autoSelector = autoSelector;
@@ -97,9 +98,10 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
         var driveToShootingPosition1 = driveToListOfPointsCommandProvider.get();
         driveToShootingPosition1.addPointsSupplier(this::goToCenterSpike);
 
-        var shootThirdNote = fireNoteCommandGroupProvider.get();
-
-        this.addCommands(Commands.deadline(driveToShootingPosition1,warmupForShot3,setArmForShot3),shootThirdNote);
+        var shootThirdNote = fireFromSubwooferCommandGroupProvider.get();
+        this.addCommands(driveToShootingPosition1.withTimeout(5),shootThirdNote);
+//        var shootThirdNote = fireNoteCommandGroupProvider.get();
+//        this.addCommands(Commands.deadline(driveToShootingPosition1,warmupForShot3,setArmForShot3),shootThirdNote);
 
         queueMessageToAutoSelector("Drive to Centerline2 collect and shoot");
         this.addCommands(
@@ -117,9 +119,11 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
         var driveToShootingPosition2 = driveToListOfPointsCommandProvider.get();
         driveToShootingPosition2.addPointsSupplier(this::goToCenterSpike);
 
-        var shootLastNote = fireNoteCommandGroupProvider.get();
-
-        this.addCommands(Commands.deadline(driveToShootingPosition2,warmupForShot4,setArmForShot4),shootLastNote);
+        var shootLastNote = fireFromSubwooferCommandGroupProvider.get();
+        this.addCommands(driveToShootingPosition2.withTimeout(5),shootLastNote);
+//        var shootLastNote = fireNoteCommandGroupProvider.get();
+//
+//        this.addCommands(Commands.deadline(driveToShootingPosition2,warmupForShot4,setArmForShot4),shootLastNote);
 
         this.addCommands(
                 new InstantCommand(() -> {
@@ -142,11 +146,11 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
     }
     private ArrayList<XbotSwervePoint> goToCenterSpike(){
         var points = new ArrayList<XbotSwervePoint>();
-        var translation = PoseSubsystem.BlueSpikeMiddle.getTranslation();
+        //var translation = PoseSubsystem.BlueSpikeMiddle.getTranslation();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new
                         Translation2d( 5.86, 6.6),
                 Rotation2d.fromDegrees(180),10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(translation, Rotation2d.fromDegrees(180),10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferMiddleScoringLocation.getTranslation(), Rotation2d.fromDegrees(180),10));
         return points;
     }
 }
