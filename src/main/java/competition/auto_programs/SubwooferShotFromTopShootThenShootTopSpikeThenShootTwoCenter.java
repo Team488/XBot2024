@@ -144,7 +144,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
                 new Translation2d(5.8674, 6.6)
         };
     }
-    //goes back to subwoofer for now until we fix it
+    //goes back to subwoofer for now until we fix the arm extension
     private ArrayList<XbotSwervePoint> goToCenterSpike(){
         var points = new ArrayList<XbotSwervePoint>();
         //var translation = PoseSubsystem.BlueSpikeMiddle.getTranslation();
