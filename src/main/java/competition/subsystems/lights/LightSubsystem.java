@@ -12,9 +12,7 @@ import competition.subsystems.shooter.ShooterWheelSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XDigitalOutput;
-import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
-import xbot.common.properties.DoubleProperty;
-import xbot.common.properties.PropertyFactory;
+import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;s
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
 @Singleton
