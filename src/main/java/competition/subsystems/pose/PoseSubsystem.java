@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.photonvision.EstimatedRobotPose;
+import xbot.common.advantage.AKitLogger;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
 import xbot.common.logic.Latch;
 import xbot.common.logic.TimeStableValidator;
@@ -20,6 +21,7 @@ import xbot.common.math.WrappedRotation2d;
 import xbot.common.math.XYPair;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
@@ -129,7 +131,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
         extremelyConfidentVisionDistanceUpdateInMetersProp = propManager.createPersistentProperty("ExtremelyConfidentVisionDistanceUpdateInMeters", 0.01);
         isVisionPoseExtremelyConfident = false;
         allianceAwareFieldProp = propManager.createPersistentProperty("Alliance Aware Field", true);
+
+        propManager.setDefaultLevel(Property.PropertyLevel.Important);
         useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", false);
+        propManager.setDefaultLevel(Property.PropertyLevel.Debug);
         useForwardCameraForPose = propManager.createPersistentProperty("Use forward april cam", true);
         useRearCameraForPose = propManager.createPersistentProperty("Use rear april cam", true);
 
@@ -480,9 +485,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
     @Override
     public void periodic() {
         super.periodic();
+
+        aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
         aKitLog.record("DistanceToSpeaker", getDistanceFromSpeaker());
+        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
     }
 }
 
