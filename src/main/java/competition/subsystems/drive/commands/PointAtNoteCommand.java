@@ -83,8 +83,7 @@ public class PointAtNoteCommand extends BaseCommand {
         // if we're very close to the note, stop trying to rotate, it gets wonky
 
         var movement = MathUtils.deadband(
-                getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector(),
-                        DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)),
+                getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftFieldOrientedVector()),
                 oi.getDriverGamepadTypicalDeadband(), (x) -> x);
         double rotationPower = 0;
         // if we're far enough away, rotate towards the note (if we're too close, the )
@@ -96,14 +95,9 @@ public class PointAtNoteCommand extends BaseCommand {
         drive.move(new XYPair(-movement, 0), rotationPower);
     }
 
-    public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick, Alliance alliance) {
+    public static double getDriveIntent(Translation2d fieldTranslationToTarget, Translation2d driveJoystick) {
         var toNoteVector = fieldTranslationToTarget.toVector().unit();
-        var driverVector = VecBuilder.fill(driveJoystick.y, -driveJoystick.x);
-        if(alliance == DriverStation.Alliance.Red) {
-            // invert both axis
-            driverVector = driverVector.div(-1);
-        }
-        var dot = toNoteVector.dot(driverVector);
+        var dot = toNoteVector.dot(driveJoystick.toVector());
 
         return dot;
     }

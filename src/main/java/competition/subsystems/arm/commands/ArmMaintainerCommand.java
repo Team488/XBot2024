@@ -152,12 +152,12 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     @Override
     protected Double getHumanInput() {
         double fundamentalInput = MathUtils.deadband(
-                oi.operatorFundamentalsGamepad.getLeftVector().y,
+                oi.operatorFundamentalsGamepad.getLeftVector().getY(),
                 oi.getOperatorGamepadTypicalDeadband(),
                 (x) -> x);
 
         double advancedInput = MathUtils.deadband(
-                oi.operatorGamepadAdvanced.getLeftVector().y,
+                oi.operatorGamepadAdvanced.getLeftVector().getY(),
                 oi.getOperatorGamepadTypicalDeadband(),
                 (x) -> x);
 
