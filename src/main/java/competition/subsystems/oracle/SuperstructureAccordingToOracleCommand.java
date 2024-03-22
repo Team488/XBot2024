@@ -15,6 +15,8 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
     CollectorSubsystem collector;
     DynamicOracle.HighLevelGoal lastGoal = DynamicOracle.HighLevelGoal.NoGoal;
 
+    double metersWithinScoringLocationToRaiseArm = 1;
+
     @Inject
     public SuperstructureAccordingToOracleCommand(ArmSubsystem arm, ShooterWheelSubsystem shooter, DynamicOracle oracle, CollectorSubsystem collector) {
         this.oracle = oracle;
@@ -49,7 +51,8 @@ public class SuperstructureAccordingToOracleCommand extends BaseCommand {
                 tryToScore = true;
             }
             case ScoreInSpeaker -> {
-                if (oracle.isTerminatingPointWithinDistance(1)) {
+
+                if (oracle.isTerminatingPointWithinDistance(metersWithinScoringLocationToRaiseArm)) {
                     // If we're close to our terminating point, then we can "unlock" the arm to go to any height
                     // it wants
                     arm.setLimitToUnderStage(false);
