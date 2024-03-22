@@ -144,6 +144,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
                 new Translation2d(5.8674, 6.6)
         };
     }
+    //goes back to subwoofer for now until we fix it
     private ArrayList<XbotSwervePoint> goToCenterSpike(){
         var points = new ArrayList<XbotSwervePoint>();
         //var translation = PoseSubsystem.BlueSpikeMiddle.getTranslation();
@@ -151,7 +152,7 @@ public class SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter extend
                         Translation2d( 5.86, 6.6),
                 Rotation2d.fromDegrees(180),10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
-                PoseSubsystem.BlueSubwooferMiddleScoringLocation.getTranslation(), Rotation2d.fromDegrees(180),10));
+                PoseSubsystem.BlueSubwooferTopScoringLocation.getTranslation(), Rotation2d.fromDegrees(180),10));
         return points;
     }
 }
