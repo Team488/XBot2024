@@ -116,7 +116,8 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new
                         Translation2d( 5.86, 6.6),
                 Rotation2d.fromDegrees(180),10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferMiddleScoringLocation.getTranslation(), Rotation2d.fromDegrees(180),10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
+                PoseSubsystem.BlueSubwooferMiddleScoringLocation.getTranslation(), Rotation2d.fromDegrees(180),10));
         return points;
     }
 }
