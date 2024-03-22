@@ -3,6 +3,7 @@ package competition.auto_programs;
 import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.DriveToGivenNoteWithVisionCommand;
+import competition.commandgroups.FireFromSubwooferCommandGroup;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
@@ -36,13 +37,14 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
                               Provider<WarmUpShooterCommand> warmUpShooterCommandProvider,
                               Provider<SetArmExtensionCommand> setArmExtensionCommandProvider,
                               Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
+                              Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroupProvider,
                               DriveSubsystem drive){
         this.autoSelector = autoSelector;
 
-        SetArmExtensionCommand setArmForShot1 = setArmExtensionCommandProvider.get();
-        SetArmExtensionCommand setArmForShot2 = setArmExtensionCommandProvider.get();
-        setArmForShot2.setTargetExtension(setArmForShot2.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
-        setArmForShot1.setTargetExtension(setArmForShot1.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
+//        SetArmExtensionCommand setArmForShot1 = setArmExtensionCommandProvider.get();
+//        SetArmExtensionCommand setArmForShot2 = setArmExtensionCommandProvider.get();
+//        setArmForShot2.setTargetExtension(setArmForShot2.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
+//        setArmForShot1.setTargetExtension(setArmForShot1.getArmExtensionForDistanceInmm(PointOfInterest.SpikeMiddle));
 
         WarmUpShooterCommand warmupForShot1 = warmUpShooterCommandProvider.get();
         warmupForShot1.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
@@ -64,9 +66,10 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
         var driveToShootingPosition1 = driveToListOfPointsCommandProvider.get();
         driveToShootingPosition1.addPointsSupplier(this::goToCenterSpike);
 
-        var shootFifthNote = fireNoteCommandGroupProvider.get();
+        var shootFifthNote = fireFromSubwooferCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(driveToShootingPosition1,warmupForShot1,setArmForShot1),shootFifthNote);
+        this.addCommands(driveToShootingPosition1.withTimeout(5),shootFifthNote);
+        //this.addCommands(Commands.deadline(driveToShootingPosition1,warmupForShot1),shootFifthNote);
 
         queueMessageToAutoSelector("Drive to Centerline2 collect and shoot");
         this.addCommands(
@@ -86,7 +89,7 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
 
         var shootLastNote = fireNoteCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(driveToShootingPosition2,warmupForShot2, setArmForShot2),shootLastNote);
+        this.addCommands(Commands.deadline(driveToShootingPosition2,warmupForShot2),shootLastNote);
 
         this.addCommands(
                 new InstantCommand(() -> {
@@ -109,11 +112,11 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
     }
     private ArrayList<XbotSwervePoint> goToCenterSpike(){
         var points = new ArrayList<XbotSwervePoint>();
-        var translation = PoseSubsystem.BlueSpikeMiddle.getTranslation();
+        //var translation = PoseSubsystem.BlueSpikeMiddle.getTranslation();
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(new
                         Translation2d( 5.86, 6.6),
                 Rotation2d.fromDegrees(180),10));
-        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(translation, Rotation2d.fromDegrees(180),10));
+        points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferMiddleScoringLocation.getTranslation(), Rotation2d.fromDegrees(180),10));
         return points;
     }
 }
