@@ -141,6 +141,7 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
 
         double suggestedSpeed = drive.getSuggestedAutonomousMaximumSpeed();
         if (maximumSpeedOverride > suggestedSpeed) {
+            log.info("Using maximum speed override");
             suggestedSpeed = maximumSpeedOverride;
         }
 
