@@ -10,6 +10,7 @@ public class FlipperHangPositionCommand extends BaseCommand {
 
     @Inject
     FlipperHangPositionCommand(FlipperSubsystem flipper) {
+        addRequirements(flipper);
         this.flipper = flipper;
     }
 
@@ -21,6 +22,6 @@ public class FlipperHangPositionCommand extends BaseCommand {
 
     @Override
     public boolean isFinished() {
-        return true;
+        return false;
     }
 }
