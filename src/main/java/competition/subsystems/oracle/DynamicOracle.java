@@ -487,7 +487,7 @@ public class DynamicOracle extends BaseSubsystem {
         this.targetNote = note;
     }
 
-    private Note getTargetNote() {
+    public Note getTargetNote() {
         return this.targetNote;
     }
 
