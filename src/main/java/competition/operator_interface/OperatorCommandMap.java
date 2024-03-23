@@ -260,8 +260,8 @@ public class OperatorCommandMap {
         oi.neoTrellis.getifAvailable(16).onTrue(setBnbExtended);
 
         var setDoNothing = setAutonomousCommandProvider.get();
-        setBnbExtended.setAutoCommand(setDoNothing);
-        oi.neoTrellis.getifAvailable(8).onTrue(setBnbExtended);
+        setDoNothing.setAutoCommand(doNothing);
+        oi.neoTrellis.getifAvailable(8).onTrue(setDoNothing);
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {
