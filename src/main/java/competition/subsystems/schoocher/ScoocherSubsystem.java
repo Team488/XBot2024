@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 public class ScoocherSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
     public final ElectricalContract contract;
-    public DoubleProperty sendingPower;
+    public double sendingPower;
     public XCANSparkMax scoocherMotor;
 
     @Inject
@@ -26,7 +26,7 @@ public class ScoocherSubsystem extends BaseSubsystem implements DataFrameRefresh
             this.scoocherMotor = sparkMaxFactory.createWithoutProperties(contract.getScoocherMotor(), getPrefix(), "Scoocher");
         }
         pf.setPrefix(this);
-        sendingPower = pf.createPersistentProperty("sendingPower", 1.0);
+        sendingPower = 1.0;
     }
 
     private void setPower(double power) {
@@ -36,10 +36,10 @@ public class ScoocherSubsystem extends BaseSubsystem implements DataFrameRefresh
     }
 
     public void intakeNote() {
-        setPower(sendingPower.get());
+        setPower(sendingPower);
     }
     public void ejectNote(){
-        setPower(-sendingPower.get());
+        setPower(-sendingPower);
     }
 
     public void stop() {
