@@ -61,7 +61,8 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
         );
 
         var driveToTopCenterNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(driveToTopCenterNoteAndCollect.withTimeout(3.5));
+        driveToTopCenterNoteAndCollect.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        this.addCommands(driveToTopCenterNoteAndCollect.withTimeout(5.0));
 
         var driveToShootingPosition1 = driveToListOfPointsCommandProvider.get();
         driveToShootingPosition1.addPointsSupplier(this::goToCenterSpike);
@@ -78,11 +79,12 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
                 })
         );
         var driveToCenterline2 = driveToNoteProvider.get();
+        driveToCenterline2.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
         driveToCenterline2.setWaypoints(goToThirdNote());
 
         var collectSequence3 = collectSequenceCommandGroupProvider.get();
 
-        this.addCommands(Commands.deadline(collectSequence3,driveToCenterline2).withTimeout(3.5));
+        this.addCommands(Commands.deadline(collectSequence3,driveToCenterline2).withTimeout(5.0));
 
         var driveToShootingPosition2 = driveToListOfPointsCommandProvider.get();
         driveToShootingPosition2.addPointsSupplier(this::goToCenterSpike);
@@ -99,7 +101,7 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
 
         //gets us as far as we can before auto ends
         var driveToTopCenterNote = driveToGivenNoteAndCollectCommandGroupProvider.get();
-        this.addCommands(driveToTopCenterNote.withTimeout(3.5));
+        this.addCommands(driveToTopCenterNote.withTimeout(5.0));
 
     }
     private void queueMessageToAutoSelector(String message) {
