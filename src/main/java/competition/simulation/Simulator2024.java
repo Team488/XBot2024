@@ -149,7 +149,7 @@ public class Simulator2024 {
             rightMockMotor.setPosition(-0.25);
         }
 
-        // They might be using PID to control the arm. If so, we can use a moving aveage of their setpoint
+        // They might be using PID to control the arm. If so, we can use a moving average of their setpoint
         // to approximate internal PID.
         leftArmPositionCalculator.add(leftMockMotor.getReference());
         rightArmPositionCalculator.add(rightMockMotor.getReference());
