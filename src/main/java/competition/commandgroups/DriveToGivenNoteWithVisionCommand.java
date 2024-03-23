@@ -23,7 +23,6 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
     VisionSubsystem vision;
     CollectorSubsystem collector;
     boolean hasDoneVisionCheckYet = false;
-    double maximumSpeedOverride = 0;
 
     public enum NoteAcquisitionMode {
         BlindApproach,
@@ -44,7 +43,6 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         this.drive = drive;
         this.vision = vision;
         this.collector = collector;
-        maximumSpeedOverride = 0;
     }
 
     @Override
@@ -55,9 +53,6 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         hasDoneVisionCheckYet = false;
     }
 
-    public void setMaximumSpeedOverride(double maximumSpeedOverride) {
-        this.maximumSpeedOverride = maximumSpeedOverride;
-    }
 
 
     @Override
@@ -138,14 +133,6 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         this.logic.setAimAtGoalDuringFinalLeg(false);
         this.logic.setDriveBackwards(false);
         this.logic.setEnableConstantVelocity(true);
-
-        double suggestedSpeed = drive.getSuggestedAutonomousMaximumSpeed();
-        if (maximumSpeedOverride > suggestedSpeed) {
-            log.info("Using maximum speed override");
-            suggestedSpeed = maximumSpeedOverride;
-        }
-
-        this.logic.setConstantVelocity(suggestedSpeed);
         reset();
     }
 
