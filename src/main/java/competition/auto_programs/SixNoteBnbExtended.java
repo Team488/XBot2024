@@ -65,6 +65,7 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
         this.addCommands(driveToTopCenterNoteAndCollect.withTimeout(5.0));
 
         var driveToShootingPosition1 = driveToListOfPointsCommandProvider.get();
+        driveToShootingPosition1.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
         driveToShootingPosition1.addPointsSupplier(this::goToCenterSpike);
 
         var shootFifthNote = fireFromSubwooferCommandGroupProvider.get();
@@ -87,6 +88,7 @@ public class SixNoteBnbExtended extends SequentialCommandGroup {
         this.addCommands(Commands.deadline(collectSequence3,driveToCenterline2).withTimeout(5.0));
 
         var driveToShootingPosition2 = driveToListOfPointsCommandProvider.get();
+        driveToShootingPosition2.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
         driveToShootingPosition2.addPointsSupplier(this::goToCenterSpike);
 
         var shootLastNote = fireNoteCommandGroupProvider.get();
