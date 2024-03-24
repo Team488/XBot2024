@@ -43,6 +43,8 @@ public class GriefMiddle extends SequentialCommandGroup {
         driveToLowerWing.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
         // Keep driving!
         driveToLowerWing.logic.setStopWhenFinished(false);
+        driveToLowerWing.logic.setDriveBackwards(true);
+        driveToLowerWing.logic.setAimAtGoalDuringFinalLeg(true);
 
         this.addCommands(driveToLowerWing);
 

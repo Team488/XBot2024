@@ -242,9 +242,9 @@ public class OperatorCommandMap {
         oi.neoTrellis.getifAvailable(23).onTrue(setMidThenThree);
         setMidThenThree.includeOnSmartDashboard("Standard 4 Note Auto");
 
-        var setTopThenThree = setAutonomousCommandProvider.get();
-        setTopThenThree.setAutoCommand(topThenThree);
-        oi.neoTrellis.getifAvailable(15).onTrue(grief);
+        var setGrief = setAutonomousCommandProvider.get();
+        setGrief.setAutoCommand(grief);
+        oi.neoTrellis.getifAvailable(15).onTrue(setGrief);
 
         var setBotThenThree = setAutonomousCommandProvider.get();
         setBotThenThree.setAutoCommand(botThenThree);
