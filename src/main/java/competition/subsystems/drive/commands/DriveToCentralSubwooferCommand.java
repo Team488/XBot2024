@@ -1,5 +1,7 @@
 package competition.subsystems.drive.commands;
 
+import competition.commandgroups.CollectSequenceCommandGroup;
+import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
@@ -25,11 +27,13 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
     DoubleProperty meterThreshold;
     DoubleProperty velocityThreshold;
     Translation2d goal;
+    CollectorSubsystem collector;
 
     @Inject
     public DriveToCentralSubwooferCommand(DriveSubsystem drive, DynamicOracle oracle,
-                                   PoseSubsystem pose, PropertyFactory pf,
-                                   HeadingModule.HeadingModuleFactory headingModuleFactory) {
+                                          PoseSubsystem pose, PropertyFactory pf,
+                                          HeadingModule.HeadingModuleFactory headingModuleFactory,
+                                          CollectorSubsystem collector) {
         super(drive, pose, pf, headingModuleFactory);
 
         // TODO: Potentially adjust the values?
@@ -39,6 +43,8 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
         this.oracle = oracle;
         this.drive = drive;
         this.pose = pose;
+        this.collector = collector;
+        addRequirements(collector);
     }
 
     @Override
@@ -63,6 +69,7 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
 
     @Override
     public void execute() {
+        collector.intake();
         super.execute();
     }
 
