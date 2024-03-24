@@ -1,12 +1,14 @@
 package competition.operator_interface;
 
 import competition.auto_programs.DoNothingAuto;
+import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
+import competition.auto_programs.TwoNoteGriefAuto;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.subsystems.arm.ArmSubsystem;
@@ -229,7 +231,8 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter topThenTopSpikeTopCenter,
                                                 SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter,
                                                 SixNoteBnbExtended bnbExtended,
-                                                DoNothingAuto doNothing) {
+                                                DoNothingAuto doNothing,
+                                                GriefMiddle grief) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
@@ -241,7 +244,7 @@ public class OperatorCommandMap {
 
         var setTopThenThree = setAutonomousCommandProvider.get();
         setTopThenThree.setAutoCommand(topThenThree);
-        oi.neoTrellis.getifAvailable(15).onTrue(setTopThenThree);
+        oi.neoTrellis.getifAvailable(15).onTrue(grief);
 
         var setBotThenThree = setAutonomousCommandProvider.get();
         setBotThenThree.setAutoCommand(botThenThree);
