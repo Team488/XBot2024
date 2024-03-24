@@ -97,11 +97,14 @@ public class LightSubsystem extends BaseSubsystem {
             if (ampSignalOn) {
                 currentState = LightsStateMessage.AmpSignal;
 
-            } else if (shooter.isReadyToFire()) {
+            } else if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.ReadyToShoot;
 
             } else if (collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.RobotContainsNote;
+
+            } else if (shooter.isReadyToFire()) {
+                currentState = LightsStateMessage.ReadyToShoot;
 
             } else if (oracle.getNoteMap().hasVisionNotes()) {
                 currentState = LightsStateMessage.VisionSeesNote;
