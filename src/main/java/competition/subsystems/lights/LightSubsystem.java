@@ -35,7 +35,7 @@ public class LightSubsystem extends BaseSubsystem {
         WithDefaultAuto(7),
         WithCustomAuto(6),
         RobotEnabled(5),
-        AmpSignal(1),
+        ShooterReadyWithoutNote(1),
         ReadyToShoot(2),
         RobotContainsNote(3),
         VisionSeesNote(4);
@@ -94,17 +94,18 @@ public class LightSubsystem extends BaseSubsystem {
 
         } else {
             // Try and match enabled states
-            if (ampSignalOn) {
-                currentState = LightsStateMessage.AmpSignal;
+            //if (ampSignalOn) {
+                //currentState = LightsStateMessage.AmpSignal;
 
-            } else if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
+            //} else
+            if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.ReadyToShoot;
 
             } else if (collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.RobotContainsNote;
 
             } else if (shooter.isReadyToFire()) {
-                currentState = LightsStateMessage.ReadyToShoot;
+                currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
             } else if (oracle.getNoteMap().hasVisionNotes()) {
                 currentState = LightsStateMessage.VisionSeesNote;
