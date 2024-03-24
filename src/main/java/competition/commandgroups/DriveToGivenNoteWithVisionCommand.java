@@ -54,6 +54,7 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
     }
 
 
+
     @Override
     public void execute() {
 
@@ -132,7 +133,6 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         this.logic.setAimAtGoalDuringFinalLeg(false);
         this.logic.setDriveBackwards(false);
         this.logic.setEnableConstantVelocity(true);
-        this.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
         reset();
     }
 

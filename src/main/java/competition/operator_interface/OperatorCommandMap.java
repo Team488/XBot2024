@@ -1,5 +1,6 @@
 package competition.operator_interface;
 
+import competition.auto_programs.DoNothingAuto;
 import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
@@ -227,7 +228,8 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromBotShootThenShootSpikes botThenThree,
                                                 SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter topThenTopSpikeTopCenter,
                                                 SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter,
-                                                SixNoteBnbExtended bnbExtended) {
+                                                SixNoteBnbExtended bnbExtended,
+                                                DoNothingAuto doNothing) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
@@ -256,6 +258,10 @@ public class OperatorCommandMap {
         var setBnbExtended = setAutonomousCommandProvider.get();
         setBnbExtended.setAutoCommand(bnbExtended);
         oi.neoTrellis.getifAvailable(16).onTrue(setBnbExtended);
+
+        var setDoNothing = setAutonomousCommandProvider.get();
+        setDoNothing.setAutoCommand(doNothing);
+        oi.neoTrellis.getifAvailable(8).onTrue(setDoNothing);
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {

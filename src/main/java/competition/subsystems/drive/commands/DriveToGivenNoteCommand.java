@@ -20,6 +20,7 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
     DynamicOracle oracle;
     DriveSubsystem drive;
     public Translation2d[] waypoints = null;
+    double maximumSpeedOverride = 0;
 
     @Inject
     public DriveToGivenNoteCommand(DriveSubsystem drive, DynamicOracle oracle,
@@ -28,12 +29,19 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         super(drive, pose, pf, headingModuleFactory);
         this.oracle = oracle;
         this.drive = drive;
+        maximumSpeedOverride = 0;
     }
 
     @Override
     public void initialize() {
         log.info("Intitializing");
         prepareToDriveAtGivenNoteWithWaypoints(getWaypoints());
+    }
+
+
+    public void setMaximumSpeedOverride(double maximumSpeedOverride) {
+        log.info("Maximum speed set to " + maximumSpeedOverride);
+        this.maximumSpeedOverride = maximumSpeedOverride;
     }
 
     public void prepareToDriveAtGivenNote() {
@@ -45,7 +53,17 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         this.logic.setAimAtGoalDuringFinalLeg(true);
         this.logic.setDriveBackwards(true);
         this.logic.setEnableConstantVelocity(true);
-        this.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
+
+        double suggestedSpeed = drive.getSuggestedAutonomousMaximumSpeed();
+        if (maximumSpeedOverride > suggestedSpeed) {
+            log.info("Using maximum speed override");
+            suggestedSpeed = maximumSpeedOverride;
+        } else {
+            log.info("Not using max speed override");
+        }
+
+        this.logic.setConstantVelocity(suggestedSpeed);
+
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         reset();
@@ -67,7 +85,17 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
         this.logic.setAimAtGoalDuringFinalLeg(true);
         this.logic.setDriveBackwards(true);
         this.logic.setEnableConstantVelocity(true);
-        this.logic.setConstantVelocity(drive.getSuggestedAutonomousMaximumSpeed());
+
+        double suggestedSpeed = drive.getSuggestedAutonomousMaximumSpeed();
+        if (maximumSpeedOverride > suggestedSpeed) {
+            log.info("Using maximum speed override");
+            suggestedSpeed = maximumSpeedOverride;
+        } else {
+            log.info("Not using max speed override");
+        }
+
+        this.logic.setConstantVelocity(suggestedSpeed);
+
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         reset();
