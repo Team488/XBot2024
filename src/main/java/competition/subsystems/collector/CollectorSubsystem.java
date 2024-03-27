@@ -286,7 +286,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
 
     public boolean checkSensorForLights() {
-        if (getGamePieceInControl() || getGamePieceReady() || getBeamBreakSensorActivated()) {
+        if (getGamePieceInControl() || getGamePieceReady()) {
             timeOfLastNoteSensorTriggered = XTimer.getFPGATimestamp();
         }
         else {
