@@ -190,6 +190,10 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
             int quadrant = (int) (reboundCurrentHeading / 90);
             desiredHeading = quadrant * 90;
 
+            if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red) {
+                desiredHeading += 180;
+            }
+
             if (pose.getHeadingResetRecently()) {
                 drive.setDesiredHeading(pose.getCurrentHeading().getDegrees());
             } else {
