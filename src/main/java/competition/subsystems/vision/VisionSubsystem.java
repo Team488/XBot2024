@@ -370,16 +370,19 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         detectedNotes = getNotesFromTrackers(noteTrackers);
         passiveDetectedNotes = getNotesFromTrackers(passiveNoteTrackers);
 
-        var centerlineTargets = centerlineNoteCamera.getLatestResult().getTargets();
+        var centerlineTargetResult = centerlineNoteCamera.getLatestResult();
         var newCenterlineDetections = new ArrayList<SimpleNote>();
-        for (var target : centerlineTargets) {
-            if (target.getFiducialId() != 1) {
-                // Not a note, this is a robot!
-                continue;
+        if (centerlineTargetResult.hasTargets()) {
+            var centerlineTargets = centerlineNoteCamera.getLatestResult().getTargets();
+            for (var target : centerlineTargets) {
+                if (target.getFiducialId() != 1) {
+                    // Not a note, this is a robot!
+                    continue;
+                }
+                newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw()));
             }
-            newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw()));
         }
-        this.centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
+        centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
 
         aKitLog.record("CenterlineDetections", centerlineDetections);
         aKitLog.record("DetectedNotes", detectedNotes);
@@ -432,5 +435,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 camera.getCamera().refreshDataFrame();
             }
         }
+        centerlineNoteCamera.refreshDataFrame();
     }
 }
