@@ -1,10 +1,12 @@
 package competition.operator_interface;
 
+import competition.auto_programs.DoNothingAuto;
+import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
-import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter;
+import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.subsystems.arm.ArmSubsystem;
@@ -24,6 +26,7 @@ import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.flipper.commands.FlipperHangPositionCommand;
 import competition.subsystems.lights.commands.AmpSignalToggleCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.flipper.commands.ToggleFlipperCommand;
@@ -180,7 +183,7 @@ public class OperatorCommandMap {
     public void setupFundamentalCommands(
             OperatorInterface oi,
             Provider<IntakeScoocherCommand> scoocherIntakeProvider,
-            EjectScoocherCommand scoocherEject,
+            FlipperHangPositionCommand flipperHangPositionCommand,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
             Provider<WarmUpShooterCommand> shooterWarmUpSupplier,
@@ -202,7 +205,7 @@ public class OperatorCommandMap {
 
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake).onFalse(rumbleModeFalse);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(scoocherEject);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(flipperHangPositionCommand);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpAmp);
@@ -223,8 +226,10 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromMidShootThenShootNearestThree midThenThree,
                                                 SubwooferShotFromTopShootThenShootSpikes topThenThree,
                                                 SubwooferShotFromBotShootThenShootSpikes botThenThree,
-                                                SubwooferShotFromTopShootThenShootTopSpikeThenShootTopCenter topThenTopSpikeTopCenter,
-                                                SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter) {
+                                                SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter topThenTopSpikeTopCenter,
+                                                SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter,
+                                                SixNoteBnbExtended bnbExtended,
+                                                DoNothingAuto doNothing) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
@@ -249,6 +254,14 @@ public class OperatorCommandMap {
         var setBotThenBotSpikeBotCenter = setAutonomousCommandProvider.get();
         setBotThenBotSpikeBotCenter.setAutoCommand(botThenBotSpikeBotCenter);
         oi.neoTrellis.getifAvailable(24).onTrue(setBotThenBotSpikeBotCenter);
+
+        var setBnbExtended = setAutonomousCommandProvider.get();
+        setBnbExtended.setAutoCommand(bnbExtended);
+        oi.neoTrellis.getifAvailable(16).onTrue(setBnbExtended);
+
+        var setDoNothing = setAutonomousCommandProvider.get();
+        setDoNothing.setAutoCommand(doNothing);
+        oi.neoTrellis.getifAvailable(8).onTrue(setDoNothing);
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {

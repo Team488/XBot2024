@@ -39,7 +39,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     public final XCANSparkMax collectorMotor;
     public final DoubleProperty intakePower;
-    public final DoubleProperty ejectPower;
     private IntakeState intakeState;
     private CollectionSubstate collectionSubstate;
     public final XDigitalInput inControlNoteSensor;
@@ -84,7 +83,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.8);
-        ejectPower = pf.createPersistentProperty("ejectPower",-0.8);
         firePower = pf.createPersistentProperty("firePower", 1.0);
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
@@ -102,6 +100,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
 
     public void resetCollectionState() {
+        log.info("Resetting collection state.");
         collectionSubstate = CollectionSubstate.EvaluationNeeded;
         lowerTripwireHit = false;
         upperTripwireHit = false;
@@ -198,7 +197,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return;
         }
 
-        setPower(ejectPower.get());
+        setPower(-intakePower.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){

@@ -284,7 +284,7 @@ public class DynamicOracle extends BaseSubsystem {
             handleVisionDetectedNotes();
         }
 
-        aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
+        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
         // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.
         // We can always set the global log level to debug and replay the inputs to regenerate this data.
         aKitLog.record("NoteMap", noteMap.getAllAvailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
@@ -487,7 +487,7 @@ public class DynamicOracle extends BaseSubsystem {
         this.targetNote = note;
     }
 
-    private Note getTargetNote() {
+    public Note getTargetNote() {
         return this.targetNote;
     }
 

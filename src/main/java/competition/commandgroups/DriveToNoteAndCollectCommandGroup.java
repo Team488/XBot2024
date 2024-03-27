@@ -41,7 +41,8 @@ public class DriveToNoteAndCollectCommandGroup extends ParallelDeadlineGroup{
         swerveToNote.logic.setDriveBackwards(true);
         swerveToNote.logic.setEnableConstantVelocity(true);
         swerveToNote.logic.setConstantVelocity(1);
-        swerveToNote.logic.setWaypointRouter(oracle.getFieldWithObstacles());
+        //commented out because we want our auto to be simple (Aka functions without vision)
+        //swerveToNote.logic.setWaypointRouter(oracle.getFieldWithObstacles());
 
 
 
