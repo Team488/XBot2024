@@ -169,9 +169,12 @@ public class CompetitionContract extends ElectricalContract {
     public DeviceInfo getUpperNoteSensorDio() {
         return new DeviceInfo("UpperNoteSensor", 9, true);
     }
+    @Override
+    public DeviceInfo getBeamBreakSensorDio() {
+        return new DeviceInfo("BeamBreakNoteSensor", 5, true);
+    }
 
     // ArmSubsystem
-
     @Override
     public boolean isArmReady() {
         return true;
