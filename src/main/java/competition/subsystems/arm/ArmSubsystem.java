@@ -160,8 +160,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
         maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 52.0);
 
-        upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
-        lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
+        upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.15);
+        lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.08);
         lowerExtremelySlowZonePowerLimit = pf.createPersistentProperty("LowerExtremelySlowZonePowerLimit", -0.03);
 
         powerLimitForNotCalibrated = pf.createPersistentProperty(
