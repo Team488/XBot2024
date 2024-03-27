@@ -161,8 +161,13 @@ public class CompetitionContract extends ElectricalContract {
     // TODO: Flipper Solenoid channel is to be changed.
     @Override
     public DeviceInfo getFlipperSolenoid() {
-        return new DeviceInfo("FlipperSolenoid", 5);
+        return new DeviceInfo("FlipperSolenoid", 4);
     }
+    @Override
+    public DeviceInfo getFlipperServo() {
+        return new DeviceInfo("FlipperServo", 5);
+    }
+
     @Override
     public DeviceInfo getLowerNoteSensorDio() {
         return new DeviceInfo("LowerNoteSensor", 8, true);

@@ -37,7 +37,6 @@ public class Robot extends BaseRobot {
         getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
         getInjectorComponent().lightSubsystem();
-        getInjectorComponent().flipperSubsystem();
 
         if (BaseRobot.isSimulation()) {
             simulator = getInjectorComponent().simulator2024();
@@ -53,6 +52,7 @@ public class Robot extends BaseRobot {
         dataFrameRefreshables.add(getInjectorComponent().collectorSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().shooterSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().neoTrellisGamepadSubsystem());
+        dataFrameRefreshables.add(getInjectorComponent().flipperSubsystem());
         var defaultAuto = getInjectorComponent().subwooferShotFromMidShootThenShootNearestThree();
         var autoSelector = getInjectorComponent().autonomousCommandSelector();
 
