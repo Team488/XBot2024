@@ -157,9 +157,11 @@ public class CompetitionContract extends ElectricalContract {
         return new DeviceInfo("Lights3", 3);
     }
 
+
+    // TODO: Flipper Solenoid channel is to be changed.
     @Override
-    public DeviceInfo getFlipperServo() {
-        return new DeviceInfo("FlipperLeft", 5);
+    public DeviceInfo getFlipperSolenoid() {
+        return new DeviceInfo("FlipperSolenoid", 5);
     }
     @Override
     public DeviceInfo getLowerNoteSensorDio() {

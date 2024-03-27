@@ -21,11 +21,11 @@ public class ToggleFlipperCommand extends BaseCommand {
 
     @Override
     public void execute() {
-        flipper.servoActive();
+        flipper.solenoidActive();
     }
 
     @Override
     public void end(boolean interrupted) {
-        flipper.servoInactive();
+        flipper.solenoidInactive();
     }
 }
