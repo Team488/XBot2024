@@ -43,6 +43,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     private CollectionSubstate collectionSubstate;
     public final XDigitalInput inControlNoteSensor;
     public final XDigitalInput readyToFireNoteSensor;
+    public final XDigitalInput beamBreakSensor;
     private final ElectricalContract contract;
     private final DoubleProperty firePower;
     private final TimeStableValidator noteInControlValidator;
@@ -78,6 +79,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
         this.inControlNoteSensor = xDigitalInputFactory.create(contract.getLowerNoteSensorDio(), this.getPrefix());
         this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getUpperNoteSensorDio(), this.getPrefix());
+        this.beamBreakSensor = xDigitalInputFactory.create(contract.getBeamBreakSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.8);
@@ -240,7 +242,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     public boolean getGamePieceInControl() {
         if (contract.isCollectorReady()) {
-            return inControlNoteSensor.get();
+            return inControlNoteSensor.get() || beamBreakSensor.get();
         }
         return false;
     }
@@ -302,6 +304,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         if (contract.isCollectorReady()) {
             collectorMotor.refreshDataFrame();
             inControlNoteSensor.refreshDataFrame();
+            beamBreakSensor.refreshDataFrame();
             readyToFireNoteSensor.refreshDataFrame();
         }
     }
