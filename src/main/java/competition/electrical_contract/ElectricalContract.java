@@ -40,6 +40,7 @@ public abstract class ElectricalContract
 
     public abstract DeviceInfo getLowerNoteSensorDio();
     public abstract DeviceInfo getUpperNoteSensorDio();
+    public abstract DeviceInfo getBeamBreakSensorDio();
 
     // ArmSubsystem
     public abstract boolean isArmReady();
