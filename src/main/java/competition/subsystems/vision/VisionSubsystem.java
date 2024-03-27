@@ -59,6 +59,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     Pose3d[] passiveDetectedNotes;
     NoteTracker[] passiveNoteTrackers;
     final DoubleProperty noteLocalizationInfo;
+    PhotonCameraExtended centerlineNoteCamera;
+    SimpleNote[] centerlineDetections;
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
     NoteCamera rearCenterNoteCamera;
@@ -114,9 +116,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             log.error("Could not load AprilTagFieldLayout!", e);
         }
 
+        PhotonCameraExtended.setVersionCheckEnabled(false);
         aprilTagCameras = new ArrayList<AprilTagCamera>();
         if (aprilTagsLoaded) {
-            PhotonCameraExtended.setVersionCheckEnabled(false);
             var aprilTagCapableCameras = Arrays
                     .stream(electricalContract.getCameraInfo())
                     .filter(info -> info.capabilities().contains(CameraCapabilities.APRIL_TAG))
@@ -125,6 +127,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 aprilTagCameras.add(new AprilTagCamera(camera, waitForStablePoseTime::get, aprilTagFieldLayout, this.getPrefix()));
             }
         }
+
+        centerlineNoteCamera = new PhotonCameraExtended(
+                NetworkTableInstance.getDefault(),
+                "GamePiece_Centerline_Camera",
+                this.getPrefix());
 
         noteCameras = new ArrayList<NoteCamera>();
         var noteTrackingCapableCameras = Arrays
@@ -347,6 +354,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
+        aKitLog.record(centerlineNoteCamera.getName() + "CameraWorking", centerlineNoteCamera.isConnected());
+
         for (SimpleCamera camera : allCameras) {
             aKitLog.record(camera.getName() + "CameraWorking", camera.isCameraWorking());
         }
@@ -361,8 +370,24 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         detectedNotes = getNotesFromTrackers(noteTrackers);
         passiveDetectedNotes = getNotesFromTrackers(passiveNoteTrackers);
 
+        var centerlineTargets = centerlineNoteCamera.getLatestResult().getTargets();
+        var newCenterlineDetections = new ArrayList<SimpleNote>();
+        for (var target : centerlineTargets) {
+            if (target.getFiducialId() != 1) {
+                // Not a note, this is a robot!
+                continue;
+            }
+            newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw()));
+        }
+        this.centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
+
+        aKitLog.record("CenterlineDetections", centerlineDetections);
         aKitLog.record("DetectedNotes", detectedNotes);
         aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
+    }
+
+    public SimpleNote[] getCenterlineDetections() {
+        return centerlineDetections;
     }
 
     private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
