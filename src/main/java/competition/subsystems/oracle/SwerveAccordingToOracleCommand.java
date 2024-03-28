@@ -70,10 +70,29 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
 
         logic.setPrioritizeRotationIfCloseToGoal(true);
 
-        double maxVelocity = drive.getSuggestedAutonomousMaximumSpeed();
+        double maxVelocity = drive.getMaxTargetSpeedMetersPerSecond();
         if (DriverStation.isAutonomous()) {
-            maxVelocity = drive.getSuggestedAutonomousMaximumSpeed();
+            maxVelocity = drive.getSuggestedAutonomousExtremeSpeed();
         }
+
+        if (oracle.getTargetNote() != null) {
+            if (oracle.getTargetNote().getPointOfInterest() != null) {
+                switch (oracle.getTargetNote().getPointOfInterest()) {
+                    case CenterLine1:
+                    case CenterLine2:
+                    case CenterLine3:
+                    case CenterLine4:
+                    case CenterLine5:
+                        maxVelocity = drive.getSuggestedAutonomousExtremeSpeed();
+                        break;
+                    default:
+                        // no op
+                        break;
+                }
+            }
+        }
+
+
         logic.setConstantVelocity(maxVelocity);
 
         if (oracle.getHighLevelGoal() == DynamicOracle.HighLevelGoal.CollectNote) {
@@ -89,18 +108,9 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
                 logic.setEnableSpecialAimDuringFinalLeg(false);
                 logic.setAimAtGoalDuringFinalLeg(true);
             } else {
-                if (oracle.targetNote.getAvailability() == Availability.AgainstObstacle) {
-                    // if a note is against an obstacle, we need to always point at it to avoid rotation thrashing as we
-                    // try to approach it
-                    logic.setEnableSpecialAimTarget(true);
-                    logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
-                    logic.setAimAtGoalDuringFinalLeg(false);
-                } else {
-                    // Note is in the clear, just drive straight at it.
-                    logic.setEnableSpecialAimTarget(true);
-                    logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
-                    logic.setAimAtGoalDuringFinalLeg(false);
-                }
+                logic.setEnableSpecialAimTarget(true);
+                logic.setSpecialAimTarget(oracle.getSpecialAimTarget());
+                logic.setAimAtGoalDuringFinalLeg(false);
 
                 logic.setEnableSpecialAimDuringFinalLeg(false);
                 // When approaching the note, make sure to aim straight at the note for the best chance of collection.

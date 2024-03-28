@@ -14,6 +14,7 @@ import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import org.littletonrobotics.junction.LogTable;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
 import xbot.common.math.MovingAverageForDouble;
@@ -58,6 +59,8 @@ public class Robot extends BaseRobot {
         var autoSelector = getInjectorComponent().autonomousCommandSelector();
 
         autoSelector.setCurrentAutonomousCommand(defaultAuto);
+        autoSelector.setIsDefault(true);
+        LogTable.disableProtobufWarning();
     }
 
     protected BaseRobotComponent createDaggerComponent() {

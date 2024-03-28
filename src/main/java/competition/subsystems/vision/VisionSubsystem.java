@@ -56,7 +56,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     long logCounter = 0;
     Pose3d[] detectedNotes;
     NoteTracker[] noteTrackers;
+    Pose3d[] passiveDetectedNotes;
+    NoteTracker[] passiveNoteTrackers;
     final DoubleProperty noteLocalizationInfo;
+    PhotonCameraExtended centerlineNoteCamera;
+    SimpleNote[] centerlineDetections;
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
     NoteCamera rearCenterNoteCamera;
@@ -85,10 +89,15 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
                 //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs",
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+        };
+        var passiveDetectionTopicNames = new String[]{
                 "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
+                .map(NoteTracker::new)
+                .toArray(NoteTracker[]::new);
+        passiveNoteTrackers = Arrays.stream(passiveDetectionTopicNames)
                 .map(NoteTracker::new)
                 .toArray(NoteTracker[]::new);
 
@@ -107,9 +116,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             log.error("Could not load AprilTagFieldLayout!", e);
         }
 
+        PhotonCameraExtended.setVersionCheckEnabled(false);
         aprilTagCameras = new ArrayList<AprilTagCamera>();
         if (aprilTagsLoaded) {
-            PhotonCameraExtended.setVersionCheckEnabled(false);
             var aprilTagCapableCameras = Arrays
                     .stream(electricalContract.getCameraInfo())
                     .filter(info -> info.capabilities().contains(CameraCapabilities.APRIL_TAG))
@@ -118,6 +127,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 aprilTagCameras.add(new AprilTagCamera(camera, waitForStablePoseTime::get, aprilTagFieldLayout, this.getPrefix()));
             }
         }
+
+        centerlineNoteCamera = new PhotonCameraExtended(
+                NetworkTableInstance.getDefault(),
+                "GamePiece_Centerline_Camera",
+                this.getPrefix());
 
         noteCameras = new ArrayList<NoteCamera>();
         var noteTrackingCapableCameras = Arrays
@@ -278,6 +292,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return detectedNotes;
     }
 
+    public Pose3d[] getPassiveDetectedNotes() {
+        return passiveDetectedNotes;
+    }
+
     public double getNoteYawFromCentralCamera() {
         return getNoteYaw(rearCenterNoteCamera);
     }
@@ -336,6 +354,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
+        aKitLog.record(centerlineNoteCamera.getName() + "CameraWorking", centerlineNoteCamera.isConnected());
+
         for (SimpleCamera camera : allCameras) {
             aKitLog.record(camera.getName() + "CameraWorking", camera.isCameraWorking());
         }
@@ -347,13 +367,44 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
-        Arrays.stream(noteTrackers)
-                .forEach(NoteTracker::refreshDataFrame);
-        var detections = Arrays.stream(noteTrackers)
+        detectedNotes = getNotesFromTrackers(noteTrackers);
+        passiveDetectedNotes = getNotesFromTrackers(passiveNoteTrackers);
+
+        var centerlineTargets = centerlineNoteCamera.getLatestResult().getTargets();
+        var newCenterlineDetections = new ArrayList<SimpleNote>();
+        for (var target : centerlineTargets) {
+            if (target.getFiducialId() != 1) {
+                // Not a note, this is a robot!
+                continue;
+            }
+            newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw()));
+        }
+        this.centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
+
+        aKitLog.record("CenterlineDetections", centerlineDetections);
+        aKitLog.record("DetectedNotes", detectedNotes);
+        aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
+    }
+
+    public SimpleNote[] getCenterlineDetections() {
+        return centerlineDetections;
+    }
+
+    private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
+        Arrays.stream(noteTrackers).forEach(NoteTracker::refreshDataFrame);
+        var detections = getDetections(noteTrackers);
+        return processDetections(detections);
+    }
+
+    private String[] getDetections(NoteTracker[] noteTrackers) {
+        return Arrays.stream(noteTrackers)
                 .map(NoteTracker::getDetections)
                 .flatMap(Arrays::stream)
                 .toArray(String[]::new);
-        detectedNotes = Arrays.stream(detections)
+    }
+
+    private Pose3d[] processDetections(String[] detections) {
+        return Arrays.stream(detections)
                 .map(detection -> {
                     var parts = detection.split(",");
                     var ratio = Double.parseDouble(parts[3]);
@@ -372,8 +423,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 })
                 .filter(Objects::nonNull)
                 .toArray(Pose3d[]::new);
-
-        aKitLog.record("DetectedNotes", detectedNotes);
     }
 
     @Override

@@ -32,10 +32,10 @@ public class LightSubsystem extends BaseSubsystem {
     public enum LightsStateMessage{
         NoCode(15), // we never send this one, it's implicit when the robot is off
         // and all of the DIOs float high
-        DisabledWithoutAuto(7),
-        DisabledWithAuto(6),
+        WithDefaultAuto(7),
+        WithCustomAuto(6),
         RobotEnabled(5),
-        AmpSignal(1),
+        ShooterReadyWithoutNote(1),
         ReadyToShoot(2),
         RobotContainsNote(3),
         VisionSeesNote(4);
@@ -74,6 +74,7 @@ public class LightSubsystem extends BaseSubsystem {
         this.outputs[1] = digitalOutputFactory.create(contract.getLightsDio1().channel);
         this.outputs[2] = digitalOutputFactory.create(contract.getLightsDio2().channel);
         this.outputs[3] = digitalOutputFactory.create(contract.getLightsDio3().channel);
+        //this.pf = pf;
     }
 
     public LightsStateMessage getCurrentState() {
@@ -84,22 +85,27 @@ public class LightSubsystem extends BaseSubsystem {
         // Not sure about if the way we are checking the shooter is correct (and collector)
         if (!dsEnabled) {
             // Check if auto program is set
-            if (autonomousCommandSelector.getCurrentAutonomousCommand() != null) {
-                currentState = LightsStateMessage.DisabledWithAuto;
+            //isDefault = pf.createPersistentProperty("IsDefaultAuto", autonomousCommandSelector.getIsDefault()?1.0:2.0);
+            if (autonomousCommandSelector.getIsDefault()) {
+                currentState = LightsStateMessage.WithDefaultAuto;
             } else {
-                currentState = LightsStateMessage.DisabledWithoutAuto;
+                currentState = LightsStateMessage.WithCustomAuto;
             }
 
         } else {
             // Try and match enabled states
-            if (ampSignalOn) {
-                currentState = LightsStateMessage.AmpSignal;
+            //if (ampSignalOn) {
+                //currentState = LightsStateMessage.AmpSignal;
 
-            } else if (shooter.isReadyToFire()) {
+            //} else
+            if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.ReadyToShoot;
 
             } else if (collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.RobotContainsNote;
+
+            } else if (shooter.isReadyToFire()) {
+                currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
             } else if (oracle.getNoteMap().hasVisionNotes()) {
                 currentState = LightsStateMessage.VisionSeesNote;

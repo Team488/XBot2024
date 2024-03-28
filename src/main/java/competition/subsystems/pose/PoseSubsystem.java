@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.photonvision.EstimatedRobotPose;
+import xbot.common.advantage.AKitLogger;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
 import xbot.common.logic.Latch;
 import xbot.common.logic.TimeStableValidator;
@@ -20,6 +21,7 @@ import xbot.common.math.WrappedRotation2d;
 import xbot.common.math.XYPair;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
@@ -51,7 +53,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final Latch useVisionToUpdateGyroLatch;
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
-    public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0, 5.5, Rotation2d.fromDegrees(180));
+
+    //Speaker position that is forward 9.5 inches for better aiming
+    public static final  Translation2d SPEAKER_TARGET_FORWARD = new Translation2d(0.2032,5.547868);
+    public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0.2032, 5.547868, Rotation2d.fromDegrees(180));
     public static Pose2d BlueSpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
     public static Pose2d BlueSpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d BlueSpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
@@ -126,7 +131,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
         extremelyConfidentVisionDistanceUpdateInMetersProp = propManager.createPersistentProperty("ExtremelyConfidentVisionDistanceUpdateInMeters", 0.01);
         isVisionPoseExtremelyConfident = false;
         allianceAwareFieldProp = propManager.createPersistentProperty("Alliance Aware Field", true);
+
+        propManager.setDefaultLevel(Property.PropertyLevel.Important);
         useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", false);
+        propManager.setDefaultLevel(Property.PropertyLevel.Debug);
         useForwardCameraForPose = propManager.createPersistentProperty("Use forward april cam", true);
         useRearCameraForPose = propManager.createPersistentProperty("Use rear april cam", true);
 
@@ -454,7 +462,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public double getAngularErrorToSpeakerInDegrees() {
-        return getAngularErrorToTranslation2dInDegrees(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION), new Rotation2d());
+        return getAngularErrorToTranslation2dInDegrees(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_TARGET_FORWARD), new Rotation2d());
     }
 
     public double getAngularErrorToTranslation2dInDegrees(Translation2d targetPosition, Rotation2d offset) {
@@ -467,12 +475,22 @@ public class PoseSubsystem extends BasePoseSubsystem {
             return getCurrentPose2d().plus(new Transform2d(robotCoordinates, new Rotation2d())).getTranslation();
     }
 
+    public double getRobotCurrentSpeed() {
+        XYPair robotVelocity = this.getCurrentVelocity();
+        return Math.abs(Math.sqrt(
+                Math.pow(robotVelocity.x, 2) + Math.pow(robotVelocity.y, 2)
+        ));
+    }
+
     @Override
     public void periodic() {
         super.periodic();
+
+        aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
         aKitLog.record("DistanceToSpeaker", getDistanceFromSpeaker());
+        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
     }
 }
 

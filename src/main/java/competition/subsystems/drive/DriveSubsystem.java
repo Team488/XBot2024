@@ -36,6 +36,7 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private Rotation2d specialHeadingTarget = new Rotation2d();
     private Translation2d specialPointAtPositionTarget = new Translation2d();
     private final DoubleProperty suggestedAutonomousMaximumSpeed;
+    private final DoubleProperty suggestedAutonomousExtremeSpeed;
 
     @Inject
     public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
@@ -48,11 +49,15 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         pf.setDefaultLevel(Property.PropertyLevel.Important);
         suggestedAutonomousMaximumSpeed =
                 pf.createPersistentProperty("Suggested Autonomous Maximum Speed", 3.0);
+        suggestedAutonomousExtremeSpeed =
+                pf.createPersistentProperty("Suggested Autonomous EXTREME Speed", 5.0);
     }
 
     public double getSuggestedAutonomousMaximumSpeed() {
         return suggestedAutonomousMaximumSpeed.get();
     }
+
+    public double getSuggestedAutonomousExtremeSpeed() { return suggestedAutonomousExtremeSpeed.get(); }
 
     @Override
     protected PIDDefaults getPositionalPIDDefaults() {

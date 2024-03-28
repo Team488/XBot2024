@@ -35,10 +35,10 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
     final DoubleProperty input_exponent;
     final DoubleProperty drivePowerFactor;
     final DoubleProperty turnPowerFactor;
-    final BooleanProperty absoluteOrientationMode;
+    boolean absoluteOrientationMode;
     final HeadingModule headingModule;
     final Latch absoluteOrientationLatch;
-    final DoubleProperty minimumMagnitudeForAbsoluteHeading;
+    double minimumMagnitudeForAbsoluteHeading;
     final DoubleProperty triggerOnlyPowerScaling;
     final DoubleProperty triggerOnlyExponent;
     final HumanVsMachineDecider decider;
@@ -55,8 +55,8 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         this.input_exponent = pf.createPersistentProperty("Input Exponent", 2);
         this.drivePowerFactor = pf.createPersistentProperty("Power Factor", 1.0);
         this.turnPowerFactor = pf.createPersistentProperty("Turn Power Factor", 1.0);
-        this.absoluteOrientationMode = pf.createPersistentProperty("Absolute Orientation Mode", true);
-        this.minimumMagnitudeForAbsoluteHeading = pf.createPersistentProperty("Min Magnitude For Absolute Heading", 0.75);
+        this.absoluteOrientationMode = true;
+        this.minimumMagnitudeForAbsoluteHeading = 0.75;
         this.decider = hvmFactory.create(this.getPrefix());
         this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
         this.triggerOnlyPowerScaling = pf.createPersistentProperty("TriggerOnlyPowerScaling", 0.75);
@@ -67,7 +67,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
 
         // Set up a latch to trigger whenever we change the rotational mode. In either case,
         // there's some PIDs that will need to be reset, or goals that need updating.
-        absoluteOrientationLatch = new Latch(absoluteOrientationMode.get(), EdgeType.Both, edge -> {
+        absoluteOrientationLatch = new Latch(absoluteOrientationMode, EdgeType.Both, edge -> {
             if(edge == EdgeType.RisingEdge) {
                 resetBeforeStartingAbsoluteOrientation();
             }
@@ -80,7 +80,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
     }
 
     public void setAbsoluteHeadingMode(boolean absoluteHeadingEnabled) {
-        absoluteOrientationMode.set(absoluteHeadingEnabled);
+        absoluteOrientationMode = absoluteHeadingEnabled;
     }
 
     @Override
@@ -106,7 +106,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         // Feed the latch with our mode state, so it can reset PIDs or goals as appropriate.
         // This will automatically reset the relevant PIDs - you can see what is exactly is registered
         // by looking at the latch code in the constructor.
-        absoluteOrientationLatch.setValue(absoluteOrientationMode.get());
+        absoluteOrientationLatch.setValue(absoluteOrientationMode);
 
         // --------------------------------------------------
         // Translation
@@ -126,7 +126,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         // conflicting move like trying to rotate in two directions at once.
 
         double rotateIntent = 0;
-        if (absoluteOrientationMode.get()) {
+        if (absoluteOrientationMode) {
             rotateIntent = getSuggestedRotateIntentForAbsoluteStickControl(humanRotateIntentFromTriggers);
         } else {
             // If we are in the typical "rotate using joystick to turn" mode, use the Heading Assist module to get the suggested power.
@@ -175,7 +175,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
 
         double desiredHeading = 0;
 
-        if (headingVector.getMagnitude() > minimumMagnitudeForAbsoluteHeading.get() || drive.isQuickAlignActive()) {
+        if (headingVector.getMagnitude() > minimumMagnitudeForAbsoluteHeading || drive.isQuickAlignActive()) {
             // If the magnitude is greater than the minimum magnitude, we can use the joystick to set the heading.
 
             double headingToEvaluateForQuadrant = 0;
@@ -189,6 +189,10 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
             // Now, we can use the modulus operator to get the quadrant.
             int quadrant = (int) (reboundCurrentHeading / 90);
             desiredHeading = quadrant * 90;
+
+            if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red) {
+                desiredHeading += 180;
+            }
 
             if (pose.getHeadingResetRecently()) {
                 drive.setDesiredHeading(pose.getCurrentHeading().getDegrees());
