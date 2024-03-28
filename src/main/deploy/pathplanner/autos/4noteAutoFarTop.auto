@@ -3,9 +3,9 @@
   "startingPose": {
     "position": {
       "x": 0.7059762690953959,
-      "y": 4.397837367103306
+      "y": 6.714031713777714
     },
-    "rotation": 122.27564431457758
+    "rotation": -122.67222928868311
   },
   "command": {
     "type": "sequential",
@@ -14,25 +14,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FarNote1Bot"
+            "pathName": "FarNote1Top"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "FarNote2Bot"
+            "pathName": "FarNote2Top"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "FarNote3Bot"
+            "pathName": "FarNote3Top"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "TopSpikeMid2"
+            "pathName": "PodiumMid2"
           }
         }
       ]
