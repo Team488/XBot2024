@@ -1,12 +1,12 @@
 package competition.subsystems.drive.commands;
 
 import competition.operator_interface.OperatorInterface;
+import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.SimpleNote;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,26 +24,30 @@ import xbot.common.subsystems.drive.control_logic.HeadingModule;
 import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Optional;
 
 public class PointAtNoteWithBearingCommand extends BaseCommand {
     final Logger log = LogManager.getLogger(this);
 
-    SimpleNote savedNotePosition = null;
+    Optional<SimpleNote> savedNotePosition = null;
     final DriveSubsystem drive;
     final HeadingModule headingModule;
     final PoseSubsystem pose;
     final OperatorInterface oi;
     final VisionSubsystem vision;
+    final CollectorSubsystem collector;
+
     final DoubleProperty minNoteArea;
 
     @Inject
     public PointAtNoteWithBearingCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
-                                         OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf) {
+                                         OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf, CollectorSubsystem collector) {
         this.drive = drive;
         this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
         this.pose = pose;
         this.oi = oi;
         this.vision = vision;
+        this.collector = collector;
 
         pf.setPrefix(this);
         this.minNoteArea = pf.createPersistentProperty("Minimum note area", 10);
@@ -53,51 +57,48 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
-        savedNotePosition = null;
+        savedNotePosition = Optional.empty();
         // Find the note we want to point at
         var largestTarget = getLargestTarget();
-        if (largestTarget != null) {
+        if (largestTarget.isPresent()) {
             this.savedNotePosition = largestTarget;
             log.info("Rotating to note, current rotation error: {}",
-                    largestTarget.getYaw());
+                    this.savedNotePosition.get().getYaw());
         } else {
-            this.savedNotePosition = null;
             log.warn("No note found to rotate to");
         }
     }
 
     @Override
     public void execute() {
-        if (savedNotePosition == null) {
-            log.warn("Skipping execute due to no target.");
-            return;
-        }
-
         // If we can still see the note, update the target
-        var newTarget = getLargestTarget();
-        if (newTarget != null && newTarget != this.savedNotePosition) {
-            this.savedNotePosition = newTarget;
-        }
+        this.savedNotePosition = getLargestTarget();
 
+        // Create a vector pointing 1m behind the robot, this might have a bug in it
         var toNoteTranslation = this.pose.getCurrentPose2d()
-                .transformBy(new Transform2d(1.0, 0.0, new Rotation2d()))
+                .transformBy(new Transform2d(-1.0, 0.0, new Rotation2d()))
                 .getTranslation();
-        // if we're very close to the note, stop trying to rotate, it gets wonky
 
         var movement = MathUtils.deadband(
                 getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector(),
                         DriverStation.getAlliance().orElse(Alliance.Blue)),
                 oi.getDriverGamepadTypicalDeadband(), (x) -> x);
+        
         double rotationPower = 0;
-        // if we're far enough away, rotate towards the note (if we're too close, the )
-        if (toNoteTranslation.getNorm() > this.minNoteArea.get()) {
-            rotationPower = this.drive.getRotateToHeadingPid().calculate(0, savedNotePosition.getYaw());
+        // if we see a note, rotate towards it
+        if (savedNotePosition.isPresent()) {
+            rotationPower = this.drive.getRotateToHeadingPid().calculate(0, savedNotePosition.get().getYaw());
         }
 
         // negative movement because we want to drive the robot 'backwards', collector towards the note
         drive.move(new XYPair(-movement, 0), rotationPower);
 
-        aKitLog.record("YawToTarget", this.savedNotePosition.getYaw());
+        if(savedNotePosition.isPresent()) {
+            aKitLog.record("YawToTarget", this.savedNotePosition.get().getYaw());
+        } else {
+            aKitLog.record("YawToTarget", 0.0);
+        }
+        
     }
 
     public static double getDriveIntent(Translation2d fieldTranslationToTarget, XYPair driveJoystick, Alliance alliance) {
@@ -114,21 +115,20 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
 
     @Override
     public boolean isFinished() {
-        if (this.savedNotePosition == null) {
-            log.warn("Command finished due to no note.");
+        if (this.collector.getGamePieceInControl()) {
+            log.warn("Note acquired, ending");
             return true;
         }
         return false;
     }
 
-    private SimpleNote getLargestTarget() {
+    private Optional<SimpleNote> getLargestTarget() {
         var targets = vision.getCenterlineDetections();
         if (targets.length == 0) {
-            return null;
+            return Optional.empty();
         }
         return Arrays.stream(targets)
                 .filter(t -> t.getArea() > this.minNoteArea.get())
-                .max(Comparator.comparingDouble(SimpleNote::getArea))
-                .orElse(null);
+                .max(Comparator.comparingDouble(SimpleNote::getArea));
     }
 }
