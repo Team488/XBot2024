@@ -60,7 +60,7 @@ public class OperatorCommandMap {
     public OperatorCommandMap() {}
 
 
-    
+
     // Example for setting up a command to fire when a button is pressed:
     @Inject
     public void setupDriverCommands(
@@ -87,9 +87,9 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(limitArmToUnderStageCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(driveToAmpCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(limitArmToUnderStageCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
@@ -99,7 +99,7 @@ public class OperatorCommandMap {
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
 
-        operatorInterface.driverGamepad.getPovIfAvailable(0).whileTrue(lineUpForHangingCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(90).whileTrue(lineUpForHangingCommand);
 
     }
 
