@@ -7,7 +7,7 @@ import xbot.common.command.BaseCommand;
 
 import javax.inject.Inject;
 
-public class PodiumMidCommand extends BaseCommand {
+public class BotMidFarShotAutoCommand extends BaseCommand {
     PathPlannerDriveSubsystem drive;
     Command autonomousCommand;
     RobotContainer robotContainer;
@@ -15,7 +15,7 @@ public class PodiumMidCommand extends BaseCommand {
     PoseSubsystem pose;
 
     @Inject
-    public PodiumMidCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
+    public BotMidFarShotAutoCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
                             DriveSubsystem driveSubsystem, PoseSubsystem pose) {
         this.robotContainer = robotContainer;
         this.drive = drive;
@@ -23,7 +23,7 @@ public class PodiumMidCommand extends BaseCommand {
         this.pose = pose;
         addRequirements(driveSubsystem);
         addRequirements(drive);
-        this.autonomousCommand = robotContainer.getPodiumMidCommand();
+        this.autonomousCommand = robotContainer.getBotMidFarCommand();
         autonomousCommand.addRequirements(drive);
         autonomousCommand.addRequirements(driveSubsystem);
 

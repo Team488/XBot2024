@@ -66,10 +66,10 @@ public class RobotContainer {
         return autoChooser.getSelected();
     }
     public Command getFast4NoteFarCommand() {
-        return new PathPlannerAuto("4noteAutoFarBot");
+        return new PathPlannerAuto("5noteBot");
     }
-    public Command getPodiumMidCommand() {
-        return new PathPlannerAuto("PodiumMid");
+    public Command getBotMidFarCommand() {
+        return new PathPlannerAuto("BotMidFarShot");
     }
 
 }
