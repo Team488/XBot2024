@@ -26,6 +26,7 @@ import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.drive.commands.PointAtNoteWithBearingCommand;
 import competition.subsystems.flipper.commands.FlipperHangPositionCommand;
 import competition.subsystems.lights.commands.AmpSignalToggleCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
@@ -67,7 +68,7 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
             DriveSubsystem drive,
-            PointAtNoteCommand alignToNoteCommand,
+            PointAtNoteWithBearingCommand alignToNoteCommand,
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
