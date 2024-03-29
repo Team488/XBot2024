@@ -9,6 +9,7 @@ import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XDigitalOutput;
@@ -24,6 +25,7 @@ public class LightSubsystem extends BaseSubsystem {
     final AutonomousCommandSelector autonomousCommandSelector;
     final ShooterWheelSubsystem shooter;
     final CollectorSubsystem collector;
+    final VisionSubsystem vision;
     final DynamicOracle oracle;
     final XDigitalOutput[] outputs;
 
@@ -32,6 +34,12 @@ public class LightSubsystem extends BaseSubsystem {
     public enum LightsStateMessage{
         NoCode(15), // we never send this one, it's implicit when the robot is off
         // and all of the DIOs float high
+        SomeCamerasWorkingCustom(13),
+        NoCameraWorkingCustom(12),
+        AllCamerasWorkingCustom(11),
+        SomeCamerasWorkingDefault(10),
+        NoCameraWorkingDefault(9),
+        AllCamerasWorkingDefault(8),
         WithDefaultAuto(7),
         WithCustomAuto(6),
         RobotEnabled(5),
@@ -64,10 +72,12 @@ public class LightSubsystem extends BaseSubsystem {
                           ElectricalContract contract,
                           AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector,
+                          VisionSubsystem vision,
                           DynamicOracle oracle) {
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
+        this.vision = vision;
         this.oracle = oracle;
         this.outputs = new XDigitalOutput[numBits];
         this.outputs[0] = digitalOutputFactory.create(contract.getLightsDio0().channel);
@@ -85,19 +95,14 @@ public class LightSubsystem extends BaseSubsystem {
         // Not sure about if the way we are checking the shooter is correct (and collector)
         if (!dsEnabled) {
             // Check if auto program is set
-            //isDefault = pf.createPersistentProperty("IsDefaultAuto", autonomousCommandSelector.getIsDefault()?1.0:2.0);
-            if (autonomousCommandSelector.getIsDefault()) {
-                currentState = LightsStateMessage.WithDefaultAuto;
-            } else {
-                currentState = LightsStateMessage.WithCustomAuto;
+            int base = 8;
+            if (!autonomousCommandSelector.getIsDefault()) {
+                base = 11;
             }
 
+            // 0 as no camera working, 1 as all camera working, 2 as some camera working
+            currentState = LightsStateMessage.values()[base + vision.cameraWorkingState()];
         } else {
-            // Try and match enabled states
-            //if (ampSignalOn) {
-                //currentState = LightsStateMessage.AmpSignal;
-
-            //} else
             if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.ReadyToShoot;
 
