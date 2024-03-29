@@ -4,36 +4,19 @@ import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.SetArmExtensionCommand;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.WarmUpShooterCommand;
-import xbot.common.command.BaseSetpointCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 
 import javax.inject.Inject;
 
-public class PrepareToLobShotCommand extends BaseSetpointCommand {
-    SetArmExtensionCommand setArmExtension;
-    WarmUpShooterCommand warmUpShooter;
-
+public class PrepareToLobShotCommand extends ParallelCommandGroup {
 
     @Inject
     public PrepareToLobShotCommand(SetArmExtensionCommand setArmExtension, WarmUpShooterCommand warmUpShooter,
-                                   ShooterWheelSubsystem shooter) {
-        super(shooter);
-        this.setArmExtension = setArmExtension;
-        this.warmUpShooter = warmUpShooter;
-    }
-
-    @Override
-    public void initialize() {
+                                   ArmSubsystem arm) {
         warmUpShooter.setTargetRpm(ShooterWheelSubsystem.TargetRPM.LOB_SHOT);
         setArmExtension.setTargetExtension(ArmSubsystem.UsefulArmPosition.LOB_SHOT);
+
+        this.addCommands(warmUpShooter, setArmExtension);
     }
 
-    @Override
-    public void execute() {
-        // Empty
-    }
-
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
 }
