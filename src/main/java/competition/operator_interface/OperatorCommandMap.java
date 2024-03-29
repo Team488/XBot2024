@@ -270,7 +270,7 @@ public class OperatorCommandMap {
 
         var setBotThenTwoCenter = setAutonomousCommandProvider.get();
         setBotThenTwoCenter.setAutoCommand(botThenTwoCenter);
-        oi.neoTrellis.getifAvailable(31).onTrue(setBotThenTwoCenter);
+        oi.neoTrellis.getifAvailable(30).onTrue(setBotThenTwoCenter);
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {
