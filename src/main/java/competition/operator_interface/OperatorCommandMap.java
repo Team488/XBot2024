@@ -4,6 +4,7 @@ import competition.auto_programs.DoNothingAuto;
 import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
+import competition.auto_programs.SubwooferShotFromBotThenTwoCenterline;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
@@ -73,7 +74,8 @@ public class OperatorCommandMap {
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
-            LimitArmToUnderStage limitArmToUnderStageCommand)
+            LimitArmToUnderStage limitArmToUnderStageCommand,
+            SubwooferShotFromBotThenTwoCenterline test)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -230,7 +232,8 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter topThenTopSpikeTopCenter,
                                                 SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter,
                                                 SixNoteBnbExtended bnbExtended,
-                                                DoNothingAuto doNothing) {
+                                                DoNothingAuto doNothing,
+                                                SubwooferShotFromBotThenTwoCenterline botThenTwoCenter) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
@@ -263,6 +266,10 @@ public class OperatorCommandMap {
         var setDoNothing = setAutonomousCommandProvider.get();
         setDoNothing.setAutoCommand(doNothing);
         oi.neoTrellis.getifAvailable(8).onTrue(setDoNothing);
+
+        var setBotThenTwoCenter = setAutonomousCommandProvider.get();
+        setBotThenTwoCenter.setAutoCommand(botThenTwoCenter);
+        oi.neoTrellis.getifAvailable(31).onTrue(setBotThenTwoCenter);
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {
