@@ -22,8 +22,6 @@ import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
 
 import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Optional;
 
 public class PointAtNoteWithBearingCommand extends BaseCommand {
@@ -37,8 +35,6 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     final VisionSubsystem vision;
     final CollectorSubsystem collector;
 
-    final DoubleProperty minNoteArea;
-
     @Inject
     public PointAtNoteWithBearingCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
                                          OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf, CollectorSubsystem collector) {
@@ -50,7 +46,6 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
         this.collector = collector;
 
         pf.setPrefix(this);
-        this.minNoteArea = pf.createPersistentProperty("Minimum note area", 10);
         this.addRequirements(drive);
     }
 
@@ -59,7 +54,7 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
         log.info("Initializing");
         savedNotePosition = Optional.empty();
         // Find the note we want to point at
-        var largestTarget = getLargestTarget();
+        var largestTarget = vision.getCenterCamLargestNoteTarget();
         if (largestTarget.isPresent()) {
             this.savedNotePosition = largestTarget;
             log.info("Rotating to note, current rotation error: {}",
@@ -72,7 +67,7 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     @Override
     public void execute() {
         // If we can still see the note, update the target
-        this.savedNotePosition = getLargestTarget();
+        this.savedNotePosition = vision.getCenterCamLargestNoteTarget();
 
         // Create a vector pointing 1m behind the robot, this might have a bug in it
         var toNoteTranslation = this.pose.getCurrentPose2d()
@@ -120,15 +115,5 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
             return true;
         }
         return false;
-    }
-
-    private Optional<SimpleNote> getLargestTarget() {
-        var targets = vision.getCenterlineDetections();
-        if (targets.length == 0) {
-            return Optional.empty();
-        }
-        return Arrays.stream(targets)
-                .filter(t -> t.getArea() > this.minNoteArea.get())
-                .max(Comparator.comparingDouble(SimpleNote::getArea));
     }
 }
