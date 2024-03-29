@@ -16,6 +16,8 @@ import xbot.common.controls.actuators.XDigitalOutput;
 import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
+import java.util.Objects;
+
 @Singleton
 public class LightSubsystem extends BaseSubsystem {
     // based on the number of bits we have, this is the highest number we can send
@@ -96,7 +98,8 @@ public class LightSubsystem extends BaseSubsystem {
         if (!dsEnabled) {
             // Check if auto program is set
             int base = 8;
-            if (!autonomousCommandSelector.getIsDefault()) {
+            if (!Objects.equals(autonomousCommandSelector.getProgramName(), "SubwooferShotFromMidShootThenShootNearestThree")) {
+                // Not default
                 base = 11;
             }
 
