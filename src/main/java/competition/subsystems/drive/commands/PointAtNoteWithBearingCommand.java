@@ -69,10 +69,17 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
         // If we can still see the note, update the target
         this.savedNotePosition = vision.getCenterCamLargestNoteTarget();
 
-        // Create a vector pointing 1m behind the robot, this might have a bug in it
-        var toNoteTranslation = this.pose.getCurrentPose2d()
-                .transformBy(new Transform2d(-1.0, 0.0, new Rotation2d()))
-                .getTranslation();
+        // Create a vector points towards the note in field-oriented heading
+        var toNoteTranslation = new Translation2d(
+                1.0,
+                pose.getCurrentPose2d().getRotation()
+                        .plus(Rotation2d.fromRotations(0.5))
+                        .plus(
+                            Rotation2d.fromRadians(
+                                savedNotePosition.map(note -> note.getYaw()).orElse(0.0)
+                            )
+                        )
+            );
 
         var movement = MathUtils.deadband(
                 getDriveIntent(toNoteTranslation, oi.driverGamepad.getLeftVector(),
