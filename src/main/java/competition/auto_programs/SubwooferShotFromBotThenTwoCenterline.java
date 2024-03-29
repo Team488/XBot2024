@@ -8,26 +8,23 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToBottomSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PoseSubsystem;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
-import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 //three note centerline auto, centerline 5 then 4, fires from subwoofer for now
 //when we have the time to tune a ranged shot will update to that
 public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGroup {
     AutonomousCommandSelector autoSelector;
-    double interstageTimeout = 3.5;
+    double centerlineTimeout = 6.0;
     @Inject
     public SubwooferShotFromBotThenTwoCenterline(AutonomousCommandSelector autoSelector, PoseSubsystem pose,
                                                  DriveSubsystem drive,
@@ -67,12 +64,12 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
         );
         var collect1 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
-        this.addCommands(Commands.deadline(driveToCenterline5, collect1).withTimeout(interstageTimeout));
+        this.addCommands(Commands.deadline(driveToCenterline5, collect1).withTimeout(centerlineTimeout));
 
         var driveBackToBottomSubwooferFirst = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferFirst.addPointsSupplier(this::goBackToBotSubwoofer);
 
-        this.addCommands(driveBackToBottomSubwooferFirst.withTimeout(interstageTimeout));
+        this.addCommands(driveBackToBottomSubwooferFirst.withTimeout(centerlineTimeout));
 
         // Fire second note into the speaker
         var fireSecondNoteCommand = fireFromSubwooferCommandGroupProvider.get();
@@ -95,12 +92,12 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
 
         var collect2 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
-        this.addCommands(Commands.deadline(driveToCenterline4, collect2).withTimeout(interstageTimeout));
+        this.addCommands(Commands.deadline(driveToCenterline4, collect2).withTimeout(centerlineTimeout));
 
         var driveBackToBottomSubwooferSecond = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferSecond.addPointsSupplier(this::goBackToBotSubwoofer);
 
-        this.addCommands(driveBackToBottomSubwooferSecond.withTimeout(interstageTimeout));
+        this.addCommands(driveBackToBottomSubwooferSecond.withTimeout(centerlineTimeout));
 
         // Fire second note into the speaker
         var fireThirdNoteCommand = fireFromSubwooferCommandGroupProvider.get();
