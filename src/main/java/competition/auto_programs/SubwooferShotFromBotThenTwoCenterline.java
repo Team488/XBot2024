@@ -64,7 +64,7 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
         );
         var collect1 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
-        this.addCommands(Commands.deadline(driveToCenterline5, collect1).withTimeout(centerlineTimeout));
+        this.addCommands(Commands.deadline(collect1,driveToCenterline5).withTimeout(centerlineTimeout));
 
         var driveBackToBottomSubwooferFirst = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferFirst.addPointsSupplier(this::goBackToBotSubwoofer);
@@ -92,7 +92,7 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
 
         var collect2 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
-        this.addCommands(Commands.deadline(driveToCenterline4, collect2).withTimeout(centerlineTimeout));
+        this.addCommands(Commands.deadline(collect2,driveToCenterline4).withTimeout(centerlineTimeout));
 
         var driveBackToBottomSubwooferSecond = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferSecond.addPointsSupplier(this::goBackToBotSubwoofer);
