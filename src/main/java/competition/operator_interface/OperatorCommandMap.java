@@ -31,6 +31,7 @@ import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCo
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.drive.commands.PointAtNoteWithBearingCommand;
+import competition.subsystems.drive.commands.TryDriveToBearingNote;
 import competition.subsystems.flipper.commands.FlipperHangPositionCommand;
 import competition.subsystems.lights.commands.AmpSignalToggleCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
@@ -78,7 +79,8 @@ public class OperatorCommandMap {
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
             LimitArmToUnderStage limitArmToUnderStageCommand,
-            SubwooferShotFromBotThenTwoCenterline test)
+            SubwooferShotFromBotThenTwoCenterline test,
+            TryDriveToBearingNote tryDriveToBearingNote)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -96,7 +98,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(limitArmToUnderStageCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(tryDriveToBearingNote);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
