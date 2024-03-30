@@ -498,7 +498,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 55;
                 break;
             case HANG_APPROACH:
-                extension = 100;
+                extension = 120;
                 break;
             default:
                 return 0;
