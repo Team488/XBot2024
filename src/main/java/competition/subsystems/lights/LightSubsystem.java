@@ -111,7 +111,7 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (shooter.isReadyToFire()) {
                 currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
-            } else if (vision.getCenterlineDetections().length > 0) {
+            } else if (vision.checkIfCenterCamSeesNote()) {
                 currentState = LightsStateMessage.VisionSeesNote;
 
             } else {
