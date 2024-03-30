@@ -39,9 +39,9 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
 
     // For now, we will be using time to determine when to change vision modes.
     protected double timeWhenVisionModeEntered = Double.MAX_VALUE;
-    double visionModeDuration = 1.0;
+    double visionModeDuration = 0.5;
     protected double timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
-    double terminalVisionModeDuration = 1.0;
+    double terminalVisionModeDuration = 0.3;
 
     @Inject
     DriveToGivenNoteWithBearingVisionCommand(PoseSubsystem pose, DriveSubsystem drive, DynamicOracle oracle,
@@ -85,7 +85,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
                         if (vision.getCenterCamLargestNoteTarget().isPresent()) {
                             log.info("Found with central camera. Advancing using vision");
                             noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
-                            timeWhenTerminalVisionModeEntered = XTimer.getFPGATimestamp();
+                            timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
                         } else {
                             log.info("No note found with central camera. Staying in blind approach.");
                         }
@@ -149,7 +149,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
             var target = vision.getCenterCamLargestNoteTarget();
             if (target.isPresent()) {
                 double rotationPower =
-                        this.drive.getRotateToHeadingPid().calculate(0, target.get().getYaw());
+                        2*this.drive.getRotateToHeadingPid().calculate(0, target.get().getYaw());
 
                 drive.move(new XYPair(approachPower, 0), rotationPower);
             }
