@@ -9,6 +9,7 @@ import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
+import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XDigitalOutput;
@@ -25,6 +26,7 @@ public class LightSubsystem extends BaseSubsystem {
     final ShooterWheelSubsystem shooter;
     final CollectorSubsystem collector;
     final DynamicOracle oracle;
+    final VisionSubsystem vision;
     final XDigitalOutput[] outputs;
 
     boolean ampSignalOn = false;
@@ -64,10 +66,12 @@ public class LightSubsystem extends BaseSubsystem {
                           ElectricalContract contract,
                           AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector,
+                          VisionSubsystem vision,
                           DynamicOracle oracle) {
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
+        this.vision = vision;
         this.oracle = oracle;
         this.outputs = new XDigitalOutput[numBits];
         this.outputs[0] = digitalOutputFactory.create(contract.getLightsDio0().channel);
@@ -107,7 +111,7 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (shooter.isReadyToFire()) {
                 currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
-            } else if (oracle.getNoteMap().hasVisionNotes()) {
+            } else if (vision.getCenterlineDetections().length > 0) {
                 currentState = LightsStateMessage.VisionSeesNote;
 
             } else {
