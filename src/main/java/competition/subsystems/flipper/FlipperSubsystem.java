@@ -14,7 +14,8 @@ import javax.inject.Singleton;
 @Singleton
 public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
-    final XSolenoid flipperSolenoid;
+    final XSolenoid flipperSolenoid1;
+    final XSolenoid flipperSolenoid2;
     final XServo servo;
     final DoubleProperty inactivePosition;
     final DoubleProperty activePosition;
@@ -30,14 +31,16 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
         activePosition = pf.createPersistentProperty("FlipperActivePosition", 0.3);
         hangingPosition = pf.createPersistentProperty("FlipperHangingPosition", 0.55);
 
-        this.flipperSolenoid = xSolenoidFactory.create(contract.getFlipperSolenoid().channel);
+        this.flipperSolenoid1 = xSolenoidFactory.create(contract.getFlipperSolenoid1().channel);
+        this.flipperSolenoid2 = xSolenoidFactory.create(contract.getFlipperSolenoid2().channel);
         this.servo = servoFactory.create(contract.getFlipperServo().channel, getName() + "/Servo");
 
         active = false;
     }
 
     public void setSolenoid() {
-        flipperSolenoid.setOn(active);
+        flipperSolenoid1.setOn(active);
+        flipperSolenoid2.setOn(active);
     }
 
     public void flipperActive() {
