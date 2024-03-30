@@ -161,17 +161,24 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
     @Override
     public void execute() {
 
-        if (oracle.getTerminatingPoint().getPoseMessageNumber() != lastSeenInstructionNumber) {
-            setNewInstruction();
+        if (oracle.getHighLevelGoal() == DynamicOracle.HighLevelGoal.CollectNote
+            && oracle.getScoringSubgoal() == DynamicOracle.ScoringSubGoals.MissedNoteAndSearchingForAnother) {
+            // Spin slowly, looking for a candidate note
+            drive.move(new XYPair(0,0), 0.25);
+        } else {
+            // Go to specific points the oracle told us to go to
+            if (oracle.getTerminatingPoint().getPoseMessageNumber() != lastSeenInstructionNumber) {
+                setNewInstruction();
+            }
+
+            Twist2d powers = logic.calculatePowers(pose.getCurrentPose2d(), drive.getPositionalPid(), headingModule, drive.getMaxTargetSpeedMetersPerSecond());
+
+            aKitLog.record("Powers", powers);
+
+            drive.fieldOrientedDrive(
+                    new XYPair(powers.dx, powers.dy),
+                    powers.dtheta, pose.getCurrentHeading().getDegrees(), false);
         }
-
-        Twist2d powers = logic.calculatePowers(pose.getCurrentPose2d(), drive.getPositionalPid(), headingModule, drive.getMaxTargetSpeedMetersPerSecond());
-
-        aKitLog.record("Powers", powers);
-
-        drive.fieldOrientedDrive(
-                new XYPair(powers.dx, powers.dy),
-                powers.dtheta, pose.getCurrentHeading().getDegrees(), false);
     }
 
     @Override
