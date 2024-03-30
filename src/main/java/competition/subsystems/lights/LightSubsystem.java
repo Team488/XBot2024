@@ -65,6 +65,16 @@ public class LightSubsystem extends BaseSubsystem {
             }
             return value;
         }
+
+        public static LightsStateMessage getStringValueFromInt(int i) {
+            for (LightsStateMessage states : LightsStateMessage.values()) {
+                if (states.getValue() == i) {
+                    return states;
+                }
+            }
+            // throw an IllegalArgumentException or return null
+            throw new IllegalArgumentException("the given number doesn't match any Status.");
+        }
     }
 
     @Inject
@@ -102,7 +112,7 @@ public class LightSubsystem extends BaseSubsystem {
             }
 
             // 0 as no camera working, 1 as all camera working, 2 as some camera working
-            currentState = LightsStateMessage.values()[base + vision.cameraWorkingState()];
+            currentState = LightsStateMessage.getStringValueFromInt(base + vision.cameraWorkingState());
         } else {
             if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.ReadyToShoot;
@@ -120,7 +130,6 @@ public class LightSubsystem extends BaseSubsystem {
                 currentState = LightsStateMessage.RobotEnabled;
             }
         }
-
         return currentState;
     }
 
