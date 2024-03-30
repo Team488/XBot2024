@@ -15,8 +15,8 @@ import javax.inject.Singleton;
 public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
     public final XServo servo;
-    public final DoubleProperty inactivePosition;
-    public final DoubleProperty activePosition;
+    final DoubleProperty inactivePosition;
+    final DoubleProperty activePosition;
     final DoubleProperty hangingPosition;
     public DoubleProperty flipperOffset;
     final XDigitalInput servoSensor;
@@ -32,7 +32,7 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
         flipperOffset = pf.createPersistentProperty("FlipperOffset", 0);
 
         this.servo = servoFactory.create(contract.getFlipperServo().channel, getName() + "/Servo");
-        this.servoSensor = xDigitalInputFactory.create(contract.getFlipperSensor(), this.getPrefix());
+        this.servoSensor = xDigitalInputFactory.create(contract.getFlipperHomeSensorDio(), this.getPrefix());
 
         active = false;
     }
@@ -66,5 +66,13 @@ public class FlipperSubsystem extends BaseSubsystem implements DataFrameRefresha
 
     public boolean getFlipperSensorActivated() {
         return servoSensor.get();
+    }
+
+    public double getActivePosition() {
+        return activePosition.get();
+    }
+
+    public double getInactivePosition() {
+        return inactivePosition.get();
     }
 }

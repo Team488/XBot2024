@@ -164,7 +164,7 @@ public class CompetitionContract extends ElectricalContract {
 
     // getFlipperSensor channel subject to change?
     @Override
-    public DeviceInfo getFlipperSensor() {return new DeviceInfo("FlipperSensor", 10);}
+    public DeviceInfo getFlipperHomeSensorDio() {return new DeviceInfo("FlipperSensor", 10);}
     @Override
     public DeviceInfo getLowerNoteSensorDio() {
         return new DeviceInfo("LowerNoteSensor", 8, true);

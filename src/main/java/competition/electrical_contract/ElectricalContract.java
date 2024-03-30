@@ -37,7 +37,7 @@ public abstract class ElectricalContract
     public abstract DeviceInfo getLightsDio3();
 
     public abstract DeviceInfo getFlipperServo();
-    public abstract DeviceInfo getFlipperSensor();
+    public abstract DeviceInfo getFlipperHomeSensorDio();
 
     public abstract DeviceInfo getLowerNoteSensorDio();
     public abstract DeviceInfo getUpperNoteSensorDio();

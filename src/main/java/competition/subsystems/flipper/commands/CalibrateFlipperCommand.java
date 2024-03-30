@@ -2,40 +2,38 @@ package competition.subsystems.flipper.commands;
 
 import competition.subsystems.flipper.FlipperSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.controls.sensors.XTimer;
+import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
+import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 
 public class CalibrateFlipperCommand extends BaseCommand {
 
     FlipperSubsystem flipper;
-    boolean forcedFinish;
-    int executionLoop;
+    double startTime;
+    final DoubleProperty servoToMaxExecutionTime;
 
     @Inject
-    CalibrateFlipperCommand(FlipperSubsystem flipper) {
+    CalibrateFlipperCommand(FlipperSubsystem flipper, PropertyFactory pf) {
         this.addRequirements(flipper);
         this.flipper = flipper;
+        servoToMaxExecutionTime = pf.createPersistentProperty("ServoToMaxExecutionTime", 2);
     }
 
 
     @Override
     public void initialize() {
-        forcedFinish = false;
-        executionLoop = 0;
         flipper.servoToMax();
+        startTime = XTimer.getFPGATimestamp();
     }
 
     @Override
     public void execute() {
         // Basically, go to max position, and slowly go down until the sensor is activated
-        executionLoop++;
-
-        // Give 2 seconds for servo to go to max position
-        if (executionLoop > 100 && flipper.servo.get() > 0) {
-            // Slowly increment down the servo position
+        if (XTimer.getFPGATimestamp() - startTime > servoToMaxExecutionTime.get()) {
             flipper.servo.set(flipper.servo.get() - 0.01);
-        } else {
-            forcedFinish = true;
         }
     }
 
@@ -43,9 +41,9 @@ public class CalibrateFlipperCommand extends BaseCommand {
     public boolean isFinished() {
         // Assuming that the sensor is at the inactive position
         if (flipper.getFlipperSensorActivated()) {
-            flipper.flipperOffset.set(flipper.activePosition.get() - flipper.servo.get());
+            flipper.flipperOffset.set(flipper.getActivePosition() - flipper.servo.get());
             return true;
         }
-        return forcedFinish;
+        return flipper.servo.get() <= 0;
     }
 }
