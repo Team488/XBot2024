@@ -39,10 +39,10 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private final DoubleProperty suggestedAutonomousExtremeSpeed;
 
     @Inject
-    public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
+    public DriveSubsystem(PIDManagerFactory pidFactory, PIDManagerFactory aggressivePidFactory, PropertyFactory pf,
                           @FrontLeftDrive SwerveComponent frontLeftSwerve, @FrontRightDrive SwerveComponent frontRightSwerve,
                           @RearLeftDrive SwerveComponent rearLeftSwerve, @RearRightDrive SwerveComponent rearRightSwerve) {
-        super(pidFactory, pf, frontLeftSwerve, frontRightSwerve, rearLeftSwerve, rearRightSwerve);
+        super(pidFactory, aggressivePidFactory, pf, frontLeftSwerve, frontRightSwerve, rearLeftSwerve, rearRightSwerve);
         log.info("Creating DriveSubsystem");
 
         pf.setPrefix(this.getPrefix());
