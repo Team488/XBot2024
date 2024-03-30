@@ -488,7 +488,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 71.1;
                 break;
             case PROTECTED_PODIUM_SHOT:
-                extension = 58.81;
+                extension = 66.5;
                 break;
             case COLLECT_DIRECTLY_FROM_SOURCE:
                 extension = 180;
@@ -515,7 +515,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 0;
                 break;
             case PodiumScoringLocation:
-                extension = 58.81;
+                extension = 66.5;
                 break;
             case AmpFarScoringLocation:
                 extension = 71.1;
