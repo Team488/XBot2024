@@ -1,6 +1,7 @@
 package competition.operator_interface;
 
 import competition.auto_programs.DoNothingAuto;
+import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
@@ -8,6 +9,7 @@ import competition.auto_programs.SubwooferShotFromBotThenTwoCenterline;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
+import competition.auto_programs.TwoNoteGriefAuto;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.commandgroups.PrepareToLobShotCommand;
@@ -234,6 +236,7 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter,
                                                 SixNoteBnbExtended bnbExtended,
                                                 DoNothingAuto doNothing,
+                                                GriefMiddle grief,
                                                 SubwooferShotFromBotThenTwoCenterline botThenTwoCenter) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
@@ -244,9 +247,9 @@ public class OperatorCommandMap {
         oi.neoTrellis.getifAvailable(23).onTrue(setMidThenThree);
         setMidThenThree.includeOnSmartDashboard("Standard 4 Note Auto");
 
-        var setTopThenThree = setAutonomousCommandProvider.get();
-        setTopThenThree.setAutoCommand(topThenThree);
-        oi.neoTrellis.getifAvailable(15).onTrue(setTopThenThree);
+        var setGrief = setAutonomousCommandProvider.get();
+        setGrief.setAutoCommand(grief);
+        oi.neoTrellis.getifAvailable(15).onTrue(setGrief);
 
         var setBotThenThree = setAutonomousCommandProvider.get();
         setBotThenThree.setAutoCommand(botThenThree);
