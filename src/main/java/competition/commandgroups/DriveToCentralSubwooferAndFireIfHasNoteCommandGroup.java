@@ -11,30 +11,22 @@ import javax.inject.Provider;
 
 public class DriveToCentralSubwooferAndFireIfHasNoteCommandGroup extends SequentialCommandGroup {
 
-    // Kinda ugly, have to hard code interstageTimeout because we can't
-    // get the value from our brd&btr command group
-    // because then it's gonna be importing each other
-    // any way to solve this? I feel like I run into this type of problem a lot
-    double interstageTimeout = 3.5;
     CollectorSubsystem collector;
 
     @Inject
-    public DriveToCentralSubwooferAndFireIfHasNoteCommandGroup(FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup,
-                                                               DriveToCentralSubwooferCommand driveToCentralSubwooferCommand) {
-        var driveBackToSubwooferIfHasTopSpike = new ConditionalCommand(
-                driveToCentralSubwooferCommand.withTimeout(interstageTimeout),
+    public DriveToCentralSubwooferAndFireIfHasNoteCommandGroup(DriveToCentralSubwooferAndFireCommandGroup
+                                                                           driveToCentralSubwooferAndFireCommandGroup) {
+        // Since this is only one command, I think we can probably simplify it to not be a command group?
+        var driveAndFireIfNote = new ConditionalCommand(
+                driveToCentralSubwooferAndFireCommandGroup,
                 new InstantCommand(),
                 this::getContainsNote
         );
-        var fireNoteIfHasNote = new ConditionalCommand(
-                fireFromSubwooferCommandGroup,
-                new InstantCommand(),
-                this::getContainsNote
-        );
-        this.addCommands(driveBackToSubwooferIfHasTopSpike, fireNoteIfHasNote);
+        this.addCommands(driveAndFireIfNote);
     }
 
     private boolean getContainsNote() {
-        return collector.confidentlyHasControlOfNote();
+        return collector.getBeamBreakSensorActivated() || collector.getGamePieceInControl()
+                || collector.getGamePieceReady();
     }
 }

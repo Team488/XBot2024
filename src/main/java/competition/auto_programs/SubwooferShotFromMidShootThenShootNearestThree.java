@@ -34,7 +34,8 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
                                                           PoseSubsystem pose, DriveSubsystem drive, CollectorSubsystem collector,
-                                                          Provider<DriveToCentralSubwooferAndFireIfHasNoteCommandGroup> driveToCentralSubwooferAndFireIfHasNoteCommandGroupProvider) {
+                                                          Provider<DriveToCentralSubwooferAndFireIfHasNoteCommandGroup>
+                                                                      driveToCentralSubwooferAndFireIfHasNoteCommandGroupProvider) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -73,7 +74,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Go back and fire if has note
         var driveBackIfNoteAndFireSecond = driveToCentralSubwooferAndFireIfHasNoteCommandGroupProvider.get();
-        this.addCommands(driveBackIfNoteAndFireFirst);
+        this.addCommands(driveBackIfNoteAndFireSecond);
 
 
 
