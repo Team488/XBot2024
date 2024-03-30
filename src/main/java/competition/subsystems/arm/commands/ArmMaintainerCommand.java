@@ -168,9 +168,14 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
     protected boolean getErrorWithinTolerance() {
         double tolerance = errorToleranceProp.get();
 
-        // Allow for greater tolerances if we are raising the arm up high
+        // Allow for greater tolerances if we are raising the arm for amp scoring
         if (arm.getTargetValue() > 100) {
             tolerance = 5;
+        }
+
+        // If arm is raised for a long distance shot (87 mm for wing), then tolerance is smaller
+        if (arm.getTargetValue() > 80 && arm.getTargetValue() < 95) {
+            tolerance = 1;
         }
 
         if (Math.abs(getErrorMagnitude()) < tolerance) {

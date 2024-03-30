@@ -533,6 +533,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case TopSpikeScoringLocation:
                 extension = 65.5;
                 break;
+            case WingScoringLocation:
+                extension = 87;
+                break;
             default:
                 return 0;
         }
