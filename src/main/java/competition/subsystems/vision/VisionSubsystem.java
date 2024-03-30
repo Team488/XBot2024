@@ -396,10 +396,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         }, () -> {
             aKitLog.record("CenterCamLargestTargetArea", -1.0);
             aKitLog.record("CenterCamLargestTargetYaw", 0.0);
-            aKitLog.record("CenterCamLargestTargetPitch", 0.0);
+            aKitLog.record("CenterCamLargestTargetPitch", 0);
         });
 
-        aKitLog.record("CenterlineDetections", centerlineDetections);
+        // aKitLog.record("CenterlineDetections", centerlineDetections);
         aKitLog.record("DetectedNotes", detectedNotes);
         aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
     }
