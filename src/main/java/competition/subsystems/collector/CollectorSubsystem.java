@@ -34,15 +34,18 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         TripwireHit,
         AggresivelyPauseCollection,
         MoveNoteCarefullyToReadyPosition,
+        BeamBreakCollection,
         Complete
     }
 
     public final XCANSparkMax collectorMotor;
     public final DoubleProperty intakePower;
+    public final DoubleProperty beamBreakIntakePower;
     private IntakeState intakeState;
     private CollectionSubstate collectionSubstate;
     public final XDigitalInput inControlNoteSensor;
     public final XDigitalInput readyToFireNoteSensor;
+    public final XDigitalInput beamBreakSensor;
     private final ElectricalContract contract;
     private final DoubleProperty firePower;
     private final TimeStableValidator noteInControlValidator;
@@ -78,9 +81,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
         this.inControlNoteSensor = xDigitalInputFactory.create(contract.getLowerNoteSensorDio(), this.getPrefix());
         this.readyToFireNoteSensor = xDigitalInputFactory.create(contract.getUpperNoteSensorDio(), this.getPrefix());
+        this.beamBreakSensor = xDigitalInputFactory.create(contract.getBeamBreakSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
         intakePower = pf.createPersistentProperty("intakePower",0.8);
+        beamBreakIntakePower = pf.createPersistentProperty("beamBreakIntakePower", 0.35);
+
         firePower = pf.createPersistentProperty("firePower", 1.0);
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
@@ -119,10 +125,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         // When just starting collection cold, we need to check if any sensors are pressed
         // before figuring out what to do.
         if (collectionSubstate == CollectionSubstate.EvaluationNeeded) {
-            if (getGamePieceInControl()) {
-                collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
-            } else if (getGamePieceReady()) {
+            if (getGamePieceReady()) {
                 collectionSubstate = CollectionSubstate.Complete;
+            } else if (getGamePieceInControl()) {
+                collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
+            } else if (getBeamBreakSensorActivated()) {
+                collectionSubstate = CollectionSubstate.BeamBreakCollection;
             } else {
                 collectionSubstate = CollectionSubstate.EagerCollection;
             }
@@ -130,6 +138,13 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
         // If we're in the clear, go ahead and start collecting.
         if (collectionSubstate == CollectionSubstate.EagerCollection) {
+            if (getBeamBreakSensorActivated()) {
+                collectionSubstate = CollectionSubstate.BeamBreakCollection;
+            }
+
+            // Keeping this part in here as well in case if we somehow
+            // Skipped the BeamBreak sensor while collecting, which if so...
+            // Means that collection over-shooting issues still exist :(
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
@@ -137,6 +152,17 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                 collectionSubstate = CollectionSubstate.AggresivelyPauseCollection;
             } else {
                 suggestedPower = intakePower.get();
+            }
+        }
+
+        if (collectionSubstate == CollectionSubstate.BeamBreakCollection) {
+            if (getGamePieceInControl() || getGamePieceReady()) {
+                lowerTripwireHit = getGamePieceInControl();
+                upperTripwireHit = getGamePieceReady();
+                lastNoteDetectionTime = XTimer.getFPGATimestamp();
+                collectionSubstate = CollectionSubstate.AggresivelyPauseCollection;
+            } else {
+                suggestedPower = beamBreakIntakePower.get();
             }
         }
 
@@ -252,8 +278,15 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         return false;
     }
 
+    public boolean getBeamBreakSensorActivated() {
+        if (contract.isCollectorReady()) {
+            return beamBreakSensor.get();
+        }
+        return false;
+    }
+
     public boolean checkSensorForLights() {
-        if (getGamePieceInControl() || getGamePieceReady()) {
+        if (getBeamBreakSensorActivated() || getGamePieceInControl() || getGamePieceReady()) {
             timeOfLastNoteSensorTriggered = XTimer.getFPGATimestamp();
         }
         else {
@@ -302,6 +335,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         if (contract.isCollectorReady()) {
             collectorMotor.refreshDataFrame();
             inControlNoteSensor.refreshDataFrame();
+            beamBreakSensor.refreshDataFrame();
             readyToFireNoteSensor.refreshDataFrame();
         }
     }

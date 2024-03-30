@@ -119,7 +119,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         HANG_APPROACH,
         PROTECTED_FAR_AMP_SHOT,
         PROTECTED_PODIUM_SHOT,
-        COLLECT_DIRECTLY_FROM_SOURCE
+        COLLECT_DIRECTLY_FROM_SOURCE,
+        LOB_SHOT
     }
 
     private DoubleInterpolator speakerDistanceToExtensionInterpolator;
@@ -491,6 +492,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 break;
             case COLLECT_DIRECTLY_FROM_SOURCE:
                 extension = 180;
+                break;
+            case LOB_SHOT:
+                //This still needs to be found
+                extension = 55;
                 break;
             case HANG_APPROACH:
                 extension = 120;

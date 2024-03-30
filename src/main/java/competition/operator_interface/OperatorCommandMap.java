@@ -5,12 +5,14 @@ import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
+import competition.auto_programs.SubwooferShotFromBotThenTwoCenterline;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
 import competition.auto_programs.TwoNoteGriefAuto;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
+import competition.commandgroups.PrepareToLobShotCommand;
 import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.CalibrateArmsManuallyCommand;
 import competition.subsystems.arm.commands.ContinuouslyPointArmAtSpeakerCommand;
@@ -28,6 +30,7 @@ import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
+import competition.subsystems.drive.commands.PointAtNoteWithBearingCommand;
 import competition.subsystems.flipper.commands.FlipperHangPositionCommand;
 import competition.subsystems.lights.commands.AmpSignalToggleCommand;
 import competition.subsystems.drive.commands.PointAtSpeakerCommand;
@@ -69,12 +72,13 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
             DriveSubsystem drive,
-            PointAtNoteCommand alignToNoteCommand,
+            PointAtNoteWithBearingCommand alignToNoteCommand,
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
-            LimitArmToUnderStage limitArmToUnderStageCommand)
+            LimitArmToUnderStage limitArmToUnderStageCommand,
+            SubwooferShotFromBotThenTwoCenterline test)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -125,7 +129,8 @@ public class OperatorCommandMap {
             RemoveForcedBrakingCommand removeForcedBrakingCommand,
             PrepareForHangingCommand prepareForHangingCommand,
             AmpSignalToggleCommand ampSignalCommand,
-            ToggleFlipperCommand toggleFlipperCommand
+            ToggleFlipperCommand toggleFlipperCommand,
+            PrepareToLobShotCommand prepareToLobShotCommand
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -153,7 +158,6 @@ public class OperatorCommandMap {
         // Combine into useful actions
         // Note manipulation:
         var collectNoteFromGround = intakeCollectorProvider.get().alongWith(armToCollection);
-        var collectNoteFromSource = intakeCollectorProvider.get().alongWith(armToSource);
         var scoochNote = intakeScoocher.alongWith(armToScooch);
 
         // Preparing to score:
@@ -175,7 +179,7 @@ public class OperatorCommandMap {
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.Y).whileTrue(prepareToFireAtSubwoofer);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisPositive).onTrue(forceEngageBrakeCommand);
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.RightJoystickYAxisNegative).onTrue(removeForcedBrakingCommand);
-        oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(collectNoteFromSource);
+        oi.operatorGamepadAdvanced.getPovIfAvailable(0).whileTrue(prepareToLobShotCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(180).whileTrue(manualHangingModeCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(270).whileTrue(ampSignalCommand);
         oi.operatorGamepadAdvanced.getPovIfAvailable(90).whileTrue(toggleFlipperCommand);
@@ -232,7 +236,8 @@ public class OperatorCommandMap {
                                                 SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter botThenBotSpikeBotCenter,
                                                 SixNoteBnbExtended bnbExtended,
                                                 DoNothingAuto doNothing,
-                                                GriefMiddle grief) {
+                                                GriefMiddle grief,
+                                                SubwooferShotFromBotThenTwoCenterline botThenTwoCenter) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
@@ -265,6 +270,10 @@ public class OperatorCommandMap {
         var setDoNothing = setAutonomousCommandProvider.get();
         setDoNothing.setAutoCommand(doNothing);
         oi.neoTrellis.getifAvailable(8).onTrue(setDoNothing);
+
+        var setBotThenTwoCenter = setAutonomousCommandProvider.get();
+        setBotThenTwoCenter.setAutoCommand(botThenTwoCenter);
+        oi.neoTrellis.getifAvailable(30).onTrue(setBotThenTwoCenter);
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {

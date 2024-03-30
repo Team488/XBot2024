@@ -31,6 +31,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,11 +60,15 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     Pose3d[] passiveDetectedNotes;
     NoteTracker[] passiveNoteTrackers;
     final DoubleProperty noteLocalizationInfo;
+    PhotonCameraExtended centerlineNoteCamera;
+    SimpleNote[] centerlineDetections;
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
     NoteCamera rearCenterNoteCamera;
     final DoubleProperty bestRangeFromStaticNoteToSearchForNote;
     final DoubleProperty maxNoteSearchingDistanceForSpikeNotes;
+    
+    final DoubleProperty minNoteArea;
 
 
     @Inject
@@ -78,6 +83,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
+        minNoteArea = pf.createPersistentProperty("Minimum note area", 0.5);
 
         bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
         maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
@@ -114,9 +120,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             log.error("Could not load AprilTagFieldLayout!", e);
         }
 
+        PhotonCameraExtended.setVersionCheckEnabled(false);
         aprilTagCameras = new ArrayList<AprilTagCamera>();
         if (aprilTagsLoaded) {
-            PhotonCameraExtended.setVersionCheckEnabled(false);
             var aprilTagCapableCameras = Arrays
                     .stream(electricalContract.getCameraInfo())
                     .filter(info -> info.capabilities().contains(CameraCapabilities.APRIL_TAG))
@@ -125,6 +131,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 aprilTagCameras.add(new AprilTagCamera(camera, waitForStablePoseTime::get, aprilTagFieldLayout, this.getPrefix()));
             }
         }
+
+        centerlineNoteCamera = new PhotonCameraExtended(
+                NetworkTableInstance.getDefault(),
+                "GamePiece_Centerline_Camera",
+                this.getPrefix());
 
         noteCameras = new ArrayList<NoteCamera>();
         var noteTrackingCapableCameras = Arrays
@@ -347,6 +358,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
+        aKitLog.record(centerlineNoteCamera.getName() + "CameraWorking", centerlineNoteCamera.isConnected());
+
         for (SimpleCamera camera : allCameras) {
             aKitLog.record(camera.getName() + "CameraWorking", camera.isCameraWorking());
         }
@@ -361,8 +374,36 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         detectedNotes = getNotesFromTrackers(noteTrackers);
         passiveDetectedNotes = getNotesFromTrackers(passiveNoteTrackers);
 
+        var centerlineTargetResult = centerlineNoteCamera.getLatestResult();
+        var newCenterlineDetections = new ArrayList<SimpleNote>();
+        if (centerlineTargetResult.hasTargets()) {
+            var centerlineTargets = centerlineNoteCamera.getLatestResult().getTargets();
+            for (var target : centerlineTargets) {
+                if (target.getFiducialId() != 1) {
+                    // Not a note, this is a robot!
+                    continue;
+                }
+                newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw()));
+            }
+        }
+        centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
+
+        aKitLog.record("CenterCamNumNotes", centerlineDetections.length);
+        getCenterCamLargestNoteTarget().ifPresentOrElse(target -> {
+            aKitLog.record("CenterCamLargestTargetArea", target.getArea());
+            aKitLog.record("CenterCamLargestTargetYaw", target.getYaw());
+        }, () -> {
+            aKitLog.record("CenterCamLargestTargetArea", -1.0);
+            aKitLog.record("CenterCamLargestTargetYaw", 0.0);
+        });
+
+        // aKitLog.record("CenterlineDetections", centerlineDetections);
         aKitLog.record("DetectedNotes", detectedNotes);
         aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
+    }
+
+    public SimpleNote[] getCenterlineDetections() {
+        return centerlineDetections;
     }
 
     private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
@@ -400,6 +441,16 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .toArray(Pose3d[]::new);
     }
 
+    public Optional<SimpleNote> getCenterCamLargestNoteTarget() {
+        var targets = this.getCenterlineDetections();
+        if (targets.length == 0) {
+            return Optional.empty();
+        }
+        return Arrays.stream(targets)
+                .filter(t -> t.getArea() > this.minNoteArea.get())
+                .max(Comparator.comparingDouble(SimpleNote::getArea));
+    }
+
     @Override
     public void refreshDataFrame() {
         if (aprilTagsLoaded) {
@@ -407,5 +458,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 camera.getCamera().refreshDataFrame();
             }
         }
+        centerlineNoteCamera.refreshDataFrame();
     }
 }
