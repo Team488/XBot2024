@@ -1,10 +1,13 @@
 package competition.subsystems.collector;
 
 import com.revrobotics.CANSparkBase;
+import competition.commandgroups.DriveToCentralSubwooferAndFireCommandGroup;
 import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.flipper.FlipperSubsystem;
 import competition.subsystems.oracle.NoteCollectionInfoSource;
 import competition.subsystems.oracle.NoteFiringInfoSource;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import xbot.common.advantage.DataFrameRefreshable;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
@@ -16,6 +19,7 @@ import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 @Singleton
@@ -57,6 +61,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     final DoubleProperty carefulAdvancePower;
     final DoubleProperty carefulAdvanceTimeout;
     final DoubleProperty lightToleranceTimeInterval;
+    Provider<DriveToCentralSubwooferAndFireCommandGroup> driveAndFireCommandProvider;
     double carefulAdvanceBeginTime = -Double.MAX_VALUE;
 
     FlipperSubsystem flipper;
@@ -65,7 +70,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     @Inject
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
                               ElectricalContract electricalContract, XDigitalInput.XDigitalInputFactory xDigitalInputFactory,
-                              FlipperSubsystem flipper) {
+                              FlipperSubsystem flipper,
+                              Provider<DriveToCentralSubwooferAndFireCommandGroup> driveAndFireCommandProvider) {
         this.contract = electricalContract;
         if (contract.isCollectorReady()) {
             this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
@@ -95,6 +101,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         noteInControlValidator = new TimeStableValidator(() -> 0.1); // Checks for having the note over 0.1 seconds
 
         this.flipper = flipper;
+        this.driveAndFireCommandProvider = driveAndFireCommandProvider;
     }
 
     public void resetCollectionState() {
@@ -293,6 +300,19 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
      */
     public boolean shouldCommitToFiring() {
         return intakeState == IntakeState.FIRING && !confidentlyHasFiredNote();
+    }
+
+    public boolean getContainsNote() {
+        return getBeamBreakSensorActivated() || getGamePieceInControl()
+                || getGamePieceReady();
+    }
+
+    public ConditionalCommand getDriveAndFireIfNoteCommand() {
+        return new ConditionalCommand(
+                driveAndFireCommandProvider.get(),
+                new InstantCommand(),
+                this::getContainsNote
+        );
     }
 
     @Override
