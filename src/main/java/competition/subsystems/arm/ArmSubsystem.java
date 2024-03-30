@@ -488,7 +488,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 71.1;
                 break;
             case PROTECTED_PODIUM_SHOT:
-                extension = 66.5;
+                extension = 59.05;
                 break;
             case COLLECT_DIRECTLY_FROM_SOURCE:
                 extension = 180;
@@ -515,7 +515,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 0;
                 break;
             case PodiumScoringLocation:
-                extension = 66.5;
+                extension = 59.05;
                 break;
             case AmpFarScoringLocation:
                 extension = 71.1;
@@ -525,7 +525,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 break;
             case BottomSpikeCloserToSpeakerScoringLocation:
             case TopSpikeCloserToSpeakerScoringLocation:
-                extension = 57; // TODO - what are the real numbers?
+                extension = 59.86; // TODO - what are the real numbers?
                 break;
             case OneRobotAwayFromCenterSubwooferScoringLocation:
                 extension = 44.8;
