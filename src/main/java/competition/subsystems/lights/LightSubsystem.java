@@ -36,14 +36,12 @@ public class LightSubsystem extends BaseSubsystem {
     public enum LightsStateMessage{
         NoCode(15), // we never send this one, it's implicit when the robot is off
         // and all of the DIOs float high
-        SomeCamerasWorkingCustom(13),
-        NoCameraWorkingCustom(12),
-        AllCamerasWorkingCustom(11),
-        SomeCamerasWorkingDefault(10),
-        NoCameraWorkingDefault(9),
-        AllCamerasWorkingDefault(8),
-        WithDefaultAuto(7),
-        WithCustomAuto(6),
+        DisabledCustomAutoSomeCamerasWorking(13),
+        DisabledCustomAutoNoCamerasWorking(12),
+        DisabledCustomAutoAllCamerasWorking(11),
+        DisabledDefaultAutoSomeCamerasWorking(10),
+        DisabledDefaultAutoNoCameraWorking(9),
+        DisabledDefaultAutoAllCamerasWorking(8),
         RobotEnabled(5),
         ShooterReadyWithoutNote(1),
         ReadyToShoot(2),
