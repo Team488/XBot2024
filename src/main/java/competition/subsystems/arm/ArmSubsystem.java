@@ -521,7 +521,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 71.1;
                 break;
             case MiddleSpikeScoringLocation:
-                extension = 57;
+                extension = 59.86;
                 break;
             case BottomSpikeCloserToSpeakerScoringLocation:
             case TopSpikeCloserToSpeakerScoringLocation:
