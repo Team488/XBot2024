@@ -16,6 +16,8 @@ import xbot.common.controls.actuators.XDigitalOutput;
 import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
+import java.util.Objects;
+
 @Singleton
 public class LightSubsystem extends BaseSubsystem {
     // based on the number of bits we have, this is the highest number we can send
@@ -25,6 +27,7 @@ public class LightSubsystem extends BaseSubsystem {
     final AutonomousCommandSelector autonomousCommandSelector;
     final ShooterWheelSubsystem shooter;
     final CollectorSubsystem collector;
+    final VisionSubsystem vision;
     final DynamicOracle oracle;
     final VisionSubsystem vision;
     final XDigitalOutput[] outputs;
@@ -34,8 +37,12 @@ public class LightSubsystem extends BaseSubsystem {
     public enum LightsStateMessage{
         NoCode(15), // we never send this one, it's implicit when the robot is off
         // and all of the DIOs float high
-        WithDefaultAuto(7),
-        WithCustomAuto(6),
+        DisabledCustomAutoSomeCamerasWorking(13),
+        DisabledCustomAutoNoCamerasWorking(12),
+        DisabledCustomAutoAllCamerasWorking(11),
+        DisabledDefaultAutoSomeCamerasWorking(10),
+        DisabledDefaultAutoNoCameraWorking(9),
+        DisabledDefaultAutoAllCamerasWorking(8),
         RobotEnabled(5),
         ShooterReadyWithoutNote(1),
         ReadyToShoot(2),
@@ -58,6 +65,15 @@ public class LightSubsystem extends BaseSubsystem {
                 return 0;
             }
             return value;
+        }
+
+        public static LightsStateMessage getStringValueFromInt(int i) {
+            for (LightsStateMessage states : LightsStateMessage.values()) {
+                if (states.getValue() == i) {
+                    return states;
+                }
+            }
+           return LightsStateMessage.NoCode;
         }
     }
 
@@ -89,19 +105,14 @@ public class LightSubsystem extends BaseSubsystem {
         // Not sure about if the way we are checking the shooter is correct (and collector)
         if (!dsEnabled) {
             // Check if auto program is set
-            //isDefault = pf.createPersistentProperty("IsDefaultAuto", autonomousCommandSelector.getIsDefault()?1.0:2.0);
-            if (autonomousCommandSelector.getIsDefault()) {
-                currentState = LightsStateMessage.WithDefaultAuto;
-            } else {
-                currentState = LightsStateMessage.WithCustomAuto;
+            int base = 8;
+            if (!Objects.equals(autonomousCommandSelector.getProgramName(), "SubwooferShotFromMidShootThenShootNearestThree")) {
+                // Not default
+                base = 11;
             }
-
+            // 0 as no camera working, 1 as all camera working, 2 as some camera working
+            currentState = LightsStateMessage.getStringValueFromInt(base + vision.cameraWorkingState());
         } else {
-            // Try and match enabled states
-            //if (ampSignalOn) {
-                //currentState = LightsStateMessage.AmpSignal;
-
-            //} else
             if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
                 currentState = LightsStateMessage.ReadyToShoot;
 
@@ -118,7 +129,6 @@ public class LightSubsystem extends BaseSubsystem {
                 currentState = LightsStateMessage.RobotEnabled;
             }
         }
-
         return currentState;
     }
 

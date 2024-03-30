@@ -396,10 +396,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         }, () -> {
             aKitLog.record("CenterCamLargestTargetArea", -1.0);
             aKitLog.record("CenterCamLargestTargetYaw", 0.0);
-            aKitLog.record("CenterCamLargestTargetPitch", 0);
+            aKitLog.record("CenterCamLargestTargetPitch", 0.0);
         });
 
-        // aKitLog.record("CenterlineDetections", centerlineDetections);
+        aKitLog.record("CenterlineDetections", centerlineDetections);
         aKitLog.record("DetectedNotes", detectedNotes);
         aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
     }
@@ -465,5 +465,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
         centerlineNoteCamera.refreshDataFrame();
+    }
+
+    public int cameraWorkingState() {
+        if (allCameras.stream().allMatch(state -> state.isCameraWorking())) {
+            // If all are working, return 0
+            return 0;
+        }
+        else if (allCameras.stream().allMatch(state -> !state.isCameraWorking())) {
+            // If no cameras are working, return 1
+            return 1;
+        }
+        // If some of the cameras are working, return 2
+        return 2;
     }
 }
