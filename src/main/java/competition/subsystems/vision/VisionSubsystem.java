@@ -462,4 +462,17 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         }
         centerlineNoteCamera.refreshDataFrame();
     }
+
+    public int cameraWorkingState() {
+        if (allCameras.stream().allMatch(state -> state.isCameraWorking())) {
+            // If all are working, return 0
+            return 0;
+        }
+        else if (allCameras.stream().allMatch(state -> !state.isCameraWorking())) {
+            // If no cameras are working, return 1
+            return 1;
+        }
+        // If some of the cameras are working, return 2
+        return 2;
+    }
 }
