@@ -39,7 +39,7 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     public PointAtNoteWithBearingCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
                                          OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf, CollectorSubsystem collector) {
         this.drive = drive;
-        this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.pose = pose;
         this.oi = oi;
         this.vision = vision;
