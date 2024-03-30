@@ -127,7 +127,7 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     public boolean isScoocherReady() {
-        return true;
+        return false;
     }
     public DeviceInfo getScoocherMotor(){
         return new DeviceInfo("ScoocherMotor", 33);

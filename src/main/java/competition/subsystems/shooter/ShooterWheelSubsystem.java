@@ -24,7 +24,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         STOP,
         TYPICAL,
         MELEE,
-        INTO_AMP
+        INTO_AMP,
+        LOB_SHOT
     }
 
     //need pose for real time calculations
@@ -42,6 +43,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private double iMaxAccumValueForShooter;
     private final DoubleProperty typicalShotRpm;
     private final DoubleProperty meleeShotRpm;
+    private final DoubleProperty lobShotRpm;
 
     //DEFINING MOTORS
     public XCANSparkMax upperWheelMotor;
@@ -59,6 +61,8 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
         meleeShotRpm = pf.createPersistentProperty("MeeleShotRpm", 3500);
         intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 800);
+        //Value still needs to be found
+        lobShotRpm = pf.createPersistentProperty("LobShotRpm", 3800);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();
@@ -109,6 +113,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             case TYPICAL -> setTargetValue(typicalShotRpm.get());
             case MELEE -> setTargetValue(meleeShotRpm.get());
             case INTO_AMP -> setTargetValue(intoAmpShotRpm.get());
+            case LOB_SHOT ->  setTargetValue(lobShotRpm.get());
             default -> setTargetValue(0.0);
         }
     }

@@ -57,7 +57,6 @@ public class Robot extends BaseRobot {
         var autoSelector = getInjectorComponent().autonomousCommandSelector();
 
         autoSelector.setCurrentAutonomousCommand(defaultAuto);
-        autoSelector.setIsDefault(true);
         LogTable.disableProtobufWarning();
     }
 
