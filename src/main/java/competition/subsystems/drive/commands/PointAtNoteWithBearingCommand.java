@@ -45,7 +45,7 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
                                          OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf, CollectorSubsystem collector,
                                          DynamicOracle oracle) {
         this.drive = drive;
-        this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.pose = pose;
         this.oi = oi;
         this.vision = vision;
