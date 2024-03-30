@@ -72,8 +72,7 @@ public class LightSubsystem extends BaseSubsystem {
                     return states;
                 }
             }
-            // throw an IllegalArgumentException or return null
-            throw new IllegalArgumentException("the given number doesn't match any Status.");
+           return LightsStateMessage.NoCode;
         }
     }
 
