@@ -53,11 +53,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     final DoubleProperty waitTimeAfterFiring;
     boolean lowerTripwireHit = false;
     boolean upperTripwireHit = false;
-    double lastNoteDetectionTime = -Double.MAX_VALUE;
     double timeOfLastNoteSensorTriggered = 0;
-
-    final DoubleProperty aggressiveStopPower;
-    final DoubleProperty aggressiveStopDuration;
     final DoubleProperty carefulAdvancePower;
     final DoubleProperty carefulAdvanceTimeout;
     final DoubleProperty lightToleranceTimeInterval;
@@ -90,8 +86,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         firePower = pf.createPersistentProperty("firePower", 1.0);
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
-        aggressiveStopPower = pf.createPersistentProperty("AggressiveStopPower", -0.4);
-        aggressiveStopDuration = pf.createPersistentProperty("AggressiveStopDuration", 0.1);
         carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
         lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1);
@@ -108,7 +102,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         collectionSubstate = CollectionSubstate.EvaluationNeeded;
         lowerTripwireHit = false;
         upperTripwireHit = false;
-        lastNoteDetectionTime = -Double.MAX_VALUE;
         carefulAdvanceBeginTime = -Double.MAX_VALUE;
     }
 
@@ -148,8 +141,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
-                lastNoteDetectionTime = XTimer.getFPGATimestamp();
-                collectionSubstate = CollectionSubstate.AggresivelyPauseCollection;
+                collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
                 suggestedPower = intakePower.get();
             }
@@ -159,22 +151,9 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
-                lastNoteDetectionTime = XTimer.getFPGATimestamp();
-                collectionSubstate = CollectionSubstate.AggresivelyPauseCollection;
+                collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
                 suggestedPower = beamBreakIntakePower.get();
-            }
-        }
-
-        // If we've hit a tripwire, we need to bring that note to a sudden and abrupt stop
-        // before it enters the shooter.
-        if (collectionSubstate == CollectionSubstate.AggresivelyPauseCollection) {
-            // If we've already paused collection for a while, time to start advancing the note.
-            if (XTimer.getFPGATimestamp() - lastNoteDetectionTime > aggressiveStopDuration.get()) {
-                collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
-                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
-            } else {
-                suggestedPower = aggressiveStopPower.get();
             }
         }
 
@@ -319,7 +298,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     @Override
     public void periodic() {
         if (contract.isCollectorReady()) {
-            noteInControlValidator.checkStable(getGamePieceInControl() || getGamePieceReady());
+            noteInControlValidator.checkStable(getGamePieceInControl() || getGamePieceReady()
+                    || getBeamBreakSensorActivated());
 
             aKitLog.record("GamePieceReady", getGamePieceReady());
             aKitLog.record("GamePieceInControl", getGamePieceInControl());

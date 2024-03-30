@@ -1,5 +1,6 @@
 package competition.injection.components;
 
+import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.TestVisionAuto;
 import competition.simulation.Simulator2024;
@@ -69,4 +70,5 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree();
     public abstract ListenToOracleCommandGroup listenToOracleCommandGroup();
     public abstract TestVisionAuto testVisionAuto();
+    public abstract GriefMiddle griefMiddle();
 }
