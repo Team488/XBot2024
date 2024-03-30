@@ -1,6 +1,5 @@
 package competition.subsystems.vision;
 
-import edu.wpi.first.math.geometry.proto.Pose3dProto;
 import edu.wpi.first.util.struct.StructSerializable;
 
 public class SimpleNote implements StructSerializable {
