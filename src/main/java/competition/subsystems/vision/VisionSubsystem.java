@@ -383,7 +383,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                     // Not a note, this is a robot!
                     continue;
                 }
-                newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw()));
+                newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw(), target.getPitch()));
             }
         }
         centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
@@ -392,9 +392,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         getCenterCamLargestNoteTarget().ifPresentOrElse(target -> {
             aKitLog.record("CenterCamLargestTargetArea", target.getArea());
             aKitLog.record("CenterCamLargestTargetYaw", target.getYaw());
+            aKitLog.record("CenterCamLargestTargetPitch", target.getPitch());
         }, () -> {
             aKitLog.record("CenterCamLargestTargetArea", -1.0);
             aKitLog.record("CenterCamLargestTargetYaw", 0.0);
+            aKitLog.record("CenterCamLargestTargetPitch", 0);
         });
 
         // aKitLog.record("CenterlineDetections", centerlineDetections);
