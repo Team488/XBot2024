@@ -83,7 +83,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
-        minNoteArea = pf.createPersistentProperty("Minimum note area", 10);
+        minNoteArea = pf.createPersistentProperty("Minimum note area", 0.5);
 
         bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
         maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
