@@ -62,8 +62,10 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         switch (noteAcquisitionMode) {
             case BlindApproach:
                 if (!hasDoneVisionCheckYet) {
-                    if (pose.getCurrentPose2d().getTranslation().getDistance(
-                            drive.getTargetNote().getTranslation()) < vision.getBestRangeFromStaticNoteToSearchForNote()) {
+                    double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
+                            drive.getTargetNote().getTranslation());
+                    aKitLog.record("RangeToStaticNote", rangeToStaticNote);
+                    if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
                         hasDoneVisionCheckYet = true;
                         log.info("Close to static note - attempting vision update.");
                         assignClosestVisionNoteToDriveSubsystemIfYouSeeANoteAndReplanPath();

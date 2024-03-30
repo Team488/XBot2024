@@ -15,6 +15,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import xbot.common.advantage.AKitLogger;
 import xbot.common.command.BaseSubsystem;
+import xbot.common.controls.sensors.XTimer;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
@@ -41,6 +42,7 @@ public class DynamicOracle extends BaseSubsystem {
         IngestNoteBlindly,
         IngestNoteVisionTerminalApproach,
         IngestNoteBlindTerminalApproach,
+        MissedNoteAndSearchingForAnother,
         IngestFromSource,
         MoveToScoringRange,
         EarnestlyLaunchNote
@@ -67,6 +69,12 @@ public class DynamicOracle extends BaseSubsystem {
     int instructionNumber = 0;
     double robotWidth = 0.914+0.5;
     double scoringZoneOffset = 0.93;
+
+    double withinNoteCriticalDistanceStartTime = Double.MAX_VALUE;
+    double noteTerminalDistanceMeters = 0.2;
+    double withinNoteCriticalDistanceDurationBeforeSearching = 1.5;
+    boolean wasInCriticalNoteRange = false;
+    double validDistanceforNotesWhenSearchingMeters = 2;
 
     @Inject
     public DynamicOracle(NoteCollectionInfoSource noteCollectionInfoSource, NoteFiringInfoSource noteFiringInfoSource,
@@ -346,8 +354,11 @@ public class DynamicOracle extends BaseSubsystem {
                     currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindly;
                 }
 
+                // This will have any special logic about how to collect a note
+                // or update our approach to getting notes
                 determineCollectionSubgoal();
 
+                // This contains the logic for exiting this state once we have a note.
                 if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
                     // Mark the nearest note as being unavailable, if we are anywhere near it
                     Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.5);
@@ -401,27 +412,74 @@ public class DynamicOracle extends BaseSubsystem {
                 new Rotation2d());
     }
 
+    private Pose2d getVisionSuggestedNotePoseWithinDistance(double searchDistance) {
+        var potentialNote = noteMap.getClosestAvailableNote(pose.getCurrentPose2d(), false);
+        if (potentialNote == null) {
+            // No note
+            return null;
+        }
+
+        double distanceToNote = pose.getCurrentPose2d().getTranslation().getDistance(
+                potentialNote.toPose2d().getTranslation());
+
+        if (distanceToNote > searchDistance) {
+            // Too far
+            return null;
+        }
+
+        return potentialNote.toPose2d();
+    }
+
+    private void applyVisionNotePoseToStateMachine(Pose2d visionNotePose) {
+        currentScoringSubGoal = ScoringSubGoals.IngestNoteVisionTerminalApproach;
+        setTerminatingPoint(visionNotePose);
+        setSpecialAimTarget(visionNotePose);
+    }
+
     private void determineCollectionSubgoal() {
+
+        boolean inCriticalNoteRange = isTerminatingPointWithinDistance(noteTerminalDistanceMeters);
+
         if (currentScoringSubGoal == ScoringSubGoals.IngestNoteBlindly) {
             if (isTerminatingPointWithinDistance(vision.getBestRangeFromStaticNoteToSearchForNote())) {
                 // look for a vision note.
-                var visionNote = noteMap.getClosestAvailableNote(pose.getCurrentPose2d(), false);
-                if (visionNote == null) {
+                var visionNotePose = getVisionSuggestedNotePoseWithinDistance(vision.getMaxNoteSearchingDistanceForSpikeNotes());
+                // If no note or too far, blind approach.
+                if (visionNotePose == null) {
                     currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindTerminalApproach;
                     return;
                 }
-                if (pose.getCurrentPose2d().getTranslation().getDistance(
-                        visionNote.toPose2d().getTranslation()) > vision.getMaxNoteSearchingDistanceForSpikeNotes()) {
-                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindTerminalApproach;
-                    return;
-                }
-
-                // We found a vision note nearby.
-                currentScoringSubGoal = ScoringSubGoals.IngestNoteVisionTerminalApproach;
-                setTerminatingPoint(visionNote.toPose2d());
-                setSpecialAimTarget(visionNote.toPose2d());
+                applyVisionNotePoseToStateMachine(visionNotePose);
             }
         }
+
+        if (currentScoringSubGoal == ScoringSubGoals.IngestNoteBlindTerminalApproach
+        || currentScoringSubGoal == ScoringSubGoals.IngestNoteVisionTerminalApproach) {
+            // We are in the final approach. However, things can go wrong here, so we need to fallback
+            // to a general search if things aren't working.
+
+            if (inCriticalNoteRange && !wasInCriticalNoteRange) {
+                // We've just entered the critical note range.
+                withinNoteCriticalDistanceStartTime = XTimer.getFPGATimestamp();
+            }
+
+            boolean failedToCollectNoteInTime =
+                    XTimer.getFPGATimestamp() > withinNoteCriticalDistanceStartTime + withinNoteCriticalDistanceDurationBeforeSearching;
+            if (inCriticalNoteRange && (failedToCollectNoteInTime)) {
+                currentScoringSubGoal = ScoringSubGoals.MissedNoteAndSearchingForAnother;
+            }
+        }
+
+        if (currentScoringSubGoal == ScoringSubGoals.MissedNoteAndSearchingForAnother) {
+            // The drive will spin in a circle looking for notes. We need to check the note map for a target.
+            var visionNotePose = getVisionSuggestedNotePoseWithinDistance(validDistanceforNotesWhenSearchingMeters);
+            if (visionNotePose != null) {
+                // we found a nearby note!
+                applyVisionNotePoseToStateMachine(visionNotePose);
+            }
+        }
+
+        wasInCriticalNoteRange = inCriticalNoteRange;
     }
 
     private void checkForMaskedShotsBecomingAvailable() {
