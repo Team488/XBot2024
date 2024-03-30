@@ -530,6 +530,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             case OneRobotAwayFromCenterSubwooferScoringLocation:
                 extension = 44.8;
                 break;
+            case TopSpikeScoringLocation:
+                extension = 65.5;
+                break;
             default:
                 return 0;
         }
