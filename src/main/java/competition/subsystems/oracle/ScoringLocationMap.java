@@ -14,7 +14,7 @@ public class ScoringLocationMap extends ReservableLocationMap<ScoringLocation> {
         addForBothAlliances(PointOfInterest.SubwooferMiddleScoringLocation);
         addForBothAlliances(PointOfInterest.SubwooferBottomScoringLocation);
         addForBothAlliances(PointOfInterest.PodiumScoringLocation);
-        addForBothAlliances(PointOfInterest.AmpFarScoringLocation);
+        addForBothAlliances(PointOfInterest.UnderChain);
         addForBothAlliances(PointOfInterest.TopSpikeCloserToSpeakerScoringLocation);
         addForBothAlliances(PointOfInterest.MiddleSpikeScoringLocation);
         addForBothAlliances(PointOfInterest.BottomSpikeCloserToSpeakerScoringLocation);

@@ -57,9 +57,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
     //Speaker position that is forward 9.5 inches for better aiming
     public static final  Translation2d SPEAKER_TARGET_FORWARD = new Translation2d(0.2032,5.547868);
     public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0.2032, 5.547868, Rotation2d.fromDegrees(180));
-    public static Pose2d BlueSpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
+    public static Pose2d BlueSpikeTop = new Pose2d(2.893, 7.009, Rotation2d.fromDegrees(-2.644));
     public static Pose2d BlueSpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d BlueSpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
+    public static Pose2d BlueUnderTheChain = new Pose2d(4.371, 5.032, Rotation2d.fromDegrees(3.018));
     public static Pose2d CenterLine1 = new Pose2d(fieldXMidpointInMeters, 7.4584, new Rotation2d());
     public static Pose2d CenterLine2 = new Pose2d(fieldXMidpointInMeters, 5.7820, new Rotation2d());
     public static Pose2d CenterLine3 = new Pose2d(fieldXMidpointInMeters, 4.1056, new Rotation2d());

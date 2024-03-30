@@ -10,6 +10,7 @@ public enum PointOfInterest {
     SpikeTop(false, PoseSubsystem.BlueSpikeTop),
     SpikeMiddle(false, PoseSubsystem.BlueSpikeMiddle),
     SpikeBottom(false, PoseSubsystem.BlueSpikeBottom),
+    UnderChain(false, PoseSubsystem.BlueUnderTheChain),
     CenterLine1(true, PoseSubsystem.CenterLine1),
     CenterLine2(true, PoseSubsystem.CenterLine2),
     CenterLine3(true, PoseSubsystem.CenterLine3),
