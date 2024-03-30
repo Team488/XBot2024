@@ -15,6 +15,7 @@ import xbot.common.injection.swerve.RearLeftDrive;
 import xbot.common.injection.swerve.RearRightDrive;
 import xbot.common.injection.swerve.SwerveComponent;
 import xbot.common.math.PIDDefaults;
+import xbot.common.math.PIDManager;
 import xbot.common.math.PIDManager.PIDManagerFactory;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
@@ -37,12 +38,14 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private Translation2d specialPointAtPositionTarget = new Translation2d();
     private final DoubleProperty suggestedAutonomousMaximumSpeed;
     private final DoubleProperty suggestedAutonomousExtremeSpeed;
+    private final PIDManager aggressiveGoalHeadingPidManager;
 
     @Inject
-    public DriveSubsystem(PIDManagerFactory pidFactory, PIDManagerFactory aggressivePidFactory, PropertyFactory pf,
+    public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
                           @FrontLeftDrive SwerveComponent frontLeftSwerve, @FrontRightDrive SwerveComponent frontRightSwerve,
-                          @RearLeftDrive SwerveComponent rearLeftSwerve, @RearRightDrive SwerveComponent rearRightSwerve) {
-        super(pidFactory, aggressivePidFactory, pf, frontLeftSwerve, frontRightSwerve, rearLeftSwerve, rearRightSwerve);
+                          @RearLeftDrive SwerveComponent rearLeftSwerve, @RearRightDrive SwerveComponent rearRightSwerve,
+                          PIDManagerFactory aggressiveGoalHeadingPidFactory) {
+        super(pidFactory, pf, frontLeftSwerve, frontRightSwerve, rearLeftSwerve, rearRightSwerve);
         log.info("Creating DriveSubsystem");
 
         pf.setPrefix(this.getPrefix());
@@ -51,6 +54,12 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
                 pf.createPersistentProperty("Suggested Autonomous Maximum Speed", 3.0);
         suggestedAutonomousExtremeSpeed =
                 pf.createPersistentProperty("Suggested Autonomous EXTREME Speed", 5.0);
+
+        aggressiveGoalHeadingPidManager = aggressiveGoalHeadingPidFactory.create(
+                this.getPrefix() + "AggressiveGoalHeadingPID",
+                getHeadingPIDDefaults());
+        aggressiveGoalHeadingPidManager.setEnableErrorThreshold(true);
+        aggressiveGoalHeadingPidManager.setEnableTimeThreshold(true);
     }
 
     public double getSuggestedAutonomousMaximumSpeed() {
@@ -129,5 +138,10 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
             setSpecialPointAtPositionTargetActive(false);
         });
     }
+
+    public PIDManager getAggressiveGoalHeadingPid() {
+        return aggressiveGoalHeadingPidManager;
+    }
+
 
 }
