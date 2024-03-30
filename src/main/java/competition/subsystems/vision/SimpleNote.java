@@ -7,8 +7,6 @@ public class SimpleNote implements StructSerializable {
     final double yaw;
     final double pitch;
 
-    public static final SimpleNoteStruct struct = new SimpleNoteStruct();
-
     public SimpleNote(double area, double yaw, double pitch) {
         this.area = area;
         this.yaw = yaw;
@@ -23,7 +21,5 @@ public class SimpleNote implements StructSerializable {
         return yaw;
     }
 
-    public double getPitch() {
-        return pitch;
-    }
+    public double getPitch() { return pitch; }
 }
