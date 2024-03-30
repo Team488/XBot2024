@@ -109,7 +109,6 @@ public class LightSubsystem extends BaseSubsystem {
                 // Not default
                 base = 11;
             }
-
             // 0 as no camera working, 1 as all camera working, 2 as some camera working
             currentState = LightsStateMessage.getStringValueFromInt(base + vision.cameraWorkingState());
         } else {
