@@ -37,6 +37,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
     final DoubleProperty turnPowerFactor;
     boolean absoluteOrientationMode;
     final HeadingModule headingModule;
+    final HeadingModule aggressiveHeadingModule;
     final Latch absoluteOrientationLatch;
     double minimumMagnitudeForAbsoluteHeading;
     final DoubleProperty triggerOnlyPowerScaling;
@@ -59,6 +60,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         this.minimumMagnitudeForAbsoluteHeading = 0.75;
         this.decider = hvmFactory.create(this.getPrefix());
         this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
+        this.aggressiveHeadingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.triggerOnlyPowerScaling = pf.createPersistentProperty("TriggerOnlyPowerScaling", 0.75);
         this.triggerOnlyExponent = pf.createPersistentProperty("TriggerOnlyExponent", 2.0);
 
@@ -205,7 +207,7 @@ public class SwerveDriveWithJoysticksCommand extends BaseCommand {
         else if (drive.isSpecialPointAtPositionTargetActive()) {
             desiredHeading = getRotationIntentPointAtSpecialPoint();
             drive.setDesiredHeading(desiredHeading);
-            suggestedRotatePower = headingModule.calculateHeadingPower(desiredHeading);
+            suggestedRotatePower = aggressiveHeadingModule.calculateHeadingPower(desiredHeading);
         } else if (drive.isSpecialHeadingTargetActive()) {
             desiredHeading = drive.getSpecialHeadingTarget().getDegrees();
             drive.setDesiredHeading(desiredHeading);
