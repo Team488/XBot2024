@@ -298,7 +298,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     @Override
     public void periodic() {
         if (contract.isCollectorReady()) {
-            noteInControlValidator.checkStable(getGamePieceInControl() || getGamePieceReady());
+            noteInControlValidator.checkStable(getGamePieceInControl() || getGamePieceReady()
+                    || getBeamBreakSensorActivated());
 
             aKitLog.record("GamePieceReady", getGamePieceReady());
             aKitLog.record("GamePieceInControl", getGamePieceInControl());
