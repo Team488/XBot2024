@@ -141,6 +141,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
+                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
                 suggestedPower = intakePower.get();
