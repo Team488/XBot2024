@@ -44,7 +44,7 @@ public class DriveToCentralSubwooferCommand extends SwerveSimpleTrajectoryComman
         this.drive = drive;
         this.pose = pose;
         this.collector = collector;
-        addRequirements(collector);
+        addRequirements(collector.getSetpointLock());
     }
 
     @Override

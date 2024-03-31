@@ -2,14 +2,15 @@ package competition.subsystems.collector.commands;
 
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
-public class FireCollectorCommand extends BaseCommand{
+public class FireCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     @Inject
     public FireCollectorCommand(CollectorSubsystem collector){
-        this.collector = collector;
         addRequirements(collector);
+        this.collector = collector;
     }
     @Override
     public void initialize() {
