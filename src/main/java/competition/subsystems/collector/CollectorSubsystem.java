@@ -99,7 +99,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
         firePower = pf.createPersistentProperty("firePower", 1.0);
         pf.setDefaultLevel(Property.PropertyLevel.Important);
-        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
+        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.25);
         carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 500);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
         lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1);
