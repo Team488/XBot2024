@@ -295,6 +295,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
     @Override
     public void periodic() {
         if (contract.isCollectorReady()) {
+            collectorMotor.periodic();
             noteInControlValidator.checkStable(getGamePieceInControl() || getGamePieceReady()
                     || getBeamBreakSensorActivated());
 
