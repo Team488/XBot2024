@@ -69,6 +69,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty maxNoteSearchingDistanceForSpikeNotes;
     
     final DoubleProperty minNoteArea;
+    // under this pitch, the note is too close and we shouldn't try and rotate or do anything else with it
+    public final double terminalNotePitch = 0.0;
 
 
     @Inject
@@ -408,6 +410,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return centerlineDetections;
     }
 
+    public boolean checkIfCenterCamSeesNote() {
+        return centerlineDetections.length > 0;
+    }
+
     private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
         Arrays.stream(noteTrackers).forEach(NoteTracker::refreshDataFrame);
         var detections = getDetections(noteTrackers);
@@ -461,5 +467,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
         centerlineNoteCamera.refreshDataFrame();
+    }
+
+    public int cameraWorkingState() {
+        if (allCameras.stream().allMatch(state -> state.isCameraWorking())) {
+            // If all are working, return 0
+            return 0;
+        }
+        else if (allCameras.stream().allMatch(state -> !state.isCameraWorking())) {
+            // If no cameras are working, return 1
+            return 1;
+        }
+        // If some of the cameras are working, return 2
+        return 2;
     }
 }

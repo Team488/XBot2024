@@ -32,11 +32,9 @@ import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.drive.commands.PointAtNoteWithBearingCommand;
 import competition.subsystems.drive.commands.TryDriveToBearingNote;
-import competition.subsystems.flipper.commands.FlipperHangPositionCommand;
+import competition.subsystems.flipper.commands.SetFlipperServoToHangPositionCommand;
 import competition.subsystems.lights.commands.AmpSignalToggleCommand;
-import competition.subsystems.drive.commands.PointAtSpeakerCommand;
 import competition.subsystems.flipper.commands.ToggleFlipperCommand;
-import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.schoocher.commands.EjectScoocherCommand;
@@ -152,7 +150,7 @@ public class OperatorCommandMap {
 
         // Useful wheel speeds
         var warmUpShooterSubwoofer = warmUpShooterCommandProvider.get();
-        warmUpShooterSubwoofer.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
+        warmUpShooterSubwoofer.setTargetRpm(ShooterWheelSubsystem.TargetRPM.MELEE);
 
         var warmUpShooterToFireInAmp = warmUpShooterCommandProvider.get();
         warmUpShooterToFireInAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.INTO_AMP);
@@ -191,7 +189,7 @@ public class OperatorCommandMap {
     public void setupFundamentalCommands(
             OperatorInterface oi,
             Provider<IntakeScoocherCommand> scoocherIntakeProvider,
-            FlipperHangPositionCommand flipperHangPositionCommand,
+            SetFlipperServoToHangPositionCommand setFlipperServoToHangPositionCommand,
             IntakeCollectorCommand collectorIntake,
             EjectCollectorCommand collectorEject,
             Provider<WarmUpShooterCommand> shooterWarmUpSupplier,
@@ -213,7 +211,7 @@ public class OperatorCommandMap {
 
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectorEject);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightTrigger).whileTrue(collectorIntake).onFalse(rumbleModeFalse);
-        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(flipperHangPositionCommand);
+        oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.LeftBumper).onTrue(setFlipperServoToHangPositionCommand);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(scoocherIntakeProvider.get());
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Start).onTrue(calibrateArmsManuallyCommand);
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.A).whileTrue(shooterWarmUpAmp);
@@ -222,9 +220,9 @@ public class OperatorCommandMap {
         oi.operatorFundamentalsGamepad.getXboxButton(XboxButton.Y).whileTrue(shooterWarmUpTypicalB.alongWith(fireCollectorCommandProvider.get()));
 
         oi.operatorFundamentalsGamepad.getPovIfAvailable(0).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 20));
-        oi.operatorFundamentalsGamepad.getPovIfAvailable(90).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 2));
+        oi.operatorFundamentalsGamepad.getPovIfAvailable(90).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, 1.2));
         oi.operatorFundamentalsGamepad.getPovIfAvailable(180).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, -20));
-        oi.operatorFundamentalsGamepad.getPovIfAvailable(270).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, -2));
+        oi.operatorFundamentalsGamepad.getPovIfAvailable(270).whileTrue(createArmFineAdjustmentCommand(setArmExtensionCommandProvider, -1.2));
     }
 
     @Inject
