@@ -10,7 +10,7 @@ import xbot.common.properties.PropertyFactory;
 import javax.inject.Inject;
 
 
-public class IntakeCollectorCommand extends BaseSetpointCommand {
+public class IntakeCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
     private final DoubleProperty higherIntensity;
@@ -18,7 +18,7 @@ public class IntakeCollectorCommand extends BaseSetpointCommand {
     private boolean isToggledOnce = false;
     @Inject
     public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi, PropertyFactory pf) {
-        super(collector);
+        addRequirements(collector);
         this.collector = collector;
         this.oi = oi;
         pf.setPrefix(this);
