@@ -77,8 +77,7 @@ public class OperatorCommandMap {
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
             LimitArmToUnderStage limitArmToUnderStageCommand,
-            SubwooferShotFromBotThenTwoCenterline test,
-            TryDriveToBearingNote tryDriveToBearingNote)
+            SubwooferShotFromBotThenTwoCenterline test)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -96,7 +95,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(limitArmToUnderStageCommand);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(tryDriveToBearingNote);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.B)
                 .onTrue(pointAtSpeaker)
@@ -274,6 +273,11 @@ public class OperatorCommandMap {
         var setBotThenTwoCenter = setAutonomousCommandProvider.get();
         setBotThenTwoCenter.setAutoCommand(botThenTwoCenter);
         oi.neoTrellis.getifAvailable(30).onTrue(setBotThenTwoCenter);
+    }
+
+    @Inject
+    public void setupTestingCommands(TryDriveToBearingNote tryDriveToBearingNote) {
+        tryDriveToBearingNote.includeOnSmartDashboard();
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {
