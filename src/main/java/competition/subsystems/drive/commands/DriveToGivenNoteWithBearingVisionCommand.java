@@ -9,6 +9,7 @@ import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Translation2d;
 import xbot.common.controls.sensors.XTimer;
 import xbot.common.math.XYPair;
+import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
 import xbot.common.trajectory.XbotSwervePoint;
@@ -42,7 +43,8 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
     protected double timeWhenVisionModeEntered = Double.MAX_VALUE;
     double visionModeDuration = 0.5;
     protected double timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
-    double terminalVisionModeDuration = 0.3;
+    DoubleProperty terminalVisionModeDuration;
+    DoubleProperty terminalVisionPowerReductionFactor;
 
     @Inject
     DriveToGivenNoteWithBearingVisionCommand(PoseSubsystem pose, DriveSubsystem drive, DynamicOracle oracle,
@@ -54,6 +56,9 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
         this.drive = drive;
         this.vision = vision;
         this.collector = collector;
+
+        this.terminalVisionModeDuration = pf.createPersistentProperty("TerminalVisionModeDuration", 0.75);
+        this.terminalVisionPowerReductionFactor = pf.createPersistentProperty("TerminalVisionPowerReductionFactor", 0.5);
     }
 
     @Override
@@ -143,7 +148,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
 
         double approachPower =
                 -drive.getSuggestedAutonomousMaximumSpeed() / drive.getMaxTargetSpeedMetersPerSecond();
-        double terminalPower = approachPower * 0.5;
+        double terminalPower = approachPower * terminalVisionPowerReductionFactor.get();
         // If we are doing vision stuff, then we need to use robot-relative driving.
         // When approaching dynamically, drive pretty fast and keep pointing at the note.
         if (noteAcquisitionMode == NoteAcquisitionMode.VisionApproach) {
@@ -173,7 +178,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
     }
 
     private boolean shouldExitTerminalVisionApproach() {
-        if (XTimer.getFPGATimestamp() > timeWhenTerminalVisionModeEntered + terminalVisionModeDuration) {
+        if (XTimer.getFPGATimestamp() > timeWhenTerminalVisionModeEntered + terminalVisionModeDuration.get()) {
             return true;
         }
         return false;
