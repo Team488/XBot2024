@@ -75,11 +75,11 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
         if (contract.isCollectorReady()) {
             this.collectorMotor = sparkMaxFactory.create(contract.getCollectorMotor(), getPrefix(), "CollectorMotor",
                     "CollectorMotor", new XCANSparkMaxPIDProperties(
-                            0.00015,
-                            0.0000005,
                             0.0,
-                            300.0,
-                            0.00019,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.000208,
                             1,
                             -1));
             collectorMotor.setSmartCurrentLimit(40);
@@ -94,13 +94,13 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
         this.beamBreakSensor = xDigitalInputFactory.create(contract.getBeamBreakSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
-        intakeSpeed = pf.createPersistentProperty("intakeSpeed", 500);
-        beamBreakIntakeSpeed = pf.createPersistentProperty("beamBreakIntakeSpeed", 300);
+        intakeSpeed = pf.createPersistentProperty("intakeSpeed", 6000);
+        beamBreakIntakeSpeed = pf.createPersistentProperty("beamBreakIntakeSpeed", 1000);
 
         firePower = pf.createPersistentProperty("firePower", 1.0);
         pf.setDefaultLevel(Property.PropertyLevel.Important);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
-        carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 100);
+        carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 500);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
         lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1);
 
