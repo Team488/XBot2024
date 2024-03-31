@@ -63,6 +63,9 @@ public class NoteSeekLogic {
     public void reset() {
         noteAcquisitionMode = initialMode;
         resetVisionModeTimers();
+        if (initialMode == NoteAcquisitionMode.VisionApproach) {
+            timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+        }
         hasDoneVisionCheckYet = false;
     }
 
@@ -105,7 +108,7 @@ public class NoteSeekLogic {
                     noteAcquisitionMode = NoteAcquisitionMode.BackAwayToTryAgain;
                     suggestedLocation = new Pose2d(
                             pose.transformRobotCoordinateToFieldCoordinate(new Translation2d(1,0)),
-                            Rotation2d.fromDegrees(0));
+                            pose.getCurrentHeading());
                 }
                 break;
             case BackAwayToTryAgain:
