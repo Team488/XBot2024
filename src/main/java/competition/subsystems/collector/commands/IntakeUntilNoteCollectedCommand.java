@@ -7,13 +7,13 @@ import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
 
-public class IntakeUntilNoteCollectedCommand extends BaseSetpointCommand {
+public class IntakeUntilNoteCollectedCommand extends BaseCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
     double intensity = 0.1;
     @Inject
     public IntakeUntilNoteCollectedCommand(CollectorSubsystem collector, OperatorInterface oi) {
-        super(collector);
+        addRequirements(collector);
         this.collector = collector;
         this.oi = oi;
     }
