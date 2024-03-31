@@ -10,6 +10,9 @@ import edu.wpi.first.math.geometry.Twist2d;
 import org.apache.logging.log4j.LogManager;
 import xbot.common.advantage.AKitLogger;
 import xbot.common.controls.sensors.XTimer;
+import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
+import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
 
 import javax.inject.Inject;
@@ -30,9 +33,14 @@ public class NoteSeekLogic {
 
     double frozenHeading = 0;
     double timeWhenVisionModeEntered = Double.MAX_VALUE;
-    double visionModeDuration = 0.5;
     double timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
-    double terminalVisionModeDuration = 0.3;
+    double timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
+
+    final DoubleProperty terminalVisionModeDuration;
+    final DoubleProperty rotationSearchDuration;
+    final DoubleProperty rotationSearchPower;
+    final DoubleProperty terminalVisionModePowerFactor;
+
     boolean hasDoneVisionCheckYet = false;
     protected final AKitLogger aKitLog;
     String akitPrefix = "NoteSeekLogic/";
@@ -42,14 +50,22 @@ public class NoteSeekLogic {
     private Twist2d suggestedPowers;
 
     private final HeadingModule headingModule;
+    private boolean allowRotationSearch = false;
 
     @Inject
     public NoteSeekLogic(VisionSubsystem vision, DynamicOracle oracle, PoseSubsystem pose,
-                         DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory) {
+                         DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PropertyFactory pf) {
         this.vision = vision;
         this.oracle = oracle;
         this.pose = pose;
         this.drive = drive;
+
+        pf.setPrefix("NoteSeekLogic");
+        pf.setDefaultLevel(Property.PropertyLevel.Important);
+        terminalVisionModeDuration = pf.createPersistentProperty("TerminalVisionModeDuration", 1.0);
+        rotationSearchDuration = pf.createPersistentProperty("RotationSearchDuration", 3.0);
+        rotationSearchPower = pf.createPersistentProperty("RotationSearchPower", 0.5);
+        terminalVisionModePowerFactor = pf.createPersistentProperty("TerminalVisionModePowerFactor", 0.5);
 
         headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
 
@@ -58,6 +74,10 @@ public class NoteSeekLogic {
 
     public void setInitialMode(NoteAcquisitionMode mode) {
         initialMode = mode;
+    }
+
+    public void setAllowRotationSearch(boolean allowRotationSearch) {
+        this.allowRotationSearch = allowRotationSearch;
     }
 
     public void reset() {
@@ -72,6 +92,7 @@ public class NoteSeekLogic {
     private void resetVisionModeTimers() {
         timeWhenVisionModeEntered = Double.MAX_VALUE;
         timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
+        timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
     }
 
     private void checkForModeChanges(boolean atTargetPose) {
@@ -120,9 +141,27 @@ public class NoteSeekLogic {
                         timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
                         noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
                     } else {
-                        log.info("Can't see a note. Giving up.");
-                        noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
+                        log.info("Can't see a note.");
+                        if (allowRotationSearch) {
+                            log.info("Attempting to find one via rotation.");
+                            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
+                            timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
+                        } else {
+                            log.info("Giving up.");
+                            noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
+                        }
                     }
+                }
+                break;
+            case SearchViaRotation:
+                if (vision.getCenterCamLargestNoteTarget().isPresent()) {
+                    log.info("Found a note. Switching to vision mode.");
+                    resetVisionModeTimers();
+                    timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+                    noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
+                } else if (XTimer.getFPGATimestamp() > timeWhenVisionModeEntered + 1.0) {
+                    log.info("Giving up.");
+                    noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
                 }
                 break;
             case GiveUp:
@@ -162,6 +201,9 @@ public class NoteSeekLogic {
             case BackAwayToTryAgain:
                 return new NoteSeekAdvice(
                         noteAcquisitionMode, Optional.of(suggestedLocation),Optional.empty());
+            case SearchViaRotation:
+                suggestedPowers = new Twist2d(0, 0, 0.5);
+                return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.of(suggestedPowers));
             case GiveUp:
             default:
                 return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.empty());
@@ -177,7 +219,14 @@ public class NoteSeekLogic {
     }
 
     private boolean shouldExitTerminalVisionApproach() {
-        if (XTimer.getFPGATimestamp() > timeWhenTerminalVisionModeEntered + terminalVisionModeDuration) {
+        if (XTimer.getFPGATimestamp() > timeWhenTerminalVisionModeEntered + terminalVisionModeDuration.get()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean shouldExitRotationSearch() {
+        if (XTimer.getFPGATimestamp() > timeWhenRotationSearchModeEntered + rotationSearchDuration.get()) {
             return true;
         }
         return false;
