@@ -52,6 +52,7 @@ public class DynamicOracle extends BaseSubsystem {
     NoteFiringInfoSource noteFiringInfoSource;
     NoteMap noteMap;
     ScoringLocationMap scoringLocationMap;
+    TeleopScoringLocationMap teleopScoringLocationMap;
     GraphField field;
 
     HighLevelGoal currentHighLevelGoal;
@@ -84,6 +85,7 @@ public class DynamicOracle extends BaseSubsystem {
         this.noteFiringInfoSource = noteFiringInfoSource;
         this.noteMap = new NoteMap();
         this.scoringLocationMap = new ScoringLocationMap();
+        this.teleopScoringLocationMap = new TeleopScoringLocationMap();
 
         this.pose = pose;
         this.vision = vision;
@@ -639,12 +641,12 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     public PointOfInterest getNearestScoringLocation() {
-        return scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+        return teleopScoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
                 Availability.Available).getPointOfInterest();
     }
 
     public Pose2d getNearestScoringLocationPose() {
-        return scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+        return teleopScoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
                 Availability.Available).getPointOfInterest().getLocation();
     }
 }
