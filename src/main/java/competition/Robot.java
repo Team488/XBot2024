@@ -11,8 +11,10 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import org.littletonrobotics.junction.LogTable;
 import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
 import xbot.common.math.MovingAverageForDouble;
@@ -26,6 +28,7 @@ public class Robot extends BaseRobot {
 
     Simulator2024 simulator;
     DynamicOracle oracle;
+    PoseSubsystem poseSubsystem;
 
     @Override
     protected void initializeSystems() {
@@ -41,18 +44,20 @@ public class Robot extends BaseRobot {
         oracle = getInjectorComponent().dynamicOracle();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
-        dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
+        poseSubsystem = (PoseSubsystem) getInjectorComponent().poseSubsystem();
+        dataFrameRefreshables.add(poseSubsystem);
         dataFrameRefreshables.add(getInjectorComponent().visionSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().armSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().scoocherSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().collectorSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().shooterSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().neoTrellisGamepadSubsystem());
-
+        dataFrameRefreshables.add(getInjectorComponent().flipperSubsystem());
         var defaultAuto = getInjectorComponent().subwooferShotFromMidShootThenShootNearestThree();
         var autoSelector = getInjectorComponent().autonomousCommandSelector();
 
         autoSelector.setCurrentAutonomousCommand(defaultAuto);
+        LogTable.disableProtobufWarning();
     }
 
     protected BaseRobotComponent createDaggerComponent() {
@@ -96,6 +101,7 @@ public class Robot extends BaseRobot {
     public void teleopInit() {
         super.teleopInit();
         oracle.clearNoteMapForTeleop();
+        oracle.clearScoringLocationsForTeleop();
     }
 
     @Override

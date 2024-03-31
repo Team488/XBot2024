@@ -66,6 +66,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean hasCalibratedRight;
     private final DoubleProperty maximumExtensionDesyncMm;
 
+    public final DoubleProperty maxExtensionForUnderStageMm;
+    boolean limitToUnderStage = false;
+
     private double targetExtension;
     private final DoubleProperty overallPowerClampForTesting;
 
@@ -116,7 +119,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         HANG_APPROACH,
         PROTECTED_FAR_AMP_SHOT,
         PROTECTED_PODIUM_SHOT,
-        COLLECT_DIRECTLY_FROM_SOURCE
+        COLLECT_DIRECTLY_FROM_SOURCE,
+        LOB_SHOT
     }
 
     private DoubleInterpolator speakerDistanceToExtensionInterpolator;
@@ -154,6 +158,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 "LowerSlowZoneThresholdMm", 25.0);
         lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
                 "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
+
+        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 52.0);
 
         upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
         lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
@@ -473,7 +479,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 0;
                 break;
             case FIRING_FROM_AMP:
-                extension = upperLegalLimitMm.get();
+                extension = 150.80;
                 break;
             case SCOOCH_NOTE:
                 extension = 30;
@@ -482,13 +488,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 71.1;
                 break;
             case PROTECTED_PODIUM_SHOT:
-                extension = 58.81;
+                extension = 59.05;
                 break;
             case COLLECT_DIRECTLY_FROM_SOURCE:
                 extension = 180;
                 break;
+            case LOB_SHOT:
+                //This still needs to be found
+                extension = 55;
+                break;
             case HANG_APPROACH:
-                extension = 100;
+                extension = 120;
                 break;
             default:
                 return 0;
@@ -505,10 +515,26 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 0;
                 break;
             case PodiumScoringLocation:
-                extension = 58.81;
+                extension = 59.05;
                 break;
             case AmpFarScoringLocation:
                 extension = 71.1;
+                break;
+            case MiddleSpikeScoringLocation:
+                extension = 59.86;
+                break;
+            case BottomSpikeCloserToSpeakerScoringLocation:
+            case TopSpikeCloserToSpeakerScoringLocation:
+                extension = 59.86; // TODO - what are the real numbers?
+                break;
+            case OneRobotAwayFromCenterSubwooferScoringLocation:
+                extension = 44.8;
+                break;
+            case TopSpikeScoringLocation:
+                extension = 65.5;
+                break;
+            case WingScoringLocation:
+                extension = 87;
                 break;
             default:
                 return 0;
@@ -576,6 +602,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         return targetExtension;
     }
 
+    public void setTargetValue(UsefulArmPosition usefulArmPosition) {
+        setTargetValue(getUsefulArmPositionExtensionInMm(usefulArmPosition));
+    }
+
     /**
      * the current target extension distance the arm is trying to reach via PID
      */
@@ -584,8 +614,11 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
          this.targetExtension = targetExtension;
     }
 
-    public void setTargetValue(UsefulArmPosition usefulArmPosition) {
-        setTargetValue(getUsefulArmPositionExtensionInMm(usefulArmPosition));
+    public Double getSafeTargetValue() {
+        if(getLimitToUnderStage()) {
+            return Math.min(getTargetValue(), maxExtensionForUnderStageMm.get());
+        }
+        return getTargetValue();
     }
 
     @Override
@@ -671,6 +704,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         aKitLog.record("BrakeEngaged", getBrakeEngaged());
         aKitLog.record("ForceBrakesEngaged", getForceBrakesEngaged());
         aKitLog.record("Target Extension", targetExtension);
+        aKitLog.record("LimitToUnderStage", getLimitToUnderStage());
+        aKitLog.record("Safe Target Extension", getSafeTargetValue());
         aKitLog.record("Arm3dState", new Pose3d(
                 new Translation3d(0, 0, 0),
                 new Rotation3d(0, 0, 0)));
@@ -694,5 +729,13 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
             armMotorRight.refreshDataFrame();
             armAbsoluteEncoder.refreshDataFrame();
         }
+    }
+
+    public void setLimitToUnderStage(boolean limitToUnderStage) {
+        this.limitToUnderStage = limitToUnderStage;
+    }
+
+    public boolean getLimitToUnderStage() {
+        return limitToUnderStage;
     }
 }

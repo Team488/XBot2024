@@ -32,7 +32,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
     public PointAtSpeakerCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
                                  OperatorInterface oi, PropertyFactory pf) {
         this.drive = drive;
-        this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.pose = pose;
         this.oi = oi;
 //        this.turnPowerFactor = pf.createPersistentProperty("Turn Power Factor", 0.75);
@@ -76,7 +76,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
     }
 
     private double getRotationIntentPointAtSpeaker(Pose2d currentPose) {
-        Translation2d speakerPosition = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION);
+        Translation2d speakerPosition = PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_TARGET_FORWARD);
         Translation2d currentXY = new Translation2d(currentPose.getX(), currentPose.getY());
 
         return currentXY.minus(speakerPosition).getAngle().getDegrees() + 180;

@@ -24,6 +24,7 @@ public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
     DynamicOracle oracle;
     DriveSubsystem drive;
     Supplier<List<XbotSwervePoint>> pointsSupplier;
+    double maximumSpeedOverride = 0;
 
     @Inject
     public DriveToListOfPointsCommand(DriveSubsystem drive, DynamicOracle oracle,
@@ -32,6 +33,11 @@ public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
         super(drive, pose, pf, headingModuleFactory);
         this.oracle = oracle;
         this.drive = drive;
+        double maximumSpeedOverride = 0;
+    }
+
+    public void setMaximumSpeedOverride(double maximumSpeedOverride) {
+        this.maximumSpeedOverride = maximumSpeedOverride;
     }
 
     @Override
@@ -40,7 +46,13 @@ public class DriveToListOfPointsCommand extends SwerveSimpleTrajectoryCommand {
         this.logic.setKeyPointsProvider(pointsSupplier);
 //        this.logic.setAimAtGoalDuringFinalLeg(true);
         this.logic.setEnableConstantVelocity(true);
-        this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
+
+        double suggestedSpeed = drive.getSuggestedAutonomousMaximumSpeed();
+        if (maximumSpeedOverride > suggestedSpeed) {
+            suggestedSpeed = maximumSpeedOverride;
+        }
+
+        this.logic.setConstantVelocity(suggestedSpeed);
         // this is commented out because we want our autonomous to be very basic right now
 //        this.logic.setFieldWithObstacles(oracle.getFieldWithObstacles());
         super.initialize();

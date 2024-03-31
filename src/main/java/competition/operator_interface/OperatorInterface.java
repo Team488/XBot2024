@@ -29,7 +29,6 @@ public class OperatorInterface {
 
     final DoubleProperty driverDeadband;
     final DoubleProperty operatorDeadband;
-    final DoubleProperty operatorDeadbandSecond;
 
     @Inject
     public OperatorInterface(XXboxControllerFactory controllerFactory,
@@ -55,8 +54,6 @@ public class OperatorInterface {
         pf.setPrefix("OperatorInterface");
         driverDeadband = pf.createPersistentProperty("Driver Deadband", 0.12);
         operatorDeadband = pf.createPersistentProperty("Operator Deadband", 0.15);
-
-        operatorDeadbandSecond = pf.createPersistentProperty("Operator Deadband Second", 0.15);
     }
 
     public double getDriverGamepadTypicalDeadband() {
@@ -65,10 +62,6 @@ public class OperatorInterface {
 
     public double getOperatorGamepadTypicalDeadband() {
         return operatorDeadband.get();
-    }
-
-    public double getOperatorGamepadTypicalDeadbandSecond() {
-        return operatorDeadbandSecond.get();
     }
 
     public boolean getNeoTrellisValue(PointOfInterest pointOfInterest) {
@@ -91,8 +84,11 @@ public class OperatorInterface {
                 return neoTrellis.getButton(12);
             case AmpFarScoringLocation:
                 return neoTrellis.getButton(17);
-            // Top and Mid spike shot enable/disable needs to be done a different way.
-            case PodiumScoringLocation:
+            case TopSpikeCloserToSpeakerScoringLocation:
+                return neoTrellis.getButton(18);
+            case MiddleSpikeScoringLocation:
+                return neoTrellis.getButton(19);
+            case BottomSpikeCloserToSpeakerScoringLocation:
                 return neoTrellis.getButton(20);
             case SubwooferTopScoringLocation:
                 return neoTrellis.getButton(26);

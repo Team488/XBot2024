@@ -1,6 +1,8 @@
 package competition.injection.components;
 
+import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
+import competition.auto_programs.TestVisionAuto;
 import competition.simulation.Simulator2024;
 import competition.subsystems.NeoTrellisGamepadSubsystem;
 import competition.subsystems.arm.ArmModelBasedCalculator;
@@ -10,8 +12,10 @@ import competition.subsystems.arm.commands.ReconcileArmAlignmentCommand;
 import competition.subsystems.arm.commands.RetractArmCommand;
 import competition.subsystems.arm.commands.StopArmCommand;
 import competition.subsystems.collector.CollectorSubsystem;
+import competition.subsystems.flipper.FlipperSubsystem;
 import competition.subsystems.lights.LightSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
+import competition.subsystems.oracle.ListenToOracleCommandGroup;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.shooter.commands.ShooterWheelMaintainerCommand;
@@ -39,6 +43,8 @@ public abstract class BaseRobotComponent extends BaseComponent {
 
     public abstract SwerveComponentHolder swerveComponents();
 
+    public abstract FlipperSubsystem flipperSubsystem();
+
     public abstract VisionSubsystem visionSubsystem();
 
     public abstract ArmSubsystem armSubsystem();
@@ -62,4 +68,7 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract DynamicOracle dynamicOracle();
     public abstract ArmModelBasedCalculator armModelBasedCalculator();
     public abstract SubwooferShotFromMidShootThenShootNearestThree subwooferShotFromMidShootThenShootNearestThree();
+    public abstract ListenToOracleCommandGroup listenToOracleCommandGroup();
+    public abstract TestVisionAuto testVisionAuto();
+    public abstract GriefMiddle griefMiddle();
 }

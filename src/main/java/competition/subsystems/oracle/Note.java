@@ -2,6 +2,9 @@ package competition.subsystems.oracle;
 
 import competition.subsystems.pose.PointOfInterest;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public class Note implements ReservableLocation {
 
@@ -9,21 +12,28 @@ public class Note implements ReservableLocation {
 
     private Availability availability;
 
-    private Pose2d location;
+    private UnavailableReason unavailableReason;
 
-    private PointOfInterest pointOfInterest;
+    private final DataSource dataSource;
 
-    public Note(Pose2d location) {
+    private final Pose2d location;
+
+    private final PointOfInterest pointOfInterest;
+
+    public Note(Pose2d location, DataSource dataSource) {
+        this(location, Availability.Available, dataSource);
+    }
+
+    public Note(Pose2d location, Availability availability, DataSource dataSource) {
         this.priority = -1;
-        this.availability = Availability.Available;
+        this.availability = availability;
         this.location = location;
+        this.dataSource = dataSource;
+        this.pointOfInterest = null;
     }
 
     public Note(Pose2d location, PointOfInterest pointOfInterest) {
-        this.priority = -1;
-        this.availability = Availability.Available;
-        this.location = location;
-        this.pointOfInterest = pointOfInterest;
+        this(location, -1, Availability.Available, pointOfInterest);
     }
 
     public Note(Pose2d location, int priority, Availability availability, PointOfInterest pointOfInterest) {
@@ -31,6 +41,7 @@ public class Note implements ReservableLocation {
         this.availability = availability;
         this.location = location;
         this.pointOfInterest = pointOfInterest;
+        this.dataSource = DataSource.Static;
     }
 
     public int getPriority() {
@@ -41,20 +52,34 @@ public class Note implements ReservableLocation {
         return availability;
     }
 
+    public UnavailableReason getUnavailableReason() {
+        return unavailableReason;
+    }
+
     public Pose2d getLocation() {
         return location;
+    }
+
+    public Pose3d get3dLocation() {
+        return new Pose3d(new Translation3d(location.getX(), location.getY(), 0.025), new Rotation3d());
+    }
+
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     public void setPriority(int priority) {
         this.priority = priority;
     }
 
-    public void setAvailability(Availability availability) {
-        this.availability = availability;
+    public void setAvailable() {
+        this.availability = Availability.Available;
+        this.unavailableReason = null;
     }
 
-    public void setLocation(Pose2d location) {
-        this.location = location;
+    public void setUnavailable(UnavailableReason reason) {
+        this.availability = Availability.Unavailable;
+        this.unavailableReason = reason;
     }
 
     public PointOfInterest getPointOfInterest() {

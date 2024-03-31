@@ -127,7 +127,7 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     public boolean isScoocherReady() {
-        return true;
+        return false;
     }
     public DeviceInfo getScoocherMotor(){
         return new DeviceInfo("ScoocherMotor", 33);
@@ -157,17 +157,36 @@ public class CompetitionContract extends ElectricalContract {
         return new DeviceInfo("Lights3", 3);
     }
 
+
     @Override
-    public DeviceInfo getInControlNoteSensorDio() {
-        return new DeviceInfo("InControlNoteSensor", 8, true);
+    public DeviceInfo getFlipperSolenoidForward() {
+        return new DeviceInfo("FlipperSolenoid1", 4);
+    }
+    
+    @Override
+    public DeviceInfo getFlipperSolenoidReverse() {
+        return new DeviceInfo("FlipperSolenoid2", 11);
+    }
+
+    @Override
+    public DeviceInfo getFlipperServo() {
+        return new DeviceInfo("FlipperServo", 5);
+    }
+
+    @Override
+    public DeviceInfo getLowerNoteSensorDio() {
+        return new DeviceInfo("LowerNoteSensor", 8, true);
     }
     @Override
-    public DeviceInfo getReadyToFireNoteSensorDio() {
-        return new DeviceInfo("ReadyToFireNoteSensor", 9, true);
+    public DeviceInfo getUpperNoteSensorDio() {
+        return new DeviceInfo("UpperNoteSensor", 9, true);
+    }
+    @Override
+    public DeviceInfo getBeamBreakSensorDio() {
+        return new DeviceInfo("BeamBreakNoteSensor", 5, true);
     }
 
     // ArmSubsystem
-
     @Override
     public boolean isArmReady() {
         return true;
@@ -205,6 +224,7 @@ public class CompetitionContract extends ElectricalContract {
 
     public static String rearLeftNoteCameraName = "NoteRearLeft";
     public static String rearRightNoteCameraName = "NoteRearRight";
+    public static String rearCenterNoteCameraName= "NoteRearCenter"; //TODO - one of these cameras
 
     @Override
     public CameraInfo[] getCameraInfo() {
@@ -242,7 +262,7 @@ public class CompetitionContract extends ElectricalContract {
                             new Rotation3d(0, aprilCameraPitch, Math.toRadians(180) + aprilCameraYaw)),
                     EnumSet.of(CameraCapabilities.APRIL_TAG)),
             new CameraInfo("GamePiece_FrontLeft_Camera",
-                    "NoteFrontLeft",
+                    rearCenterNoteCameraName,
                     new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_FrontRight_Camera",
@@ -250,7 +270,7 @@ public class CompetitionContract extends ElectricalContract {
                     new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_RearLeft_Camera",
-                rearLeftNoteCameraName,
+                    rearLeftNoteCameraName,
                 new Transform3d(new Translation3d(), new Rotation3d()),
                     EnumSet.of(CameraCapabilities.GAME_SPECIFIC)),
             new CameraInfo("GamePiece_RearRight_Camera",

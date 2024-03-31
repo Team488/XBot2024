@@ -2,7 +2,7 @@ import edu.wpi.first.gradlerio.deploy.roborio.RoboRIO
 
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2024.3.1"
+    id "edu.wpi.first.GradleRIO" version "2024.3.2"
     id 'checkstyle'
     id 'jacoco'
     id 'org.hidetake.ssh' version "2.9.0"
@@ -181,7 +181,12 @@ task checkstyle(type: Checkstyle) {
 test {
     reports {
         junitXml.required = true
-    }               
+    }
+    
+    testLogging {
+		events "failed"
+		exceptionFormat "full"
+	}    
 }
 
 tasks.withType(Test) {

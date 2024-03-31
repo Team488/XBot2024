@@ -36,8 +36,13 @@ public abstract class ElectricalContract
 
     public abstract DeviceInfo getLightsDio3();
 
-    public abstract DeviceInfo getInControlNoteSensorDio();
-    public abstract DeviceInfo getReadyToFireNoteSensorDio();
+    public abstract DeviceInfo getFlipperSolenoidForward();
+    public abstract DeviceInfo getFlipperSolenoidReverse();
+    public abstract DeviceInfo getFlipperServo();
+
+    public abstract DeviceInfo getLowerNoteSensorDio();
+    public abstract DeviceInfo getUpperNoteSensorDio();
+    public abstract DeviceInfo getBeamBreakSensorDio();
 
     // ArmSubsystem
     public abstract boolean isArmReady();

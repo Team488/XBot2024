@@ -20,10 +20,10 @@ public class ArmModelBasedCalculator {
         // This uses coefficients determined from empirical measurements using the robot
         // The extension value is constrained between 0.0 and 84.24 (which corresponds to a distance of 5 meters).
 
+
         double z0 = -55.78;
         double z1 = 54.70;
         double z2 = -5.20;
-
         double extension = (z0 + z1 * distanceFromSpeaker + z2 * Math.pow(distanceFromSpeaker, 2));
         if (extension < 0.0 ){
             extension = 0.0; // clip at zero extension

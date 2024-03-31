@@ -23,7 +23,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     public enum TargetRPM {
         STOP,
         TYPICAL,
-        INTO_AMP
+        MELEE,
+        INTO_AMP,
+        LOB_SHOT
     }
 
     //need pose for real time calculations
@@ -38,8 +40,11 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private ShooterWheelTargetSpeeds targetRpms = new ShooterWheelTargetSpeeds(0.0);
     private double trimRpm;
     private final DoubleProperty intoAmpShotRpm;
-    private final DoubleProperty iMaxAccumValueForShooter;
+    private double iMaxAccumValueForShooter;
     private final DoubleProperty typicalShotRpm;
+    private final DoubleProperty meleeShotRpm;
+    private final DoubleProperty distanceShotRpm;
+    private final DoubleProperty lobShotRpm;
 
     //DEFINING MOTORS
     public XCANSparkMax upperWheelMotor;
@@ -55,13 +60,17 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         pf.setPrefix(this);
 
         typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
-        intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 2000);
+        meleeShotRpm = pf.createPersistentProperty("MeleeShotRpm", 3600);
+        intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 800);
+        distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 4800);
+        //Value still needs to be found
+        lobShotRpm = pf.createPersistentProperty("LobShotRpm", 3800);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();
 
         // NEEDS TUNING TO FIND CORRECT VALUE
-        iMaxAccumValueForShooter = pf.createPersistentProperty("IMaxAccumValueForShooter", 0);
+        iMaxAccumValueForShooter = 0;
 
         XCANSparkMaxPIDProperties defaultShooterPidProperties = new XCANSparkMaxPIDProperties(
                 0.00015,
@@ -104,27 +113,22 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         switch (target) {
             case STOP -> setTargetValue(0.0);
             case TYPICAL -> setTargetValue(typicalShotRpm.get());
+            case MELEE -> setTargetValue(meleeShotRpm.get());
             case INTO_AMP -> setTargetValue(intoAmpShotRpm.get());
+            case LOB_SHOT ->  setTargetValue(lobShotRpm.get());
             default -> setTargetValue(0.0);
-        }
-    }
-
-    public double getRPMForGivenShotType(TargetRPM target) {
-        switch (target) {
-            case STOP -> {return 0.0;}
-            case TYPICAL -> {return typicalShotRpm.get();}
-            case INTO_AMP -> {return intoAmpShotRpm.get();}
-            default -> {return 0.0;}
         }
     }
 
     public double getRPMForGivenScoringLocation(PointOfInterest pointOfInterest) {
         switch (pointOfInterest) {
             // These speeds may be different someday.
-            case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return 4000;}
-            case PodiumScoringLocation -> {return 4000;}
-            case AmpFarScoringLocation -> {return 4000;}
-            default -> {return 0.0;}
+            case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return meleeShotRpm.get();}
+            case PodiumScoringLocation, AmpFarScoringLocation, BottomSpikeCloserToSpeakerScoringLocation,
+                    SpikeMiddle, TopSpikeCloserToSpeakerScoringLocation, OneRobotAwayFromCenterSubwooferScoringLocation,
+                    TopSpikeScoringLocation -> {return typicalShotRpm.get();}
+            case WingScoringLocation -> {return distanceShotRpm.get();}
+            default -> {return 4000;}
         }
     }
 
@@ -210,7 +214,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
 
     public void configurePID() {
         if (contract.isShooterReady()) {
-            upperWheelMotor.setIMaxAccum(iMaxAccumValueForShooter.get(), 0);
+            upperWheelMotor.setIMaxAccum(iMaxAccumValueForShooter, 0);
         }
     }
 

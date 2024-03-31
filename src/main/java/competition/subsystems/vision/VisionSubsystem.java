@@ -31,6 +31,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,9 +57,20 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     long logCounter = 0;
     Pose3d[] detectedNotes;
     NoteTracker[] noteTrackers;
+    Pose3d[] passiveDetectedNotes;
+    NoteTracker[] passiveNoteTrackers;
     final DoubleProperty noteLocalizationInfo;
+    PhotonCameraExtended centerlineNoteCamera;
+    SimpleNote[] centerlineDetections;
     NoteCamera rearLeftNoteCamera;
     NoteCamera rearRightNoteCamera;
+    NoteCamera rearCenterNoteCamera;
+    final DoubleProperty bestRangeFromStaticNoteToSearchForNote;
+    final DoubleProperty maxNoteSearchingDistanceForSpikeNotes;
+    
+    final DoubleProperty minNoteArea;
+    // under this pitch, the note is too close and we shouldn't try and rotate or do anything else with it
+    public final double terminalNotePitch = 0.0;
 
 
     @Inject
@@ -73,16 +85,25 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
+        minNoteArea = pf.createPersistentProperty("Minimum note area", 0.5);
+
+        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
+        maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
                 //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
                 //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
                 "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs",
+                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+        };
+        var passiveDetectionTopicNames = new String[]{
                 "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
+                .map(NoteTracker::new)
+                .toArray(NoteTracker[]::new);
+        passiveNoteTrackers = Arrays.stream(passiveDetectionTopicNames)
                 .map(NoteTracker::new)
                 .toArray(NoteTracker[]::new);
 
@@ -101,9 +122,9 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             log.error("Could not load AprilTagFieldLayout!", e);
         }
 
+        PhotonCameraExtended.setVersionCheckEnabled(false);
         aprilTagCameras = new ArrayList<AprilTagCamera>();
         if (aprilTagsLoaded) {
-            PhotonCameraExtended.setVersionCheckEnabled(false);
             var aprilTagCapableCameras = Arrays
                     .stream(electricalContract.getCameraInfo())
                     .filter(info -> info.capabilities().contains(CameraCapabilities.APRIL_TAG))
@@ -112,6 +133,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 aprilTagCameras.add(new AprilTagCamera(camera, waitForStablePoseTime::get, aprilTagFieldLayout, this.getPrefix()));
             }
         }
+
+        centerlineNoteCamera = new PhotonCameraExtended(
+                NetworkTableInstance.getDefault(),
+                "GamePiece_Centerline_Camera",
+                this.getPrefix());
 
         noteCameras = new ArrayList<NoteCamera>();
         var noteTrackingCapableCameras = Arrays
@@ -127,9 +153,12 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             if (noteCamera.getName().equals(CompetitionContract.rearLeftNoteCameraName)){
                 rearLeftNoteCamera = noteCamera;
             }
+            if (noteCamera.getName().equals(CompetitionContract.rearCenterNoteCameraName)){
+                rearCenterNoteCamera = noteCamera;
+            }
         }
 
-        allCameras = new ArrayList<SimpleCamera>();
+        allCameras = new ArrayList<>();
         allCameras.addAll(aprilTagCameras);
         allCameras.addAll(noteCameras);
 
@@ -198,7 +227,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         // If this is way too far from our current location, then it's probably a bad estimate.
         double distance = previousEstimatedPose.getTranslation().getDistance(estimatedPose.estimatedPose.toPose2d().getTranslation());
-        if(distance > robotDisplacementThresholdToRejectVisionUpdate.get()) {
+        var visionDistanceTooLarge = distance > robotDisplacementThresholdToRejectVisionUpdate.get();
+        // Unless we're near zero which means we've never set a pose before, use vision even if we're far away
+
+        var isNearZero = previousEstimatedPose.getTranslation().getNorm() < 0.1;
+        if(!isNearZero && visionDistanceTooLarge) {
             if (logCounter++ % 20 == 0) {
                 log.warn(String.format("Ignoring vision pose because distance is %f from our previous pose. Current pose: %s, vision pose: %s.",
                         distance,
@@ -265,6 +298,14 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return detectedNotes;
     }
 
+    public Pose3d[] getPassiveDetectedNotes() {
+        return passiveDetectedNotes;
+    }
+
+    public double getNoteYawFromCentralCamera() {
+        return getNoteYaw(rearCenterNoteCamera);
+    }
+
     private Translation2d triangulateNote() {
         double rearRightyaw = getNoteYaw(rearRightNoteCamera);
         double rearLeftYaw = getNoteYaw(rearLeftNoteCamera);
@@ -295,6 +336,14 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return null;
     }
 
+    public double getBestRangeFromStaticNoteToSearchForNote() {
+        return bestRangeFromStaticNoteToSearchForNote.get();
+    }
+
+    public double getMaxNoteSearchingDistanceForSpikeNotes() {
+        return maxNoteSearchingDistanceForSpikeNotes.get();
+    }
+
     @Override
     public void periodic() {
         loopCounter++;
@@ -311,6 +360,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
+        aKitLog.record(centerlineNoteCamera.getName() + "CameraWorking", centerlineNoteCamera.isConnected());
+
         for (SimpleCamera camera : allCameras) {
             aKitLog.record(camera.getName() + "CameraWorking", camera.isCameraWorking());
         }
@@ -322,13 +373,62 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
 
-        Arrays.stream(noteTrackers)
-                .forEach(NoteTracker::refreshDataFrame);
-        var detections = Arrays.stream(noteTrackers)
+        detectedNotes = getNotesFromTrackers(noteTrackers);
+        passiveDetectedNotes = getNotesFromTrackers(passiveNoteTrackers);
+
+        var centerlineTargetResult = centerlineNoteCamera.getLatestResult();
+        var newCenterlineDetections = new ArrayList<SimpleNote>();
+        if (centerlineTargetResult.hasTargets()) {
+            var centerlineTargets = centerlineNoteCamera.getLatestResult().getTargets();
+            for (var target : centerlineTargets) {
+                if (target.getFiducialId() != 1) {
+                    // Not a note, this is a robot!
+                    continue;
+                }
+                newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw(), target.getPitch()));
+            }
+        }
+        centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
+
+        aKitLog.record("CenterCamNumNotes", centerlineDetections.length);
+        getCenterCamLargestNoteTarget().ifPresentOrElse(target -> {
+            aKitLog.record("CenterCamLargestTargetArea", target.getArea());
+            aKitLog.record("CenterCamLargestTargetYaw", target.getYaw());
+            aKitLog.record("CenterCamLargestTargetPitch", target.getPitch());
+        }, () -> {
+            aKitLog.record("CenterCamLargestTargetArea", -1.0);
+            aKitLog.record("CenterCamLargestTargetYaw", 0.0);
+            aKitLog.record("CenterCamLargestTargetPitch", 0.0);
+        });
+
+        aKitLog.record("CenterlineDetections", centerlineDetections);
+        aKitLog.record("DetectedNotes", detectedNotes);
+        aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
+    }
+
+    public SimpleNote[] getCenterlineDetections() {
+        return centerlineDetections;
+    }
+
+    public boolean checkIfCenterCamSeesNote() {
+        return centerlineDetections.length > 0;
+    }
+
+    private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
+        Arrays.stream(noteTrackers).forEach(NoteTracker::refreshDataFrame);
+        var detections = getDetections(noteTrackers);
+        return processDetections(detections);
+    }
+
+    private String[] getDetections(NoteTracker[] noteTrackers) {
+        return Arrays.stream(noteTrackers)
                 .map(NoteTracker::getDetections)
                 .flatMap(Arrays::stream)
                 .toArray(String[]::new);
-        detectedNotes = Arrays.stream(detections)
+    }
+
+    private Pose3d[] processDetections(String[] detections) {
+        return Arrays.stream(detections)
                 .map(detection -> {
                     var parts = detection.split(",");
                     var ratio = Double.parseDouble(parts[3]);
@@ -347,8 +447,16 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 })
                 .filter(Objects::nonNull)
                 .toArray(Pose3d[]::new);
+    }
 
-        aKitLog.record("DetectedNotes", detectedNotes);
+    public Optional<SimpleNote> getCenterCamLargestNoteTarget() {
+        var targets = this.getCenterlineDetections();
+        if (targets.length == 0) {
+            return Optional.empty();
+        }
+        return Arrays.stream(targets)
+                .filter(t -> t.getArea() > this.minNoteArea.get())
+                .max(Comparator.comparingDouble(SimpleNote::getArea));
     }
 
     @Override
@@ -358,5 +466,19 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 camera.getCamera().refreshDataFrame();
             }
         }
+        centerlineNoteCamera.refreshDataFrame();
+    }
+
+    public int cameraWorkingState() {
+        if (allCameras.stream().allMatch(state -> state.isCameraWorking())) {
+            // If all are working, return 0
+            return 0;
+        }
+        else if (allCameras.stream().allMatch(state -> !state.isCameraWorking())) {
+            // If no cameras are working, return 1
+            return 1;
+        }
+        // If some of the cameras are working, return 2
+        return 2;
     }
 }

@@ -5,12 +5,14 @@ import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.photonvision.EstimatedRobotPose;
+import xbot.common.advantage.AKitLogger;
 import xbot.common.controls.sensors.XGyro.XGyroFactory;
 import xbot.common.logic.Latch;
 import xbot.common.logic.TimeStableValidator;
@@ -19,12 +21,12 @@ import xbot.common.math.WrappedRotation2d;
 import xbot.common.math.XYPair;
 import xbot.common.properties.BooleanProperty;
 import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -51,7 +53,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
     private final Latch useVisionToUpdateGyroLatch;
 
     public static final  Translation2d SPEAKER_POSITION = new Translation2d(-0.0381,5.547868);
-    public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0, 5.5, Rotation2d.fromDegrees(180));
+
+    //Speaker position that is forward 9.5 inches for better aiming
+    public static final  Translation2d SPEAKER_TARGET_FORWARD = new Translation2d(0.2032,5.547868);
+    public static final Pose2d SPEAKER_AIM_TARGET = new Pose2d(0.2032, 5.547868, Rotation2d.fromDegrees(180));
     public static Pose2d BlueSpikeTop = new Pose2d(2.8956, 7.0012, new Rotation2d());
     public static Pose2d BlueSpikeMiddle = new Pose2d(2.8956, 5.5478, new Rotation2d());
     public static Pose2d BlueSpikeBottom = new Pose2d(2.8956, 4.1056, new Rotation2d());
@@ -81,6 +86,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Pose2d BlueSubwooferBottomScoringLocation = new Pose2d(0.758, 4.395, Rotation2d.fromDegrees(120));
     public static Pose2d BluePodiumScoringLocation = new Pose2d(2.770, 4.389, Rotation2d.fromDegrees(159));
     public static Pose2d BlueFarAmpScoringLocation = new Pose2d(3.073, 7.597, Rotation2d.fromDegrees(-146.6));
+    public static Pose2d BlueBottomSpikeCloserToSpeakerScoringLocation = new Pose2d(2.237,4.355, Rotation2d.fromDegrees(152));
+    public static Pose2d BlueMiddleSpikeScoringLocation = new Pose2d(2.8956, 5.5478, Rotation2d.fromDegrees(180));
+    public static Pose2d BlueTopSpikeCloserToSpeakerScoringLocation = new Pose2d(2.239,6.738, Rotation2d.fromDegrees(-153));
+    public static Pose2d BlueTopSpikeScoringLocation = new Pose2d(2.893, 7.009, Rotation2d.fromDegrees(-151.49));
+    public static Pose2d BlueOneRobotAwayFromCenterSubwooferScoringLocation = new Pose2d(2.312,5.561, Rotation2d.fromDegrees(180));
+    public static Pose2d WingScoringLocation = new Pose2d(5.081, 6.017, Rotation2d.fromDegrees(-174.580));
     public static Pose2d BlueSpikeTopWhiteLine = new Pose2d(1.93294, 7.0012, new Rotation2d());
     public static Pose2d BlueSpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
 
@@ -122,7 +133,10 @@ public class PoseSubsystem extends BasePoseSubsystem {
         extremelyConfidentVisionDistanceUpdateInMetersProp = propManager.createPersistentProperty("ExtremelyConfidentVisionDistanceUpdateInMeters", 0.01);
         isVisionPoseExtremelyConfident = false;
         allianceAwareFieldProp = propManager.createPersistentProperty("Alliance Aware Field", true);
+
+        propManager.setDefaultLevel(Property.PropertyLevel.Important);
         useVisionForPoseProp = propManager.createPersistentProperty("Enable Vision-Assisted Pose", false);
+        propManager.setDefaultLevel(Property.PropertyLevel.Debug);
         useForwardCameraForPose = propManager.createPersistentProperty("Use forward april cam", true);
         useRearCameraForPose = propManager.createPersistentProperty("Use rear april cam", true);
 
@@ -192,6 +206,64 @@ public class PoseSubsystem extends BasePoseSubsystem {
     @Override
     protected double getRightDriveDistance() {
         return drive.getRightTotalDistance();
+    }
+
+    public Pose2d getNearestGoodScoringPosition() {
+        //Gets current location in the form of X and Y coordinates
+        Pose2d currentPose = getCurrentPose2d();
+
+        // Gets distance between our current location and the good scoring locations
+        double distanceSubwooferTopScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded(BlueSubwooferTopScoringLocation)
+                .getTranslation().getDistance(currentPose.getTranslation());
+        double distanceSubwooferMiddleScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded
+                (BlueSubwooferMiddleScoringLocation).getTranslation().getDistance(currentPose.getTranslation());
+        double distanceSubwooferBottomScoringPosition = PoseSubsystem.convertBlueToRedIfNeeded
+                (BlueSubwooferBottomScoringLocation).getTranslation().getDistance(currentPose.getTranslation());
+
+        double distanceSpikeTop = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeTop).getTranslation()
+                .getDistance(currentPose.getTranslation());
+        double distanceSpikeMiddle = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeMiddle).getTranslation()
+                .getDistance(currentPose.getTranslation());
+        double distanceSpikeBottom = PoseSubsystem.convertBlueToRedIfNeeded(BlueSpikeBottom).getTranslation()
+                .getDistance(currentPose.getTranslation());
+
+        Pose2d closestGoodScoringPosition = BlueSubwooferTopScoringLocation;
+        double leastDistance = distanceSubwooferTopScoringPosition;
+
+        if (distanceSubwooferMiddleScoringPosition < leastDistance) {
+            leastDistance = distanceSubwooferMiddleScoringPosition;
+            closestGoodScoringPosition = BlueSubwooferMiddleScoringLocation;
+        }
+
+        if (distanceSubwooferBottomScoringPosition < leastDistance) {
+            leastDistance = distanceSubwooferBottomScoringPosition;
+            closestGoodScoringPosition = BlueSubwooferBottomScoringLocation;
+        }
+
+        if (distanceSpikeTop < leastDistance) {
+            leastDistance = distanceSpikeTop;
+            closestGoodScoringPosition = new Pose2d(
+                    BlueSpikeTop.getTranslation(),
+                    Rotation2d.fromDegrees(-153.64394)
+                    );
+        }
+
+        if (distanceSpikeMiddle < leastDistance) {
+            leastDistance = distanceSpikeMiddle;
+            closestGoodScoringPosition = new Pose2d(
+                    BlueSpikeMiddle.getTranslation(),
+                    Rotation2d.fromDegrees(180)
+                    );
+        }
+
+        if (distanceSpikeBottom < leastDistance) {
+            closestGoodScoringPosition = new Pose2d(
+                    BlueSpikeBottom.getTranslation(),
+                    Rotation2d.fromDegrees(153.64394)
+                    );
+        }
+
+        return closestGoodScoringPosition;
     }
 
     @Override
@@ -392,7 +464,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public double getAngularErrorToSpeakerInDegrees() {
-        return getAngularErrorToTranslation2dInDegrees(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_POSITION), new Rotation2d());
+        return getAngularErrorToTranslation2dInDegrees(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_TARGET_FORWARD), new Rotation2d());
     }
 
     public double getAngularErrorToTranslation2dInDegrees(Translation2d targetPosition, Rotation2d offset) {
@@ -401,12 +473,26 @@ public class PoseSubsystem extends BasePoseSubsystem {
         return getCurrentHeading().minus(angleFromChassisToTarget).getDegrees();
     }
 
+    public Translation2d transformRobotCoordinateToFieldCoordinate(Translation2d robotCoordinates) {
+            return getCurrentPose2d().plus(new Transform2d(robotCoordinates, new Rotation2d())).getTranslation();
+    }
+
+    public double getRobotCurrentSpeed() {
+        XYPair robotVelocity = this.getCurrentVelocity();
+        return Math.abs(Math.sqrt(
+                Math.pow(robotVelocity.x, 2) + Math.pow(robotVelocity.y, 2)
+        ));
+    }
+
     @Override
     public void periodic() {
         super.periodic();
+
+        aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
         aKitLog.record("DistanceToSpeaker", getDistanceFromSpeaker());
+        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
     }
 }
 
