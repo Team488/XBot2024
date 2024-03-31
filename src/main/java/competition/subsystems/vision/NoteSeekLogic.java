@@ -35,11 +35,13 @@ public class NoteSeekLogic {
     double timeWhenVisionModeEntered = Double.MAX_VALUE;
     double timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
     double timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
+    double timeWhenBackUpModeEntered = Double.MAX_VALUE;
 
     final DoubleProperty terminalVisionModeDuration;
     final DoubleProperty rotationSearchDuration;
     final DoubleProperty rotationSearchPower;
     final DoubleProperty terminalVisionModePowerFactor;
+    final DoubleProperty backUpDuration;
 
     boolean hasDoneVisionCheckYet = false;
     protected final AKitLogger aKitLog;
@@ -66,6 +68,7 @@ public class NoteSeekLogic {
         rotationSearchDuration = pf.createPersistentProperty("RotationSearchDuration", 3.0);
         rotationSearchPower = pf.createPersistentProperty("RotationSearchPower", 0.5);
         terminalVisionModePowerFactor = pf.createPersistentProperty("TerminalVisionModePowerFactor", 0.5);
+        backUpDuration = pf.createPersistentProperty("BackUpDuration", 1.0);
 
         headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
 
@@ -93,12 +96,27 @@ public class NoteSeekLogic {
         timeWhenVisionModeEntered = Double.MAX_VALUE;
         timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
         timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
+        timeWhenBackUpModeEntered = Double.MAX_VALUE;
     }
 
     private void checkForModeChanges(boolean atTargetPose) {
         switch (noteAcquisitionMode) {
             case BlindApproach:
                 if (!hasDoneVisionCheckYet) {
+
+                    if (drive.getTargetNote() == null) {
+                        log.info("No target note set.");
+                        if (allowRotationSearch) {
+                            log.info("Attempting to find one via rotation.");
+                            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
+                            timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
+                        } else {
+                            log.info("Giving up.");
+                            noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
+                        }
+                        break;
+                    }
+
                     double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
                             drive.getTargetNote().getTranslation());
                     aKitLog.record("RangeToStaticNote", rangeToStaticNote);
@@ -126,6 +144,7 @@ public class NoteSeekLogic {
             case VisionTerminalApproach:
                 if (shouldExitTerminalVisionApproach()) {
                     log.info("Switching to back away to try again");
+                    timeWhenBackUpModeEntered = XTimer.getFPGATimestamp();
                     noteAcquisitionMode = NoteAcquisitionMode.BackAwayToTryAgain;
                     suggestedLocation = new Pose2d(
                             pose.transformRobotCoordinateToFieldCoordinate(new Translation2d(1,0)),
@@ -133,8 +152,8 @@ public class NoteSeekLogic {
                 }
                 break;
             case BackAwayToTryAgain:
-                if (atTargetPose) {
-                    // check to see if we see a note. If not, give up.
+                if (shouldExitBackUp(atTargetPose)) {
+                    // check to see if we see a note. If not, give up or search.
                     if (vision.getCenterCamLargestNoteTarget().isPresent()) {
                         log.info("Found a note. Switching to vision mode.");
                         resetVisionModeTimers();
@@ -172,7 +191,7 @@ public class NoteSeekLogic {
                 noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
                 break;
         }
-
+        aKitLog.record("NoteAcquisitionMode", noteAcquisitionMode);
     }
 
     public NoteSeekAdvice getAdvice(boolean atTargetPose) {
@@ -230,6 +249,10 @@ public class NoteSeekLogic {
             return true;
         }
         return false;
+    }
+
+    private boolean shouldExitBackUp(boolean atTargetPosition) {
+        return atTargetPosition || XTimer.getFPGATimestamp() > timeWhenBackUpModeEntered + backUpDuration.get();
     }
 
 

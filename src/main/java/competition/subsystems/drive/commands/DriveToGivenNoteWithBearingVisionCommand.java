@@ -25,7 +25,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
     final DriveSubsystem drive;
     final VisionSubsystem vision;
     final CollectorSubsystem collector;
-    final protected NoteSeekLogic noteSeekLogic;
+    protected final NoteSeekLogic noteSeekLogic;
 
     NoteSeekAdvice lastAdvice;
     NoteSeekAdvice currentAdvice;
@@ -57,6 +57,15 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
     public void execute() {
 
         currentAdvice = noteSeekLogic.getAdvice(super.isFinished());
+
+        aKitLog.record("NoteAcquisitionMode", currentAdvice.noteAcquisitionMode);
+        if (currentAdvice.suggestedPose.isPresent()) {
+            aKitLog.record("SuggestedPose", currentAdvice.suggestedPose.get());
+        }
+        if (currentAdvice.suggestedDrivePercentages.isPresent()) {
+            aKitLog.record("SuggestedDrivePercentages", currentAdvice.suggestedDrivePercentages.get());
+        }
+
         boolean stateChanged = currentAdvice.noteAcquisitionMode != lastAdvice.noteAcquisitionMode;
 
         if (stateChanged) {
@@ -76,10 +85,14 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
             // If we are using
             case VisionApproach:
             case VisionTerminalApproach:
+            case SearchViaRotation:
                 if (currentAdvice.suggestedDrivePercentages.isPresent()) {
                     var driveValues = currentAdvice.suggestedDrivePercentages.get();
                     drive.move(new XYPair(driveValues.dx, driveValues.dy), driveValues.dtheta);
                 }
+                break;
+            default:
+                break;
         }
 
         lastAdvice = currentAdvice;

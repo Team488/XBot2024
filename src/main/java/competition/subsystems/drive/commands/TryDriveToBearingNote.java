@@ -26,7 +26,8 @@ public class TryDriveToBearingNote extends DriveToGivenNoteWithBearingVisionComm
     @Override
     public void initialize() {
         log.info("Initializing");
-        noteSeekLogic.setInitialMode(NoteAcquisitionMode.VisionApproach);
+        noteSeekLogic.setInitialMode(NoteAcquisitionMode.SearchViaRotation);
+        noteSeekLogic.setAllowRotationSearch(true);
         super.initialize();
     }
 }
