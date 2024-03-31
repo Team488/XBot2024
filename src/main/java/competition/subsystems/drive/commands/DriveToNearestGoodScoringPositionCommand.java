@@ -44,6 +44,8 @@ public class DriveToNearestGoodScoringPositionCommand extends SwerveSimpleTrajec
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
 
+        log.info("Nearest location: " + nearestScoringLocation.getTranslation());
+
         super.initialize();
     }
 
