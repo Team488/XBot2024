@@ -29,7 +29,6 @@ public class LightSubsystem extends BaseSubsystem {
     final CollectorSubsystem collector;
     final VisionSubsystem vision;
     final DynamicOracle oracle;
-    final VisionSubsystem vision;
     final XDigitalOutput[] outputs;
 
     boolean ampSignalOn = false;
