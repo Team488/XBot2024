@@ -84,7 +84,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         beamBreakIntakePower = pf.createPersistentProperty("beamBreakIntakePower", 0.35);
 
         firePower = pf.createPersistentProperty("firePower", 1.0);
-        pf.setDefaultLevel(Property.PropertyLevel.Debug);
+        pf.setDefaultLevel(Property.PropertyLevel.Important);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
         carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
@@ -141,6 +141,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
+                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
                 suggestedPower = intakePower.get();
