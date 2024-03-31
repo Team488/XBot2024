@@ -5,9 +5,12 @@ import competition.electrical_contract.ElectricalContract;
 import competition.subsystems.flipper.FlipperSubsystem;
 import competition.subsystems.oracle.NoteCollectionInfoSource;
 import competition.subsystems.oracle.NoteFiringInfoSource;
+import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import xbot.common.advantage.DataFrameRefreshable;
+import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
 import xbot.common.controls.sensors.XDigitalInput;
 import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.TimeStableValidator;
@@ -19,7 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefreshable, NoteCollectionInfoSource, NoteFiringInfoSource {
+public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable, NoteCollectionInfoSource, NoteFiringInfoSource {
 
     public enum IntakeState {
         INTAKING,
@@ -61,6 +64,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
 
     FlipperSubsystem flipper;
 
+    double currentTargetSpeed = 0;
+
 
     @Inject
     public CollectorSubsystem(PropertyFactory pf, XCANSparkMax.XCANSparkMaxFactory sparkMaxFactory,
@@ -68,7 +73,15 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                               FlipperSubsystem flipper) {
         this.contract = electricalContract;
         if (contract.isCollectorReady()) {
-            this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+            this.collectorMotor = sparkMaxFactory.create(contract.getCollectorMotor(), getPrefix(), "CollectorMotor",
+                    "CollectorMotor", new XCANSparkMaxPIDProperties(
+                            0.00015,
+                            0.0000005,
+                            0.0,
+                            300.0,
+                            0.00019,
+                            1,
+                            -1));
             collectorMotor.setSmartCurrentLimit(40);
             collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
         } else {
@@ -113,7 +126,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return;
         }
 
-        double suggestedPower = 0;
+        double suggestedSpeed = 0;
 
         // When just starting collection cold, we need to check if any sensors are pressed
         // before figuring out what to do.
@@ -143,7 +156,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                 upperTripwireHit = getGamePieceReady();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
-                suggestedPower = intakePower.get();
+                suggestedSpeed = intakePower.get();
             }
         }
 
@@ -153,7 +166,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                 upperTripwireHit = getGamePieceReady();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
-                suggestedPower = beamBreakIntakePower.get();
+                suggestedSpeed = beamBreakIntakePower.get();
             }
         }
 
@@ -171,12 +184,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                 collectionSubstate = CollectionSubstate.Complete;
             } else {
                 if (lowerTripwireHit) {
-                    suggestedPower = carefulAdvancePower.get();
+                    suggestedSpeed = carefulAdvancePower.get();
                 }
                 if (upperTripwireHit) {
                     // If the note hit the upper sensor, and we can't see it now,
                     // try driving backwards until we do
-                    suggestedPower = -carefulAdvancePower.get();
+                    suggestedSpeed = -carefulAdvancePower.get();
                 }
 
                 if (XTimer.getFPGATimestamp() - carefulAdvanceBeginTime > carefulAdvanceTimeout.get()) {
@@ -190,9 +203,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         aKitLog.record("CollectionSubstate", collectionSubstate);
         aKitLog.record("LowerTripwireHit", lowerTripwireHit);
         aKitLog.record("UpperTripwireHit", upperTripwireHit);
-        aKitLog.record("SuggestedPower", suggestedPower);
 
-        setPower(suggestedPower);
+        setTargetValue(suggestedSpeed);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
@@ -200,19 +212,14 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return;
         }
 
-        setPower(-intakePower.get());
+        setTargetValue(-intakePower.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
         if (shouldCommitToFiring()){
             return;
         }
-        setPower(0);
-        intakeState = IntakeState.STOPPED;
-    }
-
-    public void emergencyStopBypassingJammingPrevention() {
-        setPower(0);
+        setTargetValue(0.0);
         intakeState = IntakeState.STOPPED;
     }
 
@@ -230,17 +237,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return 0;
         }
         return XTimer.getFPGATimestamp() - lastFiredTime;
-    }
-
-    public void setPower(double power) {
-        if (contract.isCollectorReady()) {
-            if (flipper.getActive()) {
-                collectorMotor.set(0);
-            }
-            else {
-                collectorMotor.set(power);
-            }
-        }
     }
 
     public boolean getGamePieceInControl() {
@@ -306,6 +302,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             aKitLog.record("ConfidentlyHasControlOfNote", confidentlyHasControlOfNote());
             aKitLog.record("ConfidentlyHasFiredNote", confidentlyHasFiredNote());
             aKitLog.record("IntakeState", intakeState);
+            aKitLog.record("TargetSpeed", currentTargetSpeed);
         }
 
     }
@@ -318,5 +315,50 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             beamBreakSensor.refreshDataFrame();
             readyToFireNoteSensor.refreshDataFrame();
         }
+    }
+
+    @Override
+    public Double getCurrentValue() {
+        if(contract.isCollectorReady()) {
+            return collectorMotor.getVelocity();
+        } else {
+            return 0.0;
+        }
+    }
+
+    @Override
+    public Double getTargetValue() {
+        return currentTargetSpeed;
+    }
+
+    @Override
+    public void setTargetValue(Double value) {
+        if (flipper.getActive()) {
+            setTargetValue(0.0);
+        }
+        else {
+            currentTargetSpeed = value;
+        }
+    }
+
+    @Override
+    public void setPower(Double targetSpeed) {
+        // not used for speed controller based systems
+    }
+
+    public void setPidSetpoints(Double speed) {
+        if (contract.isCollectorReady()) {
+            collectorMotor.setReference(speed, CANSparkBase.ControlType.kVelocity);
+        }
+    }
+
+    @Override
+    public boolean isCalibrated() {
+        return true;
+    }
+
+    @Override
+    protected boolean areTwoTargetsEquivalent(Double target1, Double target2) {
+        return Math.abs(target1 - target2) < 0.1;
     }
 }
