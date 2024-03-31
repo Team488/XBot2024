@@ -35,13 +35,17 @@ public class DriveToNearestGoodScoringPositionCommand extends SwerveSimpleTrajec
         var nearestScoringLocation = oracle.getNearestScoringLocation();
 
         if (nearestScoringLocation == null) {
+            log.info("Could not get a scoring location.");
             cancel();
+            return;
         }
 
         var scoringLocationPose = nearestScoringLocation.getLocation();
 
         if (scoringLocationPose == null) {
+            log.info("Scoring location had no pose.");
             cancel();
+            return;
         }
 
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
