@@ -19,13 +19,13 @@ import java.util.function.Supplier;
 
 public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCommand {
 
-    DynamicOracle oracle;
-    PoseSubsystem pose;
-    DriveSubsystem drive;
-    VisionSubsystem vision;
-    CollectorSubsystem collector;
-    boolean hasDoneVisionCheckYet = false;
+    final DynamicOracle oracle;
+    final PoseSubsystem pose;
+    final DriveSubsystem drive;
+    final VisionSubsystem vision;
+    final CollectorSubsystem collector;
 
+    
     public enum NoteAcquisitionMode {
         BlindApproach,
         VisionApproach,
@@ -33,7 +33,8 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
         BackAwayToTryAgain,
         GiveUp
     }
-
+    
+    boolean hasDoneVisionCheckYet = false;
     protected NoteAcquisitionMode noteAcquisitionMode = NoteAcquisitionMode.BlindApproach;
     double frozenHeading = 0;
 
@@ -149,7 +150,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
             var target = vision.getCenterCamLargestNoteTarget();
             if (target.isPresent()) {
                 double rotationPower =
-                        2*this.drive.getRotateToHeadingPid().calculate(0, target.get().getYaw());
+                        this.drive.getAggressiveGoalHeadingPid().calculate(0, target.get().getYaw());
 
                 drive.move(new XYPair(approachPower, 0), rotationPower);
             }
@@ -163,10 +164,12 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
     }
 
     private boolean shouldEnterTerminalVisionApproach() {
-        if (XTimer.getFPGATimestamp() > timeWhenVisionModeEntered + visionModeDuration) {
-            return true;
-        }
-        return false;
+        var target = vision.getCenterCamLargestNoteTarget();
+        return target
+            // if note is too close to robot, assume on terminal approach
+            .map((note) -> note.getPitch() < vision.terminalNotePitch)
+            // if we don't see a note for some reason, assume on terminal approach
+            .orElseGet(() -> true);
     }
 
     private boolean shouldExitTerminalVisionApproach() {
