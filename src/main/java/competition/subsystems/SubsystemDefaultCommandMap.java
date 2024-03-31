@@ -7,7 +7,6 @@ import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.SetArmTargetToCurrentPositionCommand;
 import competition.subsystems.collector.CollectorSubsystem;
-import competition.subsystems.collector.commands.CollectorMaintainerCommand;
 import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.schoocher.commands.StopScoocherCommand;
