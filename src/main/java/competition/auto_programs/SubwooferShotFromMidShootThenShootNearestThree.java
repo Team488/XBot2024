@@ -22,7 +22,7 @@ import java.util.List;
 public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
-    double interstageTimeout = 3.5;
+    double interstageTimeout = 10;
 
     @Inject
     public SubwooferShotFromMidShootThenShootNearestThree(AutonomousCommandSelector autoSelector,
