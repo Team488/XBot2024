@@ -3,18 +3,19 @@ package competition.subsystems.collector.commands;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
 
-public class IntakeUntilNoteCollectedCommand extends BaseCommand {
+public class IntakeUntilNoteCollectedCommand extends BaseSetpointCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
     double intensity = 0.1;
     @Inject
     public IntakeUntilNoteCollectedCommand(CollectorSubsystem collector, OperatorInterface oi) {
+        super(collector);
         this.collector = collector;
         this.oi = oi;
-        addRequirements(collector);
     }
     @Override
     public void initialize() {

@@ -130,7 +130,8 @@ public class OperatorCommandMap {
             PrepareForHangingCommand prepareForHangingCommand,
             AmpSignalToggleCommand ampSignalCommand,
             ToggleFlipperCommand toggleFlipperCommand,
-            PrepareToLobShotCommand prepareToLobShotCommand
+            PrepareToLobShotCommand prepareToLobShotCommand,
+            Provider<WarmUpShooterCommand> shooterWarmUpSupplier
     ) {
         //Useful arm positions
         var armToCollection = setArmExtensionCommandProvider.get();
@@ -155,6 +156,9 @@ public class OperatorCommandMap {
         var warmUpShooterToFireInAmp = warmUpShooterCommandProvider.get();
         warmUpShooterToFireInAmp.setTargetRpm(ShooterWheelSubsystem.TargetRPM.INTO_AMP);
 
+        var shooterWarmUpTypical = shooterWarmUpSupplier.get();
+        shooterWarmUpTypical.setTargetRpm(ShooterWheelSubsystem.TargetRPM.TYPICAL);
+
         // Combine into useful actions
         // Note manipulation:
         var collectNoteFromGround = intakeCollectorProvider.get().alongWith(armToCollection);
@@ -164,7 +168,7 @@ public class OperatorCommandMap {
         var prepareToFireAtSubwoofer = warmUpShooterSubwoofer.alongWith(armToSubwoofer);
         var prepareToFireAtAmp = warmUpShooterToFireInAmp.alongWith(armToAmp);
         var continuouslyPrepareToFireAtSpeaker =
-                continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
+                shooterWarmUpTypical.alongWith(continuouslyPointArmAtSpeaker);
 
         // Bind to buttons
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNoteFromGround);
