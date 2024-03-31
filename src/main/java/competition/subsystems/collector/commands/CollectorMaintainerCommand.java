@@ -14,9 +14,8 @@ public class CollectorMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     @Inject
     public CollectorMaintainerCommand(CollectorSubsystem collector, PropertyFactory pf,
-            HumanVsMachineDeciderFactory humanVsMachineDeciderFactory, double defaultErrorTolerance,
-            double defaultTimeStableWindow) {
-        super(collector, pf, humanVsMachineDeciderFactory, defaultErrorTolerance, defaultTimeStableWindow);
+            HumanVsMachineDeciderFactory humanVsMachineDeciderFactory) {
+        super(collector, pf, humanVsMachineDeciderFactory, 100, 0.1);
         this.collector = collector;
     }
 
