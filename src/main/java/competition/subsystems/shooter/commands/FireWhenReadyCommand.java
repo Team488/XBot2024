@@ -11,7 +11,7 @@ import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 
-public class FireWhenReadyCommand extends BaseSetpointCommand {
+public class FireWhenReadyCommand extends BaseCommand {
     final ShooterWheelSubsystem wheel;
     final ArmSubsystem arm;
     final CollectorSubsystem collector;
@@ -19,7 +19,7 @@ public class FireWhenReadyCommand extends BaseSetpointCommand {
     @Inject
     public FireWhenReadyCommand(ShooterWheelSubsystem wheel, ArmSubsystem arm, CollectorSubsystem collector,
                                 PropertyFactory pf) {
-        super(collector);
+        addRequirements(collector);
         this.wheel = wheel;
         this.arm = arm;
         this.collector = collector;

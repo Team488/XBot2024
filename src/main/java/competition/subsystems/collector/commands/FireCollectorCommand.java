@@ -5,11 +5,11 @@ import xbot.common.command.BaseCommand;
 import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
-public class FireCollectorCommand extends BaseSetpointCommand {
+public class FireCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
     @Inject
     public FireCollectorCommand(CollectorSubsystem collector){
-        super(collector);
+        addRequirements(collector);
         this.collector = collector;
     }
     @Override

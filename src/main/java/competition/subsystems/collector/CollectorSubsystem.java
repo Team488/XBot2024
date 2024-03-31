@@ -50,7 +50,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
     public final XDigitalInput readyToFireNoteSensor;
     public final XDigitalInput beamBreakSensor;
     private final ElectricalContract contract;
-    private final DoubleProperty fireSpeed;
+    private final DoubleProperty firePower;
     private final TimeStableValidator noteInControlValidator;
     double lastFiredTime = -Double.MAX_VALUE;
     final DoubleProperty waitTimeAfterFiring;
@@ -84,6 +84,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
                             -1));
             collectorMotor.setSmartCurrentLimit(40);
             collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            collectorMotor.enableVoltageCompensation(12.0);
         } else {
             this.collectorMotor = null;
         }
@@ -96,7 +97,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
         intakeSpeed = pf.createPersistentProperty("intakeSpeed", 500);
         beamBreakIntakeSpeed = pf.createPersistentProperty("beamBreakIntakeSpeed", 300);
 
-        fireSpeed = pf.createPersistentProperty("fireSpeed", 500);
+        firePower = pf.createPersistentProperty("firePower", 1.0);
         pf.setDefaultLevel(Property.PropertyLevel.Important);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
         carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 100);
@@ -154,7 +155,6 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
-                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
                 suggestedSpeed = intakeSpeed.get();
@@ -165,6 +165,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
+                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
                 suggestedSpeed = beamBreakIntakeSpeed.get();
@@ -221,11 +222,19 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             return;
         }
         setTargetValue(0.0);
+        setPower(0.0);
+        resetPID();
         intakeState = IntakeState.STOPPED;
     }
 
+    public void resetPID() {
+        if (contract.isCollectorReady()) {
+            collectorMotor.setIAccum(0);
+        }
+    }
+
     public void fire(){
-        setTargetValue(fireSpeed.get());
+        setPower(firePower.get());
         if (intakeState != IntakeState.FIRING) {
             lastFiredTime = XTimer.getFPGATimestamp();
         }
@@ -345,8 +354,11 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
     }
 
     @Override
-    public void setPower(Double targetSpeed) {
+    public void setPower(Double power) {
         // not used for speed controller based systems
+        if(contract.isCollectorReady()) {
+            collectorMotor.set(power);
+        }
     }
 
     public void setPidSetpoints(Double speed) {

@@ -31,6 +31,11 @@ public class CollectorMaintainerCommand extends BaseMaintainerCommand<Double> {
 
     @Override
     protected void calibratedMachineControlAction() {
+        if(Math.abs(collector.getTargetValue()) < 0.01) {
+            collector.stop();
+        } else {
+            collector.setPidSetpoints(collector.getTargetValue());
+        }
         collector.setPidSetpoints(collector.getTargetValue());
     }
 
