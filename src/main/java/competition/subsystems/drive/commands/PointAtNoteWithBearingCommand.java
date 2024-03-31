@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.command.BaseCommand;
+import xbot.common.logic.Latch;
 import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineDeciderFactory;
 import xbot.common.math.MathUtils;
 import xbot.common.math.XYPair;
@@ -41,6 +42,7 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
     final DynamicOracle oracle;
 
     boolean everHadCenterNote = false;
+    Latch everHadCenterNoteLatch;
 
     @Inject
     public PointAtNoteWithBearingCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
@@ -64,6 +66,9 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
         log.info("Initializing");
         super.initialize();
         everHadCenterNote = false;
+        everHadCenterNoteLatch = new Latch(false, Latch.EdgeType.RisingEdge, (edge) -> {
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(0.8, 0.25);
+        });
         savedNotePosition = Optional.empty();
         // Find the note we want to point at
         var largestTarget = vision.getCenterCamLargestNoteTarget();
@@ -73,7 +78,6 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
             log.info("Rotating to note, current rotation error: {}",
                     this.savedNotePosition.get().getYaw());
         } else {
-            oi.driverGamepad.getRumbleManager().rumbleGamepad(0.8, 0.25);
             log.warn("No note found to rotate to");
         }
     }
@@ -83,6 +87,7 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
         // If we can still see the note, update the target
         this.savedNotePosition = vision.getCenterCamLargestNoteTarget();
         this.savedNotePosition.ifPresent((note) -> this.everHadCenterNote = true);
+        this.everHadCenterNoteLatch.setValue(this.everHadCenterNote);
 
         // Create a vector points towards the note in field-oriented heading
         var toNoteTranslation = new Translation2d(
