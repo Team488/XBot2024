@@ -58,15 +58,15 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         aggressiveGoalHeadingPidManager = aggressiveGoalHeadingPidFactory.create(
                 this.getPrefix() + "AggressiveGoalHeadingPID",
                 new PIDDefaults(
-                2.16, // P
-                0, // I
-                4.0, // D
-                0.0, // F
-                0.6, // Max output
-                -0.6, // Min output
-                0.05, // Error threshold
-                0.005, // Derivative threshold
-                0.2) // Time threshold)
+                        0.01, // P
+                        0.000001, // I
+                        0.02, // D
+                        0.0, // F
+                        0.75, // Max output
+                        -0.75, // Min output
+                        2.0, // Error threshold
+                        0.2, // Derivative threshold
+                        0.2) // Time threshold
         );
         aggressiveGoalHeadingPidManager.setEnableErrorThreshold(true);
         aggressiveGoalHeadingPidManager.setEnableTimeThreshold(true);
