@@ -410,10 +410,6 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return centerlineDetections;
     }
 
-    public boolean checkIfCenterCamSeesNote() {
-        return centerlineDetections.length > 0;
-    }
-
     private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
         Arrays.stream(noteTrackers).forEach(NoteTracker::refreshDataFrame);
         var detections = getDetections(noteTrackers);

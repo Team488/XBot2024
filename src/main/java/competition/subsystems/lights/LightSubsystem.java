@@ -29,7 +29,6 @@ public class LightSubsystem extends BaseSubsystem {
     final CollectorSubsystem collector;
     final VisionSubsystem vision;
     final DynamicOracle oracle;
-    final VisionSubsystem vision;
     final XDigitalOutput[] outputs;
 
     boolean ampSignalOn = false;
@@ -122,7 +121,7 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (shooter.isReadyToFire()) {
                 currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
-            } else if (vision.checkIfCenterCamSeesNote()) {
+            } else if (oracle.getNoteMap().hasVisionNotes()) {
                 currentState = LightsStateMessage.VisionSeesNote;
 
             } else {
