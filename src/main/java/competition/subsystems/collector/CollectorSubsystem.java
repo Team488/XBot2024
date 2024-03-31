@@ -97,7 +97,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
         beamBreakIntakeSpeed = pf.createPersistentProperty("beamBreakIntakeSpeed", 300);
 
         fireSpeed = pf.createPersistentProperty("fireSpeed", 500);
-        pf.setDefaultLevel(Property.PropertyLevel.Debug);
+        pf.setDefaultLevel(Property.PropertyLevel.Important);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
         carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 100);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
@@ -154,6 +154,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
+                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
                 suggestedSpeed = intakeSpeed.get();
