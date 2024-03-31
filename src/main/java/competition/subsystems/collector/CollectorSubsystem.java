@@ -303,6 +303,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             aKitLog.record("ConfidentlyHasFiredNote", confidentlyHasFiredNote());
             aKitLog.record("IntakeState", intakeState);
             aKitLog.record("TargetSpeed", currentTargetSpeed);
+            aKitLog.record("CollectorMotorVelocity", collectorMotor.getVelocity());
         }
 
     }
