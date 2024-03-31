@@ -42,22 +42,22 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
     }
 
     public final XCANSparkMax collectorMotor;
-    public final DoubleProperty intakePower;
-    public final DoubleProperty beamBreakIntakePower;
+    public final DoubleProperty intakeSpeed;
+    public final DoubleProperty beamBreakIntakeSpeed;
     private IntakeState intakeState;
     private CollectionSubstate collectionSubstate;
     public final XDigitalInput inControlNoteSensor;
     public final XDigitalInput readyToFireNoteSensor;
     public final XDigitalInput beamBreakSensor;
     private final ElectricalContract contract;
-    private final DoubleProperty firePower;
+    private final DoubleProperty fireSpeed;
     private final TimeStableValidator noteInControlValidator;
     double lastFiredTime = -Double.MAX_VALUE;
     final DoubleProperty waitTimeAfterFiring;
     boolean lowerTripwireHit = false;
     boolean upperTripwireHit = false;
     double timeOfLastNoteSensorTriggered = 0;
-    final DoubleProperty carefulAdvancePower;
+    final DoubleProperty carefulAdvanceSpeed;
     final DoubleProperty carefulAdvanceTimeout;
     final DoubleProperty lightToleranceTimeInterval;
     double carefulAdvanceBeginTime = -Double.MAX_VALUE;
@@ -93,13 +93,13 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
         this.beamBreakSensor = xDigitalInputFactory.create(contract.getBeamBreakSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
-        intakePower = pf.createPersistentProperty("intakePower",0.8);
-        beamBreakIntakePower = pf.createPersistentProperty("beamBreakIntakePower", 0.35);
+        intakeSpeed = pf.createPersistentProperty("intakeSpeed", 500);
+        beamBreakIntakeSpeed = pf.createPersistentProperty("beamBreakIntakeSpeed", 300);
 
-        firePower = pf.createPersistentProperty("firePower", 1.0);
+        fireSpeed = pf.createPersistentProperty("fireSpeed", 500);
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
         waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
-        carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
+        carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 100);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
         lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1);
 
@@ -156,7 +156,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
                 upperTripwireHit = getGamePieceReady();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
-                suggestedSpeed = intakePower.get();
+                suggestedSpeed = intakeSpeed.get();
             }
         }
 
@@ -166,7 +166,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
                 upperTripwireHit = getGamePieceReady();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
-                suggestedSpeed = beamBreakIntakePower.get();
+                suggestedSpeed = beamBreakIntakeSpeed.get();
             }
         }
 
@@ -184,12 +184,12 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
                 collectionSubstate = CollectionSubstate.Complete;
             } else {
                 if (lowerTripwireHit) {
-                    suggestedSpeed = carefulAdvancePower.get();
+                    suggestedSpeed = carefulAdvanceSpeed.get();
                 }
                 if (upperTripwireHit) {
                     // If the note hit the upper sensor, and we can't see it now,
                     // try driving backwards until we do
-                    suggestedSpeed = -carefulAdvancePower.get();
+                    suggestedSpeed = -carefulAdvanceSpeed.get();
                 }
 
                 if (XTimer.getFPGATimestamp() - carefulAdvanceBeginTime > carefulAdvanceTimeout.get()) {
@@ -212,7 +212,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             return;
         }
 
-        setTargetValue(-intakePower.get());
+        setTargetValue(-intakeSpeed.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
@@ -224,7 +224,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
     }
 
     public void fire(){
-        setPower(firePower.get());
+        setTargetValue(fireSpeed.get());
         if (intakeState != IntakeState.FIRING) {
             lastFiredTime = XTimer.getFPGATimestamp();
         }
