@@ -49,8 +49,9 @@ public class SubsystemDefaultCommandMap {
     }
 
     @Inject
-    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, CollectorMaintainerCommand command) {
+    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, CollectorMaintainerCommand command, StopCollectorCommand stopCollectorCommand) {
         collectorSubsystem.setDefaultCommand(command);
+        collectorSubsystem.getSetpointLock().setDefaultCommand(stopCollectorCommand);
     }
 
     @Inject
