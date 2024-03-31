@@ -3,13 +3,14 @@ package competition.subsystems.collector.commands;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.command.BaseSetpointCommand;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 
 
-public class IntakeCollectorCommand extends BaseCommand {
+public class IntakeCollectorCommand extends BaseSetpointCommand {
     CollectorSubsystem collector;
     final OperatorInterface oi;
     private final DoubleProperty higherIntensity;
@@ -17,9 +18,9 @@ public class IntakeCollectorCommand extends BaseCommand {
     private boolean isToggledOnce = false;
     @Inject
     public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi, PropertyFactory pf) {
+        super(collector);
         this.collector = collector;
         this.oi = oi;
-        addRequirements(collector);
         pf.setPrefix(this);
         higherIntensity = pf.createPersistentProperty("higher intensity",1);
         lowerIntensity = pf.createPersistentProperty("lower intensity", 0.2);

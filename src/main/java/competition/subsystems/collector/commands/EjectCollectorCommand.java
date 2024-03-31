@@ -2,17 +2,18 @@ package competition.subsystems.collector.commands;
 
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
+import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
 
 
-public class EjectCollectorCommand extends BaseCommand {
+public class EjectCollectorCommand extends BaseSetpointCommand {
     CollectorSubsystem collector;
 
     @Inject
     public EjectCollectorCommand(CollectorSubsystem collector) {
+        super(collector);
         this.collector = collector;
-        addRequirements(collector);
     }
 
     @Override
