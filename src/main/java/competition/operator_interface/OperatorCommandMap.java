@@ -31,6 +31,7 @@ import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCo
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.drive.commands.PointAtNoteWithBearingCommand;
+import competition.subsystems.drive.commands.TryDriveToBearingNote;
 import competition.subsystems.flipper.commands.SetFlipperServoToHangPositionCommand;
 import competition.subsystems.lights.commands.AmpSignalToggleCommand;
 import competition.subsystems.flipper.commands.ToggleFlipperCommand;
@@ -272,6 +273,11 @@ public class OperatorCommandMap {
         var setBotThenTwoCenter = setAutonomousCommandProvider.get();
         setBotThenTwoCenter.setAutoCommand(botThenTwoCenter);
         oi.neoTrellis.getifAvailable(30).onTrue(setBotThenTwoCenter);
+    }
+
+    @Inject
+    public void setupTestingCommands(TryDriveToBearingNote tryDriveToBearingNote) {
+        tryDriveToBearingNote.includeOnSmartDashboard();
     }
 
     private Command createArmFineAdjustmentCommand(Provider<SetArmExtensionCommand> commandProvider, double targetExtensionDeltaInMm) {
