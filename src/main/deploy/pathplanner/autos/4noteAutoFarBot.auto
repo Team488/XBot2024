@@ -5,7 +5,7 @@
       "x": 0.7059762690953959,
       "y": 4.397837367103306
     },
-    "rotation": 120.25643716352924
+    "rotation": 122.27564431457758
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BotMid1"
+            "pathName": "FarNote1Bot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FarNote2Bot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "FarNote3Bot"
           }
         }
       ]

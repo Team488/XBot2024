@@ -8,6 +8,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import competition.subsystems.collector.commands.IntakeCollectorCommand;
+import competition.subsystems.collector.commands.IntakeCollectorCommand_Factory;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
@@ -29,20 +31,24 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     @Inject
     public RobotContainer(DriveSubsystem drive, PoseSubsystem pose,
-                          Provider<IntakeUntilNoteCollectedCommand> intakeUntilNoteCollectedCommandProvider,
-                          Provider<PrepareEverywhereCommandGroup> prepareEverywhereCommandGroupProvider) {
+                          Provider<IntakeCollectorCommand> intakeCollectorCommandProvider,
+                          ) {
 
         this.drive = drive;
         this.pose = pose;
 
 
         //INTAKING NOTES
-        var intakeFirstNote = intakeUntilNoteCollectedCommandProvider.get();
+        var intakeFirstNote = intakeCollectorCommandProvider.get();
         NamedCommands.registerCommand("IntakeFirstNote", intakeFirstNote);
-        var intakeSecondNote = intakeUntilNoteCollectedCommandProvider.get();
+        var intakeSecondNote = intakeCollectorCommandProvider.get();
         NamedCommands.registerCommand("IntakeSecondNote", intakeSecondNote);
-        var intakeThirdNote = intakeUntilNoteCollectedCommandProvider.get();
+        var intakeThirdNote = intakeCollectorCommandProvider.get();
         NamedCommands.registerCommand("IntakeThirdNote", intakeThirdNote);
+        var intakeFourthNote = intakeCollectorCommandProvider.get();
+        NamedCommands.registerCommand("IntakeFourthNote", intakeFourthNote);
+        var intakeFifthNote = intakeCollectorCommandProvider.get();
+        NamedCommands.registerCommand("IntakeFifthNote", intakeFifthNote);
 
         //FIRING EVERYWHERE
         var prepareArm1 = prepareEverywhereCommandGroupProvider.get();
