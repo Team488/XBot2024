@@ -3,10 +3,12 @@ package competition.subsystems.drive.commands;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
+import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.SimpleNote;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -34,16 +36,21 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     final OperatorInterface oi;
     final VisionSubsystem vision;
     final CollectorSubsystem collector;
+    final DynamicOracle oracle;
+
+    boolean everHadCenterNote = false;
 
     @Inject
     public PointAtNoteWithBearingCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
-                                         OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf, CollectorSubsystem collector) {
+                                         OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf, CollectorSubsystem collector,
+                                         DynamicOracle oracle) {
         this.drive = drive;
-        this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.pose = pose;
         this.oi = oi;
         this.vision = vision;
         this.collector = collector;
+        this.oracle = oracle;
 
         pf.setPrefix(this);
         this.addRequirements(drive);
@@ -52,10 +59,12 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
+        everHadCenterNote = false;
         savedNotePosition = Optional.empty();
         // Find the note we want to point at
         var largestTarget = vision.getCenterCamLargestNoteTarget();
         if (largestTarget.isPresent()) {
+            everHadCenterNote = true;
             this.savedNotePosition = largestTarget;
             log.info("Rotating to note, current rotation error: {}",
                     this.savedNotePosition.get().getYaw());
@@ -68,11 +77,13 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     public void execute() {
         // If we can still see the note, update the target
         this.savedNotePosition = vision.getCenterCamLargestNoteTarget();
+        this.savedNotePosition.ifPresent((note) -> this.everHadCenterNote = true);
 
         // Create a vector points towards the note in field-oriented heading
         var toNoteTranslation = new Translation2d(
                 1.0,
                 pose.getCurrentPose2d().getRotation()
+                        // flip 180 because the camera is mounted backwards
                         .plus(Rotation2d.fromRotations(0.5))
                         .plus(
                             Rotation2d.fromRadians(
@@ -87,9 +98,17 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
                 oi.getDriverGamepadTypicalDeadband(), (x) -> x);
         
         double rotationPower = 0;
-        // if we see a note, rotate towards it
-        if (savedNotePosition.isPresent()) {
+        // if we see a note clearly, rotate towards it
+        if (savedNotePosition.isPresent() && savedNotePosition.get().getPitch() >= vision.terminalNotePitch){
             rotationPower = this.drive.getRotateToHeadingPid().calculate(0, savedNotePosition.get().getYaw());
+        }
+        // if we never saw a center camera note, try rotating towards a note the side cameras see
+        // as soon as the center camera sees this note we'll switch to using the above logic
+        else if (!everHadCenterNote) {
+            rotationPower = getClosestAvailableNote().map((notePose) -> {
+                var error = getRotationError(notePose);
+                return this.drive.getRotateToHeadingPid().calculate(0, error);
+            }).orElseGet(() -> 0.0);
         }
 
         // negative movement because we want to drive the robot 'backwards', collector towards the note
@@ -122,5 +141,25 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
             return true;
         }
         return false;
+    }
+
+    private Optional<Pose2d> getClosestAvailableNote() {
+        var virtualPoint = getProjectedPoint();
+        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
+        if(notePosition != null) {
+            return Optional.of(notePosition.toPose2d());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Pose2d getProjectedPoint() {
+        return this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
+    }
+
+    private double getRotationError(Pose2d notePosition) {
+        return this.pose.getAngularErrorToTranslation2dInDegrees(
+                notePosition.getTranslation(),
+                Rotation2d.fromDegrees(180)); // point rear of robot
     }
 }

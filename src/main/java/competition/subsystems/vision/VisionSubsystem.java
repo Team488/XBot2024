@@ -69,6 +69,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty maxNoteSearchingDistanceForSpikeNotes;
     
     final DoubleProperty minNoteArea;
+    // under this pitch, the note is too close and we shouldn't try and rotate or do anything else with it
+    public final double terminalNotePitch = 0.0;
 
 
     @Inject
@@ -406,6 +408,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
     public SimpleNote[] getCenterlineDetections() {
         return centerlineDetections;
+    }
+
+    public boolean checkIfCenterCamSeesNote() {
+        return centerlineDetections.length > 0;
     }
 
     private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
