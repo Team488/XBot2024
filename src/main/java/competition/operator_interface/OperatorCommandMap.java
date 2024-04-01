@@ -76,8 +76,7 @@ public class OperatorCommandMap {
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
-            LimitArmToUnderStage limitArmToUnderStageCommand,
-            SubwooferShotFromBotThenTwoCenterline test)
+            LimitArmToUnderStage limitArmToUnderStageCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
