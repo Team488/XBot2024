@@ -11,8 +11,8 @@ public class StopCollectorCommand extends BaseCommand {
 
     @Inject
     public StopCollectorCommand(CollectorSubsystem collector) {
-        this.collector = collector;
         addRequirements(collector);
+        this.collector = collector;
     }
 
     @Override

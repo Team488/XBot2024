@@ -159,7 +159,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
                 "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
 
-        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 52.0);
+        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 0);
 
         upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
         lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
@@ -171,9 +171,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.45);
         maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 6.0);
 
+        powerRampDurationSec = pf.createPersistentProperty("PowerRampDurationSec", 0.125);
 
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
-        powerRampDurationSec = pf.createPersistentProperty("PowerRampDurationSec", 0.5);
         absoluteEncoderOffset = pf.createPersistentProperty(
                 "AbsoluteEncoderOffset", 0);
         absoluteEncoderRevolutionsPerArmDegree = pf.createPersistentProperty(
