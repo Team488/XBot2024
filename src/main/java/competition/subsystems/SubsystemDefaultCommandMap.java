@@ -7,7 +7,6 @@ import competition.subsystems.arm.ArmSubsystem;
 import competition.subsystems.arm.commands.ArmMaintainerCommand;
 import competition.subsystems.arm.commands.SetArmTargetToCurrentPositionCommand;
 import competition.subsystems.collector.CollectorSubsystem;
-import competition.subsystems.collector.commands.CollectorMaintainerCommand;
 import competition.subsystems.collector.commands.StopCollectorCommand;
 import competition.subsystems.schoocher.ScoocherSubsystem;
 import competition.subsystems.schoocher.commands.StopScoocherCommand;
@@ -49,9 +48,8 @@ public class SubsystemDefaultCommandMap {
     }
 
     @Inject
-    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, CollectorMaintainerCommand command, StopCollectorCommand stopCollectorCommand) {
-        collectorSubsystem.setDefaultCommand(command);
-        collectorSubsystem.getSetpointLock().setDefaultCommand(stopCollectorCommand);
+    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, StopCollectorCommand stopCollectorCommand) {
+        collectorSubsystem.setDefaultCommand(stopCollectorCommand);
     }
 
     @Inject

@@ -2,17 +2,16 @@ package competition.subsystems.collector.commands;
 
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
-import xbot.common.command.BaseSetpointCommand;
 
 import javax.inject.Inject;
 
 
-public class StopCollectorCommand extends BaseSetpointCommand {
+public class StopCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
 
     @Inject
     public StopCollectorCommand(CollectorSubsystem collector) {
-        super(collector);
+        addRequirements(collector);
         this.collector = collector;
     }
 
