@@ -1,13 +1,14 @@
 package competition.subsystems.drive.commands;
 
-import competition.commandgroups.DriveToGivenNoteWithVisionCommand;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.vision.NoteAcquisitionMode;
+import competition.subsystems.vision.NoteSeekAdvice;
+import competition.subsystems.vision.NoteSeekLogic;
 import competition.subsystems.vision.VisionSubsystem;
-import edu.wpi.first.math.geometry.Translation2d;
-import xbot.common.controls.sensors.XTimer;
+import edu.wpi.first.math.geometry.Pose2d;
 import xbot.common.math.XYPair;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
@@ -15,7 +16,7 @@ import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCommand {
 
@@ -24,163 +25,81 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
     final DriveSubsystem drive;
     final VisionSubsystem vision;
     final CollectorSubsystem collector;
+    protected final NoteSeekLogic noteSeekLogic;
 
-    
-    public enum NoteAcquisitionMode {
-        BlindApproach,
-        VisionApproach,
-        VisionTerminalApproach,
-        BackAwayToTryAgain,
-        GiveUp
-    }
-    
-    boolean hasDoneVisionCheckYet = false;
-    protected NoteAcquisitionMode noteAcquisitionMode = NoteAcquisitionMode.BlindApproach;
-    double frozenHeading = 0;
-
-    // For now, we will be using time to determine when to change vision modes.
-    protected double timeWhenVisionModeEntered = Double.MAX_VALUE;
-    double visionModeDuration = 0.5;
-    protected double timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
-    double terminalVisionModeDuration = 0.3;
+    NoteSeekAdvice lastAdvice;
+    NoteSeekAdvice currentAdvice;
 
     @Inject
     DriveToGivenNoteWithBearingVisionCommand(PoseSubsystem pose, DriveSubsystem drive, DynamicOracle oracle,
                                              PropertyFactory pf, HeadingModule.HeadingModuleFactory headingModuleFactory,
-                                             VisionSubsystem vision, CollectorSubsystem collector) {
+                                             VisionSubsystem vision, CollectorSubsystem collector, NoteSeekLogic noteSeekLogic) {
         super(drive, oracle, pose, pf, headingModuleFactory);
         this.oracle = oracle;
         this.pose = pose;
         this.drive = drive;
         this.vision = vision;
         this.collector = collector;
+        this.noteSeekLogic = noteSeekLogic;
     }
 
     @Override
     public void initialize() {
         // The init here takes care of going to the initially given "static" note position.
         super.initialize();
-        noteAcquisitionMode = NoteAcquisitionMode.BlindApproach;
-        hasDoneVisionCheckYet = false;
-        resetVisionModeTimers();
-    }
 
-    private void resetVisionModeTimers() {
-        timeWhenVisionModeEntered = Double.MAX_VALUE;
-        timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
+        lastAdvice = new NoteSeekAdvice(NoteAcquisitionMode.BlindApproach,
+                Optional.empty(), Optional.empty());
+        noteSeekLogic.reset();
     }
 
     @Override
     public void execute() {
 
-        // Check for mode changes
-        switch (noteAcquisitionMode) {
-            case BlindApproach:
-                if (!hasDoneVisionCheckYet) {
-                    double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
-                            drive.getTargetNote().getTranslation());
-                    aKitLog.record("RangeToStaticNote", rangeToStaticNote);
-                    if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
-                        hasDoneVisionCheckYet = true;
-                        log.info("Close to static note - attempting vision update.");
-                        if (vision.getCenterCamLargestNoteTarget().isPresent()) {
-                            log.info("Found with central camera. Advancing using vision");
-                            noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
-                            timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
-                        } else {
-                            log.info("No note found with central camera. Staying in blind approach.");
-                        }
-                    }
-                }
-                break;
-            case VisionApproach:
-                if (shouldEnterTerminalVisionApproach()) {
-                    log.info("Switching to terminal vision approach");
-                    noteAcquisitionMode = NoteAcquisitionMode.VisionTerminalApproach;
-                    timeWhenTerminalVisionModeEntered = XTimer.getFPGATimestamp();
-                    frozenHeading = pose.getCurrentHeading().getDegrees();
-                }
-                break;
-            case VisionTerminalApproach:
-                if (shouldExitTerminalVisionApproach()) {
-                    log.info("Switching to back away to try again");
-                    noteAcquisitionMode = NoteAcquisitionMode.BackAwayToTryAgain;
-                    setBackingAwayFromNoteTarget();
-                }
-                break;
-            case BackAwayToTryAgain:
-                if (super.isFinished()) {
-                    // check to see if we see a note. If not, give up.
-                    if (vision.getCenterCamLargestNoteTarget().isPresent()) {
-                        log.info("Found a note. Switching to vision mode.");
-                        resetVisionModeTimers();
-                        timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
-                        noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
-                    } else {
-                        log.info("Can't see a note. Giving up.");
-                        noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
-                    }
-                }
-                break;
-            case GiveUp:
-                // Do nothing. Command will exit momentarily.
-                break;
-            default:
-                log.info("Unknown mode: " + noteAcquisitionMode);
-                noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
-                break;
+        currentAdvice = noteSeekLogic.getAdvice(super.isFinished());
+
+        aKitLog.record("NoteAcquisitionMode", currentAdvice.noteAcquisitionMode);
+        if (currentAdvice.suggestedPose.isPresent()) {
+            aKitLog.record("SuggestedPose", currentAdvice.suggestedPose.get());
+        }
+        if (currentAdvice.suggestedDrivePercentages.isPresent()) {
+            aKitLog.record("SuggestedDrivePercentages", currentAdvice.suggestedDrivePercentages.get());
         }
 
+        boolean stateChanged = currentAdvice.noteAcquisitionMode != lastAdvice.noteAcquisitionMode;
 
-        // Then perform actions.
-
-        // If we are doing field-relative driving, then we need to use the
-        // underlying SwerveSimpleTrajectoryCommand to go to specific points
-        if (noteAcquisitionMode == NoteAcquisitionMode.BlindApproach
-        || noteAcquisitionMode == NoteAcquisitionMode.BackAwayToTryAgain) {
-            super.execute();
-        }
-
-        double approachPower =
-                -drive.getSuggestedAutonomousMaximumSpeed() / drive.getMaxTargetSpeedMetersPerSecond();
-        double terminalPower = approachPower * 0.5;
-        // If we are doing vision stuff, then we need to use robot-relative driving.
-        // When approaching dynamically, drive pretty fast and keep pointing at the note.
-        if (noteAcquisitionMode == NoteAcquisitionMode.VisionApproach) {
-            var target = vision.getCenterCamLargestNoteTarget();
-            if (target.isPresent()) {
-                double rotationPower =
-                        this.drive.getAggressiveGoalHeadingPid().calculate(0, target.get().getYaw());
-
-                drive.move(new XYPair(approachPower, 0), rotationPower);
+        if (stateChanged) {
+            if (currentAdvice.noteAcquisitionMode == NoteAcquisitionMode.BackAwayToTryAgain) {
+                if (currentAdvice.suggestedPose.isPresent()) {
+                    setBackingAwayFromNoteTarget(currentAdvice.suggestedPose.get());
+                }
             }
         }
-        // Slow down a bit if in terminal approach
-        if (noteAcquisitionMode == NoteAcquisitionMode.VisionTerminalApproach) {
-            double rotationPower = headingModule.calculateHeadingPower(frozenHeading);
-            drive.move(new XYPair(terminalPower, 0), rotationPower);
+
+        switch (currentAdvice.noteAcquisitionMode) {
+            // If we are going to specific locations, use the underlying SwerveSimpleTrajectoryCommand
+            case BlindApproach:
+            case BackAwayToTryAgain:
+                super.execute();
+                break;
+            // If we are using
+            case VisionApproach:
+            case VisionTerminalApproach:
+            case SearchViaRotation:
+                if (currentAdvice.suggestedDrivePercentages.isPresent()) {
+                    var driveValues = currentAdvice.suggestedDrivePercentages.get();
+                    drive.move(new XYPair(driveValues.dx, driveValues.dy), driveValues.dtheta);
+                }
+                break;
+            default:
+                break;
         }
 
+        lastAdvice = currentAdvice;
     }
 
-    private boolean shouldEnterTerminalVisionApproach() {
-        var target = vision.getCenterCamLargestNoteTarget();
-        return target
-            // if note is too close to robot, assume on terminal approach
-            .map((note) -> note.getPitch() < vision.terminalNotePitch)
-            // if we don't see a note for some reason, assume on terminal approach
-            .orElseGet(() -> true);
-    }
-
-    private boolean shouldExitTerminalVisionApproach() {
-        if (XTimer.getFPGATimestamp() > timeWhenTerminalVisionModeEntered + terminalVisionModeDuration) {
-            return true;
-        }
-        return false;
-    }
-
-    private void setBackingAwayFromNoteTarget() {
-        var newTarget = pose.transformRobotCoordinateToFieldCoordinate(new Translation2d(1,0));
+    private void setBackingAwayFromNoteTarget(Pose2d suggestedPose) {
+        var newTarget = suggestedPose.getTranslation();
 
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(new XbotSwervePoint(newTarget, pose.getCurrentHeading(), 10));
@@ -194,6 +113,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
 
     @Override
     public boolean isFinished() {
-        return collector.confidentlyHasControlOfNote() || noteAcquisitionMode == NoteAcquisitionMode.GiveUp;
+        return collector.confidentlyHasControlOfNote()
+                || currentAdvice.noteAcquisitionMode == NoteAcquisitionMode.GiveUp;
     }
 }

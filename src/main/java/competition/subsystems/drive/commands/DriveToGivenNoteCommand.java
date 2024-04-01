@@ -45,6 +45,10 @@ public class DriveToGivenNoteCommand extends SwerveSimpleTrajectoryCommand {
     }
 
     public void prepareToDriveAtGivenNote() {
+        if (drive.getTargetNote() == null) {
+            return;
+        }
+
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
         swervePoints.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(
                 drive.getTargetNote(), 10));

@@ -17,16 +17,19 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.command.BaseCommand;
+import xbot.common.logic.Latch;
+import xbot.common.logic.HumanVsMachineDecider.HumanVsMachineDeciderFactory;
 import xbot.common.math.MathUtils;
 import xbot.common.math.XYPair;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
+import xbot.common.subsystems.drive.control_logic.HeadingModule.HeadingModuleFactory;
 
 import javax.inject.Inject;
 import java.util.Optional;
 
-public class PointAtNoteWithBearingCommand extends BaseCommand {
+public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksCommand {
     final Logger log = LogManager.getLogger(this);
 
     Optional<SimpleNote> savedNotePosition = null;
@@ -39,11 +42,13 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     final DynamicOracle oracle;
 
     boolean everHadCenterNote = false;
+    Latch everHadCenterNoteLatch;
 
     @Inject
     public PointAtNoteWithBearingCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
                                          OperatorInterface oi, VisionSubsystem vision, PropertyFactory pf, CollectorSubsystem collector,
-                                         DynamicOracle oracle) {
+                                         DynamicOracle oracle, HumanVsMachineDeciderFactory hvmFactory) {
+        super(drive, pose, oi, pf, hvmFactory, headingModuleFactory);
         this.drive = drive;
         this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.pose = pose;
@@ -59,7 +64,11 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
+        super.initialize();
         everHadCenterNote = false;
+        everHadCenterNoteLatch = new Latch(false, Latch.EdgeType.RisingEdge, (edge) -> {
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(0.8, 0.25);
+        });
         savedNotePosition = Optional.empty();
         // Find the note we want to point at
         var largestTarget = vision.getCenterCamLargestNoteTarget();
@@ -78,6 +87,7 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
         // If we can still see the note, update the target
         this.savedNotePosition = vision.getCenterCamLargestNoteTarget();
         this.savedNotePosition.ifPresent((note) -> this.everHadCenterNote = true);
+        this.everHadCenterNoteLatch.setValue(this.everHadCenterNote);
 
         // Create a vector points towards the note in field-oriented heading
         var toNoteTranslation = new Translation2d(
@@ -86,7 +96,7 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
                         // flip 180 because the camera is mounted backwards
                         .plus(Rotation2d.fromRotations(0.5))
                         .plus(
-                            Rotation2d.fromRadians(
+                            Rotation2d.fromDegrees(
                                 savedNotePosition.map(note -> note.getYaw()).orElse(0.0)
                             )
                         )
@@ -101,19 +111,17 @@ public class PointAtNoteWithBearingCommand extends BaseCommand {
         // if we see a note clearly, rotate towards it
         if (savedNotePosition.isPresent() && savedNotePosition.get().getPitch() >= vision.terminalNotePitch){
             rotationPower = this.drive.getRotateToHeadingPid().calculate(0, savedNotePosition.get().getYaw());
-        }
-        // if we never saw a center camera note, try rotating towards a note the side cameras see
-        // as soon as the center camera sees this note we'll switch to using the above logic
-        else if (!everHadCenterNote) {
-            rotationPower = getClosestAvailableNote().map((notePose) -> {
-                var error = getRotationError(notePose);
-                return this.drive.getRotateToHeadingPid().calculate(0, error);
-            }).orElseGet(() -> 0.0);
+            // negative movement because we want to drive the robot 'backwards', collector towards the note
+            drive.move(new XYPair(-movement, 0), rotationPower);
+        } else if (everHadCenterNote) {
+            // negative movement because we want to drive the robot 'backwards', collector towards the note
+            drive.move(new XYPair(-movement, 0), rotationPower);
+        } else {
+            // fallback to normal driving
+            super.execute();
         }
 
-        // negative movement because we want to drive the robot 'backwards', collector towards the note
-        drive.move(new XYPair(-movement, 0), rotationPower);
-
+        
         if(savedNotePosition.isPresent()) {
             aKitLog.record("YawToTarget", this.savedNotePosition.get().getYaw());
         } else {
