@@ -28,8 +28,8 @@ public class ArmModelBasedCalculator {
         if (extension < 0.0 ){
             extension = 0.0; // clip at zero extension
         }
-        if (distanceFromSpeaker > 5.0 ){
-            extension = 87.6; // clips at the 5 meter extension value
+        if (distanceFromSpeaker > 5.2 ){
+            extension = 89.0; // clips at the 5 meter extension value
         }
         return (extension) ;
     }
