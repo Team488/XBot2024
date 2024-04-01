@@ -66,7 +66,7 @@ public class NoteSeekLogic {
         pf.setDefaultLevel(Property.PropertyLevel.Important);
         terminalVisionModeDuration = pf.createPersistentProperty("TerminalVisionModeDuration", 1.0);
         rotationSearchDuration = pf.createPersistentProperty("RotationSearchDuration", 3.0);
-        rotationSearchPower = pf.createPersistentProperty("RotationSearchPower", 0.5);
+        rotationSearchPower = pf.createPersistentProperty("RotationSearchPower", 0.17);
         terminalVisionModePowerFactor = pf.createPersistentProperty("TerminalVisionModePowerFactor", 0.5);
         backUpDuration = pf.createPersistentProperty("BackUpDuration", 1.0);
 
