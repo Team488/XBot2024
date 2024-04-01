@@ -85,6 +85,9 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             collectorMotor.setSmartCurrentLimit(40);
             collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
             collectorMotor.enableVoltageCompensation(12.0);
+
+            collectorMotor.setMeasurementPeriod(8);
+            collectorMotor.setAverageDepth(1);
         } else {
             this.collectorMotor = null;
         }
