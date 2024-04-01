@@ -56,6 +56,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
         this.drive = drive;
         this.vision = vision;
         this.collector = collector;
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
 
         this.terminalVisionModeDuration = pf.createPersistentProperty("TerminalVisionModeDuration", 0.75);
         this.terminalVisionPowerReductionFactor = pf.createPersistentProperty("TerminalVisionPowerReductionFactor", 0.5);
