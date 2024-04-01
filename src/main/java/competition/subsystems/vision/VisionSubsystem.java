@@ -72,6 +72,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     // under this pitch, the note is too close and we shouldn't try and rotate or do anything else with it
     public final double terminalNotePitch = 0.0;
 
+    public final DoubleProperty terminalNoteYawRange;
+
 
     @Inject
     public VisionSubsystem(PropertyFactory pf, XCameraElectricalContract electricalContract, RobotAssertionManager assertionManager) {
@@ -86,6 +88,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
         minNoteArea = pf.createPersistentProperty("Minimum note area", 0.5);
+
+        terminalNoteYawRange = pf.createPersistentProperty("Terminal Note Yaw Range", 5.0);
 
         bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
         maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
@@ -457,6 +461,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return Arrays.stream(targets)
                 .filter(t -> t.getArea() > this.minNoteArea.get())
                 .max(Comparator.comparingDouble(SimpleNote::getArea));
+    }
+
+    public double getTerminalNoteYawRange() {
+        return terminalNoteYawRange.get();
     }
 
     @Override

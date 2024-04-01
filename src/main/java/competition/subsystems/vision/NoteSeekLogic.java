@@ -178,7 +178,7 @@ public class NoteSeekLogic {
                     resetVisionModeTimers();
                     timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
                     noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
-                } else if (XTimer.getFPGATimestamp() > timeWhenVisionModeEntered + 1.0) {
+                } else if (shouldExitRotationSearch()) {
                     log.info("Giving up.");
                     noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
                 }
@@ -199,7 +199,7 @@ public class NoteSeekLogic {
 
         double approachPower =
                 -drive.getSuggestedAutonomousMaximumSpeed() / drive.getMaxTargetSpeedMetersPerSecond();
-        double terminalPower = approachPower * 0.5;
+        double terminalPower = approachPower * terminalVisionModePowerFactor.get();
 
         switch (noteAcquisitionMode) {
             case BlindApproach:
@@ -221,7 +221,7 @@ public class NoteSeekLogic {
                 return new NoteSeekAdvice(
                         noteAcquisitionMode, Optional.of(suggestedLocation),Optional.empty());
             case SearchViaRotation:
-                suggestedPowers = new Twist2d(0, 0, 0.5);
+                suggestedPowers = new Twist2d(0, 0, rotationSearchPower.get());
                 return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.of(suggestedPowers));
             case GiveUp:
             default:
@@ -230,11 +230,16 @@ public class NoteSeekLogic {
     }
     private boolean shouldEnterTerminalVisionApproach() {
         var target = vision.getCenterCamLargestNoteTarget();
-        return target
-                // if note is too close to robot, assume on terminal approach
-                .map((note) -> note.getPitch() < vision.terminalNotePitch)
-                // if we don't see a note for some reason, assume on terminal approach
-                .orElseGet(() -> true);
+
+        boolean lostTarget = target.isEmpty();
+        if (lostTarget) {
+            return true;
+        }
+
+        boolean atOrBelowTerminalPitch = target.get().getPitch() < vision.terminalNotePitch;
+        boolean roughlyCentered = Math.abs(target.get().getYaw()) < vision.getTerminalNoteYawRange();
+
+        return atOrBelowTerminalPitch && roughlyCentered;
     }
 
     private boolean shouldExitTerminalVisionApproach() {
@@ -252,7 +257,9 @@ public class NoteSeekLogic {
     }
 
     private boolean shouldExitBackUp(boolean atTargetPosition) {
-        return atTargetPosition || XTimer.getFPGATimestamp() > timeWhenBackUpModeEntered + backUpDuration.get();
+        return atTargetPosition
+                || XTimer.getFPGATimestamp() > timeWhenBackUpModeEntered + backUpDuration.get()
+                || vision.getCenterCamLargestNoteTarget().isPresent();
     }
 
 
