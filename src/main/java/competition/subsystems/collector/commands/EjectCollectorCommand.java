@@ -7,12 +7,12 @@ import xbot.common.command.BaseSetpointCommand;
 import javax.inject.Inject;
 
 
-public class EjectCollectorCommand extends BaseSetpointCommand {
+public class EjectCollectorCommand extends BaseCommand {
     CollectorSubsystem collector;
 
     @Inject
     public EjectCollectorCommand(CollectorSubsystem collector) {
-        super(collector);
+        addRequirements(collector);
         this.collector = collector;
     }
 

@@ -22,7 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements DataFrameRefreshable, NoteCollectionInfoSource, NoteFiringInfoSource {
+public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefreshable, NoteCollectionInfoSource, NoteFiringInfoSource {
 
     public enum IntakeState {
         INTAKING,
@@ -85,6 +85,9 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             collectorMotor.setSmartCurrentLimit(40);
             collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
             collectorMotor.enableVoltageCompensation(12.0);
+
+            collectorMotor.setMeasurementPeriod(8);
+            collectorMotor.setAverageDepth(1);
         } else {
             this.collectorMotor = null;
         }
@@ -99,7 +102,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
 
         firePower = pf.createPersistentProperty("firePower", 1.0);
         pf.setDefaultLevel(Property.PropertyLevel.Important);
-        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
+        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.25);
         carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 500);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
         lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1);
@@ -206,7 +209,7 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
         aKitLog.record("LowerTripwireHit", lowerTripwireHit);
         aKitLog.record("UpperTripwireHit", upperTripwireHit);
 
-        setTargetValue(suggestedSpeed);
+        setTargetSpeed(suggestedSpeed);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
@@ -214,14 +217,14 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
             return;
         }
 
-        setTargetValue(-intakeSpeed.get());
+        setTargetSpeed(-intakeSpeed.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
         if (shouldCommitToFiring()){
             return;
         }
-        setTargetValue(0.0);
+        setTargetSpeed(0.0);
         setPower(0.0);
         resetPID();
         intakeState = IntakeState.STOPPED;
@@ -329,51 +332,27 @@ public class CollectorSubsystem extends BaseSetpointSubsystem<Double> implements
         }
     }
 
-    @Override
-    public Double getCurrentValue() {
-        if(contract.isCollectorReady()) {
-            return collectorMotor.getVelocity();
-        } else {
-            return 0.0;
-        }
-    }
-
-    @Override
+    
     public Double getTargetValue() {
         return currentTargetSpeed;
     }
 
-    @Override
-    public void setTargetValue(Double value) {
+    public void setTargetSpeed(Double value) {
         if (flipper.getActive()) {
-            setTargetValue(0.0);
+            setPower(0.0);
         }
         else {
             currentTargetSpeed = value;
+            if (contract.isCollectorReady()) {
+                collectorMotor.setReference(value, CANSparkBase.ControlType.kVelocity);
+            }
         }
     }
 
-    @Override
     public void setPower(Double power) {
         // not used for speed controller based systems
         if(contract.isCollectorReady()) {
             collectorMotor.set(power);
         }
-    }
-
-    public void setPidSetpoints(Double speed) {
-        if (contract.isCollectorReady()) {
-            collectorMotor.setReference(speed, CANSparkBase.ControlType.kVelocity);
-        }
-    }
-
-    @Override
-    public boolean isCalibrated() {
-        return true;
-    }
-
-    @Override
-    protected boolean areTwoTargetsEquivalent(Double target1, Double target2) {
-        return Math.abs(target1 - target2) < 0.1;
     }
 }
