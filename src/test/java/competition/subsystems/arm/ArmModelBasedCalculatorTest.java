@@ -41,8 +41,8 @@ public class ArmModelBasedCalculatorTest extends BaseCompetitionTest {
         assertEquals(87.0, calculator.getExtensionForSpeakerDistance(4.83), delta_error);
         assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.15), delta_error);
         assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.0), delta_error);
-        assertEquals(87.6, calculator.getExtensionForSpeakerDistance(5.0), delta_error);
-        assertEquals(87.6, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(5.2), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
     }
     @Test
     public void testGetEmpiricalArmExtensionFromDistance() {
