@@ -96,7 +96,7 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
                         // flip 180 because the camera is mounted backwards
                         .plus(Rotation2d.fromRotations(0.5))
                         .plus(
-                            Rotation2d.fromRadians(
+                            Rotation2d.fromDegrees(
                                 savedNotePosition.map(note -> note.getYaw()).orElse(0.0)
                             )
                         )
