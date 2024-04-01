@@ -40,6 +40,11 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
         this.drive = drive;
         this.vision = vision;
         this.collector = collector;
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
+
+        logic.setPrioritizeRotationIfCloseToGoal(true);
+        logic.setDistanceThresholdToPrioritizeRotation(1.5);
+
         this.noteSeekLogic = noteSeekLogic;
     }
 

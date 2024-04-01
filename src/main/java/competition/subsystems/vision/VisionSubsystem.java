@@ -91,7 +91,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         terminalNoteYawRange = pf.createPersistentProperty("Terminal Note Yaw Range", 5.0);
 
-        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
+        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.2);
         maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
