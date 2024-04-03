@@ -16,7 +16,10 @@ public class DriveToGivenNoteWithBearingVisionAndVisionAssistanceConsiderationCo
     VisionSubsystem vision;
 
     @Inject
-    DriveToGivenNoteWithBearingVisionAndVisionAssistanceConsiderationCommand(PoseSubsystem pose, DriveSubsystem drive, DynamicOracle oracle, PropertyFactory pf, HeadingModule.HeadingModuleFactory headingModuleFactory, VisionSubsystem vision, CollectorSubsystem collector, NoteSeekLogic noteSeekLogic) {
+    DriveToGivenNoteWithBearingVisionAndVisionAssistanceConsiderationCommand(
+            PoseSubsystem pose, DriveSubsystem drive, DynamicOracle oracle,
+            PropertyFactory pf, HeadingModule.HeadingModuleFactory headingModuleFactory,
+            VisionSubsystem vision, CollectorSubsystem collector, NoteSeekLogic noteSeekLogic) {
         super(pose, drive, oracle, pf, headingModuleFactory, vision, collector, noteSeekLogic);
         this.vision = vision;
     }
