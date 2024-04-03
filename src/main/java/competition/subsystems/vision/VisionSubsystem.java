@@ -300,6 +300,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return detectedNotes;
     }
 
+    public boolean checkIfSideCamsSeeNote() {
+        return getDetectedNotes().length > 0;
+    }
+
     public Pose3d[] getPassiveDetectedNotes() {
         return passiveDetectedNotes;
     }
