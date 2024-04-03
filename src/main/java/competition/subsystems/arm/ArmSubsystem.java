@@ -159,7 +159,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
                 "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
 
-        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 52.0);
+        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 0);
 
         upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
         lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
@@ -521,7 +521,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 71.1;
                 break;
             case MiddleSpikeScoringLocation:
-                extension = 59.86;
+                extension = 59.18;
                 break;
             case BottomSpikeCloserToSpeakerScoringLocation:
             case TopSpikeCloserToSpeakerScoringLocation:
@@ -531,7 +531,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 44.8;
                 break;
             case TopSpikeScoringLocation:
-                extension = 65.5;
+                extension = 64.22;
                 break;
             case WingScoringLocation:
                 extension = 87;
