@@ -100,7 +100,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 "DetectionCameraphotonvisionrearright/NoteLocalizationResults"
         };
         var passiveDetectionTopicNames = new String[]{
-                "DetectionCameraphotonvisionfrontleft/NoteLocalizationResults"
+                "DetectionCameraphotonvisionfrontright/NoteLocalizationResults"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
                 .map(NoteTracker::new)
