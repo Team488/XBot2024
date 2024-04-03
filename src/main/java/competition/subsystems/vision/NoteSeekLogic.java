@@ -5,6 +5,7 @@ import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import org.apache.logging.log4j.LogManager;
@@ -32,16 +33,19 @@ public class NoteSeekLogic {
     NoteAcquisitionMode noteAcquisitionMode = NoteAcquisitionMode.BlindApproach;
 
     double frozenHeading = 0;
+    Translation2d frozenNoteTarget;
     double timeWhenVisionModeEntered = Double.MAX_VALUE;
     double timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
     double timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
     double timeWhenBackUpModeEntered = Double.MAX_VALUE;
+    double timeWhenRotateToDetectedNoteEntered = Double.MAX_VALUE;
 
     final DoubleProperty terminalVisionModeDuration;
     final DoubleProperty rotationSearchDuration;
     final DoubleProperty rotationSearchPower;
     final DoubleProperty terminalVisionModePowerFactor;
     final DoubleProperty backUpDuration;
+    final DoubleProperty rotateToNoteDuration;
 
     boolean hasDoneVisionCheckYet = false;
     protected final AKitLogger aKitLog;
@@ -69,6 +73,7 @@ public class NoteSeekLogic {
         rotationSearchPower = pf.createPersistentProperty("RotationSearchPower", 0.17);
         terminalVisionModePowerFactor = pf.createPersistentProperty("TerminalVisionModePowerFactor", 0.5);
         backUpDuration = pf.createPersistentProperty("BackUpDuration", 1.0);
+        rotateToNoteDuration = pf.createPersistentProperty("RotateToNoteDuration", 1.0);
 
         headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
 
@@ -86,7 +91,7 @@ public class NoteSeekLogic {
     public void reset() {
         noteAcquisitionMode = initialMode;
         resetVisionModeTimers();
-        if (initialMode == NoteAcquisitionMode.VisionApproach) {
+        if (initialMode == NoteAcquisitionMode.CenterCameraVisionApproach) {
             timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
         }
         hasDoneVisionCheckYet = false;
@@ -97,6 +102,7 @@ public class NoteSeekLogic {
         timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
         timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
         timeWhenBackUpModeEntered = Double.MAX_VALUE;
+        timeWhenRotateToDetectedNoteEntered = Double.MAX_VALUE;
     }
 
     private void checkForModeChanges(boolean atTargetPose) {
@@ -104,16 +110,11 @@ public class NoteSeekLogic {
             case BlindApproach:
                 if (!hasDoneVisionCheckYet) {
 
+                    // If no note has been set, then we either need to give up
+                    // or try searching via rotation or other methods.
                     if (drive.getTargetNote() == null) {
                         log.info("No target note set.");
-                        if (allowRotationSearch) {
-                            log.info("Attempting to find one via rotation.");
-                            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
-                            timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
-                        } else {
-                            log.info("Giving up.");
-                            noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
-                        }
+                        DecideWhetherToGiveUpOrRotate();
                         break;
                     }
 
@@ -123,25 +124,44 @@ public class NoteSeekLogic {
                     if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
                         hasDoneVisionCheckYet = true;
                         log.info("Close to static note - attempting vision update.");
-                        if (vision.getCenterCamLargestNoteTarget().isPresent()) {
-                            log.info("Found with central camera. Advancing using vision");
-                            noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
-                            timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+                        var scannedNote = scanForNote();
+                        if (scannedNote.isPresent()) {
+                            if (scannedNote.get().getSource() == NoteDetectionSource.CenterCamera) {
+                                log.info("Found with central camera. Advancing using vision");
+                                noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
+                                timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+                            } else {
+                                log.info("Found with a corner camera. Advancing using vision");
+                                noteAcquisitionMode = NoteAcquisitionMode.RotateToNoteDetectedByCornerCameras;
+                                frozenHeading = scannedNote.get().getNote().yaw;
+                                timeWhenRotateToDetectedNoteEntered = XTimer.getFPGATimestamp();
+                            }
                         } else {
                             log.info("No note found with central camera. Staying in blind approach.");
                         }
                     }
                 }
                 break;
-            case VisionApproach:
+            case RotateToNoteDetectedByCornerCameras:
+                // Rotate until either the center camera sees the note nice and solidly or we have been in this
+                // mode too long.
+                if (hasSolidLockOnNoteWithCenterCamera()) {
+                    noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
+                    timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+                }
+                if (XTimer.getFPGATimestamp() > timeWhenRotateToDetectedNoteEntered + rotateToNoteDuration.get()) {
+                    DecideWhetherToGiveUpOrRotate();
+                }
+                break;
+            case CenterCameraVisionApproach:
                 if (shouldEnterTerminalVisionApproach()) {
                     log.info("Switching to terminal vision approach");
-                    noteAcquisitionMode = NoteAcquisitionMode.VisionTerminalApproach;
+                    noteAcquisitionMode = NoteAcquisitionMode.CenterCameraTerminalApproach;
                     timeWhenTerminalVisionModeEntered = XTimer.getFPGATimestamp();
                     frozenHeading = pose.getCurrentHeading().getDegrees();
                 }
                 break;
-            case VisionTerminalApproach:
+            case CenterCameraTerminalApproach:
                 if (shouldExitTerminalVisionApproach()) {
                     log.info("Switching to back away to try again");
                     timeWhenBackUpModeEntered = XTimer.getFPGATimestamp();
@@ -158,17 +178,10 @@ public class NoteSeekLogic {
                         log.info("Found a note. Switching to vision mode.");
                         resetVisionModeTimers();
                         timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
-                        noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
+                        noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
                     } else {
                         log.info("Can't see a note.");
-                        if (allowRotationSearch) {
-                            log.info("Attempting to find one via rotation.");
-                            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
-                            timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
-                        } else {
-                            log.info("Giving up.");
-                            noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
-                        }
+                        DecideWhetherToGiveUpOrRotate();
                     }
                 }
                 break;
@@ -177,7 +190,7 @@ public class NoteSeekLogic {
                     log.info("Found a note. Switching to vision mode.");
                     resetVisionModeTimers();
                     timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
-                    noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
+                    noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
                 } else if (shouldExitRotationSearch()) {
                     log.info("Giving up.");
                     noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
@@ -200,21 +213,23 @@ public class NoteSeekLogic {
         double approachPower =
                 -drive.getSuggestedAutonomousMaximumSpeed() / drive.getMaxTargetSpeedMetersPerSecond();
         double terminalPower = approachPower * terminalVisionModePowerFactor.get();
-
+        double rotationPower = 0;
         switch (noteAcquisitionMode) {
             case BlindApproach:
                 // Only return the state - calling class will figure out how to approach.
                 return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.empty());
-            case VisionApproach:
+            case RotateToNoteDetectedByCornerCameras:
+                rotationPower = headingModule.calculateHeadingPower(frozenHeading);
+                return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.of(new Twist2d(0, 0, rotationPower)));
+            case CenterCameraVisionApproach:
                 var target = vision.getCenterCamLargestNoteTarget();
                 if (target.isPresent()) {
-                    double rotationPower =
-                            this.drive.getAggressiveGoalHeadingPid().calculate(0, target.get().getYaw());
+                    rotationPower = this.drive.getAggressiveGoalHeadingPid().calculate(0, target.get().getYaw());
                     suggestedPowers = new Twist2d(approachPower, 0, rotationPower);
                 }
                 return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.of(suggestedPowers));
-            case VisionTerminalApproach:
-                double rotationPower = headingModule.calculateHeadingPower(frozenHeading);
+            case CenterCameraTerminalApproach:
+                rotationPower = headingModule.calculateHeadingPower(frozenHeading);
                 suggestedPowers = new Twist2d(terminalPower, 0, rotationPower);
                 return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.of(suggestedPowers));
             case BackAwayToTryAgain:
@@ -260,6 +275,85 @@ public class NoteSeekLogic {
         return atTargetPosition
                 || XTimer.getFPGATimestamp() > timeWhenBackUpModeEntered + backUpDuration.get()
                 || vision.getCenterCamLargestNoteTarget().isPresent();
+    }
+
+    private Optional<NoteScanResult> getCenterCamNote() {
+        if (vision.getCenterCamLargestNoteTarget().isPresent()) {
+            return Optional.of(new NoteScanResult(
+                    NoteDetectionSource.CenterCamera,
+                    vision.getCenterCamLargestNoteTarget().get())
+            );
+        }
+        return Optional.empty();
+    }
+
+    private Optional<NoteScanResult> getCornerCameraNote() {
+        var notePosition = getClosestAvailableVisionNote();
+
+        if (notePosition.isPresent()) {
+            // transform the X/Y coordinate to a bearing
+            double bearing = this.pose.getAngularErrorToTranslation2dInDegrees(
+                    notePosition.get().getTranslation(),
+                    Rotation2d.fromDegrees(180)); // point rear of robot
+            SimpleNote fakeNote = new SimpleNote(100, bearing, 100);
+
+            return Optional.of(new NoteScanResult(
+                    NoteDetectionSource.CenterCamera,
+                    fakeNote)
+            );
+        }
+        return Optional.empty();
+    }
+
+    private Optional<NoteScanResult> scanForNote() {
+
+        var centerNote = getCenterCamNote();
+        if (centerNote.isPresent()) {
+            return centerNote;
+        }
+
+        var cornerNote = getCornerCameraNote();
+        if (cornerNote.isPresent()) {
+            return cornerNote;
+        }
+
+        // Nothing found.
+        return Optional.empty();
+    }
+
+
+    private Optional<Pose2d> getClosestAvailableVisionNote() {
+        var virtualPoint = getProjectedPoint();
+        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
+        if(notePosition != null) {
+            return Optional.of(notePosition.toPose2d());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Pose2d getProjectedPoint() {
+        return this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
+    }
+
+    private void DecideWhetherToGiveUpOrRotate() {
+        if (allowRotationSearch) {
+            log.info("Attempting to find one via rotation.");
+            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
+            timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
+        } else {
+            log.info("Giving up.");
+            noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
+        }
+    }
+
+    private boolean hasSolidLockOnNoteWithCenterCamera() {
+        // If the note is roughly centered on the center camera, we can try driving to it.
+        var target = vision.getCenterCamLargestNoteTarget();
+        if (target.isPresent()) {
+            return Math.abs(target.get().getYaw()) < 15;
+        }
+        return false;
     }
 
 

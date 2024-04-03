@@ -66,7 +66,7 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
                     }
                 }
                 break;
-            case VisionApproach:
+            case CenterCameraVisionApproach:
                 if (super.isFinished()) {
                     // we've hit our target, but no note! Back away and try again.
                     log.info("Switching to back away mode");
@@ -80,7 +80,7 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
                     if (getNearestVisionNote() != null) {
                         log.info("Switching to vision mode");
                         assignClosestVisionNoteToDriveSubsystemIfYouSeeANoteAndReplanPath();
-                        noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
+                        noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
                     } else {
                         log.info("Switching to give up mode");
                         noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
@@ -152,7 +152,7 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         log.info("Found note at " + noteLocation.getTranslation());
         log.info("Assigning note to drive subsystem");
         drive.setTargetNote(noteLocation);
-        noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
+        noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
         prepareToDriveAtGivenNote();
     }
 

@@ -2,8 +2,9 @@ package competition.subsystems.vision;
 
 public enum NoteAcquisitionMode {
     BlindApproach,
-    VisionApproach,
-    VisionTerminalApproach,
+    RotateToNoteDetectedByCornerCameras,
+    CenterCameraVisionApproach,
+    CenterCameraTerminalApproach,
     BackAwayToTryAgain,
     SearchViaRotation,
     GiveUp
