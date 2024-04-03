@@ -24,7 +24,7 @@ import java.util.ArrayList;
 //when we have the time to tune a ranged shot will update to that
 public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGroup {
     AutonomousCommandSelector autoSelector;
-    double centerlineTimeout = 6.0;
+    double centerlineTimeout = 6;
     @Inject
     public SubwooferShotFromBotThenTwoCenterline(AutonomousCommandSelector autoSelector, PoseSubsystem pose,
                                                  DriveSubsystem drive,
@@ -62,6 +62,9 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
                     ));
                 })
         );
+        driveToCenterline5.logic.setEnableConstantVelocity(true);
+        driveToCenterline5.logic.setConstantVelocity(3.0);
+
         var collect1 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
         this.addCommands(Commands.deadline(collect1,driveToCenterline5).withTimeout(centerlineTimeout));
@@ -89,6 +92,9 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
                     ));
                 })
         );
+
+        driveToCenterline4.logic.setEnableConstantVelocity(true);
+        driveToCenterline4.logic.setConstantVelocity(3.0);
 
         var collect2 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
