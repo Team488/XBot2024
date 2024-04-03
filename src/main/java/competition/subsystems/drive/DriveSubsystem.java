@@ -38,6 +38,7 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private Translation2d specialPointAtPositionTarget = new Translation2d();
     private final DoubleProperty suggestedAutonomousMaximumSpeed;
     private final DoubleProperty suggestedAutonomousExtremeSpeed;
+    private final DoubleProperty suggestedAutonomousSpeedIfNotVisionAssisted;
     private final PIDManager aggressiveGoalHeadingPidManager;
 
     @Inject
@@ -54,6 +55,8 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
                 pf.createPersistentProperty("Suggested Autonomous Maximum Speed", 3.0);
         suggestedAutonomousExtremeSpeed =
                 pf.createPersistentProperty("Suggested Autonomous EXTREME Speed", 5.0);
+        suggestedAutonomousSpeedIfNotVisionAssisted =
+                pf.createPersistentProperty("Suggested Autonomous NO VISION Speed", 1.5);
 
         aggressiveGoalHeadingPidManager = aggressiveGoalHeadingPidFactory.create(
                 this.getPrefix() + "AggressiveGoalHeadingPID",
@@ -77,6 +80,9 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     }
 
     public double getSuggestedAutonomousExtremeSpeed() { return suggestedAutonomousExtremeSpeed.get(); }
+    public double getSuggestedAutonomousNoAutoSpeed() {
+        return suggestedAutonomousSpeedIfNotVisionAssisted.get();
+    }
 
     @Override
     protected PIDDefaults getPositionalPIDDefaults() {
