@@ -7,7 +7,7 @@ import javax.inject.Inject;
 
 public class DriveToCentralSubwooferAndFireCommandGroup extends SequentialCommandGroup {
 
-    double interstageTimeout = 3.5;
+    double interstageTimeout = 7;
 
     @Inject
     DriveToCentralSubwooferAndFireCommandGroup(FireFromSubwooferCommandGroup fireFromSubwooferCommandGroup,
