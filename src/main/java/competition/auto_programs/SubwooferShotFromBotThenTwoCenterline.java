@@ -24,7 +24,8 @@ import java.util.ArrayList;
 //when we have the time to tune a ranged shot will update to that
 public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGroup {
     AutonomousCommandSelector autoSelector;
-    double centerlineTimeout = 6.0;
+    // temporarily make this much larger to test the whole thing slowly in 99
+    double centerlineTimeout = 18.0;
     @Inject
     public SubwooferShotFromBotThenTwoCenterline(AutonomousCommandSelector autoSelector, PoseSubsystem pose,
                                                  DriveSubsystem drive,

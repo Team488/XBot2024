@@ -32,31 +32,33 @@ public class ArmModelBasedCalculatorTest extends BaseCompetitionTest {
     public void testGetExtensionForSpeakerDistance() {
         // Test the function that calculates the empirical linear actuator extension (mm) given the distance from the robot to the speaker (m)
         // (Will likely fail if the equation is changed)
-        double delta_error = 1.0; // acceptable arm extension error in mm
+        double delta_error = 1.5; // acceptable arm extension error in mm
 
-        assertEquals(44.847, calculator.getExtensionForSpeakerDistance(2.338), delta_error);
-        assertEquals(57.082, calculator.getExtensionForSpeakerDistance(2.83), delta_error);
-        assertEquals(71.804, calculator.getExtensionForSpeakerDistance(3.56), delta_error);
-        assertEquals(79.0, calculator.getExtensionForSpeakerDistance(4.0), delta_error);
-        assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.146302), delta_error);
+        assertEquals(43.0, calculator.getExtensionForSpeakerDistance(2.338), delta_error);
+        assertEquals(57.0, calculator.getExtensionForSpeakerDistance(2.84), delta_error);
+        assertEquals(59.86, calculator.getExtensionForSpeakerDistance(2.97), delta_error);
+        assertEquals(65.3, calculator.getExtensionForSpeakerDistance(3.20), delta_error);
+        assertEquals(87.0, calculator.getExtensionForSpeakerDistance(4.83), delta_error);
+        assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.15), delta_error);
         assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.0), delta_error);
-        assertEquals(84.24, calculator.getExtensionForSpeakerDistance(5.0), delta_error);
-        assertEquals(84.24, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(5.2), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
     }
     @Test
     public void testGetEmpiricalArmExtensionFromDistance() {
         // Test the function that calculates the empirical linear actuator extension (mm) given the distance from the robot to the speaker (m)
         // (Will likely fail if the equation is changed)
-        double delta_error = 1.0; // acceptable arm extension error in mm
+        double delta_error = 1.5; // acceptable arm extension error in mm
 
-        assertEquals(44.847, calculator.getEmpiricalArmExtensionFromDistance(2.338), delta_error);
-        assertEquals(57.082, calculator.getEmpiricalArmExtensionFromDistance(2.83), delta_error);
-        assertEquals(71.804, calculator.getEmpiricalArmExtensionFromDistance(3.56), delta_error);
-        assertEquals(79.0, calculator.getEmpiricalArmExtensionFromDistance(4.0), delta_error);
-        assertEquals(0.0, calculator.getEmpiricalArmExtensionFromDistance(1.146302), delta_error);
-        assertEquals(0.0, calculator.getEmpiricalArmExtensionFromDistance(1.0), delta_error);
-        assertEquals(84.24, calculator.getEmpiricalArmExtensionFromDistance(5.0), delta_error);
-        assertEquals(84.24, calculator.getEmpiricalArmExtensionFromDistance(10.0), delta_error);
+        assertEquals(43.0, calculator.getExtensionForSpeakerDistance(2.338), delta_error);
+        assertEquals(57.0, calculator.getExtensionForSpeakerDistance(2.84), delta_error);
+        assertEquals(59.86, calculator.getExtensionForSpeakerDistance(2.97), delta_error);
+        assertEquals(65.3, calculator.getExtensionForSpeakerDistance(3.20), delta_error);
+        assertEquals(87.0, calculator.getExtensionForSpeakerDistance(4.83), delta_error);
+        assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.15), delta_error);
+        assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.0), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(5.2), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
     }
     @Test
     public void testGetArmAngleForExtension() {

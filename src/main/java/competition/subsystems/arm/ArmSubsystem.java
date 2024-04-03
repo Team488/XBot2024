@@ -119,7 +119,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         HANG_APPROACH,
         PROTECTED_FAR_AMP_SHOT,
         PROTECTED_PODIUM_SHOT,
-        COLLECT_DIRECTLY_FROM_SOURCE
+        COLLECT_DIRECTLY_FROM_SOURCE,
+        LOB_SHOT
     }
 
     private DoubleInterpolator speakerDistanceToExtensionInterpolator;
@@ -158,7 +159,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         lowerExtremelySlowZoneThresholdMm = pf.createPersistentProperty(
                 "LowerExtremelySlowZoneThresholdMm", upperLegalLimitMm.get() * 0.05);
 
-        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 52.0);
+        maxExtensionForUnderStageMm = pf.createPersistentProperty("MaxExtensionForUnderStageMm", 0);
 
         upperSlowZonePowerLimit = pf.createPersistentProperty("UpperSlowZonePowerLimit", 0.10);
         lowerSlowZonePowerLimit = pf.createPersistentProperty("LowerSlowZonePowerLimit", -0.05);
@@ -170,9 +171,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
         overallPowerClampForTesting = pf.createPersistentProperty("overallTestingPowerClamp", 0.45);
         maximumExtensionDesyncMm = pf.createPersistentProperty("MaximumExtensionDesyncMm", 6.0);
 
+        powerRampDurationSec = pf.createPersistentProperty("PowerRampDurationSec", 0.125);
 
         pf.setDefaultLevel(Property.PropertyLevel.Debug);
-        powerRampDurationSec = pf.createPersistentProperty("PowerRampDurationSec", 0.5);
         absoluteEncoderOffset = pf.createPersistentProperty(
                 "AbsoluteEncoderOffset", 0);
         absoluteEncoderRevolutionsPerArmDegree = pf.createPersistentProperty(
@@ -487,13 +488,17 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 71.1;
                 break;
             case PROTECTED_PODIUM_SHOT:
-                extension = 58.81;
+                extension = 59.05;
                 break;
             case COLLECT_DIRECTLY_FROM_SOURCE:
                 extension = 180;
                 break;
+            case LOB_SHOT:
+                //This still needs to be found
+                extension = 55;
+                break;
             case HANG_APPROACH:
-                extension = 100;
+                extension = 120;
                 break;
             default:
                 return 0;
@@ -510,20 +515,26 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 extension = 0;
                 break;
             case PodiumScoringLocation:
-                extension = 58.81;
+                extension = 59.05;
                 break;
             case AmpFarScoringLocation:
                 extension = 71.1;
                 break;
             case MiddleSpikeScoringLocation:
-                extension = 57;
+                extension = 59.18;
                 break;
             case BottomSpikeCloserToSpeakerScoringLocation:
             case TopSpikeCloserToSpeakerScoringLocation:
-                extension = 57; // TODO - what are the real numbers?
+                extension = 59.86; // TODO - what are the real numbers?
                 break;
             case OneRobotAwayFromCenterSubwooferScoringLocation:
                 extension = 44.8;
+                break;
+            case TopSpikeScoringLocation:
+                extension = 64.22;
+                break;
+            case WingScoringLocation:
+                extension = 87;
                 break;
             default:
                 return 0;

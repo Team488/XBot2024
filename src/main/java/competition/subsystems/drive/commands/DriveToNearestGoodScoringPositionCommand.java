@@ -32,17 +32,30 @@ public class DriveToNearestGoodScoringPositionCommand extends SwerveSimpleTrajec
     public void initialize() {
         log.info("Initializing");
 
-        Pose2d nearestScoringLocation = oracle.getNearestScoringLocationPose();
+        var nearestScoringLocation = oracle.getNearestScoringLocation();
 
         if (nearestScoringLocation == null) {
+            log.info("Could not get a scoring location.");
             cancel();
+            return;
+        }
+
+        var scoringLocationPose = nearestScoringLocation.getLocation();
+
+        if (scoringLocationPose == null) {
+            log.info("Scoring location had no pose.");
+            cancel();
+            return;
         }
 
         ArrayList<XbotSwervePoint> swervePoints = new ArrayList<>();
-        swervePoints.add(new XbotSwervePoint(nearestScoringLocation, 10));
+        swervePoints.add(new XbotSwervePoint(scoringLocationPose, 10));
         this.logic.setKeyPoints(swervePoints);
         this.logic.setEnableConstantVelocity(true);
         this.logic.setConstantVelocity(drive.getMaxTargetSpeedMetersPerSecond());
+
+        log.info("Nearest location: " + nearestScoringLocation);
+        log.info("Nearest location Pose: " + scoringLocationPose);
 
         super.initialize();
     }

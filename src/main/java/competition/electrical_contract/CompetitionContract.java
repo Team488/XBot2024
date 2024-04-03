@@ -127,7 +127,7 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     public boolean isScoocherReady() {
-        return true;
+        return false;
     }
     public DeviceInfo getScoocherMotor(){
         return new DeviceInfo("ScoocherMotor", 33);
@@ -157,10 +157,22 @@ public class CompetitionContract extends ElectricalContract {
         return new DeviceInfo("Lights3", 3);
     }
 
+
+    @Override
+    public DeviceInfo getFlipperSolenoidForward() {
+        return new DeviceInfo("FlipperSolenoid1", 4);
+    }
+    
+    @Override
+    public DeviceInfo getFlipperSolenoidReverse() {
+        return new DeviceInfo("FlipperSolenoid2", 11);
+    }
+
     @Override
     public DeviceInfo getFlipperServo() {
-        return new DeviceInfo("FlipperLeft", 5);
+        return new DeviceInfo("FlipperServo", 5);
     }
+
     @Override
     public DeviceInfo getLowerNoteSensorDio() {
         return new DeviceInfo("LowerNoteSensor", 8, true);

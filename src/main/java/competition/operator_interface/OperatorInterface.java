@@ -101,4 +101,10 @@ public class OperatorInterface {
         }
         return false;
     }
+
+    public void periodic() {
+        this.driverGamepad.getRumbleManager().periodic();
+        this.operatorGamepadAdvanced.getRumbleManager().periodic();
+        this.operatorFundamentalsGamepad.getRumbleManager().periodic();
+    }
 }
