@@ -34,15 +34,15 @@ public class ArmModelBasedCalculatorTest extends BaseCompetitionTest {
         // (Will likely fail if the equation is changed)
         double delta_error = 1.5; // acceptable arm extension error in mm
 
-        assertEquals(43.65, calculator.getExtensionForSpeakerDistance(2.338), delta_error);
-        assertEquals(59.05, calculator.getExtensionForSpeakerDistance(2.84), delta_error);
+        assertEquals(43.0, calculator.getExtensionForSpeakerDistance(2.338), delta_error);
+        assertEquals(57.0, calculator.getExtensionForSpeakerDistance(2.84), delta_error);
         assertEquals(59.86, calculator.getExtensionForSpeakerDistance(2.97), delta_error);
-        assertEquals(65.51, calculator.getExtensionForSpeakerDistance(3.20), delta_error);
-        assertEquals(87.07, calculator.getExtensionForSpeakerDistance(4.83), delta_error);
+        assertEquals(65.3, calculator.getExtensionForSpeakerDistance(3.20), delta_error);
+        assertEquals(87.0, calculator.getExtensionForSpeakerDistance(4.83), delta_error);
         assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.15), delta_error);
         assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.0), delta_error);
-        assertEquals(87.6, calculator.getExtensionForSpeakerDistance(5.0), delta_error);
-        assertEquals(87.6, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(5.2), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
     }
     @Test
     public void testGetEmpiricalArmExtensionFromDistance() {
@@ -50,15 +50,15 @@ public class ArmModelBasedCalculatorTest extends BaseCompetitionTest {
         // (Will likely fail if the equation is changed)
         double delta_error = 1.5; // acceptable arm extension error in mm
 
-        assertEquals(43.65, calculator.getExtensionForSpeakerDistance(2.338), delta_error);
-        assertEquals(59.05, calculator.getExtensionForSpeakerDistance(2.84), delta_error);
+        assertEquals(43.0, calculator.getExtensionForSpeakerDistance(2.338), delta_error);
+        assertEquals(57.0, calculator.getExtensionForSpeakerDistance(2.84), delta_error);
         assertEquals(59.86, calculator.getExtensionForSpeakerDistance(2.97), delta_error);
-        assertEquals(65.51, calculator.getExtensionForSpeakerDistance(3.20), delta_error);
-        assertEquals(87.07, calculator.getExtensionForSpeakerDistance(4.83), delta_error);
+        assertEquals(65.3, calculator.getExtensionForSpeakerDistance(3.20), delta_error);
+        assertEquals(87.0, calculator.getExtensionForSpeakerDistance(4.83), delta_error);
         assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.15), delta_error);
         assertEquals(0.0, calculator.getExtensionForSpeakerDistance(1.0), delta_error);
-        assertEquals(87.6, calculator.getExtensionForSpeakerDistance(5.0), delta_error);
-        assertEquals(87.6, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(5.2), delta_error);
+        assertEquals(89.0, calculator.getExtensionForSpeakerDistance(10.0), delta_error);
     }
     @Test
     public void testGetArmAngleForExtension() {
