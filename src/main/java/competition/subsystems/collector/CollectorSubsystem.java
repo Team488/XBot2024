@@ -8,9 +8,12 @@ import competition.subsystems.oracle.NoteCollectionInfoSource;
 import competition.subsystems.oracle.NoteFiringInfoSource;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import competition.subsystems.shooter.ShooterWheelTargetSpeeds;
 import xbot.common.advantage.DataFrameRefreshable;
+import xbot.common.command.BaseSetpointSubsystem;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XCANSparkMax;
+import xbot.common.controls.actuators.XCANSparkMaxPIDProperties;
 import xbot.common.controls.sensors.XDigitalInput;
 import xbot.common.controls.sensors.XTimer;
 import xbot.common.logic.TimeStableValidator;
@@ -43,8 +46,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     }
 
     public final XCANSparkMax collectorMotor;
-    public final DoubleProperty intakePower;
-    public final DoubleProperty beamBreakIntakePower;
+    public final DoubleProperty intakeSpeed;
+    public final DoubleProperty beamBreakIntakeSpeed;
     private IntakeState intakeState;
     private CollectionSubstate collectionSubstate;
     public final XDigitalInput inControlNoteSensor;
@@ -58,13 +61,15 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     boolean lowerTripwireHit = false;
     boolean upperTripwireHit = false;
     double timeOfLastNoteSensorTriggered = 0;
-    final DoubleProperty carefulAdvancePower;
+    final DoubleProperty carefulAdvanceSpeed;
     final DoubleProperty carefulAdvanceTimeout;
     final DoubleProperty lightToleranceTimeInterval;
     Provider<DriveToCentralSubwooferAndFireCommandGroup> driveAndFireCommandProvider;
     double carefulAdvanceBeginTime = -Double.MAX_VALUE;
 
     FlipperSubsystem flipper;
+
+    double currentTargetSpeed = 0;
 
 
     @Inject
@@ -74,9 +79,21 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                               Provider<DriveToCentralSubwooferAndFireCommandGroup> driveAndFireCommandProvider) {
         this.contract = electricalContract;
         if (contract.isCollectorReady()) {
-            this.collectorMotor = sparkMaxFactory.createWithoutProperties(contract.getCollectorMotor(), getPrefix(), "CollectorMotor");
+            this.collectorMotor = sparkMaxFactory.create(contract.getCollectorMotor(), getPrefix(), "CollectorMotor",
+                    "CollectorMotor", new XCANSparkMaxPIDProperties(
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.000208,
+                            1,
+                            -1));
             collectorMotor.setSmartCurrentLimit(40);
             collectorMotor.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            collectorMotor.enableVoltageCompensation(12.0);
+
+            collectorMotor.setMeasurementPeriod(8);
+            collectorMotor.setAverageDepth(1);
         } else {
             this.collectorMotor = null;
         }
@@ -86,13 +103,13 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         this.beamBreakSensor = xDigitalInputFactory.create(contract.getBeamBreakSensorDio(), this.getPrefix());
 
         pf.setPrefix(this);
-        intakePower = pf.createPersistentProperty("intakePower",0.8);
-        beamBreakIntakePower = pf.createPersistentProperty("beamBreakIntakePower", 0.35);
+        intakeSpeed = pf.createPersistentProperty("intakeSpeed", 6000);
+        beamBreakIntakeSpeed = pf.createPersistentProperty("beamBreakIntakeSpeed", 1000);
 
         firePower = pf.createPersistentProperty("firePower", 1.0);
-        pf.setDefaultLevel(Property.PropertyLevel.Debug);
-        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.1);
-        carefulAdvancePower = pf.createPersistentProperty("CarefulAdvancePower", 0.15);
+        pf.setDefaultLevel(Property.PropertyLevel.Important);
+        waitTimeAfterFiring = pf.createPersistentProperty("WaitTimeAfterFiring", 0.25);
+        carefulAdvanceSpeed = pf.createPersistentProperty("CarefulAdvanceSpeed", 500);
         carefulAdvanceTimeout = pf.createPersistentProperty("CarefulAdvanceTimeout", 0.5);
         lightToleranceTimeInterval = pf.createPersistentProperty("toleranceTimeInterval", 1);
 
@@ -120,7 +137,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return;
         }
 
-        double suggestedPower = 0;
+        double suggestedSpeed = 0;
 
         // When just starting collection cold, we need to check if any sensors are pressed
         // before figuring out what to do.
@@ -150,7 +167,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                 upperTripwireHit = getGamePieceReady();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
-                suggestedPower = intakePower.get();
+                suggestedSpeed = intakeSpeed.get();
             }
         }
 
@@ -158,9 +175,10 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             if (getGamePieceInControl() || getGamePieceReady()) {
                 lowerTripwireHit = getGamePieceInControl();
                 upperTripwireHit = getGamePieceReady();
+                carefulAdvanceBeginTime = XTimer.getFPGATimestamp();
                 collectionSubstate = CollectionSubstate.MoveNoteCarefullyToReadyPosition;
             } else {
-                suggestedPower = beamBreakIntakePower.get();
+                suggestedSpeed = beamBreakIntakeSpeed.get();
             }
         }
 
@@ -178,12 +196,12 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
                 collectionSubstate = CollectionSubstate.Complete;
             } else {
                 if (lowerTripwireHit) {
-                    suggestedPower = carefulAdvancePower.get();
+                    suggestedSpeed = carefulAdvanceSpeed.get();
                 }
                 if (upperTripwireHit) {
                     // If the note hit the upper sensor, and we can't see it now,
                     // try driving backwards until we do
-                    suggestedPower = -carefulAdvancePower.get();
+                    suggestedSpeed = -carefulAdvanceSpeed.get();
                 }
 
                 if (XTimer.getFPGATimestamp() - carefulAdvanceBeginTime > carefulAdvanceTimeout.get()) {
@@ -197,9 +215,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
         aKitLog.record("CollectionSubstate", collectionSubstate);
         aKitLog.record("LowerTripwireHit", lowerTripwireHit);
         aKitLog.record("UpperTripwireHit", upperTripwireHit);
-        aKitLog.record("SuggestedPower", suggestedPower);
 
-        setPower(suggestedPower);
+        setTargetSpeed(suggestedSpeed);
         intakeState = IntakeState.INTAKING;
     }
     public void eject(){
@@ -207,20 +224,23 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return;
         }
 
-        setPower(-intakePower.get());
+        setTargetSpeed(-intakeSpeed.get());
         intakeState = IntakeState.EJECTING;
     }
     public void stop(){
         if (shouldCommitToFiring()){
             return;
         }
-        setPower(0);
+        setTargetSpeed(0.0);
+        setPower(0.0);
+        resetPID();
         intakeState = IntakeState.STOPPED;
     }
 
-    public void emergencyStopBypassingJammingPrevention() {
-        setPower(0);
-        intakeState = IntakeState.STOPPED;
+    public void resetPID() {
+        if (contract.isCollectorReady()) {
+            collectorMotor.setIAccum(0);
+        }
     }
 
     public void fire(){
@@ -237,17 +257,6 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             return 0;
         }
         return XTimer.getFPGATimestamp() - lastFiredTime;
-    }
-
-    public void setPower(double power) {
-        if (contract.isCollectorReady()) {
-            if (flipper.getActive()) {
-                collectorMotor.set(0);
-            }
-            else {
-                collectorMotor.set(power);
-            }
-        }
     }
 
     public boolean getGamePieceInControl() {
@@ -318,6 +327,7 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
     @Override
     public void periodic() {
         if (contract.isCollectorReady()) {
+            collectorMotor.periodic();
             noteInControlValidator.checkStable(getGamePieceInControl() || getGamePieceReady()
                     || getBeamBreakSensorActivated());
 
@@ -326,6 +336,8 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             aKitLog.record("ConfidentlyHasControlOfNote", confidentlyHasControlOfNote());
             aKitLog.record("ConfidentlyHasFiredNote", confidentlyHasFiredNote());
             aKitLog.record("IntakeState", intakeState);
+            aKitLog.record("TargetSpeed", currentTargetSpeed);
+            aKitLog.record("CollectorMotorVelocity", collectorMotor.getVelocity());
         }
 
     }
@@ -337,6 +349,30 @@ public class CollectorSubsystem extends BaseSubsystem implements DataFrameRefres
             inControlNoteSensor.refreshDataFrame();
             beamBreakSensor.refreshDataFrame();
             readyToFireNoteSensor.refreshDataFrame();
+        }
+    }
+
+    
+    public Double getTargetValue() {
+        return currentTargetSpeed;
+    }
+
+    public void setTargetSpeed(Double value) {
+        if (flipper.getActive()) {
+            setPower(0.0);
+        }
+        else {
+            currentTargetSpeed = value;
+            if (contract.isCollectorReady()) {
+                collectorMotor.setReference(value, CANSparkBase.ControlType.kVelocity);
+            }
+        }
+    }
+
+    public void setPower(Double power) {
+        // not used for speed controller based systems
+        if(contract.isCollectorReady()) {
+            collectorMotor.set(power);
         }
     }
 }

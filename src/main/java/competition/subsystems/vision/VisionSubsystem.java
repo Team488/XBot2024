@@ -69,6 +69,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty maxNoteSearchingDistanceForSpikeNotes;
     
     final DoubleProperty minNoteArea;
+    // under this pitch, the note is too close and we shouldn't try and rotate or do anything else with it
+    public final double terminalNotePitch = 0.0;
+
+    public final DoubleProperty terminalNoteYawRange;
 
 
     @Inject
@@ -85,18 +89,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
         minNoteArea = pf.createPersistentProperty("Minimum note area", 0.5);
 
-        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
+        terminalNoteYawRange = pf.createPersistentProperty("Terminal Note Yaw Range", 5.0);
+
+        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.2);
         maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
-                //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
-                //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+                "DetectionCameraphotonvisionrearleft/NoteLocalizationResults",
+                "DetectionCameraphotonvisionrearright/NoteLocalizationResults"
         };
         var passiveDetectionTopicNames = new String[]{
-                "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
+                "DetectionCameraphotonvisionfrontright/CenterCamNotes"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
                 .map(NoteTracker::new)
@@ -408,6 +412,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return centerlineDetections;
     }
 
+    public boolean checkIfCenterCamSeesNote() {
+        return centerlineDetections.length > 0;
+    }
+
     private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
         Arrays.stream(noteTrackers).forEach(NoteTracker::refreshDataFrame);
         var detections = getDetections(noteTrackers);
@@ -451,6 +459,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return Arrays.stream(targets)
                 .filter(t -> t.getArea() > this.minNoteArea.get())
                 .max(Comparator.comparingDouble(SimpleNote::getArea));
+    }
+
+    public double getTerminalNoteYawRange() {
+        return terminalNoteYawRange.get();
     }
 
     @Override

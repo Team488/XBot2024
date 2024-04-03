@@ -6,6 +6,7 @@ import competition.injection.components.DaggerPracticeRobotComponent;
 import competition.injection.components.DaggerRobotComponent;
 import competition.injection.components.DaggerRoboxComponent;
 import competition.injection.components.DaggerSimulationComponent;
+import competition.operator_interface.OperatorInterface;
 import competition.simulation.Simulator2024;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
@@ -29,6 +30,7 @@ public class Robot extends BaseRobot {
     Simulator2024 simulator;
     DynamicOracle oracle;
     PoseSubsystem poseSubsystem;
+    OperatorInterface oi;
 
     @Override
     protected void initializeSystems() {
@@ -37,12 +39,12 @@ public class Robot extends BaseRobot {
         getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
         getInjectorComponent().lightSubsystem();
-        getInjectorComponent().flipperSubsystem();
 
         if (BaseRobot.isSimulation()) {
             simulator = getInjectorComponent().simulator2024();
         }
         oracle = getInjectorComponent().dynamicOracle();
+        oi = getInjectorComponent().operatorInterface();
 
         dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
         poseSubsystem = (PoseSubsystem) getInjectorComponent().poseSubsystem();
@@ -54,7 +56,6 @@ public class Robot extends BaseRobot {
         dataFrameRefreshables.add(getInjectorComponent().shooterSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().neoTrellisGamepadSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().flipperSubsystem());
-
         var defaultAuto = getInjectorComponent().subwooferShotFromMidShootThenShootNearestThree();
         var autoSelector = getInjectorComponent().autonomousCommandSelector();
 
@@ -145,6 +146,14 @@ public class Robot extends BaseRobot {
 
         if (simulator != null) {
            simulator.update();
+        }
+    }
+
+    @Override
+    public void sharedPeriodic() {
+        super.sharedPeriodic();
+        if(this.oi != null) {
+            this.oi.periodic();
         }
     }
 }

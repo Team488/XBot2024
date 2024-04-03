@@ -121,7 +121,7 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (shooter.isReadyToFire()) {
                 currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
-            } else if (oracle.getNoteMap().hasVisionNotes()) {
+            } else if (vision.checkIfCenterCamSeesNote()) {
                 currentState = LightsStateMessage.VisionSeesNote;
 
             } else {
