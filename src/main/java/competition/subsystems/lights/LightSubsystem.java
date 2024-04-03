@@ -46,7 +46,8 @@ public class LightSubsystem extends BaseSubsystem {
         ShooterReadyWithoutNote(1),
         ReadyToShoot(2),
         RobotContainsNote(3),
-        VisionSeesNote(4);
+        CameraCamSeesNote(4),
+        SideCamSeesNote(6);
 
         LightsStateMessage(final int value) {
             if(value > maxValue || value < 0) {
@@ -122,7 +123,10 @@ public class LightSubsystem extends BaseSubsystem {
                 currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
             } else if (vision.checkIfCenterCamSeesNote()) {
-                currentState = LightsStateMessage.VisionSeesNote;
+                currentState = LightsStateMessage.CameraCamSeesNote;
+
+            } else if (oracle.getNoteMap().hasVisionNotes()) {
+                currentState = LightsStateMessage.SideCamSeesNote;
 
             } else {
                 currentState = LightsStateMessage.RobotEnabled;
