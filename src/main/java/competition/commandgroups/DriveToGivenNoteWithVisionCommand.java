@@ -5,6 +5,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToGivenNoteCommand;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.vision.NoteAcquisitionMode;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -23,13 +24,6 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
     VisionSubsystem vision;
     CollectorSubsystem collector;
     boolean hasDoneVisionCheckYet = false;
-
-    public enum NoteAcquisitionMode {
-        BlindApproach,
-        VisionApproach,
-        BackAwayToTryAgain,
-        GiveUp
-    }
 
     private NoteAcquisitionMode noteAcquisitionMode = NoteAcquisitionMode.BlindApproach;
 
@@ -62,8 +56,10 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
         switch (noteAcquisitionMode) {
             case BlindApproach:
                 if (!hasDoneVisionCheckYet) {
-                    if (pose.getCurrentPose2d().getTranslation().getDistance(
-                            drive.getTargetNote().getTranslation()) < vision.getBestRangeFromStaticNoteToSearchForNote()) {
+                    double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
+                            drive.getTargetNote().getTranslation());
+                    aKitLog.record("RangeToStaticNote", rangeToStaticNote);
+                    if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
                         hasDoneVisionCheckYet = true;
                         log.info("Close to static note - attempting vision update.");
                         assignClosestVisionNoteToDriveSubsystemIfYouSeeANoteAndReplanPath();

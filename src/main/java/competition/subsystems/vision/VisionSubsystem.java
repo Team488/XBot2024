@@ -69,6 +69,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     final DoubleProperty maxNoteSearchingDistanceForSpikeNotes;
     
     final DoubleProperty minNoteArea;
+    // under this pitch, the note is too close and we shouldn't try and rotate or do anything else with it
+    public final double terminalNotePitch = 0.0;
+
+    public final DoubleProperty terminalNoteYawRange;
 
 
     @Inject
@@ -83,20 +87,20 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         maxNoteRatio = pf.createPersistentProperty("Max note size ratio", 5.5);
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
-        minNoteArea = pf.createPersistentProperty("Minimum note area", 10);
+        minNoteArea = pf.createPersistentProperty("Minimum note area", 0.5);
 
-        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.5);
+        terminalNoteYawRange = pf.createPersistentProperty("Terminal Note Yaw Range", 5.0);
+
+        bestRangeFromStaticNoteToSearchForNote = pf.createPersistentProperty("BestRangeFromStaticNoteToSearchForNote", 1.2);
         maxNoteSearchingDistanceForSpikeNotes = pf.createPersistentProperty("MaxNoteSearchingDistanceForSpikeNotes", 3.0);
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
-                //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
-                //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+                "DetectionCameraphotonvisionrearleft/NoteLocalizationResults",
+                "DetectionCameraphotonvisionrearright/NoteLocalizationResults"
         };
         var passiveDetectionTopicNames = new String[]{
-                "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
+                "DetectionCameraphotonvisionfrontright/CenterCamNotes"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
                 .map(NoteTracker::new)
@@ -383,7 +387,7 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                     // Not a note, this is a robot!
                     continue;
                 }
-                newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw()));
+                newCenterlineDetections.add(new SimpleNote(target.getArea(), target.getYaw(), target.getPitch()));
             }
         }
         centerlineDetections = newCenterlineDetections.toArray(SimpleNote[]::new);
@@ -392,18 +396,24 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         getCenterCamLargestNoteTarget().ifPresentOrElse(target -> {
             aKitLog.record("CenterCamLargestTargetArea", target.getArea());
             aKitLog.record("CenterCamLargestTargetYaw", target.getYaw());
+            aKitLog.record("CenterCamLargestTargetPitch", target.getPitch());
         }, () -> {
             aKitLog.record("CenterCamLargestTargetArea", -1.0);
             aKitLog.record("CenterCamLargestTargetYaw", 0.0);
+            aKitLog.record("CenterCamLargestTargetPitch", 0.0);
         });
 
-        // aKitLog.record("CenterlineDetections", centerlineDetections);
+        aKitLog.record("CenterlineDetections", centerlineDetections);
         aKitLog.record("DetectedNotes", detectedNotes);
         aKitLog.record("PassiveDetectedNotes", passiveDetectedNotes);
     }
 
     public SimpleNote[] getCenterlineDetections() {
         return centerlineDetections;
+    }
+
+    public boolean checkIfCenterCamSeesNote() {
+        return centerlineDetections.length > 0;
     }
 
     private Pose3d[] getNotesFromTrackers(NoteTracker[] noteTrackers) {
@@ -451,6 +461,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
                 .max(Comparator.comparingDouble(SimpleNote::getArea));
     }
 
+    public double getTerminalNoteYawRange() {
+        return terminalNoteYawRange.get();
+    }
+
     @Override
     public void refreshDataFrame() {
         if (aprilTagsLoaded) {
@@ -459,5 +473,18 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
             }
         }
         centerlineNoteCamera.refreshDataFrame();
+    }
+
+    public int cameraWorkingState() {
+        if (allCameras.stream().allMatch(state -> state.isCameraWorking())) {
+            // If all are working, return 0
+            return 0;
+        }
+        else if (allCameras.stream().allMatch(state -> !state.isCameraWorking())) {
+            // If no cameras are working, return 1
+            return 1;
+        }
+        // If some of the cameras are working, return 2
+        return 2;
     }
 }

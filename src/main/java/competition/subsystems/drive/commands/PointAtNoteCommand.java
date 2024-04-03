@@ -39,7 +39,7 @@ public class PointAtNoteCommand extends BaseCommand {
     public PointAtNoteCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
                               OperatorInterface oi, DynamicOracle oracle, PropertyFactory pf) {
         this.drive = drive;
-        this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.pose = pose;
         this.oi = oi;
         this.oracle = oracle;

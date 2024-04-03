@@ -41,13 +41,15 @@ public class SubsystemDefaultCommandMap {
         // set the arm target to the current position when interrupted.
         //armSubsystem.getSetpointLock().setDefaultCommand(setArmTargetToCurrentPositionCommand);
     }
+    
     @Inject
     public void setupScoocherSubsystem(ScoocherSubsystem scoocherSubsystem, StopScoocherCommand command){
         scoocherSubsystem.setDefaultCommand(command);
     }
+
     @Inject
-    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, StopCollectorCommand command) {
-        collectorSubsystem.setDefaultCommand(command);
+    public void setUpCollectorSubsystem(CollectorSubsystem collectorSubsystem, StopCollectorCommand stopCollectorCommand) {
+        collectorSubsystem.setDefaultCommand(stopCollectorCommand);
     }
 
     @Inject
