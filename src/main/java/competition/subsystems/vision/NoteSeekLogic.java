@@ -108,38 +108,24 @@ public class NoteSeekLogic {
     private void checkForModeChanges(boolean atTargetPose) {
         switch (noteAcquisitionMode) {
             case BlindApproach:
-                if (!hasDoneVisionCheckYet) {
+                // If no note has been set, then we either need to give up
+                // or try searching via rotation or other methods.
+                if (drive.getTargetNote() == null) {
+                    log.info("No target note set.");
+                    decideWhetherToGiveUpOrRotate();
+                    break;
+                }
 
-                    // If no note has been set, then we either need to give up
-                    // or try searching via rotation or other methods.
-                    if (drive.getTargetNote() == null) {
-                        log.info("No target note set.");
-                        DecideWhetherToGiveUpOrRotate();
-                        break;
-                    }
+                double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
+                        drive.getTargetNote().getTranslation());
+                aKitLog.record("RangeToStaticNote", rangeToStaticNote);
+                if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
 
-                    double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
-                            drive.getTargetNote().getTranslation());
-                    aKitLog.record("RangeToStaticNote", rangeToStaticNote);
-                    if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
-                        hasDoneVisionCheckYet = true;
+                    if (!hasDoneVisionCheckYet) {
                         log.info("Close to static note - attempting vision update.");
-                        var scannedNote = scanForNote();
-                        if (scannedNote.isPresent()) {
-                            if (scannedNote.get().getSource() == NoteDetectionSource.CenterCamera) {
-                                log.info("Found with central camera. Advancing using vision");
-                                noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
-                                timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
-                            } else {
-                                log.info("Found with a corner camera. Advancing using vision");
-                                noteAcquisitionMode = NoteAcquisitionMode.RotateToNoteDetectedByCornerCameras;
-                                frozenHeading = scannedNote.get().getNote().yaw;
-                                timeWhenRotateToDetectedNoteEntered = XTimer.getFPGATimestamp();
-                            }
-                        } else {
-                            log.info("No note found with central camera. Staying in blind approach.");
-                        }
+                        hasDoneVisionCheckYet = true;
                     }
+                    evaluateIfShouldMoveToVisionBasedCollection(false);
                 }
                 break;
             case RotateToNoteDetectedByCornerCameras:
@@ -150,7 +136,7 @@ public class NoteSeekLogic {
                     timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
                 }
                 if (XTimer.getFPGATimestamp() > timeWhenRotateToDetectedNoteEntered + rotateToNoteDuration.get()) {
-                    DecideWhetherToGiveUpOrRotate();
+                    decideWhetherToGiveUpOrRotate();
                 }
                 break;
             case CenterCameraVisionApproach:
@@ -181,17 +167,13 @@ public class NoteSeekLogic {
                         noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
                     } else {
                         log.info("Can't see a note.");
-                        DecideWhetherToGiveUpOrRotate();
+                        decideWhetherToGiveUpOrRotate();
                     }
                 }
                 break;
             case SearchViaRotation:
-                if (vision.getCenterCamLargestNoteTarget().isPresent()) {
-                    log.info("Found a note. Switching to vision mode.");
-                    resetVisionModeTimers();
-                    timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
-                    noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
-                } else if (shouldExitRotationSearch()) {
+                evaluateIfShouldMoveToVisionBasedCollection(true);
+                if (shouldExitRotationSearch()) {
                     log.info("Giving up.");
                     noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
                 }
@@ -205,6 +187,25 @@ public class NoteSeekLogic {
                 break;
         }
         aKitLog.record("NoteAcquisitionMode", noteAcquisitionMode);
+    }
+
+    private void evaluateIfShouldMoveToVisionBasedCollection(boolean resetTimersIfFound) {
+        var scannedNote = scanForNote();
+        if (scannedNote.isPresent()) {
+            if (scannedNote.get().getSource() == NoteDetectionSource.CenterCamera) {
+                log.info("Found with central camera. Advancing using vision");
+                noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
+                timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+            } else {
+                log.info("Found with a corner camera. Advancing using vision");
+                noteAcquisitionMode = NoteAcquisitionMode.RotateToNoteDetectedByCornerCameras;
+                frozenHeading = scannedNote.get().getNote().yaw;
+                timeWhenRotateToDetectedNoteEntered = XTimer.getFPGATimestamp();
+            }
+            if (resetTimersIfFound) {
+                resetVisionModeTimers();
+            }
+        }
     }
 
     public NoteSeekAdvice getAdvice(boolean atTargetPose) {
@@ -298,7 +299,7 @@ public class NoteSeekLogic {
             SimpleNote fakeNote = new SimpleNote(100, bearing, 100);
 
             return Optional.of(new NoteScanResult(
-                    NoteDetectionSource.CenterCamera,
+                    NoteDetectionSource.PeripheralCameras,
                     fakeNote)
             );
         }
@@ -336,7 +337,7 @@ public class NoteSeekLogic {
         return this.pose.getCurrentPose2d().plus(new Transform2d(-0.4, 0, new Rotation2d()));
     }
 
-    private void DecideWhetherToGiveUpOrRotate() {
+    private void decideWhetherToGiveUpOrRotate() {
         if (allowRotationSearch) {
             log.info("Attempting to find one via rotation.");
             noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;

@@ -71,7 +71,7 @@ public class OperatorCommandMap {
             OperatorInterface operatorInterface,
             SetRobotHeadingCommand resetHeading,
             DriveSubsystem drive,
-            PointAtNoteWithBearingCommand alignToNoteCommand,
+            TryDriveToBearingNote alignToNoteCommand,
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
