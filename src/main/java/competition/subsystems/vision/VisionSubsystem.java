@@ -96,13 +96,11 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
         var trackingNt = NetworkTableInstance.getDefault().getTable("SmartDashboard");
         var detectionTopicNames = new String[]{
-                //"DetectionCameraphotonvisionfrontleft/Target Coordinate pairs",
-                //"DetectionCameraphotonvisionfrontright/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearleft/Target Coordinate pairs",
-                "DetectionCameraphotonvisionrearright/Target Coordinate pairs"
+                "DetectionCameraphotonvisionrearleft/NoteLocalizationResults",
+                "DetectionCameraphotonvisionrearright/NoteLocalizationResults"
         };
         var passiveDetectionTopicNames = new String[]{
-                "DetectionCameraxbot-orin-nano-1/Target Coordinate pairs"
+                "DetectionCameraphotonvisionfrontright/CenterCamNotes"
         };
         noteTrackers = Arrays.stream(detectionTopicNames)
                 .map(NoteTracker::new)
