@@ -24,14 +24,14 @@ public class PrepareToFireNearestGoodScoringPositionCommand extends BaseSetpoint
     }
 
     public void initialize() {
-        PointOfInterest nearestScoringLocation = oracle.getNearestScoringLocation();
-        shooter.setTargetValue(shooter.getRPMForGivenScoringLocation(nearestScoringLocation));
-        arm.setTargetValue(arm.getUsefulArmPositionExtensionInMm(nearestScoringLocation)) ;
+        
     }
 
     @Override
     public void execute() {
-        // No-op. Wait for the arms to get to the target.
+        PointOfInterest nearestScoringLocation = oracle.getNearestScoringLocation();
+        shooter.setTargetValue(shooter.getRPMForGivenScoringLocation(nearestScoringLocation));
+        arm.setTargetValue(arm.getUsefulArmPositionExtensionInMm(nearestScoringLocation));
     }
 
     @Override
