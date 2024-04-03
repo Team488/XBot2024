@@ -43,6 +43,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
     private double iMaxAccumValueForShooter;
     private final DoubleProperty typicalShotRpm;
     private final DoubleProperty meleeShotRpm;
+    private final DoubleProperty distanceShotRpm;
     private final DoubleProperty lobShotRpm;
 
     //DEFINING MOTORS
@@ -59,8 +60,9 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         pf.setPrefix(this);
 
         typicalShotRpm = pf.createPersistentProperty("TypicalShotRpm", 4000);
-        meleeShotRpm = pf.createPersistentProperty("MeeleShotRpm", 3500);
+        meleeShotRpm = pf.createPersistentProperty("MeleeShotRpm", 3600);
         intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 800);
+        distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 4800);
         //Value still needs to be found
         lobShotRpm = pf.createPersistentProperty("LobShotRpm", 3800);
 
@@ -122,8 +124,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         switch (pointOfInterest) {
             // These speeds may be different someday.
             case SubwooferTopScoringLocation, SubwooferMiddleScoringLocation, SubwooferBottomScoringLocation -> {return meleeShotRpm.get();}
-            case PodiumScoringLocation, AmpFarScoringLocation, BottomSpikeCloserToSpeakerScoringLocation, SpikeMiddle,
-                     TopSpikeCloserToSpeakerScoringLocation, OneRobotAwayFromCenterSubwooferScoringLocation -> {return typicalShotRpm.get();}
+            case PodiumScoringLocation, AmpFarScoringLocation, BottomSpikeCloserToSpeakerScoringLocation,
+                    SpikeMiddle, TopSpikeCloserToSpeakerScoringLocation, OneRobotAwayFromCenterSubwooferScoringLocation,
+                    TopSpikeScoringLocation -> {return typicalShotRpm.get();}
+            case WingScoringLocation -> {return distanceShotRpm.get();}
             default -> {return 4000;}
         }
     }

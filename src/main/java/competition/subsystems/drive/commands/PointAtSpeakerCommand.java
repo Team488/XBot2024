@@ -32,7 +32,7 @@ public class PointAtSpeakerCommand extends BaseCommand {
     public PointAtSpeakerCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
                                  OperatorInterface oi, PropertyFactory pf) {
         this.drive = drive;
-        this.headingModule = headingModuleFactory.create(drive.getRotateToHeadingPid());
+        this.headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
         this.pose = pose;
         this.oi = oi;
 //        this.turnPowerFactor = pf.createPersistentProperty("Turn Power Factor", 0.75);
