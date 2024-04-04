@@ -286,109 +286,117 @@ public class DynamicOracle extends BaseSubsystem {
      */
     @Override
     public void periodic() {
-        checkForMaskedShotsBecomingAvailable();
+        try {
+            checkForMaskedShotsBecomingAvailable();
 
-        // Populate the field with notes from vision
-        noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
-        if (this.includeVisionNotes.get()) {
-            handleVisionDetectedNotes();
-        }
+            // Populate the field with notes from vision
+            noteMap.clearStaleVisionNotes(this.maxVisionNoteAge.get());
+            if (this.includeVisionNotes.get()) {
+                handleVisionDetectedNotes();
+            }
 
-        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
-        // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.
-        // We can always set the global log level to debug and replay the inputs to regenerate this data.
-        aKitLog.record("NoteMap", noteMap.getAllAvailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
-        aKitLog.record("UnavailableNoteMap", noteMap.getAllUnavailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
-        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
+            aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
+            // TODO: move this visualization into Simulator2024. This is a lot of data for network tables.
+            // We can always set the global log level to debug and replay the inputs to regenerate this data.
+            aKitLog.record("NoteMap", noteMap.getAllAvailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
+            aKitLog.record("UnavailableNoteMap", noteMap.getAllUnavailableNotes().stream().map(Note::get3dLocation).toArray(Pose3d[]::new));
+            aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
 
-        switch (currentHighLevelGoal) {
-            case ScoreInAmp: // For now keeping things simple
-            case ScoreInSpeaker:
-                if (firstRunInNewGoal || reevaluationRequested) {
-                    setTargetNote(null);
-                    var closestScoringLocation = scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
-                            Availability.Available);
-                    setTerminatingPoint(closestScoringLocation.getLocation());
-                    setChosenScoringLocation(closestScoringLocation.getPointOfInterest());
+            switch (currentHighLevelGoal) {
+                case ScoreInAmp: // For now keeping things simple
+                case ScoreInSpeaker:
+                    if (firstRunInNewGoal || reevaluationRequested) {
+                        setTargetNote(null);
+                        var closestScoringLocation = scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+                                Availability.Available);
 
-                    currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
-                    setSpecialAimTarget(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_AIM_TARGET));
-                    // Choose a good speaker scoring location
-                    // Publish a route from current position to that location
-                    firstRunInNewGoal = false;
-                    reevaluationRequested = false;
-                }
-
-                determineScoringSubgoal();
-
-                // If we've launched our note, time to get another one
-                if (noteFiringInfoSource.confidentlyHasFiredNote()) {
-                    currentHighLevelGoal = HighLevelGoal.CollectNote;
-                    firstRunInNewGoal = true;
-                    break;
-                }
-                break;
-            case CollectNote:
-                if (firstRunInNewGoal || reevaluationRequested) {
-                    // Choose a good note collection location
-                    Note suggestedNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(),
-                            Availability.Available);
-                    setTargetNote(suggestedNote);
-
-                    if (suggestedNote == null) {
-                        // No notes on the field! Let's suggest going to the source and hope something turns up.
-                        // However, if we are in autonomous, we should instead just go to the line.
-                        if (DriverStation.isAutonomous()) {
-                            setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.CenterLine5));
-                        } else {
-                            setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSourceMiddle));
+                        if (closestScoringLocation != null) {
+                            setTerminatingPoint(closestScoringLocation.getLocation());
+                            setChosenScoringLocation(closestScoringLocation.getPointOfInterest());
                         }
-                    }
-                    else {
-                        setTerminatingPoint(getTargetNote().getLocation());
-                        setSpecialAimTarget(getTargetNote().getLocation());
-                    }
 
-                    // Publish a route from current position to that location
-                    firstRunInNewGoal = false;
-                    reevaluationRequested = false;
-
-                    currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindly;
-                }
-
-                // This will have any special logic about how to collect a note
-                // or update our approach to getting notes
-                determineCollectionSubgoal();
-
-                // This contains the logic for exiting this state once we have a note.
-                if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
-                    // Mark the nearest note as being unavailable, if we are anywhere near it
-                    Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.5);
-                    if (nearestNote != null) {
-                        nearestNote.setUnavailable(UnavailableReason.Gone);
+                        currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
+                        setSpecialAimTarget(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_AIM_TARGET));
+                        // Choose a good speaker scoring location
+                        // Publish a route from current position to that location
+                        firstRunInNewGoal = false;
+                        reevaluationRequested = false;
                     }
 
-                    // Since we have a note, let's go score it.
-                    currentHighLevelGoal = HighLevelGoal.ScoreInSpeaker;
-                    firstRunInNewGoal = true;
+                    determineScoringSubgoal();
+
+                    // If we've launched our note, time to get another one
+                    if (noteFiringInfoSource.confidentlyHasFiredNote()) {
+                        currentHighLevelGoal = HighLevelGoal.CollectNote;
+                        firstRunInNewGoal = true;
+                        break;
+                    }
                     break;
-                }
-                break;
-            default:
-                break;
-        }
+                case CollectNote:
+                    if (firstRunInNewGoal || reevaluationRequested) {
+                        // Choose a good note collection location
+                        Note suggestedNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(),
+                                Availability.Available);
+                        setTargetNote(suggestedNote);
 
-        aKitLog.record("Current Goal", currentHighLevelGoal);
-        aKitLog.record("Current Note",
-                targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
+                        if (suggestedNote == null) {
+                            // No notes on the field! Let's suggest going to the source and hope something turns up.
+                            // However, if we are in autonomous, we should instead just go to the line.
+                            if (DriverStation.isAutonomous()) {
+                                setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.CenterLine5));
+                            } else {
+                                setTerminatingPoint(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSourceMiddle));
+                            }
+                        } else {
+                            setTerminatingPoint(getTargetNote().getLocation());
+                            setSpecialAimTarget(getTargetNote().getLocation());
+                        }
 
-        aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
-        if (getTerminatingPoint() != null) {
-            aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
-            aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+                        // Publish a route from current position to that location
+                        firstRunInNewGoal = false;
+                        reevaluationRequested = false;
+
+                        currentScoringSubGoal = ScoringSubGoals.IngestNoteBlindly;
+                    }
+
+                    // This will have any special logic about how to collect a note
+                    // or update our approach to getting notes
+                    determineCollectionSubgoal();
+
+                    // This contains the logic for exiting this state once we have a note.
+                    if (noteCollectionInfoSource.confidentlyHasControlOfNote()) {
+                        // Mark the nearest note as being unavailable, if we are anywhere near it
+                        Note nearestNote = noteMap.getClosest(pose.getCurrentPose2d().getTranslation(), 1.5);
+                        if (nearestNote != null) {
+                            nearestNote.setUnavailable(UnavailableReason.Gone);
+                        }
+
+                        // Since we have a note, let's go score it.
+                        currentHighLevelGoal = HighLevelGoal.ScoreInSpeaker;
+                        firstRunInNewGoal = true;
+                        break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            aKitLog.record("Current Goal", currentHighLevelGoal);
+            aKitLog.record("Current Note",
+                    targetNote == null ? new Pose2d(-100, -100, new Rotation2d(0)) : getTargetNote().getLocation());
+
+            aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
+            if (getTerminatingPoint() != null) {
+                aKitLog.record("Terminating Point", getTerminatingPoint().getTerminatingPose());
+                aKitLog.record("MessageCount", getTerminatingPoint().getPoseMessageNumber());
+            }
+            aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
+            aKitLog.record("Current SubGoal", currentScoringSubGoal);
         }
-        aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
-        aKitLog.record("Current SubGoal", currentScoringSubGoal);
+        catch (Exception e)
+        {
+            log.info("Crash!");
+        }
     }
 
     private void handleVisionDetectedNotes() {
@@ -619,6 +627,10 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     public boolean isTerminatingPointWithinDistance(double distance) {
+        if (terminatingPoint == null) {
+            return false;
+        }
+
         return pose.getCurrentPose2d().getTranslation().getDistance(
                 getTerminatingPoint().getTerminatingPose().getTranslation())
                 < distance;

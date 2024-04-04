@@ -135,6 +135,7 @@ public class NoteSeekLogic {
                 double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
                         drive.getTargetNote().getTranslation());
                 aKitLog.record("RangeToStaticNote", rangeToStaticNote);
+
                 if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
                     if (!hasDoneVisionCheckYet) {
                         log.info("Close to static note - attempting vision update.");
