@@ -28,7 +28,13 @@ import java.util.ArrayList;
 //when we have the time to tune a ranged shot will update to that
 public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGroup {
     AutonomousCommandSelector autoSelector;
-    double centerlineTimeout = 8;
+    double centerlineTimeout = 5;
+
+    double meterThreshold = 0.3048;
+    double velocityThreshold = 0.05;
+    final PoseSubsystem pose;
+    final DriveSubsystem drive;
+
     @Inject
     public SubwooferShotFromBotThenTwoCenterline(AutonomousCommandSelector autoSelector, PoseSubsystem pose,
                                                  DriveSubsystem drive,
@@ -38,6 +44,9 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
                                                  Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
                                                  Provider<IntakeCollectorCommand> intakeCollectorCommandProvider
                                                  ){
+        this.pose = pose;
+        this.drive = drive;
+
         this.autoSelector = autoSelector;
 
         var limitCurrentCommand = drive.createChangeDriveCurrentLimitsCommand(SwerveDriveSubsystem.CurrentLimitMode.Auto);
@@ -79,6 +88,7 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
         var driveBackToBottomSubwooferFirst = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferFirst.addPointsSupplier(this::goBackToBotSubwoofer);
         driveBackToBottomSubwooferFirst.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveBackToBottomSubwooferFirst.setAlternativeIsFinishedSupplier(this::alternativeIsFinishedForSubwoofer);
 
         var collect3 = intakeCollectorCommandProvider.get();
         this.addCommands(Commands.deadline(driveBackToBottomSubwooferFirst.withTimeout(centerlineTimeout),collect3));
@@ -113,6 +123,7 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
         var driveBackToBottomSubwooferSecond = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferSecond.addPointsSupplier(this::goBackToBotSubwoofer);
         driveBackToBottomSubwooferSecond.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveBackToBottomSubwooferSecond.setAlternativeIsFinishedSupplier(this::alternativeIsFinishedForSubwoofer);
 
         var collect4 = intakeCollectorCommandProvider.get();
         this.addCommands(Commands.deadline(driveBackToBottomSubwooferSecond.withTimeout(centerlineTimeout),collect4));
@@ -133,5 +144,20 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
                         PoseSubsystem.BlueSpikeBottom.getY() - 2.3951), Rotation2d.fromDegrees(140),10));
         points.add(XbotSwervePoint.createPotentiallyFilppedXbotSwervePoint(PoseSubsystem.BlueSubwooferBottomScoringLocation,10));
         return points;
+    }
+
+    private boolean alternativeIsFinishedForSubwoofer() {
+        double speed = pose.getRobotCurrentSpeed();
+
+        Translation2d robotLocation = pose.getCurrentPose2d().getTranslation();
+
+        // Returns finished if both position and velocity are under threshold
+        boolean nearPositionThreshold = PoseSubsystem.convertBlueToRedIfNeeded(
+                PoseSubsystem.BlueSubwooferBottomScoringLocation)
+                .getTranslation().getDistance(robotLocation) < meterThreshold;
+
+        boolean nearVelocityThreshold = speed < velocityThreshold;
+
+        return (nearPositionThreshold && nearVelocityThreshold);
     }
 }
