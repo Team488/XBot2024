@@ -42,7 +42,8 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
     final DynamicOracle oracle;
 
     boolean everHadCenterNote = false;
-    Latch everHadNoteLatch;
+    Latch everHadCenterNoteLatch;
+    Latch everHadSideNoteLatch;
 
     @Inject
     public PointAtNoteWithBearingCommand(DriveSubsystem drive, HeadingModule.HeadingModuleFactory headingModuleFactory, PoseSubsystem pose,
@@ -66,9 +67,13 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
         log.info("Initializing");
         super.initialize();
         everHadCenterNote = false;
-        everHadNoteLatch = new Latch(false, Latch.EdgeType.RisingEdge, (edge) -> {
+        everHadCenterNoteLatch = new Latch(false, Latch.EdgeType.RisingEdge, (edge) -> {
             oi.driverGamepad.getRumbleManager().rumbleGamepad(0.8, 0.25);
-            log.info("Acquired note, locking drive and rotating towards note");
+            log.info("Acquired center note, locking drive and rotating towards note");
+        });
+        everHadSideNoteLatch = new Latch(false, Latch.EdgeType.RisingEdge, (edge) -> {
+            oi.driverGamepad.getRumbleManager().rumbleGamepad(0.2, 0.25);
+            log.info("Acquired side note, locking drive and rotating towards note");
         });
         savedNotePosition = Optional.empty();
         // Find the note we want to point at
@@ -88,7 +93,7 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
         // If we can still see the note, update the target
         this.savedNotePosition = vision.getCenterCamLargestNoteTarget();
         this.savedNotePosition.ifPresent((note) -> this.everHadCenterNote = true);
-        this.everHadNoteLatch.setValue(this.everHadCenterNote);
+        this.everHadCenterNoteLatch.setValue(this.everHadCenterNote);
 
         // Create a vector points towards the note in field-oriented heading
         var toNoteTranslation = new Translation2d(
@@ -119,7 +124,7 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
             drive.move(new XYPair(-movement, 0), rotationPower);
         } else if (getClosestAvailableNote().isPresent()) {
             // try rotating towards the closest note
-            everHadNoteLatch.setValue(true);
+            everHadSideNoteLatch.setValue(true);
             var notePosition = getClosestAvailableNote().get();
             var rotationError = getRotationError(notePosition);
             rotationPower = this.drive.getAggressiveGoalHeadingPid().calculate(0, rotationError);
