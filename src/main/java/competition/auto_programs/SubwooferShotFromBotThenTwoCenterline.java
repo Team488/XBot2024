@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
+import xbot.common.subsystems.drive.swerve.SwerveDriveSubsystem;
 import xbot.common.trajectory.XbotSwervePoint;
 
 import javax.inject.Inject;
@@ -38,6 +39,9 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
                                                  Provider<IntakeCollectorCommand> intakeCollectorCommandProvider
                                                  ){
         this.autoSelector = autoSelector;
+
+        var limitCurrentCommand = drive.createChangeDriveCurrentLimitsCommand(SwerveDriveSubsystem.CurrentLimitMode.Auto);
+        this.addCommands(limitCurrentCommand);
 
         var startInFrontOfSpeaker = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferBottomScoringLocation));

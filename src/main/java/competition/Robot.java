@@ -20,6 +20,7 @@ import xbot.common.command.BaseRobot;
 import xbot.common.math.FieldPose;
 import xbot.common.math.MovingAverageForDouble;
 import xbot.common.math.MovingAverageForTranslation2d;
+import xbot.common.subsystems.drive.swerve.SwerveDriveSubsystem;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 public class Robot extends BaseRobot {
@@ -31,6 +32,7 @@ public class Robot extends BaseRobot {
     DynamicOracle oracle;
     PoseSubsystem poseSubsystem;
     OperatorInterface oi;
+    DriveSubsystem drive;
 
     @Override
     protected void initializeSystems() {
@@ -45,8 +47,9 @@ public class Robot extends BaseRobot {
         }
         oracle = getInjectorComponent().dynamicOracle();
         oi = getInjectorComponent().operatorInterface();
+        drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
 
-        dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
+        dataFrameRefreshables.add(drive);
         poseSubsystem = (PoseSubsystem) getInjectorComponent().poseSubsystem();
         dataFrameRefreshables.add(poseSubsystem);
         dataFrameRefreshables.add(getInjectorComponent().visionSubsystem());
@@ -105,6 +108,7 @@ public class Robot extends BaseRobot {
         super.teleopInit();
         oracle.clearNoteMapForTeleop();
         oracle.clearScoringLocationsForTeleop();
+        drive.setDriveModuleCurrentLimits(SwerveDriveSubsystem.CurrentLimitMode.Teleop);
     }
 
     @Override

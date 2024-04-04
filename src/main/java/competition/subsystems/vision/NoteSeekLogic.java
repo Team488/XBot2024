@@ -106,34 +106,34 @@ public class NoteSeekLogic {
     private void checkForModeChanges(boolean atTargetPose) {
         switch (noteAcquisitionMode) {
             case BlindApproach:
-                if (!hasDoneVisionCheckYet) {
-
-                    if (drive.getTargetNote() == null) {
-                        log.info("No target note set.");
-                        if (allowRotationSearch) {
-                            log.info("Attempting to find one via rotation.");
-                            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
-                            timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
-                        } else {
-                            log.info("Giving up.");
-                            noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
-                        }
-                        break;
+                if (drive.getTargetNote() == null) {
+                    log.info("No target note set.");
+                    if (allowRotationSearch) {
+                        log.info("Attempting to find one via rotation.");
+                        noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
+                        timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
+                    } else {
+                        log.info("Giving up.");
+                        noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
                     }
+                    break;
+                }
 
-                    double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
-                            drive.getTargetNote().getTranslation());
-                    aKitLog.record("RangeToStaticNote", rangeToStaticNote);
-                    if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote(visionRange)) {
+                double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
+                        drive.getTargetNote().getTranslation());
+                aKitLog.record("RangeToStaticNote", rangeToStaticNote);
+                if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote(visionRange)) {
+
+                    // One time log
+                    if (!hasDoneVisionCheckYet) {
                         hasDoneVisionCheckYet = true;
                         log.info("Close to static note - attempting vision update.");
-                        if (vision.getCenterCamLargestNoteTarget().isPresent()) {
-                            log.info("Found with central camera. Advancing using vision");
-                            noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
-                            timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
-                        } else {
-                            log.info("No note found with central camera. Staying in blind approach.");
-                        }
+                    }
+
+                    if (vision.getCenterCamLargestNoteTarget().isPresent()) {
+                        log.info("Found with central camera. Advancing using vision");
+                        noteAcquisitionMode = NoteAcquisitionMode.VisionApproach;
+                        timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
                     }
                 }
                 break;
