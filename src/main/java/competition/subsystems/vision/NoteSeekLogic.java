@@ -4,7 +4,6 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import org.apache.logging.log4j.LogManager;
@@ -53,6 +52,7 @@ public class NoteSeekLogic {
 
     private final HeadingModule headingModule;
     private boolean allowRotationSearch = false;
+    private VisionRange visionRange = VisionRange.Close;
 
     @Inject
     public NoteSeekLogic(VisionSubsystem vision, DynamicOracle oracle, PoseSubsystem pose,
@@ -81,6 +81,10 @@ public class NoteSeekLogic {
 
     public void setAllowRotationSearch(boolean allowRotationSearch) {
         this.allowRotationSearch = allowRotationSearch;
+    }
+
+    public void setVisionRange(VisionRange range) {
+        visionRange = range;
     }
 
     public void reset() {
@@ -120,7 +124,7 @@ public class NoteSeekLogic {
                     double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
                             drive.getTargetNote().getTranslation());
                     aKitLog.record("RangeToStaticNote", rangeToStaticNote);
-                    if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote() * 1.75) {
+                    if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote(visionRange)) {
                         hasDoneVisionCheckYet = true;
                         log.info("Close to static note - attempting vision update.");
                         if (vision.getCenterCamLargestNoteTarget().isPresent()) {

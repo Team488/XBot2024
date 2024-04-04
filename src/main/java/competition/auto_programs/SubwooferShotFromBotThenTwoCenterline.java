@@ -10,6 +10,7 @@ import competition.subsystems.drive.commands.DriveToBottomSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToGivenNoteWithBearingVisionCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.vision.VisionRange;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -65,6 +66,7 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
         );
         driveToCenterline5.logic.setEnableConstantVelocity(true);
         driveToCenterline5.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveToCenterline5.setVisionRangeOverride(VisionRange.Far);
 
         var collect1 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
@@ -98,6 +100,7 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
 
         driveToCenterline4.logic.setEnableConstantVelocity(true);
         driveToCenterline4.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveToCenterline4.setVisionRangeOverride(VisionRange.Far);
 
         var collect2 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
