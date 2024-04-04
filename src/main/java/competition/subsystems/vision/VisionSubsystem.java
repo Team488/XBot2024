@@ -300,6 +300,10 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         return detectedNotes;
     }
 
+    public boolean checkIfSideCamsSeeNote() {
+        return getDetectedNotes().length > 0;
+    }
+
     public Pose3d[] getPassiveDetectedNotes() {
         return passiveDetectedNotes;
     }
@@ -336,6 +340,14 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
 
 
         return null;
+    }
+
+    public double getBestRangeFromStaticNoteToSearchForNote(VisionRange range) {
+        double factor = 1.0;
+        if (range == VisionRange.Far) {
+            factor = 1.75;
+        }
+        return bestRangeFromStaticNoteToSearchForNote.get() * factor;
     }
 
     public double getBestRangeFromStaticNoteToSearchForNote() {
