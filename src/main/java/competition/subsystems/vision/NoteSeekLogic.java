@@ -34,11 +34,14 @@ public class NoteSeekLogic {
 
     double frozenHeading = 0;
     Translation2d frozenNoteTarget;
-    double timeWhenVisionModeEntered = Double.MAX_VALUE;
-    double timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
-    double timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
-    double timeWhenBackUpModeEntered = Double.MAX_VALUE;
-    double timeWhenRotateToDetectedNoteEntered = Double.MAX_VALUE;
+
+    final TimeoutTracker visionModeTimeoutTracker;
+    final TimeoutTracker terminalVisionModeTimeoutTracker;
+    final TimeoutTracker rotationSearchModeTimeoutTracker;
+    final TimeoutTracker backupModeTimeoutTracker;
+    final TimeoutTracker rotateToNoteModeTimeoutTracker;
+
+    final DoubleProperty visionModeDuration;
 
     final DoubleProperty terminalVisionModeDuration;
     final DoubleProperty rotationSearchDuration;
@@ -69,6 +72,8 @@ public class NoteSeekLogic {
 
         pf.setPrefix("NoteSeekLogic");
         pf.setDefaultLevel(Property.PropertyLevel.Important);
+
+        visionModeDuration = pf.createPersistentProperty("VisionModeDuration", 5);
         terminalVisionModeDuration = pf.createPersistentProperty("TerminalVisionModeDuration", 1.0);
         rotationSearchDuration = pf.createPersistentProperty("RotationSearchDuration", 3.0);
         rotationSearchPower = pf.createPersistentProperty("RotationSearchPower", 0.17);
@@ -76,6 +81,12 @@ public class NoteSeekLogic {
         backUpDuration = pf.createPersistentProperty("BackUpDuration", 1.0);
         rotateToNoteDuration = pf.createPersistentProperty("RotateToNoteDuration", 1.0);
 
+        visionModeTimeoutTracker = new TimeoutTracker(() -> visionModeDuration.get());
+        rotateToNoteModeTimeoutTracker = new TimeoutTracker(() -> rotateToNoteDuration.get());
+        terminalVisionModeTimeoutTracker = new TimeoutTracker(() -> terminalVisionModeDuration.get());
+        rotationSearchModeTimeoutTracker = new TimeoutTracker(() -> rotationSearchDuration.get());
+        backupModeTimeoutTracker = new TimeoutTracker(() -> backUpDuration.get());
+        
         headingModule = headingModuleFactory.create(drive.getAggressiveGoalHeadingPid());
 
         aKitLog = new AKitLogger(akitPrefix);
