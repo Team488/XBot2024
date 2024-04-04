@@ -113,8 +113,8 @@ public class DriveToGivenNoteWithVisionCommand extends DriveToGivenNoteCommand {
     private Pose2d getNearestVisionNote() {
         var notePose = oracle.getNoteMap().getClosestAvailableNote(
                 pose.getCurrentPose2d(), false);
-        if (notePose != null) {
-            return notePose.toPose2d();
+        if (notePose.isPresent()) {
+            return notePose.get().toPose2d();
         }
         return null;
     }

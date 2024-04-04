@@ -416,20 +416,20 @@ public class DynamicOracle extends BaseSubsystem {
 
     private Pose2d getVisionSuggestedNotePoseWithinDistance(double searchDistance) {
         var potentialNote = noteMap.getClosestAvailableNote(pose.getCurrentPose2d(), false);
-        if (potentialNote == null) {
+        if (potentialNote.isEmpty()) {
             // No note
             return null;
         }
 
         double distanceToNote = pose.getCurrentPose2d().getTranslation().getDistance(
-                potentialNote.toPose2d().getTranslation());
+                potentialNote.get().toPose2d().getTranslation());
 
         if (distanceToNote > searchDistance) {
             // Too far
             return null;
         }
 
-        return potentialNote.toPose2d();
+        return potentialNote.get().toPose2d();
     }
 
     private void applyVisionNotePoseToStateMachine(Pose2d visionNotePose) {

@@ -11,6 +11,7 @@ import xbot.common.controls.sensors.XTimer;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Singleton
 public class NoteMap extends ReservableLocationMap<Note> {
@@ -101,7 +102,7 @@ public class NoteMap extends ReservableLocationMap<Note> {
         }
     }
 
-    public Pose3d getClosestAvailableNote(Pose2d referencePoint, boolean includeStaticNotes) {
+    public Optional<Pose3d> getClosestAvailableNote(Pose2d referencePoint, boolean includeStaticNotes) {
         double closestDistance = Double.MAX_VALUE;
         Note closestNote = null;
         ArrayList<Note> allNotes;
@@ -121,13 +122,13 @@ public class NoteMap extends ReservableLocationMap<Note> {
             }
         }
         if (closestNote != null) {
-            return new Pose3d(new Translation3d(
+            return Optional.of(new Pose3d(new Translation3d(
                     closestNote.getLocation().getX(),
                     closestNote.getLocation().getY(),
                     0.025),
-                    new Rotation3d(0,0,0));
+                    new Rotation3d(0,0,0)));
         }
-        return null;
+        return Optional.empty();
     }
 
     public List<Note> getAllAvailableNotes() {

@@ -6,6 +6,7 @@ import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -118,9 +119,10 @@ public class PointAtNoteCommand extends BaseCommand {
 
     private Pose2d getClosestAvailableNote() {
         var virtualPoint = getProjectedPoint();
-        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
+        var maybeNotePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
 
-        if (notePosition != null) {
+        if (maybeNotePosition.isPresent()) {
+            Pose3d notePosition = maybeNotePosition.get();
             if (this.savedNotePosition == null) {
                 this.savedNotePosition = notePosition.toPose2d();
             };
