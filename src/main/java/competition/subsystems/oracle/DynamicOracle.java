@@ -308,8 +308,11 @@ public class DynamicOracle extends BaseSubsystem {
                     setTargetNote(null);
                     var closestScoringLocation = scoringLocationMap.getClosest(pose.getCurrentPose2d().getTranslation(),
                             Availability.Available);
-                    setTerminatingPoint(closestScoringLocation.getLocation());
-                    setChosenScoringLocation(closestScoringLocation.getPointOfInterest());
+
+                    if (closestScoringLocation != null) {
+                        setTerminatingPoint(closestScoringLocation.getLocation());
+                        setChosenScoringLocation(closestScoringLocation.getPointOfInterest());
+                    }
 
                     currentScoringSubGoal = ScoringSubGoals.MoveToScoringRange;
                     setSpecialAimTarget(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_AIM_TARGET));
@@ -619,6 +622,10 @@ public class DynamicOracle extends BaseSubsystem {
     }
 
     public boolean isTerminatingPointWithinDistance(double distance) {
+        if (terminatingPoint == null) {
+            return false;
+        }
+
         return pose.getCurrentPose2d().getTranslation().getDistance(
                 getTerminatingPoint().getTerminatingPose().getTranslation())
                 < distance;
