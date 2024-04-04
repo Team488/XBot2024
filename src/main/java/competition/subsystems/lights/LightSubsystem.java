@@ -46,7 +46,8 @@ public class LightSubsystem extends BaseSubsystem {
         ShooterReadyWithoutNote(1),
         ReadyToShoot(2),
         RobotContainsNote(3),
-        VisionSeesNote(4);
+        CenterCamSeesNotes(4),
+        SideCamsSeeNotes(7);
 
         LightsStateMessage(final int value) {
             if(value > maxValue || value < 0) {
@@ -122,9 +123,12 @@ public class LightSubsystem extends BaseSubsystem {
                 currentState = LightsStateMessage.ShooterReadyWithoutNote;
 
             } else if (vision.checkIfCenterCamSeesNote()) {
-                currentState = LightsStateMessage.VisionSeesNote;
+                currentState = LightsStateMessage.CenterCamSeesNotes;
 
-            } else {
+            } else if (vision.checkIfSideCamsSeeNote()) {
+                currentState = LightsStateMessage.SideCamsSeeNotes;
+
+            }else {
                 currentState = LightsStateMessage.RobotEnabled;
             }
         }
