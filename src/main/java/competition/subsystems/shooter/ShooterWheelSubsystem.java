@@ -101,9 +101,10 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
             lowerWheelMotor.setAverageDepth(1);
         }
 
-        var distanceArray =      new double[]{0,    36,   49.5, 63,   80,   111,  136};
-        var upperWheelRPMArray = new double[]{4000, 4000, 4000, 4000, 4000, 4000, 4500};
-        var lowerWheelRPMArray = new double[]{4000, 4000, 4000, 4000, 4000, 4000, 4500};
+        // distance in meters
+        var distanceArray =      new double[]{0.00, 1.57, 2.47, 3.58, 3.92, 4.56, 4.73};
+        var upperWheelRPMArray = new double[]{3600, 4000, 4000, 4300, 4500, 4500, 4800};
+        var lowerWheelRPMArray = new double[]{3600, 4000, 4000, 4300, 4500, 4500, 4800};
 
         upperWheelDistanceToRpmInterpolator = new DoubleInterpolator(distanceArray, upperWheelRPMArray);
         lowerWheelDistanceToRpmInterpolator = new DoubleInterpolator(distanceArray, lowerWheelRPMArray);
