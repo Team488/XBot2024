@@ -166,7 +166,7 @@ public class OperatorCommandMap {
         var prepareToFireAtSubwoofer = warmUpShooterSubwoofer.alongWith(armToSubwoofer);
         var prepareToFireAtAmp = warmUpShooterToFireInAmp.alongWith(armToAmp);
         var continuouslyPrepareToFireAtSpeaker =
-                shooterWarmUpTypical.alongWith(continuouslyPointArmAtSpeaker);
+                continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
         // Bind to buttons
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNoteFromGround);

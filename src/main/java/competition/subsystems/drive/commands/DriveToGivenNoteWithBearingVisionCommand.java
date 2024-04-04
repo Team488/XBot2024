@@ -7,6 +7,7 @@ import competition.subsystems.pose.PoseSubsystem;
 import competition.subsystems.vision.NoteAcquisitionMode;
 import competition.subsystems.vision.NoteSeekAdvice;
 import competition.subsystems.vision.NoteSeekLogic;
+import competition.subsystems.vision.VisionRange;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import xbot.common.math.XYPair;
@@ -46,6 +47,10 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
         logic.setDistanceThresholdToPrioritizeRotation(1.5);
 
         this.noteSeekLogic = noteSeekLogic;
+    }
+
+    public void setVisionRangeOverride(VisionRange range) {
+        noteSeekLogic.setVisionRange(range);
     }
 
     @Override

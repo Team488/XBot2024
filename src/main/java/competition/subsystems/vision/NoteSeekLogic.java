@@ -57,6 +57,7 @@ public class NoteSeekLogic {
 
     private final HeadingModule headingModule;
     private boolean allowRotationSearch = false;
+    private VisionRange visionRange = VisionRange.Close;
 
     @Inject
     public NoteSeekLogic(VisionSubsystem vision, DynamicOracle oracle, PoseSubsystem pose,
@@ -86,6 +87,10 @@ public class NoteSeekLogic {
 
     public void setAllowRotationSearch(boolean allowRotationSearch) {
         this.allowRotationSearch = allowRotationSearch;
+    }
+
+    public void setVisionRange(VisionRange range) {
+        visionRange = range;
     }
 
     public void reset() {
@@ -120,7 +125,6 @@ public class NoteSeekLogic {
                         drive.getTargetNote().getTranslation());
                 aKitLog.record("RangeToStaticNote", rangeToStaticNote);
                 if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
-
                     if (!hasDoneVisionCheckYet) {
                         log.info("Close to static note - attempting vision update.");
                         hasDoneVisionCheckYet = true;
