@@ -108,17 +108,17 @@ public class NoteSeekLogic {
         noteAcquisitionMode = initialMode;
         resetVisionModeTimers();
         if (initialMode == NoteAcquisitionMode.CenterCameraVisionApproach) {
-            timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+            visionModeTimeoutTracker.start();
         }
         hasDoneVisionCheckYet = false;
     }
 
     private void resetVisionModeTimers() {
-        timeWhenVisionModeEntered = Double.MAX_VALUE;
-        timeWhenTerminalVisionModeEntered = Double.MAX_VALUE;
-        timeWhenRotationSearchModeEntered = Double.MAX_VALUE;
-        timeWhenBackUpModeEntered = Double.MAX_VALUE;
-        timeWhenRotateToDetectedNoteEntered = Double.MAX_VALUE;
+        visionModeTimeoutTracker.reset();
+        terminalVisionModeTimeoutTracker.reset();
+        rotationSearchModeTimeoutTracker.reset();
+        backupModeTimeoutTracker.reset();
+        rotateToNoteModeTimeoutTracker.reset();
     }
 
     private void checkForModeChanges(boolean atTargetPose) {
@@ -148,9 +148,9 @@ public class NoteSeekLogic {
                 // mode too long.
                 if (hasSolidLockOnNoteWithCenterCamera()) {
                     noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
-                    timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+                    visionModeTimeoutTracker.start();
                 }
-                if (XTimer.getFPGATimestamp() > timeWhenRotateToDetectedNoteEntered + rotateToNoteDuration.get()) {
+                if (rotateToNoteModeTimeoutTracker.getTimedOut()) {
                     decideWhetherToGiveUpOrRotate();
                 }
                 break;
@@ -158,18 +158,15 @@ public class NoteSeekLogic {
                 if (shouldEnterTerminalVisionApproach()) {
                     log.info("Switching to terminal vision approach");
                     noteAcquisitionMode = NoteAcquisitionMode.CenterCameraTerminalApproach;
-                    timeWhenTerminalVisionModeEntered = XTimer.getFPGATimestamp();
+                    terminalVisionModeTimeoutTracker.start();
                     frozenHeading = pose.getCurrentHeading().getDegrees();
                 }
                 break;
             case CenterCameraTerminalApproach:
                 if (shouldExitTerminalVisionApproach()) {
-                    log.info("Switching to back away to try again");
-                    timeWhenBackUpModeEntered = XTimer.getFPGATimestamp();
-                    noteAcquisitionMode = NoteAcquisitionMode.BackAwayToTryAgain;
-                    suggestedLocation = new Pose2d(
-                            pose.transformRobotCoordinateToFieldCoordinate(new Translation2d(1,0)),
-                            pose.getCurrentHeading());
+                    log.info("Going to rotation search");
+                    rotationSearchModeTimeoutTracker.start();
+                    noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
                 }
                 break;
             case BackAwayToTryAgain:
@@ -178,7 +175,7 @@ public class NoteSeekLogic {
                     if (vision.getCenterCamLargestNoteTarget().isPresent()) {
                         log.info("Found a note. Switching to vision mode.");
                         resetVisionModeTimers();
-                        timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+                        visionModeTimeoutTracker.start();
                         noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
                     } else {
                         log.info("Can't see a note.");
@@ -210,12 +207,12 @@ public class NoteSeekLogic {
             if (scannedNote.get().getSource() == NoteDetectionSource.CenterCamera) {
                 log.info("Found with central camera. Advancing using vision");
                 noteAcquisitionMode = NoteAcquisitionMode.CenterCameraVisionApproach;
-                timeWhenVisionModeEntered = XTimer.getFPGATimestamp();
+                visionModeTimeoutTracker.start();
             } else {
                 log.info("Found with a corner camera. Advancing using vision");
                 noteAcquisitionMode = NoteAcquisitionMode.RotateToNoteDetectedByCornerCameras;
                 frozenHeading = scannedNote.get().getNote().yaw;
-                timeWhenRotateToDetectedNoteEntered = XTimer.getFPGATimestamp();
+                rotateToNoteModeTimeoutTracker.start();
             }
             if (resetTimersIfFound) {
                 resetVisionModeTimers();
@@ -274,22 +271,16 @@ public class NoteSeekLogic {
     }
 
     private boolean shouldExitTerminalVisionApproach() {
-        if (XTimer.getFPGATimestamp() > timeWhenTerminalVisionModeEntered + terminalVisionModeDuration.get()) {
-            return true;
-        }
-        return false;
+        return terminalVisionModeTimeoutTracker.getTimedOut();
     }
 
     private boolean shouldExitRotationSearch() {
-        if (XTimer.getFPGATimestamp() > timeWhenRotationSearchModeEntered + rotationSearchDuration.get()) {
-            return true;
-        }
-        return false;
+        return rotationSearchModeTimeoutTracker.getTimedOut();
     }
 
     private boolean shouldExitBackUp(boolean atTargetPosition) {
         return atTargetPosition
-                || XTimer.getFPGATimestamp() > timeWhenBackUpModeEntered + backUpDuration.get()
+                || backupModeTimeoutTracker.getTimedOut()
                 || vision.getCenterCamLargestNoteTarget().isPresent();
     }
 
@@ -356,7 +347,7 @@ public class NoteSeekLogic {
         if (allowRotationSearch) {
             log.info("Attempting to find one via rotation.");
             noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
-            timeWhenRotationSearchModeEntered = XTimer.getFPGATimestamp();
+            rotationSearchModeTimeoutTracker.start();
         } else {
             log.info("Giving up.");
             noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
