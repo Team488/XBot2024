@@ -15,6 +15,7 @@ import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
+import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -133,7 +134,7 @@ public class NoteSeekLogic {
                 }
 
                 double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
-                        drive.getTargetNote().getTranslation());
+                        (BasePoseSubsystem.convertBlueToRedIfNeeded(drive.getTargetNote())).getTranslation());
                 aKitLog.record("RangeToStaticNote", rangeToStaticNote);
 
                 if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
