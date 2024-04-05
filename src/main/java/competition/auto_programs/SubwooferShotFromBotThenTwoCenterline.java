@@ -28,7 +28,7 @@ import java.util.ArrayList;
 //when we have the time to tune a ranged shot will update to that
 public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGroup {
     AutonomousCommandSelector autoSelector;
-    double centerlineTimeout = 5;
+    double centerlineTimeout = 999;
 
     double meterThreshold = 0.3048;
     double velocityThreshold = 0.05;
@@ -65,25 +65,27 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.CenterLine5);
+                    drive.setTargetNote(PoseSubsystem.CenterLine4);
                 })
         );
-        var driveToCenterline5 = driveToNoteProvider.get();
+        var driveToCenterline4 = driveToNoteProvider.get();
         this.addCommands(
                 new InstantCommand(()->{
-                    driveToCenterline5.setWaypoints(new Translation2d(
+                    driveToCenterline4.setWaypoints(new Translation2d(
                             PoseSubsystem.BlueSpikeBottom.getX() + 2.06,
                             PoseSubsystem.BlueSpikeBottom.getY() - 2.3951
                     ));
                 })
         );
-        driveToCenterline5.logic.setEnableConstantVelocity(true);
-        driveToCenterline5.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
-        driveToCenterline5.setVisionRangeOverride(VisionRange.Far);
+        driveToCenterline4.logic.setEnableConstantVelocity(true);
+        driveToCenterline4.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveToCenterline4.setVisionRangeOverride(VisionRange.Far);
 
         var collect1 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
-        this.addCommands(Commands.deadline(collect1,driveToCenterline5).withTimeout(centerlineTimeout));
+        this.addCommands(Commands.deadline(collect1,driveToCenterline4).withTimeout(centerlineTimeout));
+
+        addCommands(drive.createChangeDriveCurrentLimitsCommand(SwerveDriveSubsystem.CurrentLimitMode.Teleop));
 
         var driveBackToBottomSubwooferFirst = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferFirst.addPointsSupplier(this::goBackToBotSubwoofer);
@@ -99,26 +101,30 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
 
         this.addCommands(
                 new InstantCommand(() -> {
-                    drive.setTargetNote(PoseSubsystem.CenterLine4);
+                    drive.setTargetNote(PoseSubsystem.CenterLine5);
                 })
         );
-        var driveToCenterline4 = driveToNoteProvider.get();
+        var driveToCenterline5 = driveToNoteProvider.get();
         this.addCommands(
                 new InstantCommand(()->{
-                    driveToCenterline4.setWaypoints(new Translation2d(
+                    driveToCenterline5.setWaypoints(new Translation2d(
                             PoseSubsystem.BlueSpikeBottom.getX() + 2.06,
                             PoseSubsystem.BlueSpikeBottom.getY() - 2.3951
                     ));
                 })
         );
 
-        driveToCenterline4.logic.setEnableConstantVelocity(true);
-        driveToCenterline4.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
-        driveToCenterline4.setVisionRangeOverride(VisionRange.Far);
+        addCommands(drive.createChangeDriveCurrentLimitsCommand(SwerveDriveSubsystem.CurrentLimitMode.Auto));
+
+        driveToCenterline5.logic.setEnableConstantVelocity(true);
+        driveToCenterline5.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveToCenterline5.setVisionRangeOverride(VisionRange.Far);
 
         var collect2 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
-        this.addCommands(Commands.deadline(collect2,driveToCenterline4).withTimeout(centerlineTimeout));
+        this.addCommands(Commands.deadline(collect2,driveToCenterline5).withTimeout(centerlineTimeout));
+
+        addCommands(drive.createChangeDriveCurrentLimitsCommand(SwerveDriveSubsystem.CurrentLimitMode.Auto));
 
         var driveBackToBottomSubwooferSecond = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferSecond.addPointsSupplier(this::goBackToBotSubwoofer);
