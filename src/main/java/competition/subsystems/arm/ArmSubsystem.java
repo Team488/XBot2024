@@ -229,7 +229,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                         rangesInMeters,
                         experimentalArmExtensionsInMm);
 
-        trimInMeters = pf.createPersistentProperty("TrimDistanceFromSpeakerInMeters", 0.3);
+        trimInMeters = pf.createPersistentProperty("TrimDistanceFromSpeakerInMeters", 0.0);
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
