@@ -1,15 +1,15 @@
 package competition.operator_interface;
 
+import competition.auto_programs.BotCenter5ThenCenter4;
 import competition.auto_programs.DoNothingAuto;
 import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
-import competition.auto_programs.SubwooferShotFromBotThenTwoCenterline;
+import competition.auto_programs.BotCenter4ThenCenter5;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
-import competition.auto_programs.TwoNoteGriefAuto;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.commandgroups.PrepareToLobShotCommand;
@@ -29,7 +29,6 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
 import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
-import competition.subsystems.drive.commands.PointAtNoteCommand;
 import competition.subsystems.drive.commands.PointAtNoteWithBearingCommand;
 import competition.subsystems.drive.commands.TryDriveToBearingNote;
 import competition.subsystems.flipper.commands.SetFlipperServoToHangPositionCommand;
@@ -239,7 +238,8 @@ public class OperatorCommandMap {
                                                 SixNoteBnbExtended bnbExtended,
                                                 DoNothingAuto doNothing,
                                                 GriefMiddle grief,
-                                                SubwooferShotFromBotThenTwoCenterline botThenTwoCenter,
+                                                BotCenter4ThenCenter5 botCenter4ThenCenter5,
+                                                BotCenter5ThenCenter4 botCenter5ThenCenter4,
                                                 ArmSubsystem arm) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
@@ -274,9 +274,15 @@ public class OperatorCommandMap {
         setDoNothing.setAutoCommand(doNothing);
         oi.neoTrellis.getifAvailable(8).onTrue(setDoNothing);
 
-        var setBotThenTwoCenter = setAutonomousCommandProvider.get();
-        setBotThenTwoCenter.setAutoCommand(botThenTwoCenter);
-        oi.neoTrellis.getifAvailable(30).onTrue(setBotThenTwoCenter);
+        var setbotCenter4ThenCenter5 = setAutonomousCommandProvider.get();
+        setbotCenter4ThenCenter5.setAutoCommand(botCenter4ThenCenter5);
+        oi.neoTrellis.getifAvailable(30).onTrue(setbotCenter4ThenCenter5);
+
+        var setbotCenter5ThenCenter4 = setAutonomousCommandProvider.get();
+        setbotCenter5ThenCenter4.setAutoCommand(botCenter5ThenCenter4);
+        oi.neoTrellis.getifAvailable(22).onTrue(setbotCenter5ThenCenter4);
+
+
 
         oi.neoTrellis.getifAvailable(1).onTrue(new InstantCommand(() -> arm.increaseTrimInMeters(0.1524)));
         oi.neoTrellis.getifAvailable(9).onTrue(new InstantCommand(() -> arm.increaseTrimInMeters(-0.1524)));
