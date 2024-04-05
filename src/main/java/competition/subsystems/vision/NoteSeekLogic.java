@@ -254,13 +254,13 @@ public class NoteSeekLogic {
                 return new NoteSeekAdvice(
                         noteAcquisitionMode, Optional.of(suggestedLocation),Optional.empty());
             case SearchViaRotation:
-                suggestedPowers = new Twist2d(0, 0, rotationSearchPower.get());
                 // drive very slowly towards the center-x of the field so that we get unstuck from the wall if we're on it
                 var yPower = 0.05;
-                if(pose.getCurrentPose2d().getY() > fieldMidPoint) {
+                if(pose.getCurrentPose2d().getY() > PoseSubsystem.CenterLine3.getY()) {
                     // on top half of field, head south
-                    yPower -= 1;
+                    yPower *= -1;
                 }
+                suggestedPowers = new Twist2d(0, yPower, rotationSearchPower.get());
                 return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.of(suggestedPowers));
             case GiveUp:
             default:
