@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Twist2d;
 import org.apache.logging.log4j.LogManager;
 import xbot.common.advantage.AKitLogger;
 import xbot.common.controls.sensors.XTimer;
+import xbot.common.logic.TimeStableValidator;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
@@ -62,6 +63,7 @@ public class NoteSeekLogic {
     private final HeadingModule headingModule;
     private boolean allowRotationSearch = false;
     private VisionRange visionRange = VisionRange.Close;
+    final TimeStableValidator centerCamStableValidator = new TimeStableValidator(0.3); 
 
     @Inject
     public NoteSeekLogic(VisionSubsystem vision, DynamicOracle oracle, PoseSubsystem pose,
@@ -112,6 +114,7 @@ public class NoteSeekLogic {
             visionModeTimeoutTracker.start();
         }
         hasDoneVisionCheckYet = false;
+        centerCamStableValidator.checkStable(false);
     }
 
     private void resetVisionModeTimers() {
@@ -360,9 +363,11 @@ public class NoteSeekLogic {
         // If the note is roughly centered on the center camera, we can try driving to it.
         var target = vision.getCenterCamLargestNoteTarget();
         if (target.isPresent()) {
-            return Math.abs(target.get().getYaw()) < 15;
+            var isNearCenter = Math.abs(target.get().getYaw()) < 15;
+            var isStable = centerCamStableValidator.checkStable(isNearCenter);
+            return isStable;
         }
-        return false;
+        return centerCamStableValidator.checkStable(false);
     }
 
 
