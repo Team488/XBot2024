@@ -48,6 +48,10 @@ public class IntakeCollectorCommand extends BaseCommand {
     @Override
     public void end(boolean interrupted) {
         super.end(interrupted);
+        oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(0, 0.7);
+        oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(0, 0.7);
+        oi.driverGamepad.getRumbleManager().rumbleGamepad(0, 0.7);
+
         collector.stop();
 
     }
