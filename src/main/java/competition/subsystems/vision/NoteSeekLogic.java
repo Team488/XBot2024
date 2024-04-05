@@ -365,9 +365,10 @@ public class NoteSeekLogic {
         if (target.isPresent()) {
             var isNearCenter = Math.abs(target.get().getYaw()) < 15;
             var isStable = centerCamStableValidator.checkStable(isNearCenter);
-            return isStable;
+            return isNearCenter && isStable;
         }
-        return centerCamStableValidator.checkStable(false);
+        centerCamStableValidator.checkStable(false);
+        return false;
     }
 
 
