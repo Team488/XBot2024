@@ -1,5 +1,7 @@
 package competition.injection.components;
 
+import competition.auto_programs.BotCenter4ThenCenter5;
+import competition.auto_programs.BotCenter5ThenCenter4;
 import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.TestVisionAuto;
@@ -23,11 +25,7 @@ import xbot.common.injection.swerve.SwerveComponentHolder;
 import competition.operator_interface.OperatorCommandMap;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.SubsystemDefaultCommandMap;
-import competition.subsystems.oracle.ManualRobotKnowledgeSubsystem;
-import competition.subsystems.oracle.NoteCollectionInfoSource;
-import competition.subsystems.oracle.NoteFiringInfoSource;
 import competition.subsystems.vision.VisionSubsystem;
-import dagger.Binds;
 import xbot.common.injection.components.BaseComponent;
 import xbot.common.subsystems.drive.swerve.SwerveDefaultCommandMap;
 
@@ -71,4 +69,6 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract ListenToOracleCommandGroup listenToOracleCommandGroup();
     public abstract TestVisionAuto testVisionAuto();
     public abstract GriefMiddle griefMiddle();
+    public abstract BotCenter4ThenCenter5 botCenter4ThenCenter5();
+    public abstract BotCenter5ThenCenter4 botCenter5ThenCenter4();
 }
