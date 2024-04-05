@@ -86,11 +86,14 @@ public class OperatorCommandMap {
         var pointAtSource = drive.createSetSpecialHeadingTargetCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.FaceCollectorToBlueSource));
 
+        var pointAtAmpForLob = drive.createSetSpecialHeadingTargetCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.FaceShooterToBlueAmpForLob));
+
         var cancelSpecialPointAtPosition = drive.createClearAllSpecialTargetsCommand();
 
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(driveToAmpCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(pointAtAmpForLob);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(limitArmToUnderStageCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
