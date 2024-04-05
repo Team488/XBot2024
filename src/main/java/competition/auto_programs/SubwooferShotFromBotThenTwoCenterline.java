@@ -4,10 +4,13 @@ import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.DriveToGivenNoteWithVisionCommand;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
+import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToBottomSubwooferCommand;
+import competition.subsystems.drive.commands.DriveToGivenNoteWithBearingVisionCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.vision.VisionRange;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -24,17 +27,15 @@ import java.util.ArrayList;
 //when we have the time to tune a ranged shot will update to that
 public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGroup {
     AutonomousCommandSelector autoSelector;
-    // temporarily make this much larger to test the whole thing slowly in 99
-    double centerlineTimeout = 18.0;
+    double centerlineTimeout = 8;
     @Inject
     public SubwooferShotFromBotThenTwoCenterline(AutonomousCommandSelector autoSelector, PoseSubsystem pose,
                                                  DriveSubsystem drive,
                                                  Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroupProvider,
-                                                 Provider<DriveToGivenNoteWithVisionCommand> driveToNoteProvider,
+                                                 Provider<DriveToGivenNoteWithBearingVisionCommand> driveToNoteProvider,
                                                  Provider<CollectSequenceCommandGroup> collectSequenceCommandGroupProvider,
-                                                 Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
-                                                 Provider<DriveToBottomSubwooferCommand> driveToBottomSubwooferCommandProvider,
-                                                 Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider
+                                                 Provider<DriveToListOfPointsCommand> driveToListOfPointsCommandProvider,
+                                                 Provider<IntakeCollectorCommand> intakeCollectorCommandProvider
                                                  ){
         this.autoSelector = autoSelector;
 
@@ -63,14 +64,20 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
                     ));
                 })
         );
+        driveToCenterline5.logic.setEnableConstantVelocity(true);
+        driveToCenterline5.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveToCenterline5.setVisionRangeOverride(VisionRange.Far);
+
         var collect1 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
         this.addCommands(Commands.deadline(collect1,driveToCenterline5).withTimeout(centerlineTimeout));
 
         var driveBackToBottomSubwooferFirst = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferFirst.addPointsSupplier(this::goBackToBotSubwoofer);
+        driveBackToBottomSubwooferFirst.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
 
-        this.addCommands(driveBackToBottomSubwooferFirst.withTimeout(centerlineTimeout));
+        var collect3 = intakeCollectorCommandProvider.get();
+        this.addCommands(Commands.deadline(driveBackToBottomSubwooferFirst.withTimeout(centerlineTimeout),collect3));
 
         // Fire second note into the speaker
         var fireSecondNoteCommand = fireFromSubwooferCommandGroupProvider.get();
@@ -91,14 +98,20 @@ public class SubwooferShotFromBotThenTwoCenterline extends SequentialCommandGrou
                 })
         );
 
+        driveToCenterline4.logic.setEnableConstantVelocity(true);
+        driveToCenterline4.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
+        driveToCenterline4.setVisionRangeOverride(VisionRange.Far);
+
         var collect2 = collectSequenceCommandGroupProvider.get();
         //swap collect and drive for testing
         this.addCommands(Commands.deadline(collect2,driveToCenterline4).withTimeout(centerlineTimeout));
 
         var driveBackToBottomSubwooferSecond = driveToListOfPointsCommandProvider.get();
         driveBackToBottomSubwooferSecond.addPointsSupplier(this::goBackToBotSubwoofer);
+        driveBackToBottomSubwooferSecond.setMaximumSpeedOverride(drive.getSuggestedAutonomousExtremeSpeed());
 
-        this.addCommands(driveBackToBottomSubwooferSecond.withTimeout(centerlineTimeout));
+        var collect4 = intakeCollectorCommandProvider.get();
+        this.addCommands(Commands.deadline(driveBackToBottomSubwooferSecond.withTimeout(centerlineTimeout),collect4));
 
         // Fire second note into the speaker
         var fireThirdNoteCommand = fireFromSubwooferCommandGroupProvider.get();

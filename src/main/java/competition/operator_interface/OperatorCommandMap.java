@@ -166,7 +166,7 @@ public class OperatorCommandMap {
         var prepareToFireAtSubwoofer = warmUpShooterSubwoofer.alongWith(armToSubwoofer);
         var prepareToFireAtAmp = warmUpShooterToFireInAmp.alongWith(armToAmp);
         var continuouslyPrepareToFireAtSpeaker =
-                shooterWarmUpTypical.alongWith(continuouslyPointArmAtSpeaker);
+                continuouslyWarmUpForSpeaker.alongWith(continuouslyPointArmAtSpeaker);
 
         // Bind to buttons
         oi.operatorGamepadAdvanced.getXboxButton(XboxButton.LeftTrigger).whileTrue(collectNoteFromGround);
@@ -239,7 +239,8 @@ public class OperatorCommandMap {
                                                 SixNoteBnbExtended bnbExtended,
                                                 DoNothingAuto doNothing,
                                                 GriefMiddle grief,
-                                                SubwooferShotFromBotThenTwoCenterline botThenTwoCenter) {
+                                                SubwooferShotFromBotThenTwoCenterline botThenTwoCenter,
+                                                ArmSubsystem arm) {
         var setOracleAuto = setAutonomousCommandProvider.get();
         setOracleAuto.setAutoCommand(listenToOracleCommandGroup);
         oi.neoTrellis.getifAvailable(31).onTrue(setOracleAuto);
@@ -276,6 +277,9 @@ public class OperatorCommandMap {
         var setBotThenTwoCenter = setAutonomousCommandProvider.get();
         setBotThenTwoCenter.setAutoCommand(botThenTwoCenter);
         oi.neoTrellis.getifAvailable(30).onTrue(setBotThenTwoCenter);
+
+        oi.neoTrellis.getifAvailable(1).onTrue(new InstantCommand(() -> arm.increaseTrimInMeters(0.1524)));
+        oi.neoTrellis.getifAvailable(9).onTrue(new InstantCommand(() -> arm.increaseTrimInMeters(-0.1524)));
     }
 
     @Inject

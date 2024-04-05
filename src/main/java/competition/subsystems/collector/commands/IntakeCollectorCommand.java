@@ -3,7 +3,6 @@ package competition.subsystems.collector.commands;
 import competition.operator_interface.OperatorInterface;
 import competition.subsystems.collector.CollectorSubsystem;
 import xbot.common.command.BaseCommand;
-import xbot.common.command.BaseSetpointCommand;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.PropertyFactory;
 
@@ -15,7 +14,7 @@ public class IntakeCollectorCommand extends BaseCommand {
     final OperatorInterface oi;
     private final DoubleProperty higherIntensity;
     private final DoubleProperty lowerIntensity;
-    private boolean isToggledOnce = false;
+
     @Inject
     public IntakeCollectorCommand(CollectorSubsystem collector, OperatorInterface oi, PropertyFactory pf) {
         addRequirements(collector);
@@ -30,20 +29,16 @@ public class IntakeCollectorCommand extends BaseCommand {
     public void initialize() {
         collector.resetCollectionState();
         log.info("Initializing");
-        isToggledOnce = false;
     }
 
     @Override
     public void execute() {
         collector.intake();
-        if(collector.getGamePieceInControl()) {
-            isToggledOnce = true;
-        }
         if (collector.confidentlyHasControlOfNote()) {
             oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(higherIntensity.get(), 0.7);
             oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(higherIntensity.get(), 0.7);
             oi.driverGamepad.getRumbleManager().rumbleGamepad(higherIntensity.get(), 0.7);
-        } else if (isToggledOnce) {
+        } else if (collector.getBeamBreakSensorActivated()) {
             oi.operatorGamepadAdvanced.getRumbleManager().rumbleGamepad(lowerIntensity.get(), 0.7);
             oi.operatorFundamentalsGamepad.getRumbleManager().rumbleGamepad(lowerIntensity.get(), 0.7);
             oi.driverGamepad.getRumbleManager().rumbleGamepad(lowerIntensity.get(), 0.7);
