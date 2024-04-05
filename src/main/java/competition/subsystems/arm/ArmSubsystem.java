@@ -95,7 +95,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     boolean brakesForceEngaged = false;
     final ArmModelBasedCalculator armModelBasedCalculator;
 
-
+    public final DoubleProperty trimInMeters;
 
     public enum ArmState {
         EXTENDING,
@@ -212,6 +212,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
             armMotorLeft.setIdleMode(CANSparkBase.IdleMode.kCoast);
             armMotorRight.setIdleMode(CANSparkBase.IdleMode.kCoast);
+
         }
 
         this.armState = ArmState.STOPPED;
@@ -227,6 +228,8 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 new DoubleInterpolator(
                         rangesInMeters,
                         experimentalArmExtensionsInMm);
+
+        trimInMeters = pf.createPersistentProperty("TrimDistanceFromSpeakerInMeters", 0.0);
     }
 
     public double constrainPowerIfNearLimit(double power, double actualPosition) {
@@ -467,7 +470,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getModeledExtensionForGivenSpeakerDistance(double distanceFromSpeaker) {
-        return armModelBasedCalculator.getExtensionForSpeakerDistance(distanceFromSpeaker);
+        return armModelBasedCalculator.getExtensionForSpeakerDistance(distanceFromSpeaker + trimInMeters.get());
     }
 
     public double getUsefulArmPositionExtensionInMm(UsefulArmPosition usefulArmPosition) {
@@ -737,5 +740,9 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
 
     public boolean getLimitToUnderStage() {
         return limitToUnderStage;
+    }
+
+    public void increaseTrimInMeters(double amount) {
+        trimInMeters.set(trimInMeters.get() + amount);
     }
 }
