@@ -72,7 +72,7 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
 
         double maxVelocity = drive.getMaxTargetSpeedMetersPerSecond();
         if (DriverStation.isAutonomous()) {
-            maxVelocity = drive.getSuggestedAutonomousExtremeSpeed();
+            maxVelocity = drive.getSuggestedAutonomousMaximumSpeed();
         }
 
         if (oracle.getTargetNote() != null) {
@@ -149,13 +149,15 @@ public class SwerveAccordingToOracleCommand extends BaseCommand {
 
         // Now that our swerve logic is configured to satisfaction, give it the goal point and reset it to start
         // the new path.
-        lastSeenInstructionNumber = goalPosition.getPoseMessageNumber();
-        logic.setKeyPoints(List.of(new XbotSwervePoint(
-                goalPosition.getTerminatingPose().getTranslation(),
-                goalPosition.getTerminatingPose().getRotation(),
-                10)));
+        if (goalPosition != null) {
+            lastSeenInstructionNumber = goalPosition.getPoseMessageNumber();
+            logic.setKeyPoints(List.of(new XbotSwervePoint(
+                    goalPosition.getTerminatingPose().getTranslation(),
+                    goalPosition.getTerminatingPose().getRotation(),
+                    10)));
 
-        logic.reset(pose.getCurrentPose2d());
+            logic.reset(pose.getCurrentPose2d());
+        }
     }
 
     @Override

@@ -468,9 +468,12 @@ public class PoseSubsystem extends BasePoseSubsystem {
     }
 
     public double getAngularErrorToTranslation2dInDegrees(Translation2d targetPosition, Rotation2d offset) {
-        var angleFromChassisToTarget = WrappedRotation2d.fromDegrees(
+        return getCurrentHeading().minus(getAngleFromChassisToTarget(targetPosition, offset)).getDegrees();
+    }
+
+    public WrappedRotation2d getAngleFromChassisToTarget(Translation2d targetPosition, Rotation2d offset) {
+        return WrappedRotation2d.fromDegrees(
                 targetPosition.minus(getCurrentPose2d().getTranslation()).getAngle().rotateBy(offset).getDegrees());
-        return getCurrentHeading().minus(angleFromChassisToTarget).getDegrees();
     }
 
     public Translation2d transformRobotCoordinateToFieldCoordinate(Translation2d robotCoordinates) {

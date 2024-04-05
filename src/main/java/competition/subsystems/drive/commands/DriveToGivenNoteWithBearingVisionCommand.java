@@ -92,9 +92,9 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
             case BackAwayToTryAgain:
                 super.execute();
                 break;
-            // If we are using
-            case VisionApproach:
-            case VisionTerminalApproach:
+            // If we are using the cameras, listen to the suggested powers
+            case CenterCameraVisionApproach:
+            case CenterCameraTerminalApproach:
             case SearchViaRotation:
                 if (currentAdvice.suggestedDrivePercentages.isPresent()) {
                     var driveValues = currentAdvice.suggestedDrivePercentages.get();
