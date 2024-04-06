@@ -11,10 +11,12 @@ import edu.wpi.first.math.geometry.Twist2d;
 import org.apache.logging.log4j.LogManager;
 import xbot.common.advantage.AKitLogger;
 import xbot.common.controls.sensors.XTimer;
+import xbot.common.logic.TimeStableValidator;
 import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
+import xbot.common.subsystems.pose.BasePoseSubsystem;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -61,6 +63,7 @@ public class NoteSeekLogic {
     private final HeadingModule headingModule;
     private boolean allowRotationSearch = false;
     private VisionRange visionRange = VisionRange.Close;
+    final TimeStableValidator centerCamStableValidator = new TimeStableValidator(0.3); 
 
     @Inject
     public NoteSeekLogic(VisionSubsystem vision, DynamicOracle oracle, PoseSubsystem pose,
@@ -111,6 +114,7 @@ public class NoteSeekLogic {
             visionModeTimeoutTracker.start();
         }
         hasDoneVisionCheckYet = false;
+        centerCamStableValidator.checkStable(false);
     }
 
     private void resetVisionModeTimers() {
@@ -133,7 +137,7 @@ public class NoteSeekLogic {
                 }
 
                 double rangeToStaticNote = pose.getCurrentPose2d().getTranslation().getDistance(
-                        drive.getTargetNote().getTranslation());
+                        (BasePoseSubsystem.convertBlueToRedIfNeeded(drive.getTargetNote())).getTranslation());
                 aKitLog.record("RangeToStaticNote", rangeToStaticNote);
 
                 if (rangeToStaticNote < vision.getBestRangeFromStaticNoteToSearchForNote()) {
@@ -141,8 +145,8 @@ public class NoteSeekLogic {
                         log.info("Close to static note - attempting vision update.");
                         hasDoneVisionCheckYet = true;
                     }
-                    evaluateIfShouldMoveToVisionBasedCollection(false);
-                }
+                    evaluateIfShouldMoveToVisionBasedCollection(false, atTargetPose);
+                } 
                 break;
             case RotateToNoteDetectedByCornerCameras:
                 // Rotate until either the center camera sees the note nice and solidly or we have been in this
@@ -185,7 +189,7 @@ public class NoteSeekLogic {
                 }
                 break;
             case SearchViaRotation:
-                evaluateIfShouldMoveToVisionBasedCollection(true);
+                evaluateIfShouldMoveToVisionBasedCollection(true, atTargetPose);
                 if (shouldExitRotationSearch()) {
                     log.info("Giving up.");
                     noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
@@ -202,7 +206,7 @@ public class NoteSeekLogic {
         aKitLog.record("NoteAcquisitionMode", noteAcquisitionMode);
     }
 
-    private void evaluateIfShouldMoveToVisionBasedCollection(boolean resetTimersIfFound) {
+    private void evaluateIfShouldMoveToVisionBasedCollection(boolean resetTimersIfFound, boolean atTargetPose) {
         var scannedNote = scanForNote();
         if (scannedNote.isPresent()) {
             if (scannedNote.get().getSource() == NoteDetectionSource.CenterCamera) {
@@ -218,6 +222,9 @@ public class NoteSeekLogic {
             if (resetTimersIfFound) {
                 resetVisionModeTimers();
             }
+        } else if(atTargetPose && noteAcquisitionMode != NoteAcquisitionMode.SearchViaRotation) {
+            log.info("Reached target pose but vision never saw note, entering rotation search mode.");
+            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
         }
     }
 
@@ -359,8 +366,11 @@ public class NoteSeekLogic {
         // If the note is roughly centered on the center camera, we can try driving to it.
         var target = vision.getCenterCamLargestNoteTarget();
         if (target.isPresent()) {
-            return Math.abs(target.get().getYaw()) < 15;
+            var isNearCenter = Math.abs(target.get().getYaw()) < 15;
+            var isStable = centerCamStableValidator.checkStable(isNearCenter);
+            return isNearCenter && isStable;
         }
+        centerCamStableValidator.checkStable(false);
         return false;
     }
 

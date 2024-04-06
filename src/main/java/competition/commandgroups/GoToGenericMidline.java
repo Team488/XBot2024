@@ -25,7 +25,7 @@ public class GoToGenericMidline extends SequentialCommandGroup {
     protected AutonomousCommandSelector autoSelector;
     protected double centerlineTimeout = 999;
     protected double meterThreshold = 0.3048;
-    protected double velocityThreshold = 0.05;
+    protected double velocityThreshold = 0.01;
     protected PoseSubsystem pose;
     protected DriveSubsystem drive;
 
@@ -120,6 +120,7 @@ public class GoToGenericMidline extends SequentialCommandGroup {
     }
 
     protected boolean alternativeIsFinishedForSubwoofer() {
+
         double speed = pose.getRobotCurrentSpeed();
 
         Translation2d robotLocation = pose.getCurrentPose2d().getTranslation();

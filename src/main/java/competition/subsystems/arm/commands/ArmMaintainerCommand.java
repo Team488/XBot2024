@@ -182,6 +182,10 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
         if (arm.getTargetValue() >= 100) {
             tolerance = 5;
         }
+
+        if (arm.getTargetValue() >= 170) {
+            tolerance = 10;
+        }
         
         if (Math.abs(getErrorMagnitude()) < tolerance) {
             return true;
