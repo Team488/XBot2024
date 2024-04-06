@@ -64,7 +64,7 @@ public class ShooterWheelSubsystem extends BaseSetpointSubsystem<ShooterWheelTar
         intoAmpShotRpm = pf.createPersistentProperty("IntoAmpShotRpm", 800);
         distanceShotRpm = pf.createPersistentProperty("DistanceShotRpm", 4800);
         //Value still needs to be found
-        lobShotRpm = pf.createPersistentProperty("LobShotRpm", 3800);
+        lobShotRpm = pf.createPersistentProperty("LobShotRpm", 4400);
 
         this.pose = pose;
         this.converter = new DoubleInterpolator();

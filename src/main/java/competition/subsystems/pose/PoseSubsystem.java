@@ -96,7 +96,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     public static Pose2d BlueSpikeBottomWhiteLine = new Pose2d(1.93294, 4.1056, new Rotation2d());
 
     public static Rotation2d FaceCollectorToBlueSource = Rotation2d.fromDegrees(120);
-    public static Rotation2d FaceShooterToBlueAmpForLob = Rotation2d.fromDegrees(140);
+    public static Rotation2d FaceShooterToBlueAmpForLob = Rotation2d.fromDegrees(145);
 
     // More navigation points
     public static Pose2d BluePodiumWaypoint = new Pose2d(2.5, 4.25, new Rotation2d());

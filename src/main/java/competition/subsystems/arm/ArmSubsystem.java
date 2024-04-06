@@ -498,7 +498,7 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
                 break;
             case LOB_SHOT:
                 //This still needs to be found
-                extension = 180;
+                extension = 176;
                 break;
             case HANG_APPROACH:
                 extension = 120;
