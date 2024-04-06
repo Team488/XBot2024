@@ -98,7 +98,7 @@ public class DriveToGivenNoteWithBearingVisionCommand extends DriveToGivenNoteCo
             case SearchViaRotation:
                 if (currentAdvice.suggestedDrivePercentages.isPresent()) {
                     var driveValues = currentAdvice.suggestedDrivePercentages.get();
-                    drive.move(new XYPair(driveValues.dx, driveValues.dy), driveValues.dtheta);
+                    drive.fieldOrientedDrive(new XYPair(driveValues.dx, driveValues.dy), driveValues.dtheta, pose.getCurrentHeading().getDegrees(), new XYPair(0,0));
                 }
                 break;
             default:

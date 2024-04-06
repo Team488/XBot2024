@@ -51,6 +51,7 @@ public class NoteSeekLogic {
     final DoubleProperty terminalVisionModePowerFactor;
     final DoubleProperty backUpDuration;
     final DoubleProperty rotateToNoteDuration;
+    final DoubleProperty rotationSlowCenterYPower;
 
     boolean hasDoneVisionCheckYet = false;
     protected final AKitLogger aKitLog;
@@ -83,6 +84,7 @@ public class NoteSeekLogic {
         terminalVisionModePowerFactor = pf.createPersistentProperty("TerminalVisionModePowerFactor", 0.5);
         backUpDuration = pf.createPersistentProperty("BackUpDuration", 1.0);
         rotateToNoteDuration = pf.createPersistentProperty("RotateToNoteDuration", 1.0);
+        rotationSlowCenterYPower = pf.createPersistentProperty("RotationSlowCenterYPower", 0.05);
 
         visionModeTimeoutTracker = new TimeoutTracker(() -> visionModeDuration.get());
         rotateToNoteModeTimeoutTracker = new TimeoutTracker(() -> rotateToNoteDuration.get());
@@ -257,7 +259,13 @@ public class NoteSeekLogic {
                 return new NoteSeekAdvice(
                         noteAcquisitionMode, Optional.of(suggestedLocation),Optional.empty());
             case SearchViaRotation:
-                suggestedPowers = new Twist2d(0, 0, rotationSearchPower.get());
+                // drive very slowly towards the center-x of the field so that we get unstuck from the wall if we're on it
+                var yPower = rotationSlowCenterYPower.get();
+                if(pose.getCurrentPose2d().getY() > PoseSubsystem.CenterLine3.getY()) {
+                    // on top half of field, head south
+                    yPower *= -1;
+                }
+                suggestedPowers = new Twist2d(0, yPower, rotationSearchPower.get());
                 return new NoteSeekAdvice(noteAcquisitionMode, Optional.empty(), Optional.of(suggestedPowers));
             case GiveUp:
             default:
