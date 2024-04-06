@@ -6,6 +6,7 @@ import competition.auto_programs.GriefMiddle;
 import competition.auto_programs.SixNoteBnbExtended;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootBotSpikeThenShootBotCenter;
 import competition.auto_programs.SubwooferShotFromBotShootThenShootSpikes;
+import competition.auto_programs.BotCenter4ThenCenter4;
 import competition.auto_programs.BotCenter4ThenCenter5;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
@@ -241,7 +242,8 @@ public class OperatorCommandMap {
                                                 SixNoteBnbExtended bnbExtended,
                                                 DoNothingAuto doNothing,
                                                 GriefMiddle grief,
-                                                BotCenter4ThenCenter5 botCenter4ThenCenter5,
+                                                BotCenter4ThenCenter4 botCenter4ThenCenter5,
+                                                BotCenter4ThenCenter4 botCenter4ThenCenter4,
                                                 BotCenter5ThenCenter4 botCenter5ThenCenter4,
                                                 ArmSubsystem arm) {
         var setOracleAuto = setAutonomousCommandProvider.get();
@@ -284,6 +286,10 @@ public class OperatorCommandMap {
         var setbotCenter5ThenCenter4 = setAutonomousCommandProvider.get();
         setbotCenter5ThenCenter4.setAutoCommand(botCenter5ThenCenter4);
         oi.neoTrellis.getifAvailable(22).onTrue(setbotCenter5ThenCenter4);
+
+        var setbotCenter4ThenCenter4 = setAutonomousCommandProvider.get();
+        setbotCenter4ThenCenter4.setAutoCommand(botCenter4ThenCenter4);
+        oi.neoTrellis.getifAvailable(14).onTrue(setbotCenter4ThenCenter4);
 
 
 
