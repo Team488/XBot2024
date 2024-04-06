@@ -189,7 +189,7 @@ public class NoteSeekLogic {
                 }
                 break;
             case SearchViaRotation:
-                evaluateIfShouldMoveToVisionBasedCollection(true);
+                evaluateIfShouldMoveToVisionBasedCollection(true, atTargetPose);
                 if (shouldExitRotationSearch()) {
                     log.info("Giving up.");
                     noteAcquisitionMode = NoteAcquisitionMode.GiveUp;
