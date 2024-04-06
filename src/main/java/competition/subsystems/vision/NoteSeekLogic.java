@@ -145,8 +145,8 @@ public class NoteSeekLogic {
                         log.info("Close to static note - attempting vision update.");
                         hasDoneVisionCheckYet = true;
                     }
-                    evaluateIfShouldMoveToVisionBasedCollection(false);
-                }
+                    evaluateIfShouldMoveToVisionBasedCollection(false, atTargetPose);
+                } 
                 break;
             case RotateToNoteDetectedByCornerCameras:
                 // Rotate until either the center camera sees the note nice and solidly or we have been in this
@@ -206,7 +206,7 @@ public class NoteSeekLogic {
         aKitLog.record("NoteAcquisitionMode", noteAcquisitionMode);
     }
 
-    private void evaluateIfShouldMoveToVisionBasedCollection(boolean resetTimersIfFound) {
+    private void evaluateIfShouldMoveToVisionBasedCollection(boolean resetTimersIfFound, boolean atTargetPose) {
         var scannedNote = scanForNote();
         if (scannedNote.isPresent()) {
             if (scannedNote.get().getSource() == NoteDetectionSource.CenterCamera) {
@@ -222,6 +222,9 @@ public class NoteSeekLogic {
             if (resetTimersIfFound) {
                 resetVisionModeTimers();
             }
+        } else if(atTargetPose && noteAcquisitionMode != NoteAcquisitionMode.SearchViaRotation) {
+            log.info("Reached target pose but vision never saw note, entering rotation search mode.");
+            noteAcquisitionMode = NoteAcquisitionMode.SearchViaRotation;
         }
     }
 
