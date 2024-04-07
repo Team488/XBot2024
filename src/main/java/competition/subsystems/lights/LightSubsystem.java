@@ -113,10 +113,10 @@ public class LightSubsystem extends BaseSubsystem {
             // 0 as no camera working, 1 as all camera working, 2 as some camera working
             currentState = LightsStateMessage.getStringValueFromInt(base + vision.cameraWorkingState());
         } else {
-            if (shooter.isReadyToFire() && collector.checkSensorForLights()) {
+            if (shooter.isReadyToFire() && collector.confidentlyHasControlOfNote()) {
                 currentState = LightsStateMessage.ReadyToShoot;
 
-            } else if (collector.checkSensorForLights()) {
+            } else if (collector.confidentlyHasControlOfNote()) {
                 currentState = LightsStateMessage.RobotContainsNote;
 
             } else if (shooter.isReadyToFire()) {
