@@ -162,12 +162,8 @@ public class PointAtNoteWithBearingCommand extends SwerveDriveWithJoysticksComma
 
     private Optional<Pose2d> getClosestAvailableNote() {
         var virtualPoint = getProjectedPoint();
-        var notePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
-        if(notePosition != null) {
-            return Optional.of(notePosition.toPose2d());
-        } else {
-            return Optional.empty();
-        }
+        var maybeNotePosition = this.oracle.getNoteMap().getClosestAvailableNote(virtualPoint, false);
+        return maybeNotePosition.map((note) -> note.toPose2d());
     }
 
     private Pose2d getProjectedPoint() {
