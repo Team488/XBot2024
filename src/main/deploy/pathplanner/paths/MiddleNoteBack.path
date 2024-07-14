@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.359011265031077,
+        "x": 2.6570624081419103,
         "y": 5.496252587946771
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3590112650310777,
-        "y": 5.496252587946771
+        "x": 2.084048840462353,
+        "y": 5.484558433504332
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.6570624081419103,
+        "x": 1.382399573915957,
         "y": 5.496252587946771
       },
       "prevControl": {
-        "x": 1.6570624081419103,
-        "y": 5.496252587946771
+        "x": 1.8735540604984342,
+        "y": 5.484558433504332
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,25 +42,7 @@
       }
     }
   ],
-  "eventMarkers": [
-    {
-      "name": "Intake",
-      "waypointRelativePos": 0.25,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "IntakeFirstNote"
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 0.75,
     "maxAcceleration": 0.75,

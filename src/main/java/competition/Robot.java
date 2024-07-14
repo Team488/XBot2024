@@ -1,6 +1,7 @@
 
 package competition;
 
+import competition.auto_pathplanner.PathPlannerDriveSubsystem;
 import competition.injection.components.BaseRobotComponent;
 import competition.injection.components.DaggerPracticeRobotComponent;
 import competition.injection.components.DaggerRobotComponent;
@@ -33,6 +34,7 @@ public class Robot extends BaseRobot {
     PoseSubsystem poseSubsystem;
     OperatorInterface oi;
     DriveSubsystem drive;
+    PathPlannerDriveSubsystem pathPlannerDriveSubsystem;
 
     @Override
     protected void initializeSystems() {
@@ -41,6 +43,7 @@ public class Robot extends BaseRobot {
         getInjectorComponent().swerveDefaultCommandMap();
         getInjectorComponent().operatorCommandMap();
         getInjectorComponent().lightSubsystem();
+        getInjectorComponent().pathPlannerDriveSubsystem();
 
         if (BaseRobot.isSimulation()) {
             simulator = getInjectorComponent().simulator2024();

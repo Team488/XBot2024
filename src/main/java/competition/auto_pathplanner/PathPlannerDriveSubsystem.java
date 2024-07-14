@@ -58,7 +58,7 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
         XYPair xySpeeds = new XYPair(calcX, calcY);
         temp = xySpeeds;
 
-        drive.move(xySpeeds, calcAng);
+        drive.move(xySpeeds, calcAng, pose.getCurrentPose2d());
 
     }
 

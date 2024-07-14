@@ -1,5 +1,6 @@
 package competition.injection.components;
 
+import competition.auto_pathplanner.PathPlannerDriveSubsystem;
 import competition.auto_programs.BotCenter4ThenCenter5;
 import competition.auto_programs.BotCenter5ThenCenter4;
 import competition.auto_programs.GriefMiddle;
@@ -71,4 +72,5 @@ public abstract class BaseRobotComponent extends BaseComponent {
     public abstract GriefMiddle griefMiddle();
     public abstract BotCenter4ThenCenter5 botCenter4ThenCenter5();
     public abstract BotCenter5ThenCenter4 botCenter5ThenCenter4();
+    public abstract PathPlannerDriveSubsystem pathPlannerDriveSubsystem();
 }
