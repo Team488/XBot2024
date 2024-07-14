@@ -16,10 +16,6 @@ public class Far4NoteCommandGroup extends SequentialCommandGroup {
                                 Fast4NoteFarCommand fast4NoteFarCommand,
                                 ContinuouslyWarmUpForSpeakerCommand continuouslyWarmUpForSpeakerCommand) {
 
-        var startInFrontOfSpeaker = pose.createSetPositionCommand(
-                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
-        this.addCommands(startInFrontOfSpeaker);
-
         this.addCommands(firePreload);
 
         this.addCommands(Commands.parallel(fast4NoteFarCommand, continuouslyWarmUpForSpeakerCommand));

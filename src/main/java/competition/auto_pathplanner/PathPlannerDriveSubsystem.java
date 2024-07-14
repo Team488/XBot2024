@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.math.XYPair;
+import xbot.common.properties.DoubleProperty;
+import xbot.common.properties.PropertyFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,11 +26,14 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
     double vX;
     double vY;
     double omegaRad;
+
     @Inject
-    public PathPlannerDriveSubsystem(DriveSubsystem drive, PoseSubsystem pose) {
+    public PathPlannerDriveSubsystem(DriveSubsystem drive, PoseSubsystem pose, PropertyFactory pf) {
         this.drive = drive;
         this.pose = pose;
         this.temp = new XYPair(0,0);
+
+        pf.setPrefix(this);
 
         configureDriveSubsystem();
     }
@@ -87,11 +92,11 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
                 this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
                 this::driveRobotRelative, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
                 new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                        new PIDConstants(0, 0, 0), // Translation PID constants
-                        new PIDConstants(0, 0, 0), // Rotation PID constants
+                        new PIDConstants(8, 0, 0), // Translation PID constants
+                        new PIDConstants(2, 0, 0), // Rotation PID constants
                         4.5, // Max module speed, in m/s
                         0.4, // Drive base radius in meters. Distance from robot center to furthest module.
-                        new ReplanningConfig() // Default path replanning config. See the API for the options here
+                        new ReplanningConfig(true, true, 0.5, 0.25) // Default path replanning config. See the API for the options here
                 ),
                 () -> {
                     // Boolean supplier that controls when the path will be mirrored for the red alliance
