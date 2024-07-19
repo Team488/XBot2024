@@ -48,31 +48,7 @@
       }
     }
   ],
-  "eventMarkers": [
-    {
-      "name": "New Event Marker",
-      "waypointRelativePos": 0,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "IntakeFirstNote"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "PrepareEverywhere1"
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
     "maxAcceleration": 4.5,
@@ -85,7 +61,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "GoingForMid",
+  "folder": "GoingForMidFar",
   "previewStartingState": {
     "rotation": -120.06858282186249,
     "velocity": 0

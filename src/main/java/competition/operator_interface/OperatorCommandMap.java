@@ -1,9 +1,9 @@
 package competition.operator_interface;
 
-import competition.auto_pathplanner.Far4NoteCommandGroup;
+import competition.auto_pathplanner.BNBPathCommand;
+import competition.auto_pathplanner.Bot4NoteShootingFarCommandGroup;
 import competition.auto_pathplanner.IntakeNoteTestCommand;
 import competition.auto_pathplanner.PodiumMidCommand;
-import competition.auto_pathplanner.UpdateHolonomicCommand;
 import competition.auto_programs.BotCenter5ThenCenter4;
 import competition.auto_programs.DoNothingAuto;
 import competition.auto_programs.GriefMiddle;
@@ -82,7 +82,8 @@ public class OperatorCommandMap {
             LimitArmToUnderStage limitArmToUnderStageCommand,
             IntakeNoteTestCommand intakeNoteTestCommand,
             PodiumMidCommand podiumMidCommand,
-            Far4NoteCommandGroup far4NoteCommandGroup)
+            Bot4NoteShootingFarCommandGroup bot4NoteShootingFarCommandGroup,
+            BNBPathCommand bnbPathCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -113,8 +114,9 @@ public class OperatorCommandMap {
                 .onFalse(cancelSpecialPointAtPosition);
 
         operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(intakeNoteTestCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(bnbPathCommand);
         operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(podiumMidCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(far4NoteCommandGroup);
+        operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bot4NoteShootingFarCommandGroup);
 
     }
 

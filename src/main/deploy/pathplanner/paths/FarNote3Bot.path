@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9,
-        "y": 6.116630498239709
+        "x": 2.4357923001560295,
+        "y": 6.596756050654959
       },
       "isLocked": false,
       "linkedName": null
@@ -30,8 +30,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.7,
-      "rotationDegrees": -90.0,
+      "waypointRelativePos": 0.45,
+      "rotationDegrees": -99.4325070862027,
       "rotateFast": true
     }
   ],
@@ -48,31 +48,7 @@
       }
     }
   ],
-  "eventMarkers": [
-    {
-      "name": "New Event Marker",
-      "waypointRelativePos": 0.0,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "IntakeThirdNote"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "PrepareEverywhere3"
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,

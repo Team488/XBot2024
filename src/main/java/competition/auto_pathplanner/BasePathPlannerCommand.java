@@ -7,7 +7,7 @@ import xbot.common.command.BaseCommand;
 
 import javax.inject.Inject;
 
-public class IntakeNoteTestPathCommand extends BaseCommand {
+public class BasePathPlannerCommand extends BaseCommand {
     PathPlannerDriveSubsystem drive;
     Command autonomousCommand;
     RobotContainer robotContainer;
@@ -15,24 +15,23 @@ public class IntakeNoteTestPathCommand extends BaseCommand {
     PoseSubsystem pose;
 
     @Inject
-    public IntakeNoteTestPathCommand(PathPlannerDriveSubsystem drive, RobotContainer robotContainer,
-                                     DriveSubsystem driveSubsystem, PoseSubsystem pose) {
+    public BasePathPlannerCommand(PathPlannerDriveSubsystem drive, DriveSubsystem driveSubsystem,
+                                  PoseSubsystem pose, RobotContainer robotContainer, Command autonomousCommand) {
         this.robotContainer = robotContainer;
         this.drive = drive;
         this.driveSubsystem = driveSubsystem;
         this.pose = pose;
         addRequirements(driveSubsystem);
         addRequirements(drive);
-        this.autonomousCommand = robotContainer.getPodiumMidCommand();
+        this.autonomousCommand = autonomousCommand;
         autonomousCommand.addRequirements(drive);
         autonomousCommand.addRequirements(driveSubsystem);
-
+        setName(autonomousCommand.getName());
     }
 
     @Override
     public void initialize() {
         log.info("Initializing");
-        pose.setCurrentPosition(PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
         autonomousCommand.schedule();
     }
 

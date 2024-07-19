@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.8085924743278065,
-      "y": 4.471134656555028
+      "x": 1.4,
+      "y": 5.52661562465982
     },
-    "rotation": 122.27564431457758
+    "rotation": 180.0
   },
   "command": {
     "type": "sequential",
@@ -14,43 +14,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "FarNote1Bot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
+            "pathName": "Center_MidSpike"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "FarNote2Bot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
+            "pathName": "Center_MidSpike_Back"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "FarNote3Bot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
+            "pathName": "Center_TopSpike"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "TopSpikeMid2"
+            "pathName": "Center_TopSpike_Back"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center_BotSpike"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center_BotSpike_Back"
           }
         }
       ]

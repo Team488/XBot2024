@@ -8,27 +8,33 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.948922327637086,
-        "y": 4.108615868839389
+        "x": 2.2745382633622415,
+        "y": 4.119307667186764
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.54,
-        "y": 4.29
+        "x": 2.6219674153634025,
+        "y": 4.286425487132751
       },
       "prevControl": {
-        "x": 2.1224080660250335,
-        "y": 4.594617477523244
+        "x": 2.099965165644618,
+        "y": 4.2916466490036465
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.85,
+      "rotationDegrees": 164.19555371635852,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [
     {
       "name": "New Constraints Zone",
@@ -42,38 +48,7 @@
       }
     }
   ],
-  "eventMarkers": [
-    {
-      "name": "New Event Marker",
-      "waypointRelativePos": 0.4,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "sequential",
-              "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "IntakeUntilNoteCollected"
-                    }
-                  },
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "PrepareEverywhere1"
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 5.0,
     "maxAcceleration": 5.0,

@@ -85,15 +85,17 @@ public class RobotContainer {
     public Command getFast4NoteFarCommand() {
         return new PathPlannerAuto("4noteAutoFarBot");
     }
+    public Pose2d getFast4NoteFarPose() {
+        return PathPlannerAuto.getStaringPoseFromAutoFile("4noteAutoFarBot");
+    }
     public Command getPodiumMidCommand() {
         return new PathPlannerAuto("PodiumMid");
     }
     public Command getIntakeNoteTestCommand() {
         return new PathPlannerAuto("IntakeNoteTest");
     }
-    public Command getIntakeNoteTestPathCommand() {
-        PathPlannerPath path = PathPlannerPath.fromPathFile("MiddleNote");
-        return AutoBuilder.followPath(path);
+    public Command getBNBCommand() {
+        return new PathPlannerAuto("BNB");
     }
 
 

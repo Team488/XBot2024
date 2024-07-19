@@ -3,10 +3,10 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "GoingForMid",
-    "ShootingClose",
+    "GoingForMidFar",
+    "SubwooferShots",
     "ShootingFar",
-    "Simple2Note"
+    "Testing"
   ],
   "autoFolders": [],
   "defaultMaxVel": 4.5,

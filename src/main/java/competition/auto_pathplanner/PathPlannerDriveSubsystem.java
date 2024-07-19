@@ -96,7 +96,7 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
                         new PIDConstants(2, 0, 0), // Rotation PID constants
                         4.5, // Max module speed, in m/s
                         0.4, // Drive base radius in meters. Distance from robot center to furthest module.
-                        new ReplanningConfig(true, true, 0.5, 0.25) // Default path replanning config. See the API for the options here
+                        new ReplanningConfig(true, true, 0.5, 0.25)
                 ),
                 () -> {
                     // Boolean supplier that controls when the path will be mirrored for the red alliance
