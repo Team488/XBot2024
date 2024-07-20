@@ -97,6 +97,21 @@ public class RobotContainer {
     public Command getBNBCommand() {
         return new PathPlannerAuto("BNB");
     }
+    public Command getTranslationX() {
+//        PathPlannerPath path = PathPlannerPath.fromPathFile("TranslationX");
+//        return AutoBuilder.followPath(path);
+        return new PathPlannerAuto("TranslatingX");
+    }
+
+    public Command getTranslationXandY() {
+        return new PathPlannerAuto("TranslatingXandY");
+
+    }
+
+    public Command getTranslationXandYRotate() {
+        return new PathPlannerAuto("XYandRotating");
+    }
+
 
 
 }

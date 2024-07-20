@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.802278747414638,
-        "y": 6.845966834790812
+        "x": 2.7509706447984326,
+        "y": 6.889945208461845
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.2159004318008644,
-        "y": 6.303566892848072
+        "x": 2.0889098310263168,
+        "y": 6.142347676619344
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.4169599767770968,
-        "y": 5.541275082550166
+        "x": 1.4161765140632432,
+        "y": 5.5086133925236975
       },
       "prevControl": {
-        "x": 1.9593599187198376,
-        "y": 6.039696650821874
+        "x": 1.9426634577734727,
+        "y": 5.97660178693279
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,10 +30,28 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "IntakeFirstNote"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
   "globalConstraints": {
-    "maxVelocity": 4.5,
-    "maxAcceleration": 4.5,
+    "maxVelocity": 1.25,
+    "maxAcceleration": 1.25,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
@@ -45,8 +63,8 @@
   "reversed": false,
   "folder": "SubwooferShots",
   "previewStartingState": {
-    "rotation": -132.39743779750017,
+    "rotation": -134.684536027994,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

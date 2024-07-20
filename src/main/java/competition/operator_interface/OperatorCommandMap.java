@@ -4,6 +4,9 @@ import competition.auto_pathplanner.BNBPathCommand;
 import competition.auto_pathplanner.Bot4NoteShootingFarCommandGroup;
 import competition.auto_pathplanner.IntakeNoteTestCommand;
 import competition.auto_pathplanner.PodiumMidCommand;
+import competition.auto_pathplanner.TranslationXCommand;
+import competition.auto_pathplanner.TranslationXandYCommand;
+import competition.auto_pathplanner.XYandRotateCommand;
 import competition.auto_programs.BotCenter5ThenCenter4;
 import competition.auto_programs.DoNothingAuto;
 import competition.auto_programs.GriefMiddle;
@@ -83,7 +86,10 @@ public class OperatorCommandMap {
             IntakeNoteTestCommand intakeNoteTestCommand,
             PodiumMidCommand podiumMidCommand,
             Bot4NoteShootingFarCommandGroup bot4NoteShootingFarCommandGroup,
-            BNBPathCommand bnbPathCommand)
+            BNBPathCommand bnbPathCommand,
+            TranslationXCommand translationXCommand,
+            TranslationXandYCommand translationXandYCommand,
+            XYandRotateCommand xYandRotateCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -113,10 +119,10 @@ public class OperatorCommandMap {
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
 
-        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(intakeNoteTestCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(bnbPathCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(podiumMidCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bot4NoteShootingFarCommandGroup);
+        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(translationXCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(translationXandYCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(xYandRotateCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bnbPathCommand);
 
     }
 
