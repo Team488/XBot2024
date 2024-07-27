@@ -42,13 +42,13 @@ public class PracticeContract extends CompetitionContract {
     public DeviceInfo getDriveMotor(SwerveInstance swerveInstance) {
         return switch (swerveInstance.label()) {
             case "FrontLeftDrive" ->
-                    new DeviceInfo(getDriveControllerName(swerveInstance), 20, false, simulationScalingValue);
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
             case "FrontRightDrive" ->
                     new DeviceInfo(getDriveControllerName(swerveInstance), 29, false, simulationScalingValue);
             case "RearLeftDrive" ->
-                    new DeviceInfo(getDriveControllerName(swerveInstance), 31, false, simulationScalingValue);
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 38, false, simulationScalingValue);
             case "RearRightDrive" ->
-                    new DeviceInfo(getDriveControllerName(swerveInstance), 39, false, simulationScalingValue);
+                    new DeviceInfo(getDriveControllerName(swerveInstance), 21, false, simulationScalingValue);
             default -> null;
         };
     }
@@ -59,13 +59,13 @@ public class PracticeContract extends CompetitionContract {
 
         return switch (swerveInstance.label()) {
             case "FrontLeftDrive" ->
-                    new DeviceInfo(getSteeringControllerName(swerveInstance), 28, false, simulationScalingValue);
-            case "FrontRightDrive" ->
-                    new DeviceInfo(getSteeringControllerName(swerveInstance), 21, false, simulationScalingValue);
-            case "RearLeftDrive" ->
                     new DeviceInfo(getSteeringControllerName(swerveInstance), 30, false, simulationScalingValue);
+            case "FrontRightDrive" ->
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 28, false, simulationScalingValue);
+            case "RearLeftDrive" ->
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 39, false, simulationScalingValue);
             case "RearRightDrive" ->
-                    new DeviceInfo(getSteeringControllerName(swerveInstance), 38, false, simulationScalingValue);
+                    new DeviceInfo(getSteeringControllerName(swerveInstance), 20, false, simulationScalingValue);
             default -> null;
         };
     }

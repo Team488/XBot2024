@@ -78,7 +78,7 @@ public class OperatorCommandMap {
             LimitArmToUnderStage limitArmToUnderStageCommand)
     {
         // Rotation calibration routine
-        resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
+        resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(0)).getDegrees());
 
         var pointAtSpeaker = drive.createSetSpecialPointAtPositionTargetCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.SPEAKER_TARGET_FORWARD));

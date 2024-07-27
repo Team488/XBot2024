@@ -594,7 +594,10 @@ public class ArmSubsystem extends BaseSetpointSubsystem<Double> implements DataF
     }
 
     public double getExtensionDistance() {
-        return convertRevolutionsToExtensionMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset);
+        if (contract.isArmReady()) {
+            return convertRevolutionsToExtensionMm(armMotorLeft.getPosition() + armMotorLeftRevolutionOffset);
+        }
+        return 0;
     }
 
     /** 

@@ -105,6 +105,7 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
             // Set some tiny small power to get the arm moving down
             arm.setPower(arm.lowerExtremelySlowZonePowerLimit.get());
 
+            /*
             // Are we above 5A usage?
             boolean stalledCurrent = arm.armMotorLeft.getOutputCurrent() > 5
                     && arm.armMotorRight.getOutputCurrent() > 5;
@@ -119,7 +120,9 @@ public class ArmMaintainerCommand extends BaseMaintainerCommand<Double> {
 
             boolean stableAtBottom = calibrationValidator.checkStable(stalledCurrent && stillArms);
 
-            if (stableAtBottom) {
+
+             */
+            if (false) {
                 arm.markArmsAsCalibratedAgainstLowerPhyscalLimit();
                 // If nobody is currently commanding a setpoint, this will clear the setpoint
                 // so the arms don't move from the 0 position they just calibrated to.
