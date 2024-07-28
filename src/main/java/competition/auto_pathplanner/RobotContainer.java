@@ -108,8 +108,16 @@ public class RobotContainer {
 
     }
 
+    public Command getPoseTestCommand() {
+        return new PathPlannerAuto("PoseTest");
+
+    }
+
     public Command getTranslationXandYRotate() {
         return new PathPlannerAuto("XYandRotating");
+    }
+    public Pose2d getTranslationXYPose() {
+        return PathPlannerAuto.getStaringPoseFromAutoFile("TranslatingXandY");
     }
 
 
