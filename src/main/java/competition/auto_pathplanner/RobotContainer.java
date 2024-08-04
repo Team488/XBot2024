@@ -10,6 +10,7 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.drive.DriveSubsystem;
@@ -36,7 +37,8 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     @Inject
     public RobotContainer(DriveSubsystem drive, PoseSubsystem pose,
-                          Provider<IntakeCollectorCommand> intakeCollectorCommandProvider) {
+                          IntakeCollectorCommand intakeCollectorCommand,
+                          EjectCollectorCommand ejectCollectorCommand) {
 
         field = new Field2d();
         SmartDashboard.putData("Field", field);
@@ -45,12 +47,8 @@ public class RobotContainer {
         this.pose = pose;
 
         //INTAKING NOTES
-        var intakeFirstNote = intakeCollectorCommandProvider.get();
-        NamedCommands.registerCommand("IntakeFirstNote", intakeFirstNote);
-        var intakeSecondNote = intakeCollectorCommandProvider.get();
-        NamedCommands.registerCommand("IntakeSecondNote", intakeSecondNote);
-        var intakeThirdNote = intakeCollectorCommandProvider.get();
-        NamedCommands.registerCommand("IntakeThirdNote", intakeThirdNote);
+        NamedCommands.registerCommand("IntakeFirstNote", intakeCollectorCommand);
+        NamedCommands.registerCommand("EjectNote", ejectCollectorCommand);
 
         autoChooser = AutoBuilder.buildAutoChooser(); // Default auto will be `Commands.none()`
         SmartDashboard.putData("Auto Mode", autoChooser);

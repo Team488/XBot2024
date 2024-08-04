@@ -50,15 +50,15 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
     }
 
     public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
-        //getting chassis speeds and dividing it by top speeds, so it can be inputted into move()
-        double calcX = robotRelativeSpeeds.vxMetersPerSecond / drive.getMaxTargetSpeedMetersPerSecond();
-        double calcY = robotRelativeSpeeds.vyMetersPerSecond / drive.getMaxTargetSpeedMetersPerSecond();
-        double calcAng = robotRelativeSpeeds.omegaRadiansPerSecond / drive.getMaxTargetTurnRate();
-
         //AdvantageScope Logging
         vX = robotRelativeSpeeds.vxMetersPerSecond;
         vY = robotRelativeSpeeds.vyMetersPerSecond;
         omegaRad = robotRelativeSpeeds.omegaRadiansPerSecond;
+
+        //getting chassis speeds and dividing it by top speeds, so it can be inputted into move()
+        double calcX = robotRelativeSpeeds.vxMetersPerSecond / drive.getMaxTargetSpeedMetersPerSecond();
+        double calcY = robotRelativeSpeeds.vyMetersPerSecond / drive.getMaxTargetSpeedMetersPerSecond();
+        double calcAng = robotRelativeSpeeds.omegaRadiansPerSecond / drive.getMaxTargetTurnRate();
 
         XYPair xySpeeds = new XYPair(calcX, calcY);
         temp = xySpeeds;
@@ -96,7 +96,8 @@ public class PathPlannerDriveSubsystem extends BaseSubsystem {
                         new PIDConstants(5, 0, 0), // Rotation PID constants
                         4.5, // Max module speed, in m/s
                         0.4, // Drive base radius in meters. Distance from robot center to furthest module.
-                        new ReplanningConfig(true, true, 0.5, 0.25)
+                        new ReplanningConfig(false, true, 0.5, 0.25)
+//                        new ReplanningConfig(false, false)
                 ),
                 () -> {
                     // Boolean supplier that controls when the path will be mirrored for the red alliance

@@ -6,6 +6,7 @@ import competition.auto_pathplanner.IntakeNoteTestCommand;
 import competition.auto_pathplanner.PathTestCommand;
 import competition.auto_pathplanner.PodiumMidCommand;
 import competition.auto_pathplanner.PoseTestCommand;
+import competition.auto_pathplanner.SetPoseCommand;
 import competition.auto_pathplanner.TranslationXCommand;
 import competition.auto_pathplanner.TranslationXandYCommand;
 import competition.auto_pathplanner.XYandRotateCommand;
@@ -93,7 +94,8 @@ public class OperatorCommandMap {
             TranslationXandYCommand translationXandYCommand,
             XYandRotateCommand xYandRotateCommand,
             PathTestCommand pathTestCommand,
-            PoseTestCommand poseTestCommand)
+            PoseTestCommand poseTestCommand,
+            SetPoseCommand setPoseCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -124,7 +126,8 @@ public class OperatorCommandMap {
                 .onFalse(cancelSpecialPointAtPosition);
 
 //        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(translationXCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(poseTestCommand);
+//        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(poseTestCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(setPoseCommand);
         operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(pathTestCommand);
         operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(xYandRotateCommand);
         operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bnbPathCommand);
