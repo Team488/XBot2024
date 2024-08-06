@@ -12,8 +12,8 @@ public class XYandRotateCommand extends SequentialCommandGroup {
     public XYandRotateCommand(PoseSubsystem pose, PathPlannerDriveSubsystem drive,
                                    DriveSubsystem driveSubsystem, RobotContainer robotContainer) {
 
-        var path = new BasePathPlannerCommand(drive, driveSubsystem, pose,
-                robotContainer, robotContainer.getTranslationXandYRotate());
+        var path = new BasePathPlannerCommand(drive, driveSubsystem,
+                robotContainer.getTranslationXandYRotate());
 
         this.addCommands(path);
 

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.7509706447984326,
-        "y": 6.889945208461845
+        "x": 1.4169599767770968,
+        "y": 5.52661562465982
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0889098310263168,
-        "y": 6.142347676619344
+        "x": 2.4169599767770995,
+        "y": 5.52661562465982
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Blue_Subwoofer_Mid"
     },
     {
       "anchor": {
-        "x": 1.4161765140632432,
-        "y": 5.5086133925236975
+        "x": 2.7729598316339494,
+        "y": 5.52661562465982
       },
       "prevControl": {
-        "x": 1.9426634577734727,
-        "y": 5.97660178693279
+        "x": 2.2159004318008644,
+        "y": 5.52661562465982
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Blue_Spike_Mid"
     }
   ],
   "rotationTargets": [],
@@ -45,7 +45,7 @@
   "reversed": false,
   "folder": "SubwooferShots",
   "previewStartingState": {
-    "rotation": -134.684536027994,
+    "rotation": 180.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

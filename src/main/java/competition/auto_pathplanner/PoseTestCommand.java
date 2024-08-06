@@ -11,9 +11,12 @@ public class PoseTestCommand extends SequentialCommandGroup {
     @Inject
     public PoseTestCommand(PoseSubsystem pose, PathPlannerDriveSubsystem drive,
                            DriveSubsystem driveSubsystem, RobotContainer robotContainer) {
+        var startingPose = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(robotContainer.getTranslationXYPose()));
+        this.addCommands(startingPose);
 
-        var path = new BasePathPlannerCommand(drive, driveSubsystem, pose,
-                robotContainer, robotContainer.getPoseTestCommand());
+        var path = new BasePathPlannerCommand(drive, driveSubsystem,
+                robotContainer.getPoseTestCommand());
 
         this.addCommands(path);
 

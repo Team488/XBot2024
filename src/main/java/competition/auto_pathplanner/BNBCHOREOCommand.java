@@ -6,16 +6,18 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import javax.inject.Inject;
 
-public class TranslationXCommand extends SequentialCommandGroup {
+public class BNBCHOREOCommand extends SequentialCommandGroup {
 
     @Inject
-    public TranslationXCommand(PoseSubsystem pose, PathPlannerDriveSubsystem drive,
+    public BNBCHOREOCommand(PoseSubsystem pose, PathPlannerDriveSubsystem drive,
                           DriveSubsystem driveSubsystem, RobotContainer robotContainer) {
 
-
+            var startInFrontOfSpeaker = pose.createSetPositionCommand(
+                () -> PoseSubsystem.convertBlueToRedIfNeeded(PoseSubsystem.BlueSubwooferMiddleScoringLocation));
+        this.addCommands(startInFrontOfSpeaker);
 
         var path = new BasePathPlannerCommand(drive, driveSubsystem,
-                robotContainer.getTranslationX());
+                robotContainer.getBNBChoreo());
 
         this.addCommands(path);
 

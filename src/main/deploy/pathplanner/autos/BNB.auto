@@ -14,7 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center_MidSpike"
+            "pathName": "SUBWOOFER_MID_TO_SPIKE_MID"
           }
         },
         {
@@ -26,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center_MidSpike_Back"
+            "pathName": "SPIKE_MID_TO_SUBWOOFER_MID"
           }
         },
         {
@@ -38,7 +38,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center_TopSpike"
+            "pathName": "SUBWOOFER_MID_TO_SPIKE_TOP"
           }
         },
         {
@@ -50,7 +50,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center_TopSpike_Back"
+            "pathName": "SPIKE_TOP_TO_SUBWOOFER_MID"
           }
         },
         {
@@ -62,7 +62,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center_BotSpike"
+            "pathName": "SUBWOOFER_MID_TO_SPIKE_BOT"
           }
         },
         {
@@ -74,7 +74,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center_BotSpike_Back"
+            "pathName": "SPIKE_BOT_TO_SUBWOOFER_MID"
           }
         }
       ]

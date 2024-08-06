@@ -16,8 +16,8 @@ public class PathTestCommand extends SequentialCommandGroup {
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(robotContainer.getTranslationXYPose()));
         this.addCommands(startingPose);
 
-        var path = new BasePathPlannerCommand(drive, driveSubsystem, pose,
-                robotContainer, robotContainer.getTranslationXandY());
+        var path = new BasePathPlannerCommand(drive, driveSubsystem,
+                robotContainer.getTranslationXandY());
 
         this.addCommands(path);
 

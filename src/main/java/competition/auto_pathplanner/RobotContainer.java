@@ -12,7 +12,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import competition.subsystems.collector.commands.EjectCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
-import competition.subsystems.collector.commands.IntakeUntilNoteCollectedCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -20,10 +19,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import org.littletonrobotics.junction.Logger;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 @Singleton
@@ -116,6 +113,15 @@ public class RobotContainer {
     }
     public Pose2d getTranslationXYPose() {
         return PathPlannerAuto.getStaringPoseFromAutoFile("TranslatingXandY");
+    }
+
+    public Command getBNBChoreo() {
+        PathPlannerPath path = PathPlannerPath.fromChoreoTrajectory("BNBCHOREO");
+        return AutoBuilder.followPath(path);
+    }
+
+    public Pose2d getChoreoPose() {
+        return PathPlannerPath.fromChoreoTrajectory("BNBCHOREO").getPreviewStartingHolonomicPose();
     }
 
 

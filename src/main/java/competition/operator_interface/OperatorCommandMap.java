@@ -1,12 +1,11 @@
 package competition.operator_interface;
 
+import competition.auto_pathplanner.AutoFactory;
+import competition.auto_pathplanner.BNBCHOREOCommand;
+import competition.auto_pathplanner.BNBCommand;
 import competition.auto_pathplanner.BNBPathCommand;
-import competition.auto_pathplanner.Bot4NoteShootingFarCommandGroup;
-import competition.auto_pathplanner.IntakeNoteTestCommand;
 import competition.auto_pathplanner.PathTestCommand;
-import competition.auto_pathplanner.PodiumMidCommand;
 import competition.auto_pathplanner.PoseTestCommand;
-import competition.auto_pathplanner.SetPoseCommand;
 import competition.auto_pathplanner.TranslationXCommand;
 import competition.auto_pathplanner.TranslationXandYCommand;
 import competition.auto_pathplanner.XYandRotateCommand;
@@ -86,16 +85,16 @@ public class OperatorCommandMap {
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
             LimitArmToUnderStage limitArmToUnderStageCommand,
-            IntakeNoteTestCommand intakeNoteTestCommand,
-            PodiumMidCommand podiumMidCommand,
-            Bot4NoteShootingFarCommandGroup bot4NoteShootingFarCommandGroup,
             BNBPathCommand bnbPathCommand,
             TranslationXCommand translationXCommand,
             TranslationXandYCommand translationXandYCommand,
             XYandRotateCommand xYandRotateCommand,
             PathTestCommand pathTestCommand,
             PoseTestCommand poseTestCommand,
-            SetPoseCommand setPoseCommand)
+            BNBCommand bnbCommand,
+            BNBCHOREOCommand bnbchoreoCommand,
+            AutoFactory autoFactory,
+            Provider<IntakeCollectorCommand> intakeCollectorCommandProvider)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -125,11 +124,12 @@ public class OperatorCommandMap {
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
 
-//        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(translationXCommand);
-//        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(poseTestCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(setPoseCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(pathTestCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(xYandRotateCommand);
+        var BNB = autoFactory.createBNB(intakeCollectorCommandProvider);
+        var testing = autoFactory.testing();
+
+        operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(bnbCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(BNB);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(testing);
         operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bnbPathCommand);
 
     }
