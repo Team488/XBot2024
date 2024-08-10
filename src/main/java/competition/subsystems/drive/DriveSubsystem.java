@@ -1,5 +1,6 @@
 package competition.subsystems.drive;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,6 +40,16 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private final DoubleProperty suggestedAutonomousMaximumSpeed;
     private final DoubleProperty suggestedAutonomousExtremeSpeed;
     private final PIDManager aggressiveGoalHeadingPidManager;
+    private final PIDManager pathFollowGoalHeadingPid;
+    PIDController pathFollowTranslationXPID;
+    PIDController pathFollowTranslationYPID;
+    public DoubleProperty xKP;
+    public DoubleProperty xKI;
+    public DoubleProperty xKD;
+    public DoubleProperty yKP;
+    public DoubleProperty yKI;
+    public DoubleProperty yKD;
+
 
     @Inject
     public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
@@ -70,6 +81,33 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         );
         aggressiveGoalHeadingPidManager.setEnableErrorThreshold(true);
         aggressiveGoalHeadingPidManager.setEnableTimeThreshold(true);
+
+        pathFollowGoalHeadingPid= aggressiveGoalHeadingPidFactory.create(
+                this.getPrefix() + "PathFollowGoalHeadingPID",
+                new PIDDefaults(
+                        0.4, // P
+                        0.000001, // I
+                        0.02, // D
+                        0.0, // F
+                        0.75, // Max output
+                        -0.75, // Min output
+                        2.0, // Error threshold
+                        0.2, // Derivative threshold
+                        0.2) // Time threshold
+        );
+        //0.3 , 0.33, 0.35, 0.4
+
+
+        pathFollowTranslationXPID = new PIDController(4, 0,0);
+        xKP = pf.createPersistentProperty("TranslationXkP", 4);
+        xKI = pf.createPersistentProperty("TranslationXkI", 0);
+        xKD = pf.createPersistentProperty("TranslationXkD", 0);
+
+
+        pathFollowTranslationYPID = new PIDController(3, 0,0);
+        yKP = pf.createPersistentProperty("TranslationYkP", 3);
+        yKI = pf.createPersistentProperty("TranslationYkI", 0);
+        yKD = pf.createPersistentProperty("TranslationYkD", 0);
     }
 
     public double getSuggestedAutonomousMaximumSpeed() {
@@ -153,5 +191,15 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         return aggressiveGoalHeadingPidManager;
     }
 
+    public PIDManager getPathFollowGoalHeadingPid() {
+        return pathFollowGoalHeadingPid;
+    }
 
+    public PIDController getPathFollowTranslationXPID() {
+        return pathFollowTranslationXPID;
+    }
+
+    public PIDController getPathFollowTranslationYPID() {
+        return pathFollowTranslationYPID;
+    }
 }

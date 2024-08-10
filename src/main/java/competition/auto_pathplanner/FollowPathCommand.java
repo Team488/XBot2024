@@ -6,57 +6,53 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseCommand;
+import xbot.common.math.PIDManager;
 import xbot.common.math.XYPair;
+import xbot.common.subsystems.drive.control_logic.HeadingModule;
 
 import javax.inject.Inject;
 
 public class FollowPathCommand extends BaseCommand {
-    /**
-     * Timer object
-     */
     private final Timer timer = new Timer();
-
-    /**
-     * Drivetrain object to access subsystem.
-     */
     private final DriveSubsystem drive;
-
-    PathPlannerPath path;
-
-    /**
-     * {@link PathPlannerTrajectory} to follow
-     */
+    private PathPlannerPath path;
+    private final PoseSubsystem pose;
     private PathPlannerTrajectory trajectory;
-
-    PIDController rotationPID;
-
-    PIDController translationPID;
-    PoseSubsystem pose;
+    HeadingModule headingModule;
+    PIDManager goalHeadingPidManager;
+    PIDController translationXPID;
+    PIDController translationYPID;
 
     @Inject
-    public FollowPathCommand(DriveSubsystem drive, PoseSubsystem pose) {
-        this.drive = drive;
+    public FollowPathCommand(DriveSubsystem driveSubsystem, PoseSubsystem pose,
+                             HeadingModule.HeadingModuleFactory headingModuleFactory) {
+        this.drive = driveSubsystem;
         this.pose = pose;
 
-        rotationPID = new PIDController(0.01, 0, 0.02);
-//        rotationPID = new PIDController(0, 0, 0 );
-        translationPID = new PIDController(0, 0, 0);
-//        translationPID = new PIDController(0, 0, 0);
+        translationXPID = drive.getPathFollowTranslationXPID();
+        translationYPID = drive.getPathFollowTranslationYPID();
 
-        addRequirements(drive);
+        goalHeadingPidManager = drive.getPathFollowGoalHeadingPid();
+        this.headingModule = headingModuleFactory.create(goalHeadingPidManager);
+
+//        headingModule = headingModuleFactory.create(drive.getPathPlannerGoalHeadingPid());
+//        translationXPID = drive.getPathPlannerTranslationXPid();
+//        translationYPID = drive.getPathPlannerTranslationYPid();
+
+        addRequirements(driveSubsystem);
     }
 
     @Override
     public void initialize() {
         log.info("Initializing");
-        rotationPID.reset();
-        translationPID.reset();
+        translationXPID.reset();
+        translationYPID.reset();
+        headingModule.reset();
 
         trajectory = new PathPlannerTrajectory(
                 path,
@@ -69,49 +65,51 @@ public class FollowPathCommand extends BaseCommand {
     @Override
     public void execute() {
         double currentTime = this.timer.get();
-        // Determine desired state based on where the robot should be at the current time in the path
-        PathPlannerTrajectory.State desiredState = trajectory.sample(currentTime);
-        var currentPose = pose.getCurrentPose2d();
+        PathPlannerTrajectory.State desiredState =  trajectory.sample(currentTime);
+        Pose2d currentPose = pose.getCurrentPose2d();
 
-        Rotation2d heading = desiredState.heading;
+        // Converting the velocity from a vector to x and y
+        double vx = desiredState.velocityMps * Math.cos(desiredState.heading.getRadians());
+        double vy = desiredState.velocityMps * Math.sin(desiredState.heading.getRadians());
 
-        // Calculate our target velocity based on current pose and desired state
-        var vx = desiredState.velocityMps * Math.cos(heading.getRadians());
-        var vy = desiredState.velocityMps * Math.sin(heading.getRadians());
-        var desiredThetaSpeeds = rotationPID.calculate(
-                currentPose.getRotation().getRadians(), desiredState.targetHolonomicRotation.getRadians());
-
-        double xFeedback = translationPID.calculate(
-                currentPose.getX(), desiredState.getTargetHolonomicPose().getX());
-        double yFeedback = translationPID.calculate(
+        // PID to keep robot on the path
+        double vxFeedBack = translationXPID.calculate
+                (currentPose.getX(), desiredState.getTargetHolonomicPose().getX());
+        double vyFeedBack = translationYPID.calculate(
                 currentPose.getY(), desiredState.getTargetHolonomicPose().getY());
 
-        ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                vx + xFeedback, vy + yFeedback, desiredThetaSpeeds, currentPose.getRotation());
+        // Calculate headingPower
+        double headingPower = headingModule.calculateHeadingPower(desiredState.targetHolonomicRotation.getDegrees());
 
+        // Convert Field relative chassis speeds to robot relative
+        ChassisSpeeds chassisSpeeds =
+                ChassisSpeeds.fromFieldRelativeSpeeds(vx + vxFeedBack, vy + vyFeedBack,
+                        headingPower, currentPose.getRotation());
 
         driveRobotRelative(chassisSpeeds);
 
-
-        Logger.recordOutput("PathFollowing/DesiredStatePose", desiredState.getTargetHolonomicPose());
-        Logger.recordOutput("PathFollowing/DesiredChassisSpeeds", chassisSpeeds);
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        log.info("Follow Path Command has ended");
-        this.timer.stop(); // Stop timer
-        drive.stop();
+        Logger.recordOutput("PathPlanner/FollowPathCommand/DesiredStatePose", desiredState.getTargetHolonomicPose());
+        Logger.recordOutput("PathPlanner/FollowPathCommand/desiredVXPerSecond", vx);
+        Logger.recordOutput("PathPlanner/FollowPathCommand/desiredVYPerSecond", vy);
+        Logger.recordOutput("PathPlanner/FollowPathCommand/vxFeedBack", vxFeedBack);
+        Logger.recordOutput("PathPlanner/FollowPathCommand/vyFeedback", vyFeedBack);
+        Logger.recordOutput("PathPlanner/FollowPathCommand/headingPower", headingPower);
     }
 
     @Override
     public boolean isFinished() {
-        return timer.hasElapsed(trajectory.getTotalTimeSeconds() + 2);
+        return timer.hasElapsed(trajectory.getTotalTimeSeconds());
     }
 
-    public Pose2d getStart() {
-        return trajectory.getInitialState().getTargetHolonomicPose();
+    @Override
+    public void end(boolean interrupted) {
+        log.info("Command has ended");
+        this.timer.stop(); // Stop timer
+        driveRobotRelative(new ChassisSpeeds(0, 0, 0));
+        drive.stop();
     }
+
+
 
     public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
         //AdvantageScope Logging

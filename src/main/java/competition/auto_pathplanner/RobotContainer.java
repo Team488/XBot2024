@@ -115,15 +115,4 @@ public class RobotContainer {
         return PathPlannerAuto.getStaringPoseFromAutoFile("TranslatingXandY");
     }
 
-    public Command getBNBChoreo() {
-        PathPlannerPath path = PathPlannerPath.fromChoreoTrajectory("BNBCHOREO");
-        return AutoBuilder.followPath(path);
-    }
-
-    public Pose2d getChoreoPose() {
-        return PathPlannerPath.fromChoreoTrajectory("BNBCHOREO").getPreviewStartingHolonomicPose();
-    }
-
-
-
 }

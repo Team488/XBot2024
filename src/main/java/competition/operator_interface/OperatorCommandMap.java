@@ -1,11 +1,10 @@
 package competition.operator_interface;
 
-import competition.auto_pathplanner.AutoFactory;
-import competition.auto_pathplanner.BNBCHOREOCommand;
 import competition.auto_pathplanner.BNBCommand;
 import competition.auto_pathplanner.BNBPathCommand;
 import competition.auto_pathplanner.PathTestCommand;
 import competition.auto_pathplanner.PoseTestCommand;
+import competition.auto_pathplanner.TestingPathCommand;
 import competition.auto_pathplanner.TranslationXCommand;
 import competition.auto_pathplanner.TranslationXandYCommand;
 import competition.auto_pathplanner.XYandRotateCommand;
@@ -92,9 +91,8 @@ public class OperatorCommandMap {
             PathTestCommand pathTestCommand,
             PoseTestCommand poseTestCommand,
             BNBCommand bnbCommand,
-            BNBCHOREOCommand bnbchoreoCommand,
-            AutoFactory autoFactory,
-            Provider<IntakeCollectorCommand> intakeCollectorCommandProvider)
+            Provider<IntakeCollectorCommand> intakeCollectorCommandProvider,
+            TestingPathCommand testingPathCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -124,12 +122,10 @@ public class OperatorCommandMap {
                 .onTrue(pointAtSource)
                 .onFalse(cancelSpecialPointAtPosition);
 
-        var BNB = autoFactory.createBNB(intakeCollectorCommandProvider);
-        var testing = autoFactory.testing();
 
         operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(bnbCommand);
-        operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(BNB);
-        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(testing);
+        operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(testingPathCommand);
+//        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue();
         operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bnbPathCommand);
 
     }

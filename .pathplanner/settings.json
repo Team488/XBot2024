@@ -4,8 +4,9 @@
   "holonomicMode": true,
   "pathFolders": [
     "GoingForMidFar",
-    "SubwooferShots",
+    "GoingForMid",
     "ShootingFar",
+    "SubwooferShots",
     "Testing"
   ],
   "autoFolders": [],
