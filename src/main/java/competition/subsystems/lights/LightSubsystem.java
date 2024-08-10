@@ -11,11 +11,13 @@ import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
 import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.SerialPort;
 import xbot.common.command.BaseSubsystem;
 import xbot.common.controls.actuators.XDigitalOutput;
 import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
+import java.io.Serial;
 import java.util.Objects;
 
 @Singleton
@@ -29,7 +31,12 @@ public class LightSubsystem extends BaseSubsystem {
     final CollectorSubsystem collector;
     final VisionSubsystem vision;
     final DynamicOracle oracle;
-    final XDigitalOutput[] outputs;
+    //final XDigitalOutput[] outputs;
+
+    SerialPort serialPort;
+    private int loopcount = 1;
+    private final int loopMod = 4;
+    public boolean lightsWorking = false;
 
     boolean ampSignalOn = false;
 
@@ -52,7 +59,7 @@ public class LightSubsystem extends BaseSubsystem {
         LightsStateMessage(final int value) {
             if(value > maxValue || value < 0) {
                 // it should be okay to have this throw because it will happen immediately on robot startup
-                // so we'll see failures here in CI before deploying to the robot. 
+                // so we'll see failures here in CI before deploying to the robot.
                 // Getting the RobotAssertionManager in here was proving tricky
                 System.out.println("Values must be between 0 and " + maxValue + " inclusive. Got " + value + " instead. Will always return 0 for safety.");
             }
@@ -89,11 +96,23 @@ public class LightSubsystem extends BaseSubsystem {
         this.shooter = shooter;
         this.vision = vision;
         this.oracle = oracle;
+
+        // serial test
+        if (usbIsNotConnected(SerialPort.Port.kUSB1)) {
+            if (usbIsNotConnected(SerialPort.Port.kUSB2)) {
+                if (usbIsNotConnected(SerialPort.Port.kUSB)) {
+                    log.error("Lights - could not find a USB port.");
+                }
+            }
+        }
+        serialPort.setTimeout(0.05);
+        /*
         this.outputs = new XDigitalOutput[numBits];
         this.outputs[0] = digitalOutputFactory.create(contract.getLightsDio0().channel);
         this.outputs[1] = digitalOutputFactory.create(contract.getLightsDio1().channel);
         this.outputs[2] = digitalOutputFactory.create(contract.getLightsDio2().channel);
         this.outputs[3] = digitalOutputFactory.create(contract.getLightsDio3().channel);
+        */
         //this.pf = pf;
     }
 
@@ -128,26 +147,28 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (vision.checkIfSideCamsSeeNote()) {
                 currentState = LightsStateMessage.SideCamsSeeNotes;
 
-            }else {
+            } else {
                 currentState = LightsStateMessage.RobotEnabled;
             }
         }
         return currentState;
     }
 
+    /*
     public void sendState(LightsStateMessage state) {
         var bits = convertIntToBits(state.getValue());
         for(int i = 0; i < numBits; i++) {
             outputs[i].set(bits[i]);
         }
     }
+     */
 
     /**
      * Convert an integer to a boolean array representing the bits of the integer.
      * The leftmost bit in the result is the least significant bit of the integer.
      * This was chosen so we could add new bits onto the end of the array easily without changing
      * how earlier numbers were represented.
-     * Eg: 
+     * Eg:
      * 0 -> [false, false, false, false]
      * 1 -> [true, false, false, false]
      * 14 -> [false, true, true, true]
@@ -161,16 +182,46 @@ public class LightSubsystem extends BaseSubsystem {
         return bits;
     }
 
+    public boolean usbIsNotConnected(SerialPort.Port port) {
+        try {
+            serialPort = new SerialPort(9600, port, 8);
+            serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
+            return false;
+        } catch (Exception e) {
+            log.error("Lights are not working: %s", e);
+            return true;
+        }
+    }
+
     @Override
     public void periodic() {
         var currentState = getCurrentState();
         aKitLog.record("LightState", currentState.toString());
-        sendState(currentState);
+        // sendState(currentState);
 
+        // try sending over serial
+        if (!lightsWorking) {
+            return;
+        }
+        try {
+            serialPort.reset();
+
+            // run every 1/10th of a second
+            if (this.loopcount++ % loopMod != 0) {
+                return;
+            }
+
+            // write serial data to lights
+            String stateValue = currentState.toString();
+            serialPort.writeString(stateValue + "\n");
+            serialPort.flush();
+        } catch (Exception e) {
+            log.info("problem occurred within LightSubsystem " + e.toString());
+        }
     }
 
     public void toggleAmpSignal() {
         ampSignalOn = !ampSignalOn;
     }
-   
+
 }
