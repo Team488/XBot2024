@@ -5,9 +5,7 @@ import competition.auto_pathplanner.BNBPathCommand;
 import competition.auto_pathplanner.PathTestCommand;
 import competition.auto_pathplanner.PoseTestCommand;
 import competition.auto_pathplanner.TestingPathCommand;
-import competition.auto_pathplanner.TranslationXCommand;
-import competition.auto_pathplanner.TranslationXandYCommand;
-import competition.auto_pathplanner.XYandRotateCommand;
+import competition.auto_pathplanner.TestingRotatePathCommand;
 import competition.auto_programs.BotCenter5ThenCenter4;
 import competition.auto_programs.DoNothingAuto;
 import competition.auto_programs.GriefMiddle;
@@ -85,14 +83,12 @@ public class OperatorCommandMap {
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
             LimitArmToUnderStage limitArmToUnderStageCommand,
             BNBPathCommand bnbPathCommand,
-            TranslationXCommand translationXCommand,
-            TranslationXandYCommand translationXandYCommand,
-            XYandRotateCommand xYandRotateCommand,
             PathTestCommand pathTestCommand,
             PoseTestCommand poseTestCommand,
             BNBCommand bnbCommand,
             Provider<IntakeCollectorCommand> intakeCollectorCommandProvider,
-            TestingPathCommand testingPathCommand)
+            TestingPathCommand testingPathCommand,
+            TestingRotatePathCommand testingRotatePathCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -125,8 +121,8 @@ public class OperatorCommandMap {
 
         operatorInterface.driverGamepad.getPovIfAvailable(0).onTrue(bnbCommand);
         operatorInterface.driverGamepad.getPovIfAvailable(90).onTrue(testingPathCommand);
-//        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue();
-        operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bnbPathCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).onTrue(testingRotatePathCommand);
+//        operatorInterface.driverGamepad.getPovIfAvailable(270).onTrue(bnbPathCommand);
 
     }
 

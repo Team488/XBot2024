@@ -17,11 +17,11 @@ import xbot.common.command.BaseCommand;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-public class TestingPathCommand extends SequentialCommandGroup {
+public class TestingRotatePathCommand extends SequentialCommandGroup {
     CollectorSubsystem collectorSubsystem;
 
     @Inject
-    public TestingPathCommand(Provider<IntakeCollectorCommand> intakeCollectorCommandProvider, PoseSubsystem pose,
+    public TestingRotatePathCommand(Provider<IntakeCollectorCommand> intakeCollectorCommandProvider, PoseSubsystem pose,
                               Provider<FollowPathCommand> followPathCommandProvider,
                               Provider<StopCollectorCommand> stopCollectorCommandProvider, CollectorSubsystem collectorSubsystem) {
 
@@ -29,24 +29,12 @@ public class TestingPathCommand extends SequentialCommandGroup {
 
         var startingPose = pose.createSetPositionCommand(
                 () -> PoseSubsystem.convertBlueToRedIfNeeded(
-                        new Pose2d(new Translation2d(2.4, 6.62), new Rotation2d(Math.toRadians(180)))));
+                        new Pose2d(new Translation2d(0.61, 7), new Rotation2d(Math.toRadians(180)))));
         this.addCommands(startingPose);
 
-        var intake = intakeCollectorCommandProvider.get();
         var path1 = followPathCommandProvider.get();
-        path1.setPath(PathPlannerPath.fromPathFile("TestX"));
+        path1.setPath(PathPlannerPath.fromPathFile("XYandRotate"));
 
         this.addCommands(path1);
-
-        var stopIntake = stopCollectorCommandProvider.get();
-
-        this.addCommands(new WaitCommand(2));
-
-
-        var path2 = followPathCommandProvider.get();
-        path2.setPath(PathPlannerPath.fromPathFile("TestXY"));
-
-        this.addCommands(path2);
-
     }
 }

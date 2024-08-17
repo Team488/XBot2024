@@ -4,9 +4,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xbot.common.advantage.DataFrameRefreshable;
@@ -40,15 +38,14 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private final DoubleProperty suggestedAutonomousMaximumSpeed;
     private final DoubleProperty suggestedAutonomousExtremeSpeed;
     private final PIDManager aggressiveGoalHeadingPidManager;
-    private final PIDManager pathFollowGoalHeadingPid;
-    PIDController pathFollowTranslationXPID;
-    PIDController pathFollowTranslationYPID;
-    public DoubleProperty xKP;
-    public DoubleProperty xKI;
-    public DoubleProperty xKD;
-    public DoubleProperty yKP;
-    public DoubleProperty yKI;
-    public DoubleProperty yKD;
+    PIDController pathPlannerTranslationPid;
+    PIDController pathPlannerRotationPid;
+    public DoubleProperty translationKP;
+    public DoubleProperty translationKI;
+    public DoubleProperty translationKD;
+    public DoubleProperty rotationKP;
+    public DoubleProperty rotationKI;
+    public DoubleProperty rotationKD;
 
 
     @Inject
@@ -82,32 +79,16 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         aggressiveGoalHeadingPidManager.setEnableErrorThreshold(true);
         aggressiveGoalHeadingPidManager.setEnableTimeThreshold(true);
 
-        pathFollowGoalHeadingPid= aggressiveGoalHeadingPidFactory.create(
-                this.getPrefix() + "PathFollowGoalHeadingPID",
-                new PIDDefaults(
-                        0.4, // P
-                        0.000001, // I
-                        0.02, // D
-                        0.0, // F
-                        0.75, // Max output
-                        -0.75, // Min output
-                        2.0, // Error threshold
-                        0.2, // Derivative threshold
-                        0.2) // Time threshold
-        );
-        //0.3 , 0.33, 0.35, 0.4
+        pathPlannerTranslationPid = new PIDController(5, 0,0);
+        translationKP = pf.createPersistentProperty("TranslationKP", 5);
+        translationKI = pf.createPersistentProperty("TranslationKI", 0);
+        translationKD = pf.createPersistentProperty("TranslationKD", 0);
 
 
-        pathFollowTranslationXPID = new PIDController(4, 0,0);
-        xKP = pf.createPersistentProperty("TranslationXkP", 4);
-        xKI = pf.createPersistentProperty("TranslationXkI", 0);
-        xKD = pf.createPersistentProperty("TranslationXkD", 0);
-
-
-        pathFollowTranslationYPID = new PIDController(3, 0,0);
-        yKP = pf.createPersistentProperty("TranslationYkP", 3);
-        yKI = pf.createPersistentProperty("TranslationYkI", 0);
-        yKD = pf.createPersistentProperty("TranslationYkD", 0);
+        pathPlannerRotationPid = new PIDController(5, 0,0);
+        rotationKP = pf.createPersistentProperty("RotationKP", 5);
+        rotationKI = pf.createPersistentProperty("RotationKI", 0);
+        rotationKD = pf.createPersistentProperty("RotationKD", 0);
     }
 
     public double getSuggestedAutonomousMaximumSpeed() {
@@ -191,15 +172,11 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         return aggressiveGoalHeadingPidManager;
     }
 
-    public PIDManager getPathFollowGoalHeadingPid() {
-        return pathFollowGoalHeadingPid;
+    public PIDController getPathPlannerTranslationPid() {
+        return pathPlannerTranslationPid;
     }
 
-    public PIDController getPathFollowTranslationXPID() {
-        return pathFollowTranslationXPID;
-    }
-
-    public PIDController getPathFollowTranslationYPID() {
-        return pathFollowTranslationYPID;
+    public PIDController getPathPlannerRotationPid() {
+        return pathPlannerRotationPid;
     }
 }

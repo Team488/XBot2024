@@ -11,9 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 import org.littletonrobotics.junction.Logger;
 import xbot.common.command.BaseCommand;
-import xbot.common.math.PIDManager;
 import xbot.common.math.XYPair;
-import xbot.common.subsystems.drive.control_logic.HeadingModule;
 
 import javax.inject.Inject;
 
@@ -23,26 +21,17 @@ public class FollowPathCommand extends BaseCommand {
     private PathPlannerPath path;
     private final PoseSubsystem pose;
     private PathPlannerTrajectory trajectory;
-    HeadingModule headingModule;
-    PIDManager goalHeadingPidManager;
-    PIDController translationXPID;
-    PIDController translationYPID;
+    PIDController translationPID;
+    PIDController rotationPID;
 
     @Inject
-    public FollowPathCommand(DriveSubsystem driveSubsystem, PoseSubsystem pose,
-                             HeadingModule.HeadingModuleFactory headingModuleFactory) {
+    public FollowPathCommand(DriveSubsystem driveSubsystem, PoseSubsystem pose) {
         this.drive = driveSubsystem;
         this.pose = pose;
 
-        translationXPID = drive.getPathFollowTranslationXPID();
-        translationYPID = drive.getPathFollowTranslationYPID();
-
-        goalHeadingPidManager = drive.getPathFollowGoalHeadingPid();
-        this.headingModule = headingModuleFactory.create(goalHeadingPidManager);
-
-//        headingModule = headingModuleFactory.create(drive.getPathPlannerGoalHeadingPid());
-//        translationXPID = drive.getPathPlannerTranslationXPid();
-//        translationYPID = drive.getPathPlannerTranslationYPid();
+        translationPID = drive.getPathPlannerTranslationPid();
+        rotationPID = drive.getPathPlannerRotationPid();
+        rotationPID.enableContinuousInput(-Math.PI, Math.PI);
 
         addRequirements(driveSubsystem);
     }
@@ -50,9 +39,8 @@ public class FollowPathCommand extends BaseCommand {
     @Override
     public void initialize() {
         log.info("Initializing");
-        translationXPID.reset();
-        translationYPID.reset();
-        headingModule.reset();
+        translationPID.reset();
+        rotationPID.reset();
 
         trajectory = new PathPlannerTrajectory(
                 path,
@@ -73,18 +61,19 @@ public class FollowPathCommand extends BaseCommand {
         double vy = desiredState.velocityMps * Math.sin(desiredState.heading.getRadians());
 
         // PID to keep robot on the path
-        double vxFeedBack = translationXPID.calculate
+        double vxFeedBack = translationPID.calculate
                 (currentPose.getX(), desiredState.getTargetHolonomicPose().getX());
-        double vyFeedBack = translationYPID.calculate(
+        double vyFeedBack = translationPID.calculate(
                 currentPose.getY(), desiredState.getTargetHolonomicPose().getY());
 
-        // Calculate headingPower
-        double headingPower = headingModule.calculateHeadingPower(desiredState.targetHolonomicRotation.getDegrees());
+        // Calculate omega
+        double omega = rotationPID.calculate(
+                currentPose.getRotation().getRadians(), desiredState.targetHolonomicRotation.getRadians());
 
         // Convert Field relative chassis speeds to robot relative
         ChassisSpeeds chassisSpeeds =
                 ChassisSpeeds.fromFieldRelativeSpeeds(vx + vxFeedBack, vy + vyFeedBack,
-                        headingPower, currentPose.getRotation());
+                        omega, currentPose.getRotation());
 
         driveRobotRelative(chassisSpeeds);
 
@@ -93,7 +82,7 @@ public class FollowPathCommand extends BaseCommand {
         Logger.recordOutput("PathPlanner/FollowPathCommand/desiredVYPerSecond", vy);
         Logger.recordOutput("PathPlanner/FollowPathCommand/vxFeedBack", vxFeedBack);
         Logger.recordOutput("PathPlanner/FollowPathCommand/vyFeedback", vyFeedBack);
-        Logger.recordOutput("PathPlanner/FollowPathCommand/headingPower", headingPower);
+        Logger.recordOutput("PathPlanner/FollowPathCommand/desiredOmega", omega);
     }
 
     @Override
