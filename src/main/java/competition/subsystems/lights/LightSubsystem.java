@@ -98,12 +98,8 @@ public class LightSubsystem extends BaseSubsystem {
         this.oracle = oracle;
 
         // serial test
-        if (usbIsNotConnected(SerialPort.Port.kUSB1)) {
-            if (usbIsNotConnected(SerialPort.Port.kUSB2)) {
-                if (usbIsNotConnected(SerialPort.Port.kUSB)) {
-                    log.error("Lights - could not find a USB port.");
-                }
-            }
+        if (usbIsNotConnected(SerialPort.Port.kUSB1)) { // Top port should map to kUSB1. Bottom port is for USB drive
+            log.error("Lights - could not find a valid USB serial port.");
         }
         serialPort.setTimeout(0.05);
         /*
