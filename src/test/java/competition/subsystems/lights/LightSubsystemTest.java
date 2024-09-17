@@ -16,8 +16,8 @@ public class LightSubsystemTest extends BaseCompetitionTest {
 
     @Test
     public void testStateToBitsMapping() {
-        assertArraysEqual(new boolean[] {false, false, false, false}, LightSubsystem.convertIntToBits(0));
-        assertArraysEqual(new boolean[] {true, false, false, false}, LightSubsystem.convertIntToBits(1));
-        assertArraysEqual(new boolean[] {true, true, true, true}, LightSubsystem.convertIntToBits(15));
+        assertArraysEqual(new boolean[] {false, false, false, false, false, false}, LightSubsystem.convertIntToBits(0));
+        assertArraysEqual(new boolean[] {true, false, false, false, false, false}, LightSubsystem.convertIntToBits(1));
+        assertArraysEqual(new boolean[] {true, true, true, true, false, false}, LightSubsystem.convertIntToBits(15));
     }
 }

@@ -23,7 +23,7 @@ import java.util.Objects;
 @Singleton
 public class LightSubsystem extends BaseSubsystem {
     // based on the number of bits we have, this is the highest number we can send
-    static final int numBits = 4;
+    static final int numBits = 6;
     static final int maxValue = (int)(Math.pow(2, numBits) - 1);
 
     final AutonomousCommandSelector autonomousCommandSelector;
@@ -47,9 +47,9 @@ public class LightSubsystem extends BaseSubsystem {
         DisabledCustomAutoNoCamerasWorking(12),
         DisabledCustomAutoAllCamerasWorking(11),
         DisabledDefaultAutoSomeCamerasWorking(10),
-        DisabledDefaultAutoNoCameraWorking(9),
+        DisabledDefaultAutoNoCameraWorking(2),
         DisabledDefaultAutoAllCamerasWorking(8),
-        RobotEnabled(5),
+        RobotEnabled(34),
         ShooterReadyWithoutNote(1),
         ReadyToShoot(2),
         RobotContainsNote(3),
@@ -97,11 +97,12 @@ public class LightSubsystem extends BaseSubsystem {
         this.vision = vision;
         this.oracle = oracle;
 
-        // serial test
+        // Connect to USB port over serial
         if (usbIsNotConnected(SerialPort.Port.kUSB1)) { // Top port should map to kUSB1. Bottom port is for USB drive
             log.error("Lights - could not find a valid USB serial port.");
+        } else { // when correct SerialPort is found
+            serialPort.setTimeout(0.05);
         }
-        serialPort.setTimeout(0.05);
         /*
         this.outputs = new XDigitalOutput[numBits];
         this.outputs[0] = digitalOutputFactory.create(contract.getLightsDio0().channel);
@@ -157,7 +158,7 @@ public class LightSubsystem extends BaseSubsystem {
             outputs[i].set(bits[i]);
         }
     }
-     */
+    */
 
     /**
      * Convert an integer to a boolean array representing the bits of the integer.
@@ -182,6 +183,7 @@ public class LightSubsystem extends BaseSubsystem {
         try {
             serialPort = new SerialPort(9600, port, 8);
             serialPort.setWriteBufferMode(SerialPort.WriteBufferMode.kFlushOnAccess);
+            lightsWorking = true;
             return false;
         } catch (Exception e) {
             log.error("Lights are not working: %s", e);
@@ -193,7 +195,6 @@ public class LightSubsystem extends BaseSubsystem {
     public void periodic() {
         var currentState = getCurrentState();
         aKitLog.record("LightState", currentState.toString());
-        // sendState(currentState);
 
         // try sending over serial
         if (!lightsWorking) {
@@ -208,8 +209,10 @@ public class LightSubsystem extends BaseSubsystem {
             }
 
             // write serial data to lights
-            String stateValue = currentState.toString();
-            serialPort.writeString(stateValue + "\n");
+            String stateValue = String.valueOf(currentState.getValue());
+            System.out.println("current stateValue: " + stateValue);
+            System.out.println(serialPort.writeString(stateValue + "\n")); // debug print
+            //serialPort.writeString(stateValue + "\n");
             serialPort.flush();
         } catch (Exception e) {
             log.info("problem occurred within LightSubsystem " + e.toString());
