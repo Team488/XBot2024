@@ -97,6 +97,11 @@ public class CompetitionContract extends ElectricalContract {
     }
 
     @Override
+    public XYPair getSwerveModuleOffsetsInInches(SwerveInstance swerveInstance) {
+        return getSwerveModuleOffsets(swerveInstance);
+    }
+
+    @Override
     public XYPair getSwerveModuleOffsets(SwerveInstance swerveInstance) {
         return switch (swerveInstance.label()) {
             case "FrontLeftDrive" -> new XYPair(15, 15);
