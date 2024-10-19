@@ -5,6 +5,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import org.kobe.xbot.Client;
 
 import javax.inject.Inject;
 
@@ -14,7 +15,7 @@ public class TestVisionAuto extends SequentialCommandGroup {
     public TestVisionAuto(
             DriveSubsystem drive,
             PoseSubsystem pose,
-            DriveToGivenNoteWithVisionCommand driveToGivenNoteWithVisionCommand
+            DriveToWaypointsWithVisionCommand driveToWaypointsWithVisionCommand
     ) {
 
 
@@ -28,6 +29,6 @@ public class TestVisionAuto extends SequentialCommandGroup {
                 })
         );
 
-        this.addCommands(driveToGivenNoteWithVisionCommand);
+        this.addCommands(driveToWaypointsWithVisionCommand);
     }
 }
