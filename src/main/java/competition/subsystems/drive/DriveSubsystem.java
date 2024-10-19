@@ -154,4 +154,23 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     }
 
 
+    @Override
+    public boolean getStaticHeadingActive() {
+        return false;
+    }
+
+    @Override
+    public boolean getLookAtPointActive() {
+        return false;
+    }
+
+    @Override
+    public Rotation2d getStaticHeadingTarget() {
+        return null;
+    }
+
+    @Override
+    public Translation2d getLookAtPointTarget() {
+        return null;
+    }
 }
