@@ -44,11 +44,11 @@ public class DriveToWaypointsWithVisionCommand extends SwerveSimpleTrajectoryCom
 
     @Override
     public void initialize() {
-        // The init here takes care of going to the initially given "static" note position.
-        super.initialize();
+        this.xclient = new XTablesClient();
         noteAcquisitionMode = NoteAcquisitionMode.BlindApproach;
         hasDoneVisionCheckYet = false;
-        xclient = new XTablesClient();
+        // The init here takes care of going to the initially given "static" note position.
+        super.initialize();
     }
 
     //allows for driving not in a straight line
@@ -81,7 +81,7 @@ public class DriveToWaypointsWithVisionCommand extends SwerveSimpleTrajectoryCom
 
     //allows for driving not in a straight line
     public void retrieveWaypointsFromVision() {
-        ArrayList<Coordinate> coordinates = xclient.getArray("target_waypoints", Coordinate.class).complete();
+        ArrayList<Coordinate> coordinates = this.xclient.getArray("target_waypoints", Coordinate.class).complete();
         ArrayList<Translation2d> waypoints = new ArrayList<Translation2d>();
         for (Coordinate coordinate : coordinates) {
             waypoints.add(new Translation2d(coordinate.x, coordinate.y));
