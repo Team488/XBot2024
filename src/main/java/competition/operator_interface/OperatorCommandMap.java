@@ -10,6 +10,7 @@ import competition.auto_programs.BotCenter4ThenCenter5;
 import competition.auto_programs.SubwooferShotFromMidShootThenShootNearestThree;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootSpikes;
 import competition.auto_programs.SubwooferShotFromTopShootThenShootTopSpikeThenShootTwoCenter;
+import competition.commandgroups.DriveToWaypointsWithVisionCommand;
 import competition.commandgroups.PrepareToFireAtSpeakerFromPodiumCommand;
 import competition.commandgroups.PrepareToFireNearestGoodScoringPositionCommand;
 import competition.commandgroups.PrepareToLobShotCommand;
@@ -27,7 +28,6 @@ import competition.subsystems.collector.commands.FireCollectorCommand;
 import competition.subsystems.collector.commands.IntakeCollectorCommand;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToAmpCommand;
-import competition.subsystems.drive.commands.DriveToNearestGoodScoringPositionCommand;
 import competition.subsystems.drive.commands.LineUpForHangingCommand;
 import competition.subsystems.drive.commands.PointAtNoteWithBearingCommand;
 import competition.subsystems.drive.commands.TryDriveToBearingNote;
@@ -74,7 +74,7 @@ public class OperatorCommandMap {
             LineUpForHangingCommand lineUpForHangingCommand,
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
-            DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
+            DriveToWaypointsWithVisionCommand driveToWaypointsWithVisionCommand,
             LimitArmToUnderStage limitArmToUnderStageCommand)
     {
         // Rotation calibration routine
@@ -94,7 +94,7 @@ public class OperatorCommandMap {
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Back).whileTrue(listenToOracleCommandGroup);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.Start).onTrue(resetHeading);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.RightBumper).whileTrue(pointAtAmpForLob).onFalse(cancelSpecialPointAtPosition);
-        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToNearestGoodScoringPositionCommand);
+        operatorInterface.driverGamepad.getXboxButton(XboxButton.LeftBumper).whileTrue(driveToWaypointsWithVisionCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.X).whileTrue(limitArmToUnderStageCommand);
         operatorInterface.driverGamepad.getXboxButton(XboxButton.A).whileTrue(alignToNoteCommand);
 
