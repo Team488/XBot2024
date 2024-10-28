@@ -9,6 +9,8 @@ import org.kobe.xbot.Utilities.Exceptions.BackupException;
 import org.kobe.xbot.Utilities.Exceptions.ServerFlaggedValueException;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 
+import java.net.InetAddress;
+
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
@@ -42,6 +44,24 @@ import java.util.function.Consumer;
 
 
 public class XTablesClient {
+
+    /**
+     * Connects to the XTables instance using the specified server address and port with direct connection settings.
+     *
+     * @param SERVER_ADDRESS the address of the server to connect to.
+     * @param SERVER_PORT    the port of the server to connect to.
+     * @param MAX_THREADS    the maximum number of threads to use for client operations.
+     * @param useCache       flag indicating whether to use caching.
+     * @throws IllegalArgumentException if the server port is 5353, which is reserved for mDNS services.
+     */
+    public XTablesClient(boolean useCache) {
+        try {
+            InetAddress inetAddress = InetAddress.getByName("XTABLES.local");
+            initializeClient(inetAddress.getHostAddress(), 1735, 5, useCache);
+        } catch (Exception e) {
+        }
+    }
+
 
     /**
      * Connects to the XTables instance using the specified server address and port with direct connection settings.
@@ -896,7 +916,7 @@ public class XTablesClient {
             @Override
             public String formatResult(String result) {
                 String[] parts = result.split(" ");
-                return String.join(" ", Arrays.copyOfRange(parts, 1, parts.length));
+                return String.join(" ", Arrays.copyOfRange(parts, 2, parts.length));
             }
 
             @Override
