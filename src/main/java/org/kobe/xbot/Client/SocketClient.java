@@ -1,6 +1,5 @@
 package org.kobe.xbot.Client;
 
-import com.sun.jdi.connect.spi.ClosedConnectionException;
 import org.kobe.xbot.Utilities.Logger.XTablesLogger;
 import org.kobe.xbot.Utilities.*;
 
@@ -384,10 +383,10 @@ public class SocketClient {
         executor.execute(() -> {
             try {
                 RequestInfo requestInfo = sendMessageAndWaitForReply(ResponseInfo.from(message), timeoutMS, TimeUnit.MILLISECONDS);
-                if (requestInfo == null) throw new ClosedConnectionException();
+                if (requestInfo == null) throw new RuntimeException();
                 String[] tokens = requestInfo.getTokens();
                 future.complete(String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length)));
-            } catch (InterruptedException | ClosedConnectionException e) {
+            } catch (InterruptedException | RuntimeException e) {
                 future.completeExceptionally(e);
             }
         });
