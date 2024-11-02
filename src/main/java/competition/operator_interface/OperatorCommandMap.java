@@ -1,5 +1,6 @@
 package competition.operator_interface;
 
+import competition.auto_pathplanner.BNBCommand;
 import competition.auto_programs.BotCenter5ThenCenter4;
 import competition.auto_programs.DoNothingAuto;
 import competition.auto_programs.GriefMiddle;
@@ -75,7 +76,8 @@ public class OperatorCommandMap {
             DriveToAmpCommand driveToAmpCommand,
             ListenToOracleCommandGroup listenToOracleCommandGroup,
             DriveToNearestGoodScoringPositionCommand driveToNearestGoodScoringPositionCommand,
-            LimitArmToUnderStage limitArmToUnderStageCommand)
+            LimitArmToUnderStage limitArmToUnderStageCommand,
+            BNBCommand bnbCommand)
     {
         // Rotation calibration routine
         resetHeading.setHeadingToApply(() -> PoseSubsystem.convertBlueToRedIfNeeded(Rotation2d.fromDegrees(180)).getDegrees());
@@ -106,6 +108,7 @@ public class OperatorCommandMap {
                 .onFalse(cancelSpecialPointAtPosition);
 
         operatorInterface.driverGamepad.getPovIfAvailable(90).whileTrue(lineUpForHangingCommand);
+        operatorInterface.driverGamepad.getPovIfAvailable(180).whileTrue(bnbCommand);
 
     }
 

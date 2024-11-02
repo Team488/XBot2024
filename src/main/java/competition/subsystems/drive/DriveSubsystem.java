@@ -1,5 +1,6 @@
 package competition.subsystems.drive;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,6 +40,14 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     private final DoubleProperty suggestedAutonomousMaximumSpeed;
     private final DoubleProperty suggestedAutonomousExtremeSpeed;
     private final PIDManager aggressiveGoalHeadingPidManager;
+    PIDController pathPlannerTranslationPid;
+    PIDController pathPlannerRotationPid;
+    public DoubleProperty translationKP;
+    public DoubleProperty translationKI;
+    public DoubleProperty translationKD;
+    public DoubleProperty rotationKP;
+    public DoubleProperty rotationKI;
+    public DoubleProperty rotationKD;
 
     @Inject
     public DriveSubsystem(PIDManagerFactory pidFactory, PropertyFactory pf,
@@ -70,6 +79,16 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
         );
         aggressiveGoalHeadingPidManager.setEnableErrorThreshold(true);
         aggressiveGoalHeadingPidManager.setEnableTimeThreshold(true);
+
+        pathPlannerTranslationPid = new PIDController(5, 0,0);
+        translationKP = pf.createPersistentProperty("TranslationKP", 5);
+        translationKI = pf.createPersistentProperty("TranslationKI", 0);
+        translationKD = pf.createPersistentProperty("TranslationKD", 0);
+
+        pathPlannerRotationPid = new PIDController(5, 0,0);
+        rotationKP = pf.createPersistentProperty("RotationKP", 5);
+        rotationKI = pf.createPersistentProperty("RotationKI", 0);
+        rotationKD = pf.createPersistentProperty("RotationKD", 0);
     }
 
     public double getSuggestedAutonomousMaximumSpeed() {
@@ -172,5 +191,12 @@ public class DriveSubsystem extends BaseSwerveDriveSubsystem implements DataFram
     @Override
     public Translation2d getLookAtPointTarget() {
         return null;
+    }
+
+    public PIDController getPathPlannerTranslationPid() {
+        return pathPlannerTranslationPid;
+    }
+    public PIDController getPathPlannerRotationPid() {
+        return pathPlannerRotationPid;
     }
 }
