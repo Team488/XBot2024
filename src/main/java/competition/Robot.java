@@ -47,11 +47,9 @@ public class Robot extends BaseRobot {
         }
         oracle = getInjectorComponent().dynamicOracle();
         oi = getInjectorComponent().operatorInterface();
-        drive = (DriveSubsystem)getInjectorComponent().driveSubsystem();
 
-        dataFrameRefreshables.add(drive);
-        poseSubsystem = (PoseSubsystem) getInjectorComponent().poseSubsystem();
-        dataFrameRefreshables.add(poseSubsystem);
+        dataFrameRefreshables.add((DriveSubsystem)getInjectorComponent().driveSubsystem());
+        dataFrameRefreshables.add(getInjectorComponent().poseSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().visionSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().armSubsystem());
         dataFrameRefreshables.add(getInjectorComponent().scoocherSubsystem());
