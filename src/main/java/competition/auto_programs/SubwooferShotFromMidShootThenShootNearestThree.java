@@ -1,14 +1,12 @@
 package competition.auto_programs;
 
-import competition.commandgroups.CollectSequenceCommandGroup;
 import competition.commandgroups.DriveToGivenNoteAndCollectCommandGroup;
 import competition.commandgroups.FireFromSubwooferCommandGroup;
+import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
-import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
@@ -22,6 +20,7 @@ import java.util.List;
 public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCommandGroup {
 
     final AutonomousCommandSelector autoSelector;
+    CollectorSubsystem collector;
     double interstageTimeout = 7;
 
     @Inject
@@ -29,7 +28,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                                                           Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                          PoseSubsystem pose, DriveSubsystem drive) {
+                                                          PoseSubsystem pose, DriveSubsystem drive, CollectorSubsystem collector) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -52,13 +51,9 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(driveToMiddleSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
-        // Drive back to subwoofer
-        var driveBackToCentralSubwooferFirst = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(driveBackToCentralSubwooferFirst.withTimeout(interstageTimeout));
-
-        // Fire second note into the speaker
-        var fireSecondNoteCommand = fireFromSubwooferCommandGroup.get();
-        this.addCommands(fireSecondNoteCommand);
+        // Go back and fire if has note
+        var driveBackIfNoteAndFireFirst = collector.getDriveAndFireIfNoteCommand();
+        this.addCommands(driveBackIfNoteAndFireFirst);
 
         // Drive to top spike note and collect
         queueMessageToAutoSelector("Drive to top spike note, collect, drive back to sub(middle) and shoot");
@@ -70,13 +65,11 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(driveToTopSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
-        // Drive back to subwoofer
-        var driveBackToCentralSubwooferSecond = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(driveBackToCentralSubwooferSecond.withTimeout(interstageTimeout));
+        // Go back and fire if has note
+        var driveBackIfNoteAndFireSecond = collector.getDriveAndFireIfNoteCommand();
+        this.addCommands(driveBackIfNoteAndFireSecond);
 
-        // Fire Note into the speaker
-        var fireThirdNoteCommand = fireFromSubwooferCommandGroup.get();
-        this.addCommands(fireThirdNoteCommand);
+
 
         // Drive to bottom spike note and collect
         queueMessageToAutoSelector("Drive to bottom spike note, collect, drive back to sub(middle) and shoot");
@@ -96,13 +89,9 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
         this.addCommands(driveToBottomSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
-        // Drive back to subwoofer
-        var driveBackToCentralSubwooferThird = driveToCentralSubwooferCommandProvider.get();
-        this.addCommands(driveBackToCentralSubwooferThird.withTimeout(interstageTimeout));
-
-        // Fire Note into the speaker
-        var fireFourthNoteCommand = fireFromSubwooferCommandGroup.get();
-        this.addCommands(fireFourthNoteCommand);
+        // Go back and fire if has note
+        var driveBackIfNoteAndFireThird = collector.getDriveAndFireIfNoteCommand();
+        this.addCommands(driveBackIfNoteAndFireThird);
     }
 
     private void queueMessageToAutoSelector(String message) {
