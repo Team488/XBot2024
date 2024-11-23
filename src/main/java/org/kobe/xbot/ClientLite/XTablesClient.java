@@ -37,6 +37,9 @@ import java.util.function.Consumer;
 
 
 public class XTablesClient {
+    public XTablesClient() {
+        this(1735, true, 10, false);
+    }
     /**
      * Connects to the XTablesServer instance using the system-level DNS resolver and port with direct connection settings.
      *
@@ -185,7 +188,10 @@ public class XTablesClient {
             throw new RuntimeException(e);
         }
     }
+    public XTablesClient(String ip, int port) {
+        initializeClient(ip, port, true, 10, false);
 
+    }
 // ---------------------------------------------------------------
 // ---------------- Methods and Fields ---------------------------
 // ---------------------------------------------------------------
@@ -705,7 +711,6 @@ public class XTablesClient {
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), String.class);
     }
 
-
     public RequestAction<Boolean> getBoolean(String key) {
         Utilities.validateKey(key, true);
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), Boolean.class);
@@ -752,9 +757,9 @@ public class XTablesClient {
         return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), Integer.class);
     }
 
-    public <T> RequestAction<ArrayList<T>> getArray(String key, Class<T> type) {
+    public <T> RequestAction<T> getArray(String key, Class<T> type) {
         Utilities.validateKey(key, true);
-        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), List.class);
+        return new RequestAction<>(client, new ResponseInfo(null, MethodType.GET, key).parsed(), type);
     }
 
 
