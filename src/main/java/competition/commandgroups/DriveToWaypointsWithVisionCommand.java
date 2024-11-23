@@ -84,7 +84,7 @@ public class DriveToWaypointsWithVisionCommand extends SwerveSimpleTrajectoryCom
             this.xclient = new XTablesClient(1735, false, 5, false);
         }
 
-        ArrayList<Coordinate> coordinates = this.xclient.getArray("target_waypoints", Coordinate.class).complete();
+        Coordinate[] coordinates = this.xclient.getArray("target_waypoints", Coordinate[].class).complete();
         ArrayList<Translation2d> waypoints = new ArrayList<Translation2d>();
         for (Coordinate coordinate : coordinates) {
             waypoints.add(new Translation2d(coordinate.x, coordinate.y));
