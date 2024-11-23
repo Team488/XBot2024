@@ -24,6 +24,7 @@ import xbot.common.properties.DoubleProperty;
 import xbot.common.properties.Property;
 import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.pose.BasePoseSubsystem;
+import org.kobe.xbot.ClientLite.XTablesClient;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -39,6 +40,7 @@ public class PoseSubsystem extends BasePoseSubsystem {
     final SwerveDrivePoseEstimator onlyWheelsGyroSwerveOdometry;
     private final VisionSubsystem vision;
     protected Optional<DriverStation.Alliance> cachedAlliance;
+    private XTablesClient xclient;
 
     private TimeStableValidator noSurprisingDistanceRequests = new TimeStableValidator(1);
     private final DoubleProperty suprisingVisionUpdateDistanceInMetersProp;
@@ -491,12 +493,20 @@ public class PoseSubsystem extends BasePoseSubsystem {
     @Override
     public void periodic() {
         super.periodic();
+        if (this.xclient == null) {
+            this.xclient = new XTablesClient();
+        }
 
         aKitLog.setLogLevel(AKitLogger.LogLevel.DEBUG);
         aKitLog.record("PoseHealthy", isPoseHealthy);
         aKitLog.record("VisionPoseExtremelyConfident", isVisionPoseExtremelyConfident);
         aKitLog.record("DistanceToSpeaker", getDistanceFromSpeaker());
         aKitLog.setLogLevel(AKitLogger.LogLevel.INFO);
+
+        var currentPose = this.getCurrentPose2d();
+        var currentVelocity = this.getCurrentVelocity();
+        this.xclient.putObject("robot_pose", currentPose).complete();
+        this.xclient.putObject("robot_velocity", currentVelocity).complete();
     }
 }
 
