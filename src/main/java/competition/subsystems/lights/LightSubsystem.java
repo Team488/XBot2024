@@ -1,11 +1,10 @@
-
-
 package competition.subsystems.lights;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import competition.electrical_contract.ElectricalContract;
+import competition.operator_interface.OperatorInterface;
 import competition.subsystems.collector.CollectorSubsystem;
 import competition.subsystems.oracle.DynamicOracle;
 import competition.subsystems.shooter.ShooterWheelSubsystem;
@@ -13,11 +12,9 @@ import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import xbot.common.command.BaseSubsystem;
-import xbot.common.controls.actuators.XDigitalOutput;
 import xbot.common.controls.actuators.XDigitalOutput.XDigitalOutputFactory;
 import xbot.common.subsystems.autonomous.AutonomousCommandSelector;
 
-import java.io.Serial;
 import java.util.Objects;
 
 @Singleton
@@ -31,6 +28,7 @@ public class LightSubsystem extends BaseSubsystem {
     final CollectorSubsystem collector;
     final VisionSubsystem vision;
     final DynamicOracle oracle;
+    final OperatorInterface oi;
     //final XDigitalOutput[] outputs;
 
     SerialPort serialPort;
@@ -41,8 +39,7 @@ public class LightSubsystem extends BaseSubsystem {
     boolean ampSignalOn = false;
 
     public enum LightsStateMessage{
-        NoCode(15), // we never send this one, it's implicit when the robot is off
-        // and all of the DIOs float high
+        NoCode(15),
         DisabledCustomAutoSomeCamerasWorking(13),
         DisabledCustomAutoNoCamerasWorking(12),
         DisabledCustomAutoAllCamerasWorking(11),
@@ -90,12 +87,13 @@ public class LightSubsystem extends BaseSubsystem {
                           AutonomousCommandSelector autonomousCommandSelector,
                           ShooterWheelSubsystem shooter, CollectorSubsystem collector,
                           VisionSubsystem vision,
-                          DynamicOracle oracle) {
+                          DynamicOracle oracle, OperatorInterface oi) {
         this.autonomousCommandSelector = autonomousCommandSelector;
         this.collector = collector;
         this.shooter = shooter;
         this.vision = vision;
         this.oracle = oracle;
+        this.oi = oi;
 
         // Connect to USB port over serial
         if (usbIsNotConnected(SerialPort.Port.kUSB1)) { // Top port should map to kUSB1. Bottom port is for USB drive
@@ -103,14 +101,6 @@ public class LightSubsystem extends BaseSubsystem {
         } else { // when correct SerialPort is found
             serialPort.setTimeout(0.05);
         }
-        /*
-        this.outputs = new XDigitalOutput[numBits];
-        this.outputs[0] = digitalOutputFactory.create(contract.getLightsDio0().channel);
-        this.outputs[1] = digitalOutputFactory.create(contract.getLightsDio1().channel);
-        this.outputs[2] = digitalOutputFactory.create(contract.getLightsDio2().channel);
-        this.outputs[3] = digitalOutputFactory.create(contract.getLightsDio3().channel);
-        */
-        //this.pf = pf;
     }
 
     public LightsStateMessage getCurrentState() {
@@ -144,6 +134,8 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (vision.checkIfSideCamsSeeNote()) {
                 currentState = LightsStateMessage.SideCamsSeeNotes;
 
+            } else if (oi.quickCheck() >= 0.1) {
+                currentState = LightsStateMessage.ShooterReadyWithoutNote;
             } else {
                 currentState = LightsStateMessage.RobotEnabled;
             }
@@ -151,26 +143,6 @@ public class LightSubsystem extends BaseSubsystem {
         return currentState;
     }
 
-    /*
-    public void sendState(LightsStateMessage state) {
-        var bits = convertIntToBits(state.getValue());
-        for(int i = 0; i < numBits; i++) {
-            outputs[i].set(bits[i]);
-        }
-    }
-    */
-
-    /**
-     * Convert an integer to a boolean array representing the bits of the integer.
-     * The leftmost bit in the result is the least significant bit of the integer.
-     * This was chosen so we could add new bits onto the end of the array easily without changing
-     * how earlier numbers were represented.
-     * Eg:
-     * 0 -> [false, false, false, false]
-     * 1 -> [true, false, false, false]
-     * 14 -> [false, true, true, true]
-     * 15 -> [true, true, true, true]
-     */
     public static boolean[] convertIntToBits(int value) {
         boolean[] bits = new boolean[numBits];
         for(int i = 0; i < numBits; i++) {
@@ -196,7 +168,9 @@ public class LightSubsystem extends BaseSubsystem {
         var currentState = getCurrentState();
         aKitLog.record("LightState", currentState.toString());
 
-        // try sending over serial
+        System.out.println(oi.quickCheck());
+
+        // Try sending over serial
         if (!lightsWorking) {
             return;
         }
@@ -208,11 +182,9 @@ public class LightSubsystem extends BaseSubsystem {
                 return;
             }
 
-            // write serial data to lights
+            // Write serial data to lights
             String stateValue = String.valueOf(currentState.getValue());
-            System.out.println("current stateValue: " + stateValue);
-            System.out.println(serialPort.writeString(stateValue + "\n")); // debug print
-            //serialPort.writeString(stateValue + "\n");
+            serialPort.writeString(stateValue + "\n");
             serialPort.flush();
         } catch (Exception e) {
             log.info("problem occurred within LightSubsystem " + e.toString());

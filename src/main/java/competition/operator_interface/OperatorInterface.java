@@ -107,4 +107,8 @@ public class OperatorInterface {
         this.operatorGamepadAdvanced.getRumbleManager().periodic();
         this.operatorFundamentalsGamepad.getRumbleManager().periodic();
     }
+
+    public double quickCheck() {
+        return driverGamepad.getLeftStickX();
+    }
 }
