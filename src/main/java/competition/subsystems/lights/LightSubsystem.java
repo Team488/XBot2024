@@ -28,8 +28,6 @@ public class LightSubsystem extends BaseSubsystem {
     final CollectorSubsystem collector;
     final VisionSubsystem vision;
     final DynamicOracle oracle;
-    final OperatorInterface oi;
-    //final XDigitalOutput[] outputs;
 
     SerialPort serialPort;
     private int loopcount = 1;
@@ -93,7 +91,6 @@ public class LightSubsystem extends BaseSubsystem {
         this.shooter = shooter;
         this.vision = vision;
         this.oracle = oracle;
-        this.oi = oi;
 
         // Connect to USB port over serial
         if (usbIsNotConnected(SerialPort.Port.kUSB1)) { // Top port should map to kUSB1. Bottom port is for USB drive
@@ -134,8 +131,6 @@ public class LightSubsystem extends BaseSubsystem {
             } else if (vision.checkIfSideCamsSeeNote()) {
                 currentState = LightsStateMessage.SideCamsSeeNotes;
 
-            } else if (oi.quickCheck() >= 0.1) {
-                currentState = LightsStateMessage.ShooterReadyWithoutNote;
             } else {
                 currentState = LightsStateMessage.RobotEnabled;
             }
@@ -167,8 +162,6 @@ public class LightSubsystem extends BaseSubsystem {
     public void periodic() {
         var currentState = getCurrentState();
         aKitLog.record("LightState", currentState.toString());
-
-        System.out.println(oi.quickCheck());
 
         // Try sending over serial
         if (!lightsWorking) {
