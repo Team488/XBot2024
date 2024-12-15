@@ -107,4 +107,5 @@ public class OperatorInterface {
         this.operatorGamepadAdvanced.getRumbleManager().periodic();
         this.operatorFundamentalsGamepad.getRumbleManager().periodic();
     }
+
 }
