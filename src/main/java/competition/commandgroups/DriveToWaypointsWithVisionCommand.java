@@ -13,7 +13,7 @@ import xbot.common.properties.PropertyFactory;
 import xbot.common.subsystems.drive.control_logic.HeadingModule;
 import xbot.common.trajectory.XbotSwervePoint;
 import xbot.common.subsystems.drive.SwerveSimpleTrajectoryCommand;
-import org.kobe.xbot.ClientLite.XTablesClient;
+import org.kobe.xbot.JClient.XTablesClient;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -81,10 +81,10 @@ public class DriveToWaypointsWithVisionCommand extends SwerveSimpleTrajectoryCom
     //allows for driving not in a straight line
     public void retrieveWaypointsFromVision() {
         if (this.xclient == null) {
-            this.xclient = new XTablesClient(1735, false, 5, false);
+            this.xclient = new XTablesClient();
         }
 
-        Coordinate[] coordinates = this.xclient.getArray("target_waypoints", Coordinate[].class).complete();
+        Coordinate[] coordinates = this.xclient.getList("target_waypoints", Coordinate.class);
         ArrayList<Translation2d> waypoints = new ArrayList<Translation2d>();
         for (Coordinate coordinate : coordinates) {
             waypoints.add(new Translation2d(coordinate.x, coordinate.y));
