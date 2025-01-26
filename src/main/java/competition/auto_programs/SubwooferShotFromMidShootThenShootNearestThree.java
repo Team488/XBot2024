@@ -7,6 +7,7 @@ import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.drive.commands.DriveToCentralSubwooferCommand;
 import competition.subsystems.drive.commands.DriveToListOfPointsCommand;
 import competition.subsystems.pose.PoseSubsystem;
+import competition.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -29,7 +30,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                                                           Provider<DriveToGivenNoteAndCollectCommandGroup> driveToGivenNoteAndCollectCommandGroupProvider,
                                                           Provider<FireFromSubwooferCommandGroup> fireFromSubwooferCommandGroup,
                                                           Provider<DriveToCentralSubwooferCommand> driveToCentralSubwooferCommandProvider,
-                                                          PoseSubsystem pose, DriveSubsystem drive) {
+                                                          PoseSubsystem pose, DriveSubsystem drive, VisionSubsystem vision) {
         this.autoSelector = autoSelector;
 
         // Force our location
@@ -50,6 +51,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                 })
         );
         var driveToMiddleSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        driveToMiddleSpikeNoteAndCollect.setMaximumSpeedOverride(vision.getSpeedForAuto());
         this.addCommands(driveToMiddleSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
         // Drive back to subwoofer
@@ -68,6 +70,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
                 })
         );
         var driveToTopSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        driveToTopSpikeNoteAndCollect.setMaximumSpeedOverride(vision.getSpeedForAuto());
         this.addCommands(driveToTopSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
         // Drive back to subwoofer
@@ -94,6 +97,7 @@ public class SubwooferShotFromMidShootThenShootNearestThree extends SequentialCo
 
         // Now, go get the bottom spike note
         var driveToBottomSpikeNoteAndCollect = driveToGivenNoteAndCollectCommandGroupProvider.get();
+        driveToBottomSpikeNoteAndCollect.setMaximumSpeedOverride(vision.getSpeedForAuto());
         this.addCommands(driveToBottomSpikeNoteAndCollect.withTimeout(interstageTimeout));
 
         // Drive back to subwoofer

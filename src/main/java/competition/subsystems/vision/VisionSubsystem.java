@@ -1,6 +1,7 @@
 package competition.subsystems.vision;
 
 import competition.electrical_contract.CompetitionContract;
+import competition.subsystems.drive.DriveSubsystem;
 import competition.subsystems.pose.PoseSubsystem;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -39,6 +40,7 @@ import java.util.Optional;
 @Singleton
 public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshable {
 
+    DriveSubsystem drive;
     final RobotAssertionManager assertionManager;
     final BooleanProperty isInverted;
     final DoubleProperty yawOffset;
@@ -73,11 +75,14 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
     public final double terminalNotePitch = 0.0;
 
     public final DoubleProperty terminalNoteYawRange;
+    BooleanProperty usingVisionForAuto;
 
 
     @Inject
-    public VisionSubsystem(PropertyFactory pf, XCameraElectricalContract electricalContract, RobotAssertionManager assertionManager) {
+    public VisionSubsystem(PropertyFactory pf, XCameraElectricalContract electricalContract, RobotAssertionManager assertionManager,
+                           DriveSubsystem drive) {
         this.assertionManager = assertionManager;
+        this.drive = drive;
 
         pf.setPrefix(this);
         isInverted = pf.createPersistentProperty("Yaw inverted", true);
@@ -88,6 +93,8 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         minNoteRatio = pf.createPersistentProperty("Min note size ratio", 2.0);
         minNoteConfidence = pf.createPersistentProperty("Min note confidence", 0.8);
         minNoteArea = pf.createPersistentProperty("Minimum note area", 0.5);
+
+        usingVisionForAuto = pf.createPersistentProperty("Using vision for auto", true);
 
         terminalNoteYawRange = pf.createPersistentProperty("Terminal Note Yaw Range", 5.0);
 
@@ -498,5 +505,13 @@ public class VisionSubsystem extends BaseSubsystem implements DataFrameRefreshab
         }
         // If some of the cameras are working, return 2
         return 2;
+    }
+
+    public double getSpeedForAuto() {
+        if (usingVisionForAuto.get()) {
+            return drive.getSuggestedAutonomousExtremeSpeed();
+        } else {
+            return drive.getSuggestedAutonomousNoAutoSpeed();
+        }
     }
 }
